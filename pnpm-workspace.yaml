@@ -1,0 +1,7 @@
+packages:
+  # Next.js web apps (one per subdomain)
+  - "web/*"
+  # React Native / Expo mobile apps
+  - "mobile/*"
+  # Shared frontend packages (design tokens, UI components)
+  - "shared/*"
