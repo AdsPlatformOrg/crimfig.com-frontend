@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { getApiUrl } from '@/lib/config';
 
 function ConsentContent() {
   const searchParams = useSearchParams();
@@ -16,7 +17,7 @@ function ConsentContent() {
     setError('');
 
     try {
-      const res = await fetch('/api/v1/oauth/authorize/approve', {
+      const res = await fetch(getApiUrl('/api/v1/oauth/authorize/approve'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -47,30 +48,64 @@ function ConsentContent() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '32px' }}>
+    <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontWeight: '700', fontSize: '20px', color: 'white' }}>
-          CF
+        <div
+          style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '14px',
+            background: 'var(--gradient-crimson)',
+            boxShadow: 'var(--shadow-crimson)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            fontWeight: '700',
+            fontSize: '22px',
+            color: '#FFFFFF',
+          }}
+        >
+          C
         </div>
-        <h1 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '8px' }}>
           Authorize {clientId}
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-          This application would like to access your CrimFig account credentials & profile details.
+        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
+          This application would like to connect to your CrimFig account credentials & profile.
         </p>
       </div>
 
       {error && (
-        <div style={{ background: 'var(--error-bg)', color: 'var(--error-text)', padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
-          {error}
+        <div className="alert-error" style={{ marginBottom: '20px' }}>
+          <span>{error}</span>
         </div>
       )}
 
-      <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontSize: '13px' }}>
-        <div style={{ fontWeight: '600', color: 'var(--text-main)', marginBottom: '8px' }}>Permissions requested:</div>
-        <ul style={{ paddingLeft: '20px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <li>Read basic user profile (Email, ID, Locale)</li>
-          <li>Single Sign-On authentication</li>
+      <div
+        style={{
+          background: 'rgba(17, 19, 24, 0.75)',
+          border: '1px solid var(--color-gray-700)',
+          padding: '16px',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '24px',
+          fontSize: '13px',
+        }}
+      >
+        <div style={{ fontWeight: '600', color: 'var(--color-white)', marginBottom: '8px' }}>
+          Permissions requested:
+        </div>
+        <ul
+          style={{
+            paddingLeft: '20px',
+            color: 'var(--color-gray-400)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+          }}
+        >
+          <li>Read basic user profile (Email, User ID, Locale)</li>
+          <li>Single Sign-On authentication session</li>
         </ul>
       </div>
 
@@ -78,7 +113,8 @@ function ConsentContent() {
         <button
           type="button"
           onClick={() => window.history.back()}
-          style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: '600' }}
+          className="btn-secondary"
+          style={{ flex: 1 }}
         >
           Cancel
         </button>
@@ -98,7 +134,7 @@ function ConsentContent() {
 
 export default function ConsentPage() {
   return (
-    <Suspense fallback={<div style={{ color: 'white' }}>Loading consent...</div>}>
+    <Suspense fallback={<div style={{ color: 'var(--color-gray-400)' }}>Loading consent...</div>}>
       <ConsentContent />
     </Suspense>
   );

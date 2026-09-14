@@ -4,31 +4,28 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
 
-export default function SignupPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setMessage('');
 
     try {
-      const res = await fetch(getApiUrl('/api/v1/auth/signup'), {
+      const res = await fetch(getApiUrl('/api/v1/auth/forgot-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, phone: phone || undefined }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
+      if (!res.ok) throw new Error(data.message || 'Password reset request failed');
 
-      setMessage(data.message || 'Account created! Please check your email to verify your address.');
+      setSubmitted(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -38,7 +35,6 @@ export default function SignupPage() {
 
   return (
     <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
-      {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div
           style={{
@@ -58,11 +54,11 @@ export default function SignupPage() {
         >
           C
         </div>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
-          Create Account
+        <h1 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
+          Reset Password
         </h1>
         <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
-          One CrimFig account for all ecosystem apps
+          Enter your email to receive a password reset link
         </p>
       </div>
 
@@ -72,10 +68,10 @@ export default function SignupPage() {
         </div>
       )}
 
-      {message ? (
+      {submitted ? (
         <div>
           <div className="alert-success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
-            <span>{message}</span>
+            <span>If an account with this email exists, a password reset link has been sent. Please check your inbox.</span>
           </div>
           <Link href="/login" className="btn-secondary">
             Back to Sign In
@@ -98,38 +94,8 @@ export default function SignupPage() {
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-              PHONE NUMBER (OPTIONAL)
-            </label>
-            <input
-              type="tel"
-              className="input-field"
-              placeholder="+2348012345678"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              autoComplete="tel"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-              PASSWORD
-            </label>
-            <input
-              type="password"
-              className="input-field"
-              placeholder="Min 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              autoComplete="new-password"
-            />
-          </div>
-
           <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Sending Link...' : 'Send Reset Link'}
           </button>
         </form>
       )}
@@ -144,7 +110,7 @@ export default function SignupPage() {
           color: 'var(--color-gray-400)',
         }}
       >
-        Already have an account?{' '}
+        Remember your password?{' '}
         <Link href="/login" style={{ fontWeight: '600', color: 'var(--color-crimson-light)' }}>
           Sign In
         </Link>
