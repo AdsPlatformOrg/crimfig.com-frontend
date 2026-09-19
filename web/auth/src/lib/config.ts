@@ -3,7 +3,7 @@
  */
 
 export const clientConfig = {
-  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? '',
+  apiUrl: process.env.NEXT_PUBLIC_AUTH_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '',
   authWebUrl: process.env.NEXT_PUBLIC_AUTH_WEB_URL ?? 'http://localhost:3000',
   appName: process.env.NEXT_PUBLIC_APP_NAME ?? 'CrimFig Identity',
 
