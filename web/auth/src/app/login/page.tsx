@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { getApiUrl, clientConfig } from '@/lib/config';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await fetch(getApiUrl('/api/v1/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -25,9 +26,18 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(data.message || 'Login failed');
 
       if (data.requiresMfa) {
-        window.location.href = `/mfa-challenge?token=${data.mfaChallengeToken}`;
+        window.location.href = `/mfa-challenge?token=${encodeURIComponent(data.mfaChallengeToken)}`;
       } else {
-        window.location.href = '/dashboard';
+        // If there are redirect query parameters (OAuth flow)
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUri = urlParams.get('redirect_uri');
+        const clientId = urlParams.get('client_id');
+
+        if (clientId && redirectUri) {
+          window.location.href = `/consent?${urlParams.toString()}`;
+        } else {
+          window.location.href = '/dashboard';
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -37,23 +47,46 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px', background: 'linear-gradient(to right, #a78bfa, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          CrimFig Identity
+    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      {/* Brand Header */}
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div
+          style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '14px',
+            background: 'var(--gradient-crimson)',
+            boxShadow: 'var(--shadow-crimson)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            fontWeight: '700',
+            fontSize: '22px',
+            color: '#FFFFFF',
+          }}
+        >
+          C
+        </div>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
+          Crim<span style={{ color: 'var(--color-crimson-light)' }}>Fig</span> Identity
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Sign in to access your ecosystem apps</p>
+        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
+          Sign in to access your ecosystem apps
+        </p>
       </div>
 
       {error && (
-        <div style={{ background: 'var(--error-bg)', color: 'var(--error-text)', padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
-          {error}
+        <div className="alert-error" style={{ marginBottom: '20px' }}>
+          <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>EMAIL ADDRESS</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            EMAIL ADDRESS
+          </label>
           <input
             type="email"
             className="input-field"
@@ -61,13 +94,18 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
           />
         </div>
 
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)' }}>PASSWORD</label>
-            <Link href="/forgot-password" style={{ fontSize: '12px' }}>Forgot?</Link>
+            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', letterSpacing: '0.5px' }}>
+              PASSWORD
+            </label>
+            <Link href="/forgot-password" style={{ fontSize: '12px', color: 'var(--color-gray-400)' }}>
+              Forgot password?
+            </Link>
           </div>
           <input
             type="password"
@@ -76,6 +114,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
           />
         </div>
 
@@ -84,9 +123,20 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', fontSize: '13px', color: 'var(--text-muted)' }}>
+      <div
+        style={{
+          textAlign: 'center',
+          marginTop: '28px',
+          paddingTop: '20px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          fontSize: '13px',
+          color: 'var(--color-gray-400)',
+        }}
+      >
         Don&apos;t have an account?{' '}
-        <Link href="/signup" style={{ fontWeight: '600' }}>Create Account</Link>
+        <Link href="/signup" style={{ fontWeight: '600', color: 'var(--color-crimson-light)' }}>
+          Create Account
+        </Link>
       </div>
     </div>
   );

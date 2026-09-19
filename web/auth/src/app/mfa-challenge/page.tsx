@@ -1,8 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { getApiUrl } from '@/lib/config';
 
-export default function MfaChallengePage() {
+function MfaChallengeContent() {
+  const searchParams = useSearchParams();
+  const mfaChallengeToken = searchParams.get('token') || '';
+
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -13,10 +18,11 @@ export default function MfaChallengePage() {
     setError('');
 
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const mfaChallengeToken = urlParams.get('token');
+      if (!mfaChallengeToken) {
+        throw new Error('MFA challenge session expired or invalid. Please sign in again.');
+      }
 
-      const res = await fetch('/api/v1/mfa/totp/confirm', {
+      const res = await fetch(getApiUrl('/api/v1/mfa/verify'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,7 +34,15 @@ export default function MfaChallengePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Verification failed');
 
-      window.location.href = '/dashboard';
+      // Check if there are OAuth parameters to redirect back to consent
+      const clientId = searchParams.get('client_id');
+      const redirectUri = searchParams.get('redirect_uri');
+
+      if (clientId && redirectUri) {
+        window.location.href = `/consent?${searchParams.toString()}`;
+      } else {
+        window.location.href = '/dashboard';
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -37,39 +51,76 @@ export default function MfaChallengePage() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px', background: 'linear-gradient(to right, #a78bfa, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div
+          style={{
+            width: '52px',
+            height: '52px',
+            borderRadius: '14px',
+            background: 'var(--gradient-crimson)',
+            boxShadow: 'var(--shadow-crimson)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            fontWeight: '700',
+            fontSize: '22px',
+            color: '#FFFFFF',
+          }}
+        >
+          C
+        </div>
+        <h1 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
           Two-Factor Verification
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Enter the 6-digit code from your authenticator app</p>
+        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
+          Enter the 6-digit authenticator code or 8-character backup code
+        </p>
       </div>
 
       {error && (
-        <div style={{ background: 'var(--error-bg)', color: 'var(--error-text)', padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
-          {error}
+        <div className="alert-error" style={{ marginBottom: '20px' }}>
+          <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>6-DIGIT TOTP CODE / BACKUP CODE</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.5px' }}>
+            AUTHENTICATOR / BACKUP CODE
+          </label>
           <input
             type="text"
             className="input-field"
             placeholder="123456"
             maxLength={8}
-            style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '18px', fontWeight: '600' }}
+            style={{
+              textAlign: 'center',
+              letterSpacing: '6px',
+              fontSize: '20px',
+              fontWeight: '700',
+              padding: '14px',
+            }}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => setCode(e.target.value.trim())}
             required
+            autoFocus
           />
         </div>
 
         <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
-          {loading ? 'Verifying...' : 'Verify Code'}
+          {loading ? 'Verifying...' : 'Verify & Continue'}
         </button>
       </form>
     </div>
+  );
+}
+
+export default function MfaChallengePage() {
+  return (
+    <Suspense fallback={<div style={{ color: 'var(--color-gray-400)' }}>Loading challenge...</div>}>
+      <MfaChallengeContent />
+    </Suspense>
   );
 }

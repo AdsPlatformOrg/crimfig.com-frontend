@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CrimFig Ads — Campaign & Publisher Portal',
-  description: 'Manage ecosystem advertising campaigns and monetization',
+  title: 'CrimFig Ads — Ecosystem Advertising & Promoter Network',
+  description: 'Launch targeted ad campaigns across websites, mobile apps, and individual creators, or monetize your audience as a verified promoter.',
 };
 
 export default function RootLayout({
@@ -13,10 +13,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <div style={{ minHeight: '100vh', padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
-          {children}
-        </div>
+      <body className="antialiased min-h-screen">
+        {children}
       </body>
     </html>
   );
