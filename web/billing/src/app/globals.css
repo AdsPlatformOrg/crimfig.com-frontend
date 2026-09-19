@@ -76,6 +76,13 @@
 
   /* Gradients */
   --gradient-crimson: linear-gradient(135deg, #E31B45 0%, #A80F32 100%);
+  --gradient-dark: linear-gradient(135deg, #1E2130 0%, #171B2A 100%);
+
+  /* ── Canonical DESIGN_SYSTEM.md §11 aliases ──
+   * These map the brand token names used in DESIGN_SYSTEM.md and shared components
+   * to the semantic values already defined above, ensuring compatibility.
+   */
+  --color-white: var(--bg-page);
 }
 
 [data-theme="dark"] {
@@ -113,7 +120,7 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .theme-card:hover {

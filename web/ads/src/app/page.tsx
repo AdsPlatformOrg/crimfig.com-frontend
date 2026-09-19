@@ -1267,7 +1267,7 @@ export default function AdsPlatformApp() {
                   marginTop: '8px'
                 }}
               >
-                {isSubmitting && <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} />}
+                {isSubmitting && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
                 {isSubmitting ? 'Launching Campaign...' : 'Launch Campaign'}
               </button>
             </form>
@@ -1337,7 +1337,7 @@ export default function AdsPlatformApp() {
                   gap: '8px'
                 }}
               >
-                {isSubmitting && <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} />}
+                {isSubmitting && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
                 {isSubmitting ? 'Registering...' : 'Register Domain'}
               </button>
             </form>

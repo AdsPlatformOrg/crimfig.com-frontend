@@ -956,7 +956,7 @@ export default function BillingApp() {
                     gap: '8px'
                   }}
                 >
-                  {isProcessingPayment && <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} />}
+                  {isProcessingPayment && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
                   {isProcessingPayment ? 'Redirecting to Paystack...' : `Pay ₦${(fundAmountUsd * balance.rate).toLocaleString()} & Credit $${fundAmountUsd}`}
                 </button>
               </div>
@@ -1052,7 +1052,7 @@ export default function BillingApp() {
                     gap: '8px'
                   }}
                 >
-                  {isProcessingPayment && <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} />}
+                  {isProcessingPayment && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
                   {isProcessingPayment ? 'Initiating Transfer...' : `Withdraw ₦${(withdrawAmountUsd * balance.rate).toLocaleString()}`}
                 </button>
               </div>
