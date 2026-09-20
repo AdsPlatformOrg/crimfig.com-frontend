@@ -32,6 +32,12 @@ import {
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { EmptyState } from '../components/EmptyState';
 import { TableSkeleton, CardSkeleton } from '../components/LoadingStates';
+import {
+  CRIMFIG_PLACEMENTS,
+  type CrimFigPlacement,
+  generateCrimFigEmbedCode,
+  generateCrimFigVerifyMetaTag,
+} from '../components/CrimFigAdSlot';
 
 interface Campaign {
   id: string;
@@ -108,8 +114,9 @@ export default function AdsPlatformApp() {
   // Modals
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
   const [isAddWebsiteOpen, setIsAddWebsiteOpen] = useState(false);
-  const [isEmbedCodeModalOpen, setIsEmbedCodeModalOpen] = useState<string | null>(null);
+  const [isEmbedCodeModalOpen, setIsEmbedCodeModalOpen] = useState<{ domain: string; publisherKey: string } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedPlacement, setSelectedPlacement] = useState<CrimFigPlacement>('banner_top');
 
   // Form: Create Campaign
   const [newCampTitle, setNewCampTitle] = useState('');
@@ -688,7 +695,7 @@ export default function AdsPlatformApp() {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => setIsEmbedCodeModalOpen(site.domain)}
+                              onClick={() => setIsEmbedCodeModalOpen({ domain: site.domain, publisherKey: site.verificationToken })}
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -1345,55 +1352,98 @@ export default function AdsPlatformApp() {
         </div>
       )}
 
-      {/* MODAL: EMBED CODE SNIPPET */}
-      {isEmbedCodeModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="theme-card" style={{ width: '100%', maxWidth: '520px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative' }}>
-            <button
-              type="button"
-              onClick={() => setIsEmbedCodeModalOpen(null)}
-              style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
-            >
-              <X style={{ width: 20, height: 20 }} />
-            </button>
-
-            <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Embed Tag Snippet</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-              Add this HTML tag where you want ads to appear on <span style={{ fontWeight: 600, color: 'var(--color-crimson)' }}>{isEmbedCodeModalOpen}</span>:
-            </p>
-
-            <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', position: 'relative', fontFamily: 'monospace', fontSize: '12px' }}>
-              <pre style={{ overflowX: 'auto', whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
-{`<div id="cf-ad-slot-1092" class="crimfig-ad-slot"></div>
-<script src="https://ads.crimfig.com/api/v1/delivery/embed.js" data-placement="slot_1092" async></script>`}
-              </pre>
+      {/* MODAL: EMBED CODE SNIPPET — CrimFig Publisher Placement Picker */}
+      {isEmbedCodeModalOpen && (() => {
+        const embedCode = generateCrimFigEmbedCode({
+          placement: selectedPlacement,
+          publisherKey: isEmbedCodeModalOpen.publisherKey,
+          domain: isEmbedCodeModalOpen.domain,
+        });
+        const placementMeta = CRIMFIG_PLACEMENTS[selectedPlacement];
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
+            <div className="theme-card" style={{ width: '100%', maxWidth: '620px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <button
                 type="button"
-                onClick={() => handleCopy(`<div id="cf-ad-slot-1092" class="crimfig-ad-slot"></div>\n<script src="https://ads.crimfig.com/api/v1/delivery/embed.js" data-placement="slot_1092" async></script>`, 'embed_code')}
-                style={{
-                  position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
+                onClick={() => setIsEmbedCodeModalOpen(null)}
+                style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
-                {copiedToken === 'embed_code' ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
-                {copiedToken === 'embed_code' ? 'Copied' : 'Copy'}
+                <X style={{ width: 20, height: 20 }} />
               </button>
+
+              {/* Header */}
+              <div>
+                <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Get Embed Code</h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Domain: <span style={{ fontWeight: 600, color: 'var(--color-crimson)' }}>{isEmbedCodeModalOpen.domain}</span>
+                  &nbsp;•&nbsp;Publisher Key: <code style={{ fontSize: '11px', backgroundColor: 'var(--badge-bg)', padding: '1px 6px', borderRadius: '4px' }}>{isEmbedCodeModalOpen.publisherKey}</code>
+                </p>
+              </div>
+
+              {/* Step 1: Placement Picker */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Step 1 — Choose Ad Placement
+                </label>
+                <select
+                  value={selectedPlacement}
+                  onChange={(e) => setSelectedPlacement(e.target.value as CrimFigPlacement)}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
+                >
+                  {Object.entries(CRIMFIG_PLACEMENTS).map(([key, val]) => (
+                    <option key={key} value={key}>{val.label}</option>
+                  ))}
+                </select>
+                {placementMeta && (
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                    💡 {placementMeta.recommended}
+                  </p>
+                )}
+              </div>
+
+              {/* Step 2: Code Block */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Step 2 — Copy &amp; Paste Into Your Page
+                </label>
+                <div style={{ position: 'relative', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+                  <pre style={{ margin: 0, padding: '16px 56px 16px 16px', overflowX: 'auto', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)', lineHeight: 1.6 }}>{embedCode}</pre>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(embedCode, 'embed_code')}
+                    style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      backgroundColor: copiedToken === 'embed_code' ? 'var(--color-success)' : 'var(--color-crimson)',
+                      color: '#FFFFFF',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'background-color 0.15s ease',
+                    }}
+                  >
+                    {copiedToken === 'embed_code' ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
+                    {copiedToken === 'embed_code' ? 'Copied!' : 'Copy Code'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Step 3: Instructions */}
+              <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: 'var(--color-info-bg)', border: '1px solid var(--color-info)', fontSize: '12px', color: 'var(--color-info)' }}>
+                <strong>How it works:</strong> Paste the code once per ad position. For multiple placements on the same page, copy the code again with a different placement selected above — the loader script is only needed once per page.
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
     </div>
   );
 }
