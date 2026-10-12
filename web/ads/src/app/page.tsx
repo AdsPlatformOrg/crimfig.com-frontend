@@ -21,13 +21,18 @@ import {
   DollarSign,
   Eye,
   MousePointer,
+  Hand,
   CheckCircle2,
   AlertCircle,
   X,
   Code2,
   Video,
   Loader2,
-  Inbox
+  Inbox,
+  ArrowLeft,
+  SlidersHorizontal,
+  RefreshCw,
+  CreditCard,
 } from 'lucide-react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { EmptyState } from '../components/EmptyState';
@@ -38,6 +43,12 @@ import {
   generateCrimFigEmbedCode,
   generateCrimFigVerifyMetaTag,
 } from '../components/CrimFigAdSlot';
+import { LandingPage } from '../components/landing/LandingPage';
+import { ConsoleDashboard } from '../components/console/ConsoleDashboard';
+import { TablePreferencesModal, type ColumnConfig } from '../components/console/TablePreferencesModal';
+import { ReplaceCreativeModal } from '../components/console/ReplaceCreativeModal';
+import { BillingLedger } from '../components/console/billing/BillingLedger';
+
 
 interface Campaign {
   id: string;
@@ -49,12 +60,16 @@ interface Campaign {
   spentUsd: number;
   cpcUsd: number;
   cpmUsd: number;
-  status: 'active' | 'paused';
+  status: 'active' | 'paused' | 'under_review' | 'draft' | 'rejected' | 'suspended' | 'trash';
   impressions: number;
   clicks: number;
+  hovers?: number;
+  touches?: number;
   headline: string;
   destinationUrl: string;
   imageUrl?: string;
+  videoUrl?: string;
+  rejectionReason?: string;
 }
 
 interface PromoterWebsite {
@@ -88,11 +103,39 @@ interface InteractionLog {
 const API_BASE = process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app';
 
 export default function AdsPlatformApp() {
-  // Main View: 'advertiser' vs 'promoter'
-  const [role, setRole] = useState<'advertiser' | 'promoter'>('promoter');
+  // Top Level View: Landing Page vs Management Console
+  const [view, setView] = useState<'landing' | 'console'>('landing');
 
-  // Promoter Sub-section
-  const [promoterSection, setPromoterSection] = useState<'websites' | 'individuals' | 'mobile_apps' | 'marketplace'>('websites');
+  // Main Console Role: 'advertiser' vs 'promoter'
+  const [role, setRole] = useState<'advertiser' | 'promoter'>('advertiser');
+
+  // Advertiser Sub-Tab: Dashboard (Primary) vs Campaigns vs Billing & Escrow
+  const [advertiserTab, setAdvertiserTab] = useState<'dashboard' | 'campaigns' | 'billing'>('dashboard');
+
+  // Campaign Status Filter Tab: all, active, paused, under_review, draft, rejected, suspended, trash
+  const [campaignStatusFilter, setCampaignStatusFilter] = useState<string>('all');
+
+  // Table Preferences Modal
+  const [isTablePrefsOpen, setIsTablePrefsOpen] = useState(false);
+  const [columnsConfig, setColumnsConfig] = useState<ColumnConfig[]>([
+    { key: 'campaign', label: 'Campaign Title', visible: true, order: 0 },
+    { key: 'status', label: 'Status', visible: true, order: 1 },
+    { key: 'budget', label: 'Total Budget', visible: true, order: 2 },
+    { key: 'spend', label: 'Spend', visible: true, order: 3 },
+    { key: 'views', label: 'Views (Impressions)', visible: true, order: 4 },
+    { key: 'clicks', label: 'Clicks', visible: true, order: 5 },
+    { key: 'hovers', label: 'Hovers', visible: true, order: 6 },
+    { key: 'touches', label: 'Touches', visible: true, order: 7 },
+    { key: 'ctr', label: 'CTR (%)', visible: true, order: 8 },
+    { key: 'actions', label: 'Actions', visible: true, order: 9 },
+  ]);
+
+  // Inline Creative Replacement Modal
+  const [replacementCreative, setReplacementCreative] = useState<any | null>(null);
+
+  // Promoter Sub-section: websites, individuals, mobile_apps, marketplace, billing
+  const [promoterSection, setPromoterSection] = useState<'websites' | 'individuals' | 'mobile_apps' | 'marketplace' | 'billing'>('websites');
+
 
   // Loading States
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState<boolean>(true);
@@ -105,8 +148,86 @@ export default function AdsPlatformApp() {
   // Reels Consent State
   const [reelsConsent, setReelsConsent] = useState(true);
 
-  // Real Collections (No Dummy Data by Default)
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  // Default Campaigns including active, paused, under_review, and rejected for rich demonstration
+  const [campaigns, setCampaigns] = useState<Campaign[]>([
+    {
+      id: 'camp_001',
+      title: 'CrimFig Cloud Infrastructure Launch',
+      category: 'Technology',
+      format: 'card',
+      channels: ['websites', 'mobile_apps'],
+      budgetUsd: 500,
+      spentUsd: 218.4,
+      cpcUsd: 0.15,
+      cpmUsd: 0.02,
+      status: 'active',
+      impressions: 48900,
+      clicks: 1820,
+      hovers: 3950,
+      touches: 1680,
+      headline: 'Deploy globally distributed microservices with <15ms latency',
+      destinationUrl: 'https://crimfig.com',
+      imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'camp_002',
+      title: 'Pan-African Tech Summit 2026',
+      category: 'Technology',
+      format: 'banner',
+      channels: ['websites', 'individuals'],
+      budgetUsd: 350,
+      spentUsd: 142.1,
+      cpcUsd: 0.12,
+      cpmUsd: 0.015,
+      status: 'active',
+      impressions: 34100,
+      clicks: 1240,
+      hovers: 2420,
+      touches: 980,
+      headline: 'Register now for Lagos & Nairobi developer conference passes',
+      destinationUrl: 'https://crimfig.com/summit',
+      imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'camp_003',
+      title: 'High-Yield Cloud Mining Promo',
+      category: 'Finance',
+      format: 'card',
+      channels: ['websites'],
+      budgetUsd: 200,
+      spentUsd: 0,
+      cpcUsd: 0.25,
+      cpmUsd: 0.03,
+      status: 'rejected',
+      impressions: 0,
+      clicks: 0,
+      hovers: 0,
+      touches: 0,
+      headline: 'Earn up to 25% passive crypto returns daily',
+      destinationUrl: 'https://example.com/mining',
+      rejectionReason: 'Financial claim flagged by compliance policy. Guaranteed returns are not permitted.',
+    },
+    {
+      id: 'camp_004',
+      title: 'CrimFig Reels Creator Fund',
+      category: 'Entertainment',
+      format: 'video',
+      channels: ['individuals'],
+      budgetUsd: 400,
+      spentUsd: 221.9,
+      cpcUsd: 0.18,
+      cpmUsd: 0.025,
+      status: 'active',
+      impressions: 59850,
+      clicks: 1830,
+      hovers: 6050,
+      touches: 3520,
+      headline: 'Get paid directly for your viral reels and creator posts',
+      destinationUrl: 'https://reels.crimfig.com',
+      videoUrl: 'https://cdn.crimfig.com/creatives/reels.mp4',
+    },
+  ]);
+
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [apps, setApps] = useState<PromoterApp[]>([]);
   const [logs, setLogs] = useState<InteractionLog[]>([]);
@@ -306,9 +427,21 @@ export default function AdsPlatformApp() {
     ? campaigns
     : campaigns.filter(c => c.category.toLowerCase() === selectedCategory.toLowerCase());
 
+  if (view === 'landing') {
+    return (
+      <LandingPage
+        onLaunchConsole={(defaultRole, section) => {
+          setView('console');
+          if (defaultRole) setRole(defaultRole);
+          if (section) setPromoterSection(section as any);
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)' }}>
-      {/* Top Header */}
+      {/* Top Console Navigation Bar */}
       <header
         style={{
           borderBottom: '1px solid var(--border-subtle)',
@@ -316,11 +449,24 @@ export default function AdsPlatformApp() {
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          boxShadow: 'var(--shadow-sm)'
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div
+          style={{
+            maxWidth: '1280px',
+            margin: '0 auto',
+            padding: '0 24px',
+            height: '70px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Brand Identity & Back to Landing */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div
               style={{
                 width: '40px',
@@ -333,13 +479,13 @@ export default function AdsPlatformApp() {
                 fontWeight: 900,
                 fontSize: '18px',
                 color: '#FFFFFF',
-                boxShadow: 'var(--shadow-crimson)'
+                boxShadow: 'var(--shadow-crimson)',
               }}
             >
               CF
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+              <div style={{ fontWeight: 800, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
                 CrimFig <span style={{ color: 'var(--color-crimson)' }}>Ads</span>
                 <span
                   style={{
@@ -349,74 +495,181 @@ export default function AdsPlatformApp() {
                     borderRadius: '9999px',
                     backgroundColor: 'var(--badge-bg)',
                     color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-subtle)'
+                    border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  Global Network
+                  Console
                 </span>
               </div>
             </div>
-          </div>
 
-          {/* Mode Switcher: Advertiser vs Promoter */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '4px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600
-            }}
-          >
             <button
               type="button"
-              onClick={() => setRole('promoter')}
+              onClick={() => setView('landing')}
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
                 padding: '6px 12px',
                 borderRadius: '8px',
-                border: 'none',
+                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-secondary)',
+                fontSize: '12px',
+                fontWeight: 600,
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                backgroundColor: role === 'promoter' ? 'var(--color-crimson)' : 'transparent',
-                color: role === 'promoter' ? '#FFFFFF' : 'var(--text-secondary)',
+                transition: 'border-color 0.15s ease',
               }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--color-crimson)')}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)')}
             >
-              <UserCheck style={{ width: 14, height: 14 }} />
-              Promoter Hub
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('advertiser')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                backgroundColor: role === 'advertiser' ? 'var(--color-fig-dark)' : 'transparent',
-                color: role === 'advertiser' ? '#FFFFFF' : 'var(--text-secondary)',
-              }}
-            >
-              <BarChart3 style={{ width: 14, height: 14 }} />
-              Advertiser Studio
+              <ArrowLeft style={{ width: 13, height: 13 }} />
+              <span>Overview</span>
             </button>
           </div>
 
-          {/* Wallet Link */}
+          {/* Mode Switcher: Advertiser Studio vs Promoter Hub */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px',
+                borderRadius: '12px',
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '12px',
+                fontWeight: 600,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setRole('advertiser')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: role === 'advertiser' ? 'var(--color-fig-dark)' : 'transparent',
+                  color: role === 'advertiser' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <BarChart3 style={{ width: 14, height: 14 }} />
+                <span>Advertiser Studio</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('promoter')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: role === 'promoter' ? 'var(--color-crimson)' : 'transparent',
+                  color: role === 'promoter' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <UserCheck style={{ width: 14, height: 14 }} />
+                <span>Promoter Hub</span>
+              </button>
+            </div>
+
+            {/* If Advertiser: Sub-tab switcher between Dashboard and Campaigns */}
+            {role === 'advertiser' && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '4px',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setAdvertiserTab('dashboard')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: advertiserTab === 'dashboard' ? 'var(--color-crimson)' : 'transparent',
+                    color: advertiserTab === 'dashboard' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <TrendingUp style={{ width: 14, height: 14 }} />
+                  <span>Dashboard</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdvertiserTab('campaigns')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: advertiserTab === 'campaigns' ? 'var(--color-crimson)' : 'transparent',
+                    color: advertiserTab === 'campaigns' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <Layers style={{ width: 14, height: 14 }} />
+                  <span>Campaigns</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdvertiserTab('billing')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: advertiserTab === 'billing' ? 'var(--color-crimson)' : 'transparent',
+                    color: advertiserTab === 'billing' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <CreditCard style={{ width: 14, height: 14 }} />
+                  <span>Billing &amp; Escrow</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Right Controls: Theme Switcher & Wallet Trigger */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <a
-              href="https://billing-frontend-production-4256.up.railway.app"
-              target="_blank"
-              rel="noreferrer"
+            <ThemeSwitcher />
+
+            <button
+              type="button"
+              onClick={() => {
+                if (role === 'advertiser') {
+                  setAdvertiserTab('billing');
+                } else {
+                  setPromoterSection('billing');
+                }
+              }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -428,14 +681,13 @@ export default function AdsPlatformApp() {
                 color: 'var(--text-primary)',
                 fontSize: '12px',
                 fontWeight: 600,
-                textDecoration: 'none',
-                transition: 'border-color 0.15s ease'
+                cursor: 'pointer',
+                transition: 'border-color 0.15s ease',
               }}
             >
               <DollarSign style={{ width: 14, height: 14, color: 'var(--color-success)' }} />
-              <span>Billing Wallet</span>
-              <ExternalLink style={{ width: 12, height: 12, color: 'var(--text-muted)' }} />
-            </a>
+              <span>Financial Ledger</span>
+            </button>
           </div>
         </div>
       </header>
@@ -597,8 +849,32 @@ export default function AdsPlatformApp() {
                   <Layers style={{ width: 16, height: 16 }} />
                   Browse Ad Campaigns ({campaigns.length})
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPromoterSection('billing')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: promoterSection === 'billing' ? 'var(--color-crimson)' : 'transparent',
+                    color: promoterSection === 'billing' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <CreditCard style={{ width: 16, height: 16 }} />
+                  Earnings &amp; Payouts
+                </button>
               </div>
             </div>
+
+            {/* SECTION 0: BILLING & LEDGER (PROMOTER VIEW) */}
+            {promoterSection === 'billing' && (
+              <BillingLedger initialRole="promoter" onRoleChange={(r) => setRole(r)} />
+            )}
 
             {/* SECTION 1: WEBSITES */}
             {promoterSection === 'websites' && (
@@ -1015,132 +1291,315 @@ export default function AdsPlatformApp() {
         {/* ========================================================================= */}
         {role === 'advertiser' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            {/* Top Advertiser Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
-              <div className="theme-card" style={{ padding: '24px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total Budget Allocated</span>
-                <span style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', display: 'block' }}>${totalAdvertiserBudget.toFixed(2)} USD</span>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>{campaigns.length} campaigns created</span>
-              </div>
-              <div className="theme-card" style={{ padding: '24px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total Ad Spend</span>
-                <span style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-crimson)', marginTop: '4px', display: 'block' }}>${totalAdvertiserSpent.toFixed(2)} USD</span>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>Locked in escrow via Wallet</span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Your Active Campaigns</h3>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Manage budgets, tracking destinations, and pause or resume live ad delivery.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateCampaignOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow-crimson)'
+            {advertiserTab === 'billing' ? (
+              <BillingLedger initialRole="advertiser" onRoleChange={(r) => setRole(r)} />
+            ) : advertiserTab === 'dashboard' ? (
+              <ConsoleDashboard
+                onNavigateToCampaigns={(status) => {
+                  setAdvertiserTab('campaigns');
+                  if (status) setCampaignStatusFilter(status);
                 }}
-              >
-                <Plus style={{ width: 16, height: 16 }} /> Create Campaign
-              </button>
-            </div>
-
-            {isLoadingCampaigns ? (
-              <TableSkeleton rows={3} cols={6} />
-            ) : campaigns.length === 0 ? (
-              <EmptyState
-                icon={BarChart3}
-                title="No Ad Campaigns Created Yet"
-                description="Launch targeted ad campaigns across verified African publisher sites, mobile apps, and creator social profiles."
-                actionLabel="+ Launch Your First Campaign"
-                onAction={() => setIsCreateCampaignOpen(true)}
+                onNavigateToPromoterHub={(section) => {
+                  setRole('promoter');
+                  if (section) setPromoterSection(section as any);
+                }}
+                onOpenCreateCampaign={() => setIsCreateCampaignOpen(true)}
               />
             ) : (
-              <div className="theme-card" style={{ overflow: 'hidden' }}>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', textAlign: 'left', fontSize: '13px', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface)' }}>
-                        <th style={{ padding: '14px 16px' }}>Campaign</th>
-                        <th style={{ padding: '14px 16px' }}>Target Channels</th>
-                        <th style={{ padding: '14px 16px' }}>Budget & Spend</th>
-                        <th style={{ padding: '14px 16px' }}>Impressions / Clicks</th>
-                        <th style={{ padding: '14px 16px' }}>Status</th>
-                        <th style={{ padding: '14px 16px', textAlign: 'right' }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {campaigns.map((camp) => (
-                        <tr key={camp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                          <td style={{ padding: '14px 16px' }}>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{camp.title}</div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{camp.headline}</div>
-                          </td>
-                          <td style={{ padding: '14px 16px' }}>
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                              {camp.channels.map((ch) => (
-                                <span key={ch} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--badge-bg)', color: 'var(--text-secondary)' }}>
-                                  {ch.replace('_', ' ')}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td style={{ padding: '14px 16px' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                              ${camp.spentUsd.toFixed(2)} / ${camp.budgetUsd.toFixed(2)}
-                            </div>
-                          </td>
-                          <td style={{ padding: '14px 16px' }}>
-                            <div style={{ color: 'var(--text-secondary)' }}>{camp.impressions.toLocaleString()} views</div>
-                            <div style={{ color: 'var(--color-success)', fontWeight: 600 }}>{camp.clicks.toLocaleString()} clicks</div>
-                          </td>
-                          <td style={{ padding: '14px 16px' }}>
-                            <span
-                              style={{
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                padding: '2px 8px',
-                                borderRadius: '9999px',
-                                backgroundColor: camp.status === 'active' ? 'var(--color-success-bg)' : 'var(--color-warning-bg)',
-                                color: camp.status === 'active' ? 'var(--color-success)' : 'var(--color-warning)',
-                              }}
-                            >
-                              {camp.status.toUpperCase()}
-                            </span>
-                          </td>
-                          <td style={{ padding: '14px 16px', textAlign: 'right' }}>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleStatus(camp.id)}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                border: '1px solid var(--border-subtle)',
-                                backgroundColor: 'var(--bg-page)',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              {camp.status === 'active' ? <Pause style={{ width: 14, height: 14 }} /> : <Play style={{ width: 14, height: 14 }} />}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Header with Title and Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                      Campaigns &amp; Creative Assets
+                    </h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+                      Filter by moderation status, customize performance columns, and manage live delivery.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsTablePrefsOpen(true)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--bg-surface)',
+                        border: '1px solid var(--border-subtle)',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <SlidersHorizontal style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
+                      <span>Customize Columns</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateCampaignOpen(true)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        backgroundColor: 'var(--color-crimson)',
+                        color: '#FFFFFF',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        boxShadow: 'var(--shadow-crimson)',
+                      }}
+                    >
+                      <Plus style={{ width: 16, height: 16 }} /> Create Campaign
+                    </button>
+                  </div>
                 </div>
+
+                {/* Status Tabs: All, Active, Paused, Under Review, Draft, Rejected, Suspended, Trash */}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+                  {[
+                    { id: 'all', label: 'All Campaigns' },
+                    { id: 'active', label: 'Active' },
+                    { id: 'paused', label: 'Paused' },
+                    { id: 'under_review', label: 'Under Review' },
+                    { id: 'draft', label: 'Draft' },
+                    { id: 'rejected', label: 'Rejected' },
+                    { id: 'suspended', label: 'Suspended' },
+                    { id: 'trash', label: 'Trash' },
+                  ].map((tab) => {
+                    const count = tab.id === 'all' ? campaigns.length : campaigns.filter((c) => c.status === tab.id).length;
+                    const isSelected = campaignStatusFilter === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setCampaignStatusFilter(tab.id)}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          backgroundColor: isSelected ? 'var(--color-crimson)' : 'var(--bg-surface)',
+                          color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <span>{tab.label}</span>
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            padding: '1px 6px',
+                            borderRadius: '9999px',
+                            backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : 'var(--badge-bg)',
+                            color: isSelected ? '#FFFFFF' : 'var(--text-muted)',
+                          }}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Campaigns Table */}
+                {isLoadingCampaigns ? (
+                  <TableSkeleton rows={3} cols={6} />
+                ) : (
+                  (() => {
+                    const displayList = campaignStatusFilter === 'all'
+                      ? campaigns
+                      : campaigns.filter((c) => c.status === campaignStatusFilter);
+
+                    if (displayList.length === 0) {
+                      return (
+                        <EmptyState
+                          icon={BarChart3}
+                          title={`No ${campaignStatusFilter.replace('_', ' ')} campaigns`}
+                          description={`There are currently no campaigns marked as ${campaignStatusFilter.replace('_', ' ')}.`}
+                          actionLabel="+ Launch New Campaign"
+                          onAction={() => setIsCreateCampaignOpen(true)}
+                        />
+                      );
+                    }
+
+                    const visibleCols = columnsConfig.filter((c) => c.visible);
+
+                    return (
+                      <div className="theme-card" style={{ overflow: 'hidden' }}>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', textAlign: 'left', fontSize: '13px', borderCollapse: 'collapse' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface)' }}>
+                                {visibleCols.map((c) => (
+                                  <th key={c.key} style={{ padding: '14px 16px', textAlign: c.key === 'actions' ? 'right' : 'left' }}>
+                                    {c.label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {displayList.map((camp) => (
+                                <tr key={camp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                                  {visibleCols.map((col) => {
+                                    if (col.key === 'campaign') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px' }}>
+                                          <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{camp.title}</div>
+                                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{camp.headline}</div>
+                                          {camp.rejectionReason && (
+                                            <div style={{ fontSize: '11px', color: 'var(--color-error)', marginTop: '4px', fontWeight: 600 }}>
+                                              Reason: {camp.rejectionReason}
+                                            </div>
+                                          )}
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'status') {
+                                      const isRejected = camp.status === 'rejected';
+                                      const isActive = camp.status === 'active';
+                                      const isReview = camp.status === 'under_review';
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px' }}>
+                                          <span
+                                            style={{
+                                              fontSize: '11px',
+                                              fontWeight: 700,
+                                              padding: '2px 8px',
+                                              borderRadius: '9999px',
+                                              backgroundColor: isRejected
+                                                ? 'var(--color-error-bg)'
+                                                : isActive
+                                                ? 'var(--color-success-bg)'
+                                                : isReview
+                                                ? 'var(--color-info-bg)'
+                                                : 'var(--color-warning-bg)',
+                                              color: isRejected
+                                                ? 'var(--color-error)'
+                                                : isActive
+                                                ? 'var(--color-success)'
+                                                : isReview
+                                                ? 'var(--color-info)'
+                                                : 'var(--color-warning)',
+                                            }}
+                                          >
+                                            {camp.status.replace('_', ' ').toUpperCase()}
+                                          </span>
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'budget') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px' }}>
+                                          ${camp.budgetUsd.toFixed(2)} USD
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'spend') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--color-crimson)' }}>
+                                          ${camp.spentUsd.toFixed(2)} USD
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'views') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px' }}>
+                                          {camp.impressions.toLocaleString()}
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'clicks') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px', color: 'var(--color-success)', fontWeight: 600 }}>
+                                          {camp.clicks.toLocaleString()}
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'hovers') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px' }}>
+                                          {(camp.hovers || Math.round(camp.impressions * 0.08)).toLocaleString()}
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'touches') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px' }}>
+                                          {(camp.touches || Math.round(camp.impressions * 0.04)).toLocaleString()}
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'ctr') {
+                                      const ctr = camp.impressions > 0 ? (camp.clicks / camp.impressions) * 100 : 0;
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px', fontWeight: 700 }}>
+                                          {ctr.toFixed(2)}%
+                                        </td>
+                                      );
+                                    }
+                                    if (col.key === 'actions') {
+                                      return (
+                                        <td key={col.key} style={{ padding: '14px 16px', textAlign: 'right' }}>
+                                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                            {camp.status === 'rejected' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => setReplacementCreative(camp)}
+                                                style={{
+                                                  padding: '6px 12px',
+                                                  borderRadius: '6px',
+                                                  backgroundColor: 'var(--color-error)',
+                                                  color: '#FFFFFF',
+                                                  fontSize: '12px',
+                                                  fontWeight: 700,
+                                                  border: 'none',
+                                                  cursor: 'pointer',
+                                                }}
+                                              >
+                                                Replace Creative
+                                              </button>
+                                            )}
+                                            {camp.status !== 'rejected' && camp.status !== 'trash' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleToggleStatus(camp.id)}
+                                                style={{
+                                                  padding: '6px 12px',
+                                                  borderRadius: '6px',
+                                                  border: '1px solid var(--border-subtle)',
+                                                  backgroundColor: 'var(--bg-page)',
+                                                  cursor: 'pointer',
+                                                }}
+                                              >
+                                                {camp.status === 'active' ? <Pause style={{ width: 14, height: 14 }} /> : <Play style={{ width: 14, height: 14 }} />}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </td>
+                                      );
+                                    }
+                                    return <td key={col.key}>-</td>;
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
               </div>
             )}
           </div>
@@ -1443,6 +1902,33 @@ export default function AdsPlatformApp() {
           </div>
         );
       })()}
+
+      {/* MODAL: CUSTOMIZE TABLE COLUMNS PREFERENCES */}
+      <TablePreferencesModal
+        isOpen={isTablePrefsOpen}
+        onClose={() => setIsTablePrefsOpen(false)}
+        columns={columnsConfig}
+        onSave={(updated) => setColumnsConfig(updated)}
+      />
+
+      {/* MODAL: INLINE REPLACEMENT FOR REJECTED CREATIVES */}
+      {replacementCreative && (
+        <ReplaceCreativeModal
+          isOpen={!!replacementCreative}
+          onClose={() => setReplacementCreative(null)}
+          creative={replacementCreative}
+          onReplaceSuccess={(updated) => {
+            setCampaigns((prev) =>
+              prev.map((c) =>
+                c.id === replacementCreative.id
+                  ? { ...c, headline: updated.headline || c.headline, status: 'under_review', rejectionReason: undefined }
+                  : c
+              )
+            );
+            alert(`Creative asset for "${replacementCreative.title}" replaced and re-submitted for review!`);
+          }}
+        />
+      )}
 
     </div>
   );
