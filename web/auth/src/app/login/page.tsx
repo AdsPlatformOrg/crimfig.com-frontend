@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { getApiUrl, clientConfig } from '@/lib/config';
+import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -49,33 +50,10 @@ export default function LoginPage() {
   return (
     <div className="auth-centered-container">
       <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
-      {/* Brand Header */}
-      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <div
-          style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--gradient-crimson)',
-            boxShadow: 'var(--shadow-crimson)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            fontWeight: '700',
-            fontSize: '22px',
-            color: '#FFFFFF',
-          }}
-        >
-          C
-        </div>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
-          Crim<span style={{ color: 'var(--color-crimson-light)' }}>Fig</span> Identity
-        </h1>
-        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
-          Sign in to access your ecosystem apps
-        </p>
-      </div>
+      <AuthBrandHeader
+        title="CrimFig Identity"
+        subtitle="Sign in to access your ecosystem apps"
+      />
 
       {error && (
         <div className="alert-error" style={{ marginBottom: '20px' }}>

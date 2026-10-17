@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, ArrowUpRight } from 'lucide-react';
+import { CrimFigLogo } from '../CrimFigLogo';
 
 export function LandingFooter() {
   const currentYear = new Date().getFullYear();
@@ -27,27 +28,12 @@ export function LandingFooter() {
         >
           {/* Brand info */}
           <div style={{ maxWidth: '320px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: 'var(--gradient-crimson)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 900,
-                  fontSize: '15px',
-                  color: '#FFFFFF',
-                }}
-              >
-                CF
-              </div>
-              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)' }}>
-                CrimFig <span style={{ color: 'var(--color-crimson)' }}>Auth</span>
-              </span>
-            </div>
+            <CrimFigLogo
+              variant="brand"
+              size={32}
+              app="Auth"
+              style={{ marginBottom: '14px' }}
+            />
             <p style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--text-muted)' }}>
               High-throughput central identity, OAuth2 server, and enterprise multi-factor authentication for the
               CrimFig digital ecosystem.

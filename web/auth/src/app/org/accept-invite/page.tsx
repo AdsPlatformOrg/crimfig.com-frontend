@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
+import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 function AcceptInviteContent() {
   const searchParams = useSearchParams();
@@ -48,31 +49,10 @@ function AcceptInviteContent() {
   return (
     <div className="auth-centered-container">
       <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', textAlign: 'center' }}>
-      <div
-        style={{
-          width: '52px',
-          height: '52px',
-          borderRadius: '14px',
-          background: 'var(--gradient-crimson)',
-          boxShadow: 'var(--shadow-crimson)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 16px',
-          fontWeight: '700',
-          fontSize: '22px',
-          color: '#FFFFFF',
-        }}
-      >
-        C
-      </div>
-
-      <h1 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '8px' }}>
-        Organisation Invitation
-      </h1>
-      <p style={{ color: 'var(--color-gray-400)', fontSize: '13px', marginBottom: '24px' }}>
-        You have been invited to join an organisation on CrimFig
-      </p>
+      <AuthBrandHeader
+        title="Organisation Invitation"
+        subtitle="You have been invited to join an organisation on CrimFig"
+      />
 
       {error && (
         <div className="alert-error" style={{ marginBottom: '20px', textAlign: 'left' }}>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
+import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -36,32 +37,10 @@ export default function ForgotPasswordPage() {
   return (
     <div className="auth-centered-container">
       <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <div
-          style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--gradient-crimson)',
-            boxShadow: 'var(--shadow-crimson)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            fontWeight: '700',
-            fontSize: '22px',
-            color: '#FFFFFF',
-          }}
-        >
-          C
-        </div>
-        <h1 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
-          Reset Password
-        </h1>
-        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
-          Enter your email to receive a password reset link
-        </p>
-      </div>
+      <AuthBrandHeader
+        title="Reset Password"
+        subtitle="Enter your email to receive a password reset link"
+      />
 
       {error && (
         <div className="alert-error" style={{ marginBottom: '20px' }}>

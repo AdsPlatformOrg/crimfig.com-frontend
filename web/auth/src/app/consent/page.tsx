@@ -3,6 +3,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getApiUrl } from '@/lib/config';
+import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 function ConsentContent() {
   const searchParams = useSearchParams();
@@ -50,32 +51,10 @@ function ConsentContent() {
   return (
     <div className="auth-centered-container">
       <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div
-          style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--gradient-crimson)',
-            boxShadow: 'var(--shadow-crimson)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            fontWeight: '700',
-            fontSize: '22px',
-            color: '#FFFFFF',
-          }}
-        >
-          C
-        </div>
-        <h1 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '8px' }}>
-          Authorize {clientId}
-        </h1>
-        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
-          This application would like to connect to your CrimFig account credentials & profile.
-        </p>
-      </div>
+      <AuthBrandHeader
+        title={`Authorize ${clientId}`}
+        subtitle="This application would like to connect to your CrimFig account credentials & profile."
+      />
 
       {error && (
         <div className="alert-error" style={{ marginBottom: '20px' }}>

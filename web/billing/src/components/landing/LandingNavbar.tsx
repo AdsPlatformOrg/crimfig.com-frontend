@@ -3,6 +3,7 @@
 import React from 'react';
 import { ArrowRight, Sparkles, Wallet, ShieldCheck, Gift } from 'lucide-react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
+import { CrimFigLogo } from '../CrimFigLogo';
 
 interface LandingNavbarProps {
   onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
@@ -33,58 +34,13 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         }}
       >
         {/* Brand identity */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div
-            style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              background: 'var(--gradient-crimson)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 900,
-              fontSize: '19px',
-              color: '#FFFFFF',
-              boxShadow: 'var(--shadow-crimson)',
-              letterSpacing: '-0.5px',
-            }}
-          >
-            CF
-          </div>
-          <div>
-            <div
-              style={{
-                fontWeight: 800,
-                fontSize: '19px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.3px',
-              }}
-            >
-              CrimFig <span style={{ color: 'var(--color-crimson)' }}>Billing</span>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                Fintech Engine
-              </span>
-            </div>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-              Multi-Currency Escrow, Instant Payouts &amp; Rewards
-            </p>
-          </div>
-        </div>
+        <CrimFigLogo
+          variant="brand"
+          size={42}
+          app="Billing"
+          appBadge="Fintech Engine"
+          subtext="Multi-Currency Escrow, Instant Payouts & Rewards"
+        />
 
         {/* Navigation Anchor Links */}
         <nav

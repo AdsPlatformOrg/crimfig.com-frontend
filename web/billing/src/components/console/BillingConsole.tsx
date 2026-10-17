@@ -32,6 +32,7 @@ import {
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { EmptyState } from '../EmptyState';
 import { TableSkeleton, CardSkeleton } from '../LoadingStates';
+import { CrimFigLogo } from '../CrimFigLogo';
 
 interface SavedCard {
   id: string;
@@ -535,41 +536,12 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               </button>
             )}
 
-            <div
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '12px',
-                background: 'var(--gradient-crimson)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 900,
-                fontSize: '17px',
-                color: '#FFFFFF',
-                boxShadow: 'var(--shadow-crimson)'
-              }}
-            >
-              CF
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                CrimFig <span style={{ color: 'var(--color-crimson)' }}>Billing</span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '9999px',
-                    backgroundColor: 'var(--badge-bg)',
-                    color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-subtle)'
-                  }}
-                >
-                  Universal Escrow
-                </span>
-              </div>
-            </div>
+            <CrimFigLogo
+              variant="brand"
+              size={38}
+              app="Billing"
+              appBadge="Universal Escrow"
+            />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

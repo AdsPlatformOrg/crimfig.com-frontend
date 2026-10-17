@@ -34,6 +34,8 @@ import {
   RefreshCw,
   CreditCard,
   UploadCloud,
+  Target,
+  ShieldAlert,
 } from 'lucide-react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { EmptyState } from '../components/EmptyState';
@@ -51,6 +53,8 @@ import { ReplaceCreativeModal } from '../components/console/ReplaceCreativeModal
 import { BillingLedger } from '../components/console/billing/BillingLedger';
 import { PromoterQualityCard } from '../components/console/PromoterQualityCard';
 import { AdminModerationQueue } from '../components/console/AdminModerationQueue';
+import { ConversionsTab } from '../components/console/conversions/ConversionsTab';
+import { DisputesTab } from '../components/console/disputes/DisputesTab';
 
 
 interface CampaignCreativeItem {
@@ -127,8 +131,11 @@ export default function AdsPlatformApp() {
   // Main Console Role: 'advertiser' vs 'promoter' vs 'admin'
   const [role, setRole] = useState<'advertiser' | 'promoter' | 'admin'>('advertiser');
 
-  // Advertiser Sub-Tab: Dashboard (Primary) vs Campaigns vs Billing & Escrow
-  const [advertiserTab, setAdvertiserTab] = useState<'dashboard' | 'campaigns' | 'billing'>('dashboard');
+  // Advertiser Sub-Tab: Dashboard (Primary) vs Campaigns vs Conversions vs Disputes vs Billing & Escrow
+  const [advertiserTab, setAdvertiserTab] = useState<'dashboard' | 'campaigns' | 'conversions' | 'disputes' | 'billing'>('dashboard');
+
+  // Admin Sub-Tab: Moderation vs Disputes
+  const [adminTab, setAdminTab] = useState<'moderation' | 'disputes'>('moderation');
 
   // Campaign Status Filter Tab: all, active, paused, under_review, draft, rejected, suspended, trash
   const [campaignStatusFilter, setCampaignStatusFilter] = useState<string>('all');
@@ -151,8 +158,8 @@ export default function AdsPlatformApp() {
   // Inline Creative Replacement Modal
   const [replacementCreative, setReplacementCreative] = useState<any | null>(null);
 
-  // Promoter Sub-section: websites, individuals, mobile_apps, marketplace, billing, quality
-  const [promoterSection, setPromoterSection] = useState<'websites' | 'individuals' | 'mobile_apps' | 'marketplace' | 'billing' | 'quality'>('websites');
+  // Promoter Sub-section: websites, individuals, mobile_apps, marketplace, billing, quality, disputes
+  const [promoterSection, setPromoterSection] = useState<'websites' | 'individuals' | 'mobile_apps' | 'marketplace' | 'billing' | 'quality' | 'disputes'>('websites');
 
 
   // Loading States
@@ -261,6 +268,10 @@ export default function AdsPlatformApp() {
   const [newCampTitle, setNewCampTitle] = useState('');
   const [newCampBudget, setNewCampBudget] = useState(100);
   const [newCampCategory, setNewCampCategory] = useState('Technology');
+  const [newCampPricingModel, setNewCampPricingModel] = useState<'cpc' | 'cpm' | 'cpa' | 'cpcv'>('cpc');
+  const [newCampTargetCpa, setNewCampTargetCpa] = useState<number>(5.0);
+  const [newCampTargetCpcv, setNewCampTargetCpcv] = useState<number>(0.05);
+  const [newCampAttributionDays, setNewCampAttributionDays] = useState<number>(7);
   const [newCampChannels, setNewCampChannels] = useState<('websites' | 'individuals' | 'mobile_apps')[]>(['websites', 'individuals']);
   const [newCampCreatives, setNewCampCreatives] = useState<CampaignCreativeItem[]>([
     {
@@ -358,8 +369,11 @@ export default function AdsPlatformApp() {
           title: newCampTitle,
           budgetUsd: Number(newCampBudget),
           format: primaryFormat,
-          costPerClickCents: 10,
-          costPerImpressionCents: 1,
+          pricingModel: newCampPricingModel,
+          targetCpaUsd: newCampPricingModel === 'cpa' ? newCampTargetCpa : undefined,
+          targetCpcvUsd: newCampPricingModel === 'cpcv' ? newCampTargetCpcv : undefined,
+          costPerClickCents: newCampPricingModel === 'cpc' ? 10 : 10,
+          costPerImpressionCents: newCampPricingModel === 'cpm' ? 1 : 1,
         }),
       });
 
@@ -716,6 +730,44 @@ export default function AdsPlatformApp() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setAdvertiserTab('conversions')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: advertiserTab === 'conversions' ? 'var(--color-crimson)' : 'transparent',
+                    color: advertiserTab === 'conversions' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <Target style={{ width: 14, height: 14 }} />
+                  <span>Conversions &amp; CPA</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdvertiserTab('disputes')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: advertiserTab === 'disputes' ? 'var(--color-crimson)' : 'transparent',
+                    color: advertiserTab === 'disputes' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <ShieldAlert style={{ width: 14, height: 14 }} />
+                  <span>Disputes &amp; Rebates</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setAdvertiserTab('billing')}
                   style={{
                     display: 'flex',
@@ -967,12 +1019,36 @@ export default function AdsPlatformApp() {
                   <ShieldCheck style={{ width: 16, height: 16 }} />
                   Quality &amp; Trust Score
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPromoterSection('disputes')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: promoterSection === 'disputes' ? 'var(--color-crimson)' : 'transparent',
+                    color: promoterSection === 'disputes' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <ShieldAlert style={{ width: 16, height: 16 }} />
+                  Traffic Appeals &amp; Disputes
+                </button>
               </div>
             </div>
 
             {/* SECTION: QUALITY & TRUST */}
             {promoterSection === 'quality' && (
               <PromoterQualityCard apiBase={API_BASE} />
+            )}
+
+            {/* SECTION: DISPUTES & APPEALS */}
+            {promoterSection === 'disputes' && (
+              <DisputesTab role="promoter" websites={websites} />
             )}
 
             {/* SECTION 0: BILLING & LEDGER (PROMOTER VIEW) */}
@@ -1397,6 +1473,10 @@ export default function AdsPlatformApp() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
             {advertiserTab === 'billing' ? (
               <BillingLedger initialRole="advertiser" onRoleChange={(r) => setRole(r)} />
+            ) : advertiserTab === 'conversions' ? (
+              <ConversionsTab advertiserId="adv_demo_9841" />
+            ) : advertiserTab === 'disputes' ? (
+              <DisputesTab role="advertiser" campaigns={campaigns} />
             ) : advertiserTab === 'dashboard' ? (
               <ConsoleDashboard
                 onNavigateToCampaigns={(status) => {
@@ -1767,8 +1847,58 @@ export default function AdsPlatformApp() {
         {/* ROLE 3: ADMIN CONSOLE */}
         {/* ========================================================================= */}
         {role === 'admin' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            <AdminModerationQueue apiBase={API_BASE} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Admin Sub-Tabs */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setAdminTab('moderation')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  transition: 'all 0.15s ease',
+                  backgroundColor: adminTab === 'moderation' ? 'var(--color-crimson)' : 'transparent',
+                  color: adminTab === 'moderation' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <ShieldCheck style={{ width: 14, height: 14 }} />
+                <span>Ad Moderation Queue</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminTab('disputes')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  transition: 'all 0.15s ease',
+                  backgroundColor: adminTab === 'disputes' ? 'var(--color-crimson)' : 'transparent',
+                  color: adminTab === 'disputes' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <ShieldAlert style={{ width: 14, height: 14 }} />
+                <span>Traffic Disputes &amp; Adjustments</span>
+              </button>
+            </div>
+
+            {adminTab === 'moderation' ? (
+              <AdminModerationQueue apiBase={API_BASE} />
+            ) : (
+              <DisputesTab role="advertiser" campaigns={campaigns} />
+            )}
           </div>
         )}
       </main>
@@ -1857,6 +1987,65 @@ export default function AdsPlatformApp() {
                   </select>
                 </div>
               </div>
+
+              {/* Pricing Model & CPA / CPCV Settings (PLAN-0004) */}
+              <div style={{ display: 'grid', gridTemplateColumns: newCampPricingModel === 'cpa' || newCampPricingModel === 'cpcv' ? '1fr 1fr' : '1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>
+                    Pricing &amp; Bidding Model
+                  </label>
+                  <select
+                    value={newCampPricingModel}
+                    onChange={(e) => setNewCampPricingModel(e.target.value as any)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
+                  >
+                    <option value="cpc">CPC — Pay per Click ($0.10+)</option>
+                    <option value="cpm">CPM — Pay per 1,000 Views ($1.00+)</option>
+                    <option value="cpa">CPA — Pay per Acquisition / Sale ($2.00+)</option>
+                    <option value="cpcv">CPCV — Cost per Completed Video ($0.05+)</option>
+                  </select>
+                </div>
+
+                {newCampPricingModel === 'cpa' && (
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>
+                      Target CPA (USD)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="1"
+                      required
+                      value={newCampTargetCpa}
+                      onChange={(e) => setNewCampTargetCpa(Number(e.target.value))}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                )}
+
+                {newCampPricingModel === 'cpcv' && (
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>
+                      Target CPCV (USD)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      required
+                      value={newCampTargetCpcv}
+                      onChange={(e) => setNewCampTargetCpcv(Number(e.target.value))}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {newCampPricingModel === 'cpa' && (
+                <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', fontSize: '11px', color: '#1E40AF', lineHeight: 1.5 }}>
+                  <strong>CPA Guardrail:</strong> Billed strictly on verified conversions reported via your pixel or S2S postback. Promoter payouts undergo a 72-hour clearance hold to allow refund reversals.
+                </div>
+              )}
 
               {/* Multi-Ad Creatives Section */}
               <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>

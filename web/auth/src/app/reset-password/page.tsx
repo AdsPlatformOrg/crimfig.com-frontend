@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
+import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -53,32 +54,10 @@ function ResetPasswordContent() {
   return (
     <div className="auth-centered-container">
       <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-        <div
-          style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--gradient-crimson)',
-            boxShadow: 'var(--shadow-crimson)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            fontWeight: '700',
-            fontSize: '22px',
-            color: '#FFFFFF',
-          }}
-        >
-          C
-        </div>
-        <h1 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-white)', marginBottom: '6px' }}>
-          Create New Password
-        </h1>
-        <p style={{ color: 'var(--color-gray-400)', fontSize: '13px' }}>
-          Set a secure password for your CrimFig account
-        </p>
-      </div>
+      <AuthBrandHeader
+        title="Create New Password"
+        subtitle="Set a secure password for your CrimFig account"
+      />
 
       {error && (
         <div className="alert-error" style={{ marginBottom: '20px' }}>

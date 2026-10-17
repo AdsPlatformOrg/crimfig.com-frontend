@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Wallet, ShieldCheck, ArrowRight, ExternalLink } from 'lucide-react';
+import { CrimFigLogo } from '../CrimFigLogo';
 
 interface LandingFooterProps {
   onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
@@ -29,28 +30,11 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
         >
           {/* Brand Info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  background: 'var(--gradient-crimson)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 900,
-                  fontSize: '17px',
-                  color: '#FFFFFF',
-                  boxShadow: 'var(--shadow-crimson)',
-                }}
-              >
-                CF
-              </div>
-              <span style={{ fontWeight: 800, fontSize: '18px', color: 'var(--text-primary)' }}>
-                CrimFig <span style={{ color: 'var(--color-crimson)' }}>Billing</span>
-              </span>
-            </div>
+            <CrimFigLogo
+              variant="brand"
+              size={38}
+              app="Billing"
+            />
 
             <p style={{ margin: 0, lineHeight: 1.6, color: 'var(--text-secondary)' }}>
               Universal multi-currency escrow, instant Nigerian bank payouts, automated subscriptions, and creator rewards for the CrimFig ecosystem.

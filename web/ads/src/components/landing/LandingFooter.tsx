@@ -3,6 +3,7 @@
 import React from 'react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { ExternalLink, ShieldCheck, Heart } from 'lucide-react';
+import { CrimFigLogo } from '../CrimFigLogo';
 
 interface LandingFooterProps {
   onLaunchConsole: (defaultRole?: 'advertiser' | 'promoter') => void;
@@ -28,27 +29,12 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
         >
           {/* Brand Col */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '10px',
-                  background: 'var(--gradient-crimson)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 900,
-                  fontSize: '15px',
-                  color: '#FFFFFF',
-                }}
-              >
-                CF
-              </div>
-              <span style={{ fontWeight: 800, fontSize: '18px', color: 'var(--text-primary)' }}>
-                CrimFig <span style={{ color: 'var(--color-crimson)' }}>Ads</span>
-              </span>
-            </div>
+            <CrimFigLogo
+              variant="brand"
+              size={32}
+              app="Ads"
+              style={{ marginBottom: '14px' }}
+            />
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 16px' }}>
               Next-generation advertising network and publisher monetization platform. Low latency, verifiable transparency, and global reach.
             </p>
