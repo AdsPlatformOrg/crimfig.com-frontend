@@ -51,7 +51,8 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+    <div className="auth-centered-container">
+      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div
           style={{
@@ -132,6 +133,7 @@ function ResetPasswordContent() {
         </form>
       )}
     </div>
+  </div>
   );
 }
 

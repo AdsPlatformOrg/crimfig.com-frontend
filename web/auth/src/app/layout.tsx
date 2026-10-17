@@ -24,21 +24,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={poppins.className}>
-      <body>
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-            background: 'radial-gradient(ellipse at 50% 15%, #2D3148 0%, #171B2A 70%, #111318 100%)',
-          }}
-        >
-          {children}
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
+

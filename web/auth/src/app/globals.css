@@ -12,6 +12,17 @@
   --color-white: #FFFFFF;
   --color-soft-gray: #F5F6F8;
 
+  /* Theme Canvas & Text Tokens (Light by Default) */
+  --bg-page: #FFFFFF;
+  --bg-surface: #F8FAFC;
+  --bg-elevated: #FFFFFF;
+  --border-subtle: #E2E8F0;
+  --border-hover: #CBD5E1;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --badge-bg: #F1F5F9;
+
   /* Neutrals */
   --color-gray-900: #111318;
   --color-gray-800: #1E2130;
@@ -68,6 +79,19 @@
   --gradient-dark: linear-gradient(135deg, #1E2130 0%, #171B2A 100%);
 }
 
+[data-theme="dark"] {
+  --bg-page: #0B0F19;
+  --bg-surface: #131B2E;
+  --bg-elevated: #1E293B;
+  --border-subtle: #1E293B;
+  --border-hover: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --badge-bg: #1E293B;
+  --color-crimson: #E31B45;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -98,6 +122,17 @@ a:hover {
 }
 
 /* ─── Card & Glass Styles ──────────────────────────────────────────────────── */
+
+.auth-centered-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at 50% 15%, #2D3148 0%, #171B2A 70%, #111318 100%);
+}
 
 .glass-card {
   background: rgba(30, 33, 48, 0.85);

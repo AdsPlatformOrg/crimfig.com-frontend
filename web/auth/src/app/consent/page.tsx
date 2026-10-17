@@ -48,7 +48,8 @@ function ConsentContent() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
+    <div className="auth-centered-container">
+      <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <div
           style={{
@@ -129,6 +130,7 @@ function ConsentContent() {
         </button>
       </div>
     </div>
+  </div>
   );
 }
 

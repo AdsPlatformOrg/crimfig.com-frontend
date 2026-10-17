@@ -34,7 +34,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+    <div className="auth-centered-container">
+      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div
           style={{
@@ -116,5 +117,7 @@ export default function ForgotPasswordPage() {
         </Link>
       </div>
     </div>
+  </div>
   );
 }
+

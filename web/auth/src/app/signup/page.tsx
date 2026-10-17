@@ -37,7 +37,8 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+    <div className="auth-centered-container">
+      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       {/* Brand Header */}
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div
@@ -150,5 +151,7 @@ export default function SignupPage() {
         </Link>
       </div>
     </div>
+  </div>
   );
 }
+

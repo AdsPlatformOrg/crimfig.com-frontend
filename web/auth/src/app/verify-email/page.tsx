@@ -44,7 +44,8 @@ function VerifyEmailContent() {
   }, [token]);
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px', textAlign: 'center' }}>
+    <div className="auth-centered-container">
+      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px', textAlign: 'center' }}>
       <div
         style={{
           width: '52px',
@@ -84,8 +85,10 @@ function VerifyEmailContent() {
         </div>
       )}
     </div>
+  </div>
   );
 }
+
 
 export default function VerifyEmailPage() {
   return (

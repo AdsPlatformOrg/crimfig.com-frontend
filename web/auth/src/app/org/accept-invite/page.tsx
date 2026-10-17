@@ -46,7 +46,8 @@ function AcceptInviteContent() {
   };
 
   return (
-    <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', textAlign: 'center' }}>
+    <div className="auth-centered-container">
+      <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', textAlign: 'center' }}>
       <div
         style={{
           width: '52px',
@@ -105,8 +106,10 @@ function AcceptInviteContent() {
         </div>
       )}
     </div>
+  </div>
   );
 }
+
 
 export default function AcceptInvitePage() {
   return (
