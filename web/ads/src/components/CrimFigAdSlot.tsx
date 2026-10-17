@@ -24,17 +24,17 @@ import Script from 'next/script';
 // ── Placement Catalogue ─────────────────────────────────────────────────────
 // Each placement maps to a server-side slot ID registered in the Ads API.
 // Format: `placement_handle` → `slot_id`
-export const CRIMFIG_PLACEMENTS: Record<string, { slotId: string; label: string; recommended: string }> = {
-  banner_top:          { slotId: 'cf_slot_0001', label: 'Banner — Top of Page',          recommended: 'Recommended: Place inside <header> or directly after <nav>.' },
-  banner_bottom:       { slotId: 'cf_slot_0002', label: 'Banner — Bottom of Page',        recommended: 'Recommended: Place before </footer>.' },
-  in_content_mid:      { slotId: 'cf_slot_0003', label: 'In-Content — Mid Article',       recommended: 'Recommended: Place between paragraphs, after 3rd content block.' },
-  in_content_end:      { slotId: 'cf_slot_0004', label: 'In-Content — End of Article',    recommended: 'Recommended: Place after post body, before comment section.' },
-  sidebar_sticky:      { slotId: 'cf_slot_0005', label: 'Sidebar — Sticky Rail',          recommended: 'Recommended: Place inside a position:sticky sidebar column.' },
-  listing_interstitial:{ slotId: 'cf_slot_0006', label: 'Listing Interstitial',           recommended: 'Recommended: Inject after every 6th item in a listing grid.' },
-  popup_exit_intent:   { slotId: 'cf_slot_0007', label: 'Exit-Intent Popup',              recommended: 'Recommended: Trigger on mouseleave from viewport top.' },
-  app_interstitial:    { slotId: 'cf_slot_0008', label: 'Mobile App — Interstitial',      recommended: 'Recommended: Trigger on screen transition in React Native apps.' },
-  app_rewarded:        { slotId: 'cf_slot_0009', label: 'Mobile App — Rewarded Video',    recommended: 'Recommended: Offer before access to premium in-app feature.' },
-  reels_preroll:       { slotId: 'cf_slot_0010', label: 'CrimFig Reels — Pre-roll',       recommended: 'Recommended: Auto-injected by CrimFig Reels platform — no action needed.' },
+export const CRIMFIG_PLACEMENTS: Record<string, { slotId: string; label: string; recommended: string; width?: number; height?: number }> = {
+  banner_top:          { slotId: 'cf_slot_0001', label: 'Banner — Top of Page (728x90)',          recommended: 'Recommended: Place inside <header> or directly after <nav>.', width: 728, height: 90 },
+  banner_bottom:       { slotId: 'cf_slot_0002', label: 'Banner — Bottom of Page (728x90)',        recommended: 'Recommended: Place before </footer>.', width: 728, height: 90 },
+  in_content_mid:      { slotId: 'cf_slot_0003', label: 'In-Content — Mid Article (300x250 MPU)', recommended: 'Recommended: Place between paragraphs, after 3rd content block.', width: 300, height: 250 },
+  in_content_end:      { slotId: 'cf_slot_0004', label: 'In-Content — End of Article (300x250 MPU)', recommended: 'Recommended: Place after post body, before comment section.', width: 300, height: 250 },
+  sidebar_sticky:      { slotId: 'cf_slot_0005', label: 'Sidebar — Sticky Rail (160x600 / 300x600)', recommended: 'Recommended: Place inside a position:sticky sidebar column.', width: 300, height: 600 },
+  listing_interstitial:{ slotId: 'cf_slot_0006', label: 'Listing Interstitial (Fluid Card)',      recommended: 'Recommended: Inject after every 6th item in a listing grid.' },
+  popup_exit_intent:   { slotId: 'cf_slot_0007', label: 'Exit-Intent Popup',                       recommended: 'Recommended: Trigger on mouseleave from viewport top.' },
+  app_interstitial:    { slotId: 'cf_slot_0008', label: 'Mobile App — Interstitial',               recommended: 'Recommended: Trigger on screen transition in React Native apps.' },
+  app_rewarded:        { slotId: 'cf_slot_0009', label: 'Mobile App — Rewarded Video',             recommended: 'Recommended: Offer before access to premium in-app feature.' },
+  reels_preroll:       { slotId: 'cf_slot_0010', label: 'CrimFig Reels — Pre-roll (9:16 Video)',  recommended: 'Recommended: Auto-injected by CrimFig Reels platform — no action needed.' },
 };
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -44,6 +44,7 @@ interface CrimFigAdSlotProps {
   placement: CrimFigPlacement;
   publisherKey: string;        // e.g. "pk_live_abc123" — from Promoter Hub
   responsive?: boolean;        // default: true
+  fallbackHtml?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -53,6 +54,7 @@ export function CrimFigAdSlot({
   placement,
   publisherKey,
   responsive = true,
+  fallbackHtml,
   className,
   style,
 }: CrimFigAdSlotProps) {
@@ -82,13 +84,20 @@ export function CrimFigAdSlot({
       <ins
         id={`cf-pub-${placement}-${uid}`}
         className={`crimfig-pub-slot${className ? ` ${className}` : ''}`}
-        style={{ display: 'block', minHeight: 60, ...style }}
+        style={{
+          display: 'block',
+          minHeight: slotConfig.height || 60,
+          maxWidth: slotConfig.width || undefined,
+          ...style,
+        }}
         data-cf-network="crimfig"
         data-cf-publisher={publisherKey}
         data-cf-placement={slotConfig.slotId}
         data-cf-handle={placement}
         data-cf-responsive={responsive ? 'true' : 'false'}
         data-cf-format="auto"
+        data-cf-fallback={fallbackHtml || undefined}
+        data-cf-viewable="auto"
       />
 
       {/* Queue initialisation — fires after the element is mounted */}

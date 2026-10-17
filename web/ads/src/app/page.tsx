@@ -33,6 +33,7 @@ import {
   SlidersHorizontal,
   RefreshCw,
   CreditCard,
+  UploadCloud,
 } from 'lucide-react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { EmptyState } from '../components/EmptyState';
@@ -48,19 +49,36 @@ import { ConsoleDashboard } from '../components/console/ConsoleDashboard';
 import { TablePreferencesModal, type ColumnConfig } from '../components/console/TablePreferencesModal';
 import { ReplaceCreativeModal } from '../components/console/ReplaceCreativeModal';
 import { BillingLedger } from '../components/console/billing/BillingLedger';
+import { PromoterQualityCard } from '../components/console/PromoterQualityCard';
+import { AdminModerationQueue } from '../components/console/AdminModerationQueue';
 
+
+interface CampaignCreativeItem {
+  id?: string;
+  headline: string;
+  destinationUrl: string;
+  adFormat: 'banner' | 'card' | 'video' | 'interstitial';
+  mediaFormat?: 'image' | 'gif' | 'video';
+  imageUrl?: string;
+  videoUrl?: string;
+  reviewStatus?: string;
+  rejectionReason?: string;
+}
 
 interface Campaign {
   id: string;
   title: string;
   category: string;
   format: 'banner' | 'card' | 'video' | 'interstitial';
+  formats?: ('banner' | 'card' | 'video' | 'interstitial')[];
+  creatives?: CampaignCreativeItem[];
   channels: ('websites' | 'individuals' | 'mobile_apps')[];
   budgetUsd: number;
   spentUsd: number;
   cpcUsd: number;
   cpmUsd: number;
   status: 'active' | 'paused' | 'under_review' | 'draft' | 'rejected' | 'suspended' | 'trash';
+  moderationStatus?: 'draft' | 'pending_primary_review' | 'pending_manager_approval' | 'approved' | 'rejected';
   impressions: number;
   clicks: number;
   hovers?: number;
@@ -106,8 +124,8 @@ export default function AdsPlatformApp() {
   // Top Level View: Landing Page vs Management Console
   const [view, setView] = useState<'landing' | 'console'>('landing');
 
-  // Main Console Role: 'advertiser' vs 'promoter'
-  const [role, setRole] = useState<'advertiser' | 'promoter'>('advertiser');
+  // Main Console Role: 'advertiser' vs 'promoter' vs 'admin'
+  const [role, setRole] = useState<'advertiser' | 'promoter' | 'admin'>('advertiser');
 
   // Advertiser Sub-Tab: Dashboard (Primary) vs Campaigns vs Billing & Escrow
   const [advertiserTab, setAdvertiserTab] = useState<'dashboard' | 'campaigns' | 'billing'>('dashboard');
@@ -133,8 +151,8 @@ export default function AdsPlatformApp() {
   // Inline Creative Replacement Modal
   const [replacementCreative, setReplacementCreative] = useState<any | null>(null);
 
-  // Promoter Sub-section: websites, individuals, mobile_apps, marketplace, billing
-  const [promoterSection, setPromoterSection] = useState<'websites' | 'individuals' | 'mobile_apps' | 'marketplace' | 'billing'>('websites');
+  // Promoter Sub-section: websites, individuals, mobile_apps, marketplace, billing, quality
+  const [promoterSection, setPromoterSection] = useState<'websites' | 'individuals' | 'mobile_apps' | 'marketplace' | 'billing' | 'quality'>('websites');
 
 
   // Loading States
@@ -243,10 +261,15 @@ export default function AdsPlatformApp() {
   const [newCampTitle, setNewCampTitle] = useState('');
   const [newCampBudget, setNewCampBudget] = useState(100);
   const [newCampCategory, setNewCampCategory] = useState('Technology');
-  const [newCampFormat, setNewCampFormat] = useState<'banner' | 'card' | 'video' | 'interstitial'>('card');
   const [newCampChannels, setNewCampChannels] = useState<('websites' | 'individuals' | 'mobile_apps')[]>(['websites', 'individuals']);
-  const [newCampHeadline, setNewCampHeadline] = useState('');
-  const [newCampUrl, setNewCampUrl] = useState('');
+  const [newCampCreatives, setNewCampCreatives] = useState<CampaignCreativeItem[]>([
+    {
+      headline: '',
+      destinationUrl: '',
+      adFormat: 'card',
+      mediaFormat: 'image',
+    },
+  ]);
 
   // Form: Add Website
   const [newWebDomain, setNewWebDomain] = useState('');
@@ -317,46 +340,84 @@ export default function AdsPlatformApp() {
   // Add Campaign Submit
   const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCampTitle || !newCampHeadline || !newCampUrl) return;
+    if (!newCampTitle || newCampCreatives.length === 0) return;
+    const validCreatives = newCampCreatives.filter((c) => c.headline.trim() && c.destinationUrl.trim());
+    if (validCreatives.length === 0) {
+      alert('Please provide at least one complete ad creative with headline and destination URL.');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
+      // 1. Create Campaign
+      const primaryFormat = validCreatives[0].adFormat || 'card';
       const res = await fetch(`${API_BASE}/api/v1/campaigns`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': 'demo-advertiser' },
         body: JSON.stringify({
           title: newCampTitle,
           budgetUsd: Number(newCampBudget),
-          format: newCampFormat,
+          format: primaryFormat,
           costPerClickCents: 10,
           costPerImpressionCents: 1,
-        })
+        }),
       });
 
       const created = res.ok ? (await res.json()).data : null;
+      const campaignId = created?.id || `camp_${Date.now()}`;
+
+      // 2. Attach each creative to the campaign via API
+      for (const crt of validCreatives) {
+        try {
+          await fetch(`${API_BASE}/api/v1/campaigns/${campaignId}/creatives`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-user-id': 'demo-advertiser' },
+            body: JSON.stringify({
+              headline: crt.headline,
+              destinationUrl: crt.destinationUrl,
+              adFormat: crt.adFormat,
+              mediaFormat: crt.mediaFormat || 'image',
+              imageUrl: crt.imageUrl,
+              videoUrl: crt.videoUrl,
+            }),
+          });
+        } catch (crtErr) {
+          console.warn('Creative upload deferred:', crtErr);
+        }
+      }
+
+      const distinctFormats = Array.from(new Set(validCreatives.map((c) => c.adFormat)));
 
       const newCamp: Campaign = {
-        id: created?.id || `camp_${Date.now()}`,
+        id: campaignId,
         title: newCampTitle,
         category: newCampCategory,
-        format: newCampFormat,
+        format: primaryFormat,
+        formats: distinctFormats,
+        creatives: validCreatives,
         channels: newCampChannels,
         budgetUsd: Number(newCampBudget),
         spentUsd: 0,
         cpcUsd: 0.10,
         cpmUsd: 0.01,
-        status: 'active',
+        status: 'under_review',
         impressions: 0,
         clicks: 0,
-        headline: newCampHeadline,
-        destinationUrl: newCampUrl,
+        headline: validCreatives[0].headline,
+        destinationUrl: validCreatives[0].destinationUrl,
       };
 
       setCampaigns([newCamp, ...campaigns]);
       setIsCreateCampaignOpen(false);
       setNewCampTitle('');
-      setNewCampHeadline('');
-      setNewCampUrl('');
+      setNewCampCreatives([
+        {
+          headline: '',
+          destinationUrl: '',
+          adFormat: 'card',
+          mediaFormat: 'image',
+        },
+      ]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -579,6 +640,25 @@ export default function AdsPlatformApp() {
               >
                 <UserCheck style={{ width: 14, height: 14 }} />
                 <span>Promoter Hub</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('admin')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: role === 'admin' ? 'var(--color-fig-dark)' : 'transparent',
+                  color: role === 'admin' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <ShieldCheck style={{ width: 14, height: 14 }} />
+                <span>Admin Console</span>
               </button>
             </div>
 
@@ -868,8 +948,32 @@ export default function AdsPlatformApp() {
                   <CreditCard style={{ width: 16, height: 16 }} />
                   Earnings &amp; Payouts
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPromoterSection('quality')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: promoterSection === 'quality' ? 'var(--color-crimson)' : 'transparent',
+                    color: promoterSection === 'quality' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <ShieldCheck style={{ width: 16, height: 16 }} />
+                  Quality &amp; Trust Score
+                </button>
               </div>
             </div>
+
+            {/* SECTION: QUALITY & TRUST */}
+            {promoterSection === 'quality' && (
+              <PromoterQualityCard apiBase={API_BASE} />
+            )}
 
             {/* SECTION 0: BILLING & LEDGER (PROMOTER VIEW) */}
             {promoterSection === 'billing' && (
@@ -1457,6 +1561,25 @@ export default function AdsPlatformApp() {
                                         <td key={col.key} style={{ padding: '14px 16px' }}>
                                           <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{camp.title}</div>
                                           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{camp.headline}</div>
+                                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                            {(camp.formats && camp.formats.length > 0 ? camp.formats : [camp.format]).map((fmt) => (
+                                              <span
+                                                key={fmt}
+                                                style={{
+                                                  fontSize: '10px',
+                                                  fontWeight: 700,
+                                                  textTransform: 'uppercase',
+                                                  padding: '1px 6px',
+                                                  borderRadius: '4px',
+                                                  backgroundColor: 'var(--badge-bg)',
+                                                  color: 'var(--color-crimson)',
+                                                  border: '1px solid var(--border-subtle)',
+                                                }}
+                                              >
+                                                {fmt}
+                                              </span>
+                                            ))}
+                                          </div>
                                           {camp.rejectionReason && (
                                             <div style={{ fontSize: '11px', color: 'var(--color-error)', marginTop: '4px', fontWeight: 600 }}>
                                               Reason: {camp.rejectionReason}
@@ -1466,35 +1589,70 @@ export default function AdsPlatformApp() {
                                       );
                                     }
                                     if (col.key === 'status') {
-                                      const isRejected = camp.status === 'rejected';
+                                      const isRejected = camp.moderationStatus === 'rejected' || camp.status === 'rejected';
+                                      const isApproved = camp.moderationStatus === 'approved';
+                                      const isPendingTier1 = camp.moderationStatus === 'pending_primary_review' || camp.status === 'under_review';
+                                      const isPendingTier2 = camp.moderationStatus === 'pending_manager_approval';
                                       const isActive = camp.status === 'active';
-                                      const isReview = camp.status === 'under_review';
+                                      const isPaused = camp.status === 'paused';
+
                                       return (
                                         <td key={col.key} style={{ padding: '14px 16px' }}>
-                                          <span
-                                            style={{
-                                              fontSize: '11px',
-                                              fontWeight: 700,
-                                              padding: '2px 8px',
-                                              borderRadius: '9999px',
-                                              backgroundColor: isRejected
-                                                ? 'var(--color-error-bg)'
-                                                : isActive
-                                                ? 'var(--color-success-bg)'
-                                                : isReview
-                                                ? 'var(--color-info-bg)'
-                                                : 'var(--color-warning-bg)',
-                                              color: isRejected
-                                                ? 'var(--color-error)'
-                                                : isActive
-                                                ? 'var(--color-success)'
-                                                : isReview
-                                                ? 'var(--color-info)'
-                                                : 'var(--color-warning)',
-                                            }}
-                                          >
-                                            {camp.status.replace('_', ' ').toUpperCase()}
-                                          </span>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                                            {/* Operational Status */}
+                                            <span
+                                              style={{
+                                                fontSize: '10px',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.04em',
+                                                padding: '2px 8px',
+                                                borderRadius: '9999px',
+                                                backgroundColor: isActive ? 'var(--color-success-bg)' : isPaused ? 'var(--color-soft-gray)' : 'rgba(23,27,42,0.06)',
+                                                color: isActive ? 'var(--color-success)' : isPaused ? 'var(--color-slate-500)' : 'var(--color-fig-dark)',
+                                                border: '1px solid',
+                                                borderColor: isActive ? 'rgba(16,185,129,0.3)' : 'rgba(0,0,0,0.08)'
+                                              }}
+                                            >
+                                              ● {camp.status.replace('_', ' ').toUpperCase()}
+                                            </span>
+                                            {/* Moderation Status */}
+                                            <span
+                                              style={{
+                                                fontSize: '10px',
+                                                fontWeight: 600,
+                                                padding: '2px 8px',
+                                                borderRadius: '9999px',
+                                                backgroundColor: isApproved
+                                                  ? 'rgba(16, 185, 129, 0.1)'
+                                                  : isPendingTier2
+                                                  ? 'rgba(99, 102, 241, 0.1)'
+                                                  : isPendingTier1
+                                                  ? 'var(--color-warning-bg)'
+                                                  : isRejected
+                                                  ? 'var(--color-error-bg)'
+                                                  : 'rgba(0,0,0,0.04)',
+                                                color: isApproved
+                                                  ? 'var(--color-success)'
+                                                  : isPendingTier2
+                                                  ? '#4f46e5'
+                                                  : isPendingTier1
+                                                  ? 'var(--color-warning)'
+                                                  : isRejected
+                                                  ? 'var(--color-error)'
+                                                  : 'var(--color-slate-500)',
+                                              }}
+                                            >
+                                              {isApproved
+                                                ? 'COMPLIANT'
+                                                : isPendingTier2
+                                                ? 'TIER-2 APPROVAL'
+                                                : isPendingTier1
+                                                ? 'TIER-1 REVIEW'
+                                                : isRejected
+                                                ? 'REJECTED'
+                                                : (camp.moderationStatus || 'DRAFT').toUpperCase()}
+                                            </span>
+                                          </div>
                                         </td>
                                       );
                                     }
@@ -1604,6 +1762,15 @@ export default function AdsPlatformApp() {
             )}
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* ROLE 3: ADMIN CONSOLE */}
+        {/* ========================================================================= */}
+        {role === 'admin' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            <AdminModerationQueue apiBase={API_BASE} />
+          </div>
+        )}
       </main>
 
       {/* Footer with Theme Switcher */}
@@ -1675,42 +1842,239 @@ export default function AdsPlatformApp() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Format</label>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Category</label>
                   <select
-                    value={newCampFormat}
-                    onChange={(e: any) => setNewCampFormat(e.target.value)}
+                    value={newCampCategory}
+                    onChange={(e) => setNewCampCategory(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
                   >
-                    <option value="card">Card Ad</option>
-                    <option value="banner">Banner</option>
-                    <option value="video">Video</option>
-                    <option value="interstitial">Interstitial</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Finance">Finance</option>
+                    <option value="General">General</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Headline Copy</label>
-                <input
-                  type="text"
-                  required
-                  value={newCampHeadline}
-                  onChange={(e) => setNewCampHeadline(e.target.value)}
-                  placeholder="e.g. Try CrimFig Stream in 1080p today"
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
-                />
-              </div>
+              {/* Multi-Ad Creatives Section */}
+              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Ad Creatives ({newCampCreatives.length})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNewCampCreatives([
+                        ...newCampCreatives,
+                        {
+                          headline: '',
+                          destinationUrl: newCampCreatives[0]?.destinationUrl || '',
+                          adFormat: (['banner', 'video', 'interstitial', 'card'] as const)[newCampCreatives.length % 4],
+                          mediaFormat: 'image',
+                        },
+                      ])
+                    }
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--badge-bg)',
+                      border: '1px solid var(--border-subtle)',
+                      color: 'var(--color-crimson)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Plus style={{ width: 14, height: 14 }} /> Add Another Ad Format
+                  </button>
+                </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Destination URL</label>
-                <input
-                  type="url"
-                  required
-                  value={newCampUrl}
-                  onChange={(e) => setNewCampUrl(e.target.value)}
-                  placeholder="https://yourwebsite.com/landing"
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {newCampCreatives.map((crt, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-subtle)',
+                        backgroundColor: 'var(--bg-surface)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                          Ad #{idx + 1}
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <select
+                            value={crt.adFormat}
+                            onChange={(e: any) => {
+                              const updated = [...newCampCreatives];
+                              updated[idx].adFormat = e.target.value;
+                              setNewCampCreatives(updated);
+                            }}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid var(--border-subtle)',
+                              backgroundColor: 'var(--bg-page)',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              color: 'var(--color-crimson)',
+                            }}
+                          >
+                            <option value="card">Card Ad</option>
+                            <option value="banner">Banner (728x90)</option>
+                            <option value="video">Video Ad (16:9/9:16)</option>
+                            <option value="interstitial">Interstitial Fullscreen</option>
+                          </select>
+                          {newCampCreatives.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setNewCampCreatives(newCampCreatives.filter((_, i) => i !== idx))}
+                              style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            >
+                              <X style={{ width: 14, height: 14 }} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <input
+                        type="text"
+                        required
+                        placeholder={`Headline copy for ${crt.adFormat.toUpperCase()} ad`}
+                        value={crt.headline}
+                        onChange={(e) => {
+                          const updated = [...newCampCreatives];
+                          updated[idx].headline = e.target.value;
+                          setNewCampCreatives(updated);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--border-subtle)',
+                          backgroundColor: 'var(--bg-page)',
+                          fontSize: '13px',
+                          color: 'var(--text-primary)',
+                        }}
+                      />
+
+                      <input
+                        type="url"
+                        required
+                        placeholder="Click Destination URL"
+                        value={crt.destinationUrl}
+                        onChange={(e) => {
+                          const updated = [...newCampCreatives];
+                          updated[idx].destinationUrl = e.target.value;
+                          setNewCampCreatives(updated);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--border-subtle)',
+                          backgroundColor: 'var(--bg-page)',
+                          fontSize: '13px',
+                          color: 'var(--text-primary)',
+                        }}
+                      />
+
+                      {/* File / Media Asset Upload (Firebase Bucket: 750KB Img, 20MB Vid, No Server Compression) */}
+                      <div
+                        style={{
+                          border: '1px dashed var(--border-subtle)',
+                          borderRadius: '6px',
+                          padding: '10px',
+                          backgroundColor: 'var(--bg-page)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                            {crt.adFormat === 'video' ? 'Video Creative (MP4/WEBM/Animated GIF <= 20MB)' : 'Photo Creative (JPG/PNG/WEBP/AVIF/Static GIF <= 750KB)'}
+                          </span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            Firebase Storage · No Server Optimization
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="file"
+                            accept={crt.adFormat === 'video' ? 'video/mp4,video/webm,image/gif' : 'image/jpeg,image/png,image/webp,image/avif,image/gif'}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+
+                              // Browser compatibility hints for advertiser
+                              if (file.type === 'video/webm') {
+                                alert('Format Note: WebM has partial hardware acceleration on older iOS/Safari browsers. MP4 is recommended for maximum reach.');
+                              }
+
+                              // Strict client-side validation
+                              const isVideo = file.type.startsWith('video/') || (file.type === 'image/gif' && crt.adFormat === 'video');
+                              const maxBytes = isVideo ? 20 * 1024 * 1024 : 750 * 1024;
+                              if (file.size > maxBytes) {
+                                const limitText = isVideo ? '20MB' : '750KB';
+                                const actualText = isVideo
+                                  ? `${(file.size / (1024 * 1024)).toFixed(1)}MB`
+                                  : `${(file.size / 1024).toFixed(1)}KB`;
+                                alert(`Upload rejected: File size is ${actualText}, exceeding the ${limitText} platform restriction. Server optimization is disabled; please resize or encode your file locally.`);
+                                e.target.value = '';
+                                return;
+                              }
+
+                              const formData = new FormData();
+                              formData.append('file', file);
+
+                              try {
+                                const uploadRes = await fetch(`${API_BASE}/api/v1/uploads/direct`, {
+                                  method: 'POST',
+                                  body: formData,
+                                });
+                                if (uploadRes.ok) {
+                                  const json = await uploadRes.json();
+                                  const updated = [...newCampCreatives];
+                                  if (isVideo) {
+                                    updated[idx].videoUrl = json.data.cdnUrl;
+                                    updated[idx].mediaFormat = 'video';
+                                  } else {
+                                    updated[idx].imageUrl = json.data.cdnUrl;
+                                    updated[idx].mediaFormat = 'image';
+                                  }
+                                  setNewCampCreatives(updated);
+                                } else {
+                                  const errJson = await uploadRes.json().catch(() => null);
+                                  alert(errJson?.message || 'File upload failed. Ensure file meets restrictions.');
+                                }
+                              } catch {
+                                alert('Network error uploading asset to Firebase bucket.');
+                              }
+                            }}
+                            style={{ fontSize: '11px', color: 'var(--text-secondary)' }}
+                          />
+                        </div>
+                        {(crt.imageUrl || crt.videoUrl) && (
+                          <div style={{ fontSize: '11px', color: '#10B981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                            <CheckCircle2 style={{ width: 12, height: 12 }} /> Uploaded to Firebase: {(crt.imageUrl || crt.videoUrl)?.substring(0, 48)}...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <button
@@ -1734,7 +2098,7 @@ export default function AdsPlatformApp() {
                 }}
               >
                 {isSubmitting && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
-                {isSubmitting ? 'Launching Campaign...' : 'Launch Campaign'}
+                {isSubmitting ? 'Launching Campaign...' : `Launch Campaign with ${newCampCreatives.length} Ad Format${newCampCreatives.length > 1 ? 's' : ''}`}
               </button>
             </form>
           </div>

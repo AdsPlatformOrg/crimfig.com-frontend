@@ -12,6 +12,7 @@ interface CreativeToReplace {
   destinationUrl: string;
   imageUrl?: string;
   videoUrl?: string;
+  adFormat?: 'banner' | 'card' | 'video' | 'interstitial';
   mediaFormat?: 'image' | 'gif' | 'video';
   rejectionReason?: string;
 }
@@ -33,6 +34,7 @@ export function ReplaceCreativeModal({
   const [bodyText, setBodyText] = useState(creative?.bodyText || '');
   const [ctaText, setCtaText] = useState(creative?.ctaText || 'Learn More');
   const [destinationUrl, setDestinationUrl] = useState(creative?.destinationUrl || '');
+  const [adFormat, setAdFormat] = useState<'banner' | 'card' | 'video' | 'interstitial'>(creative?.adFormat || 'card');
   const [mediaFormat, setMediaFormat] = useState<'image' | 'gif' | 'video'>(creative?.mediaFormat || 'image');
   const [imageUrl, setImageUrl] = useState(creative?.imageUrl || '');
   const [videoUrl, setVideoUrl] = useState(creative?.videoUrl || '');
@@ -52,6 +54,7 @@ export function ReplaceCreativeModal({
         bodyText,
         ctaText,
         destinationUrl,
+        adFormat,
         mediaFormat,
         imageUrl: mediaFormat === 'video' ? undefined : imageUrl,
         videoUrl: mediaFormat === 'video' ? videoUrl : undefined,
@@ -166,10 +169,39 @@ export function ReplaceCreativeModal({
             </div>
           </div>
 
+          {/* Ad Format Picker */}
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Ad Display Format
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+              {(['card', 'banner', 'video', 'interstitial'] as const).map((fmt) => (
+                <button
+                  key={fmt}
+                  type="button"
+                  onClick={() => setAdFormat(fmt)}
+                  style={{
+                    padding: '8px 8px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-subtle)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    backgroundColor: adFormat === fmt ? 'var(--color-crimson)' : 'var(--badge-bg)',
+                    color: adFormat === fmt ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  {fmt}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Media Format Picker */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Media Format
+              Media Asset Type
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {(['image', 'gif', 'video'] as const).map((fmt) => (
