@@ -35,7 +35,7 @@ export function LandingFooter() {
               style={{ marginBottom: '14px' }}
             />
             <p style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--text-muted)' }}>
-              High-throughput central identity, OAuth2 server, and enterprise multi-factor authentication for the
+              Unified single sign-on, team workspaces, and two-step verification for the entire
               CrimFig digital ecosystem.
             </p>
           </div>
@@ -89,12 +89,12 @@ export function LandingFooter() {
           {/* Security & Compliance */}
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>
-              Security Standards
+              Security & Trust
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-muted)' }}>
-              <li>• RFC 6749 OAuth2 with PKCE</li>
-              <li>• RFC 6238 TOTP Multi-Factor</li>
-              <li>• Argon2id Key Derivation</li>
+              <li>• Enterprise Single Sign-On</li>
+              <li>• Two-Step Verification (2FA)</li>
+              <li>• Encrypted Data Protection</li>
               <li>• NDPA 2023 Privacy Compliant</li>
             </ul>
           </div>

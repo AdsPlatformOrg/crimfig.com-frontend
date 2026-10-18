@@ -48,8 +48,7 @@ export function LandingSecurityDemo() {
             How CrimFig Protects Your Identity
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Experience how the authentication pipeline coordinates between applications, biometric MFA keys, and
-            enterprise organization governance.
+            See how CrimFig delivers smooth access for individuals while giving businesses centralized control and enterprise-grade security.
           </p>
 
           {/* Tab Selector */}
@@ -82,7 +81,7 @@ export function LandingSecurityDemo() {
               }}
             >
               <KeyRound style={{ width: 15, height: 15 }} />
-              <span>Universal SSO</span>
+              <span>Single Sign-On (SSO)</span>
             </button>
 
             <button
@@ -104,7 +103,7 @@ export function LandingSecurityDemo() {
               }}
             >
               <Smartphone style={{ width: 15, height: 15 }} />
-              <span>TOTP Multi-Factor</span>
+              <span>Two-Step Verification</span>
             </button>
 
             <button
@@ -126,7 +125,7 @@ export function LandingSecurityDemo() {
               }}
             >
               <Building2 style={{ width: 15, height: 15 }} />
-              <span>Organization Workspaces</span>
+              <span>Team & Agency Workspaces</span>
             </button>
           </div>
         </div>
@@ -162,10 +161,10 @@ export function LandingSecurityDemo() {
                   </div>
                   <div>
                     <h4 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                      OAuth2 Authorization Pipeline
+                      Unified Single Sign-On
                     </h4>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                      Cross-domain secure token negotiation with PKCE protection
+                      One account unlocks every service across the CrimFig ecosystem
                     </p>
                   </div>
                 </div>
@@ -199,12 +198,12 @@ export function LandingSecurityDemo() {
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>SESSION STORAGE</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>FOR INDIVIDUALS</span>
                   <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '4px', color: 'var(--text-primary)' }}>
-                    HttpOnly Cookie
+                    One Unified Profile
                   </div>
                   <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                    SameSite=Strict · Secure · Inaccessible to XSS
+                    Switch between Ads, Content & Billing without repeating logins
                   </p>
                 </div>
 
@@ -216,12 +215,12 @@ export function LandingSecurityDemo() {
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>API ACCESS TOKEN</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>FOR BUSINESSES</span>
                   <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '4px', color: 'var(--text-primary)' }}>
-                    In-Memory JWT
+                    Team Workspaces
                   </div>
                   <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                    15-minute TTL · Auto-refreshed invisibly
+                    Manage team permissions, campaigns, and budgets in one place
                   </p>
                 </div>
 
@@ -233,12 +232,12 @@ export function LandingSecurityDemo() {
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>INTEGRATED SERVICES</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>CONNECTED HUBS</span>
                   <div style={{ fontWeight: 700, fontSize: '14px', marginTop: '4px', color: 'var(--text-primary)' }}>
-                    5 Subdomains
+                    All 5 Platforms
                   </div>
                   <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                    ads, billing, reels, stream, chat
+                    Ads, Billing, Reels, Stream, and Chat seamlessly unified
                   </p>
                 </div>
               </div>
@@ -258,7 +257,7 @@ export function LandingSecurityDemo() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <ShieldCheck style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
                   <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    One click logs you into all portals without re-entering credentials.
+                    Sign in once to manage campaigns, monitor revenue, stream media, and interact across all platforms.
                   </span>
                 </div>
               </div>
@@ -284,10 +283,10 @@ export function LandingSecurityDemo() {
                   </div>
                   <div>
                     <h4 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                      RFC 6238 TOTP Multi-Factor Protection
+                      Two-Step Account Verification
                     </h4>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                      Guaranteed protection against compromised passwords and phishing
+                      Add an extra layer of defense to protect your earnings, billing wallet, and brand assets
                     </p>
                   </div>
                 </div>
@@ -341,7 +340,7 @@ export function LandingSecurityDemo() {
               </div>
 
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', margin: 0 }}>
-                Includes 10 hashed, single-use emergency backup codes for offline recovery.
+                Includes 10 printable emergency backup codes so you always retain access to your account.
               </p>
             </div>
           )}
@@ -365,10 +364,10 @@ export function LandingSecurityDemo() {
                   </div>
                   <div>
                     <h4 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                      Multi-Tenant Organization Workspaces
+                      Team & Agency Workspaces
                     </h4>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                      Collaborate on campaigns, billing wallets, and channels with role isolation
+                      Manage campaigns, advertising budgets, and creator channels with role-based access
                     </p>
                   </div>
                 </div>

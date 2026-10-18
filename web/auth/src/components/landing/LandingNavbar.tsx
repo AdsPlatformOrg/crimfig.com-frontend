@@ -36,7 +36,7 @@ export function LandingNavbar() {
           size={42}
           app="Auth"
           appBadge="SSO"
-          subtext="Central Identity, Passkeys & Enterprise MFA"
+          subtext="Central Identity, Business Accounts & Security"
           href="/"
         />
 
@@ -65,15 +65,15 @@ export function LandingNavbar() {
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
           >
-            Security & MFA
+            Security & 2FA
           </a>
           <a
-            href="#oauth"
+            href="#security"
             style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.15s ease' }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
           >
-            Developer OAuth2
+            Team Workspaces
           </a>
           <a
             href="#faq"

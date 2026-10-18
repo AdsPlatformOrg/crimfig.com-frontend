@@ -7,39 +7,39 @@ export function LandingFeatures() {
   const features = [
     {
       icon: <Lock style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: '3-Layer Hybrid Auth Model',
+      title: 'Zero-Friction Single Sign-On',
       description:
-        'HttpOnly SameSite strict session cookies combined with short-lived in-memory JWT tokens. Zero tokens stored in vulnerable localStorage or sessionStorage.',
+        'Log in once on your phone or desktop and navigate between Ads, Billing, Reels, Stream, and Chat without repeatedly entering credentials.',
     },
     {
       icon: <Smartphone style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Time-Based One-Time Passwords (MFA)',
+      title: 'Two-Step Verification (2FA)',
       description:
-        'Standard RFC 6238 TOTP engine. Compatible with Google Authenticator, Microsoft Authenticator, 1Password, and physical security keys.',
+        'Safeguard your wallet and business assets with Google Authenticator, Apple Passwords, Authy, or Microsoft Authenticator.',
     },
     {
       icon: <Users style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Multi-Owner Organizations & Workspaces',
+      title: 'Team & Agency Workspaces',
       description:
-        'Manage campaigns, billing, and content as an organization. Invite team members with role-based permissions (Owner, Admin, Manager, Member).',
+        'Collaborate across marketing agencies and businesses. Delegate campaign publishing, wallet funding, and analytics without sharing personal passwords.',
     },
     {
       icon: <Cpu style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'High-Throughput OAuth2 & OIDC',
+      title: 'Instant Cross-Device Sync',
       description:
-        'RFC 6749 compliant Authorization Code Grant with PKCE protection. Built for sub-millisecond token issuance and identity verification.',
+        'Switch effortlessly between your phone, tablet, and office computer. Your profile, balances, and permissions remain synchronized in real time.',
     },
     {
       icon: <RefreshCw style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Active Session Governance & Device Revocation',
+      title: 'Active Device & Login History',
       description:
-        'Real-time visibility into all active device sessions, IP geolocations, and browser user-agents. Instant single-click global sign-out.',
+        'View all authorized devices and locations connected to your profile. Terminate unrecognized logins with a single click from any smartphone or browser.',
     },
     {
       icon: <Database style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'NDPA 2023 & GDPR Privacy Compliance',
+      title: 'Strict Privacy & Data Protection',
       description:
-        'Strict Nigerian Data Protection Act (NDPA) and global privacy compliance. Sensitive personal records encrypted at rest with zero data sharing.',
+        'Fully compliant with the Nigerian Data Protection Act (NDPA) and global privacy standards. Sensitive personal records remain confidential with zero third-party data sharing.',
     },
   ];
 
@@ -66,8 +66,7 @@ export function LandingFeatures() {
             Engineered for Uncompromising Security & Scale
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Every interaction across the CrimFig Ecosystem is protected by multi-layered defensive cryptography and
-            strict identity safeguards.
+            Designed for individuals who value privacy and companies that need reliable, high-integrity access management.
           </p>
         </div>
 

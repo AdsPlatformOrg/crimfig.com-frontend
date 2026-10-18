@@ -56,7 +56,7 @@ export function LandingHero() {
             }}
           >
             <ShieldCheck style={{ width: 15, height: 15, color: 'var(--color-crimson)' }} />
-            <span>Enterprise-Grade OAuth2 & Multi-Factor Security</span>
+            <span>Unified Account & Business Security</span>
           </div>
 
           {/* Heading */}
@@ -92,9 +92,9 @@ export function LandingHero() {
               margin: '0 auto 40px',
             }}
           >
-            Seamlessly authenticate across <strong>Ads</strong>, <strong>Billing</strong>, <strong>Reels</strong>,{' '}
-            <strong>Stream</strong>, and <strong>Chat</strong>. Protected by 3-layer hybrid authentication,
-            hardware-grade TOTP MFA, and multi-tenant organization access control.
+            Seamlessly manage your <strong>Ads</strong>, <strong>Billing</strong>, <strong>Reels</strong>,{' '}
+            <strong>Stream</strong>, and <strong>Chat</strong> with a single sign-in. Built with two-step login protection,
+            multi-user business workspaces, and verified privacy controls.
           </p>
 
           {/* CTAs */}
@@ -172,11 +172,11 @@ export function LandingHero() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
                 <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Zero Password Leaks
+                  Bank-Grade Protection
                 </span>
               </div>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Argon2id password hashing + hardware-accelerated crypto parameters.
+                Advanced password encryption keeping your credentials confidential and safe.
               </p>
             </div>
 
@@ -191,11 +191,11 @@ export function LandingHero() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
                 <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Multi-Factor TOTP
+                  Two-Step Verification
                 </span>
               </div>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Google Authenticator, Apple Passkeys, Authy & hashed single-use recovery codes.
+                Compatible with Google Authenticator, Apple, Authy & printable recovery backup keys.
               </p>
             </div>
 
@@ -210,11 +210,11 @@ export function LandingHero() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
                 <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Multi-Owner Orgs
+                  Team & Agency Workspaces
                 </span>
               </div>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Workspace collaboration with fine-grained roles for enterprise teams and agencies.
+                Seamless collaboration with custom roles for brands, agencies, and marketing teams.
               </p>
             </div>
           </div>
