@@ -122,7 +122,7 @@ interface InteractionLog {
   timestamp: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app';
+const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app');
 
 export default function AdsPlatformApp() {
   // Top Level View: Landing Page vs Management Console

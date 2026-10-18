@@ -73,7 +73,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                 </a>
               </li>
               <li>
-                <a href="https://billing-frontend-production-4256.up.railway.app" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <a href="https://billing.crimfig.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   Billing & Escrow <ExternalLink style={{ width: 12, height: 12 }} />
                 </a>
               </li>

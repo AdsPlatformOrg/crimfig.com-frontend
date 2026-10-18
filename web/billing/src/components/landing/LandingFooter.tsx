@@ -79,7 +79,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               Ecosystem
             </div>
             <a
-              href="https://ads-frontend-production-49bd.up.railway.app"
+              href="https://ads.crimfig.com"
               target="_blank"
               rel="noreferrer"
               style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}

@@ -1,10 +1,10 @@
 import { AdsDisputeItem, CreateDisputePayload } from '../types/disputes';
 
-const API_BASE = process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app';
+const getApiBase = () => (typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app'));
 
 export async function fetchDisputes(role: 'advertiser' | 'promoter' = 'advertiser'): Promise<AdsDisputeItem[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/disputes?role=${role}`, {
+    const res = await fetch(`${getApiBase()}/api/v1/disputes?role=${role}`, {
       headers: { 'x-user-id': role === 'advertiser' ? 'demo-advertiser' : 'demo-promoter' },
     });
     if (res.ok) {
@@ -77,7 +77,7 @@ export async function fetchDisputes(role: 'advertiser' | 'promoter' = 'advertise
 }
 
 export async function createDispute(payload: CreateDisputePayload): Promise<AdsDisputeItem> {
-  const res = await fetch(`${API_BASE}/api/v1/disputes`, {
+  const res = await fetch(`${getApiBase()}/api/v1/disputes`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

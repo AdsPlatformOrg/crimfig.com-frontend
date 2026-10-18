@@ -92,7 +92,7 @@ interface BillingConsoleProps {
   initialTab?: 'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards';
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_BILLING_API_URL || 'https://billing-api-production-bb4c.up.railway.app';
+const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_BILLING_API_URL || 'https://billing-api-production-bb4c.up.railway.app');
 
 export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: BillingConsoleProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards'>(initialTab);
@@ -546,7 +546,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <a
-              href="https://ads-frontend-production-49bd.up.railway.app"
+              href="https://ads.crimfig.com"
               target="_blank"
               rel="noreferrer"
               style={{

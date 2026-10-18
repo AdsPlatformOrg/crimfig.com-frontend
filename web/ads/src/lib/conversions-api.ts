@@ -1,13 +1,12 @@
 import { AdsConversionItem, AdvertiserApiKeyItem } from '../types/conversions';
 
-const API_BASE = process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app';
+const getApiBase = () => (typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app'));
 
 export async function fetchConversions(campaignId?: string): Promise<AdsConversionItem[]> {
   try {
-    const url = new URL(`${API_BASE}/api/v1/conversions`);
-    if (campaignId) url.searchParams.set('campaignId', campaignId);
+    const url = `${getApiBase()}/api/v1/conversions${campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : ''}`;
 
-    const res = await fetch(url.toString(), {
+    const res = await fetch(url, {
       headers: { 'x-user-id': 'demo-advertiser' },
     });
     if (res.ok) {
@@ -124,7 +123,7 @@ export async function fetchConversions(campaignId?: string): Promise<AdsConversi
 
 export async function fetchApiKeys(): Promise<AdvertiserApiKeyItem[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/advertisers/api-keys`, {
+    const res = await fetch(`${getApiBase()}/api/v1/advertisers/api-keys`, {
       headers: { 'x-user-id': 'demo-advertiser' },
     });
     if (res.ok) {
@@ -152,7 +151,7 @@ export async function fetchApiKeys(): Promise<AdvertiserApiKeyItem[]> {
 }
 
 export async function createApiKey(name: string, scopes = 'conversions:write'): Promise<AdvertiserApiKeyItem> {
-  const res = await fetch(`${API_BASE}/api/v1/advertisers/api-keys`, {
+  const res = await fetch(`${getApiBase()}/api/v1/advertisers/api-keys`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -168,7 +167,7 @@ export async function createApiKey(name: string, scopes = 'conversions:write'): 
 }
 
 export async function revokeApiKey(id: string): Promise<boolean> {
-  const res = await fetch(`${API_BASE}/api/v1/advertisers/api-keys/${id}`, {
+  const res = await fetch(`${getApiBase()}/api/v1/advertisers/api-keys/${id}`, {
     method: 'DELETE',
     headers: { 'x-user-id': 'demo-advertiser' },
   });
@@ -176,7 +175,7 @@ export async function revokeApiKey(id: string): Promise<boolean> {
 }
 
 export async function reverseConversion(id: string, reason: string): Promise<boolean> {
-  const res = await fetch(`${API_BASE}/api/v1/conversions/${id}/reverse`, {
+  const res = await fetch(`${getApiBase()}/api/v1/conversions/${id}/reverse`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
