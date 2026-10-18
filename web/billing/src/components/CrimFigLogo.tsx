@@ -89,8 +89,6 @@ export function CrimFigLogo({
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        borderRadius: `${Math.round(size * 0.28)}px`,
-        boxShadow: 'var(--shadow-crimson)',
         objectFit: 'contain',
         display: centered ? 'block' : 'inline-block',
         margin: centered ? '0 auto' : undefined,
