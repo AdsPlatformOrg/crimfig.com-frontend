@@ -37,12 +37,12 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             />
 
             <p style={{ margin: 0, lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-              Universal multi-currency escrow, instant Nigerian bank payouts, automated subscriptions, and creator rewards for the CrimFig ecosystem.
+              Wallet funding, campaign escrow and transaction visibility for the CrimFig ecosystem. Additional payment and rewards features are in development.
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-success)', fontSize: '12px', fontWeight: 600 }}>
               <ShieldCheck style={{ width: 14, height: 14 }} />
-              <span>PCI-DSS Level 1 &amp; NIBSS Rails</span>
+              <span>Payment availability shown in dashboard</span>
             </div>
           </div>
 
@@ -105,9 +105,9 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Compliance &amp; Terms
             </div>
-            <span style={{ color: 'var(--text-secondary)' }}>CBN Regulatory Alignment</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Provider and rollout checks pending</span>
             <span style={{ color: 'var(--text-secondary)' }}>Escrow &amp; Dispute Policy</span>
-            <span style={{ color: 'var(--text-secondary)' }}>NUBAN Real-Time Settlement</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Bank Account Availability</span>
             <span style={{ color: 'var(--text-secondary)' }}>Privacy &amp; Data Security</span>
           </div>
         </div>
@@ -127,7 +127,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
           }}
         >
           <div>
-            &copy; 2026 CrimFig Ecosystem Ltd. All rights reserved. Registered under Nigerian Corporate Affairs Commission.
+            &copy; 2026 CrimFig Ecosystem Ltd. All rights reserved. Account and feature availability may vary.
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

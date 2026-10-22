@@ -91,7 +91,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
                 display: 'inline-block',
               }}
             >
-              Earn with every impression.
+              Review verified campaign activity.
             </span>
           </h1>
 
@@ -105,7 +105,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
               maxWidth: '680px',
             }}
           >
-            CrimFig Ads connects forward-thinking advertisers with websites, mobile applications, and verified social creators. High conversion, sub-15ms embed delivery, and transparent deferred verification.
+            CrimFig Ads connects forward-thinking advertisers with websites, mobile applications, and verified social creators. Campaign management and ownership checks are available; publisher delivery and funded settlement remain in development.
           </p>
 
           {/* Dual Action CTAs */}
@@ -241,7 +241,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-success)', fontWeight: 600 }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-success)' }} />
-              Live Serving Sandbox
+              Creative Preview Only
             </div>
           </div>
 
@@ -260,7 +260,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
                 CrimFig HyperSpeed Cloud Infrastructure
               </h3>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 20px' }}>
-                Deploy globally distributed endpoints with sub-15ms edge latency. 99.99% uptime guaranteed with zero cold starts.
+                Illustrative creative preview. No measured latency, availability SLA or hosting guarantee is offered here.
               </p>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <a
@@ -319,8 +319,8 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
                 </div>
               </div>
               <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.6)', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>Real-Time Performance</span>
-                <span style={{ color: '#34D399', fontWeight: 600 }}>4.82% Average CTR</span>
+                <span>Illustrative Performance</span>
+                <span style={{ color: '#34D399', fontWeight: 600 }}>4.82% Example CTR</span>
               </div>
             </div>
           </div>

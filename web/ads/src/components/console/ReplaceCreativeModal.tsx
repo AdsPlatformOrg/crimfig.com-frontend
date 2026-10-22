@@ -1,4 +1,7 @@
 'use client';
+import { useDialog } from '../../lib/use-dialog';
+import { MediaPreview } from '../MediaPreview';
+import { sessionFetch } from '../../lib/session';
 
 import React, { useState } from 'react';
 import { X, AlertCircle, RefreshCw, Upload, CheckCircle2 } from 'lucide-react';
@@ -41,6 +44,9 @@ export function ReplaceCreativeModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fieldId = React.useId();
+  const panel = useDialog(isOpen && Boolean(creative), onClose);
+
   if (!isOpen || !creative) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,7 +68,7 @@ export function ReplaceCreativeModal({
 
       // Call API
       const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app');
-      const res = await fetch(`${API_BASE}/api/v1/campaigns/creatives/${creative.id}/replace`, {
+      const res = await sessionFetch(`${API_BASE}/api/v1/campaigns/creatives/${creative.id}/replace`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -73,12 +79,11 @@ export function ReplaceCreativeModal({
       }
 
       const data = await res.json();
-      onReplaceSuccess(data.data || payload);
+      if (!data.data?.id) throw new Error('Replacement could not be confirmed.');
+      onReplaceSuccess(data.data);
       onClose();
     } catch (err: any) {
-      // Mock success fallback for offline / preview
-      onReplaceSuccess({ ...creative, headline, destinationUrl, reviewStatus: 'pending' });
-      onClose();
+      setError(err instanceof Error ? err.message : 'Replacement could not be confirmed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -91,16 +96,17 @@ export function ReplaceCreativeModal({
         inset: 0,
         backgroundColor: 'rgba(15, 23, 42, 0.65)',
         backdropFilter: 'blur(4px)',
-        zIndex: 60,
+        zIndex: 1300,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
       }}
     >
-      <div
+      <div ref={panel} role="dialog" aria-modal="true" aria-label="Replace Rejected Creative Asset" tabIndex={-1}
         style={{
           width: '100%',
+          boxSizing: 'border-box',
           maxWidth: '540px',
           borderRadius: '16px',
           backgroundColor: 'var(--bg-elevated)',
@@ -130,6 +136,7 @@ export function ReplaceCreativeModal({
           </div>
           <button
             type="button"
+            aria-label="Close replacement dialog"
             onClick={onClose}
             style={{
               background: 'none',
@@ -229,11 +236,12 @@ export function ReplaceCreativeModal({
 
           {/* Media URL Input */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <label htmlFor={`${fieldId}-media`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               {mediaFormat === 'video' ? 'MP4 Video URL' : 'Image / GIF Asset URL'}
             </label>
-            <input
-              type="url"
+            <input id={`${fieldId}-media`}
+              type="text"
+              inputMode="url"
               required
               value={mediaFormat === 'video' ? videoUrl : imageUrl}
               onChange={(e) => (mediaFormat === 'video' ? setVideoUrl(e.target.value) : setImageUrl(e.target.value))}
@@ -251,12 +259,14 @@ export function ReplaceCreativeModal({
             />
           </div>
 
+          {(mediaFormat === 'video' ? videoUrl : imageUrl) && <MediaPreview source={mediaFormat === 'video' ? videoUrl : imageUrl} />}
+
           {/* Headline */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <label htmlFor={`${fieldId}-headline`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Headline (Max 100 characters)
             </label>
-            <input
+            <input id={`${fieldId}-headline`}
               type="text"
               required
               maxLength={100}
@@ -277,10 +287,10 @@ export function ReplaceCreativeModal({
 
           {/* Destination URL */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <label htmlFor={`${fieldId}-destination`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Click Destination URL
             </label>
-            <input
+            <input id={`${fieldId}-destination`}
               type="url"
               required
               value={destinationUrl}
@@ -300,10 +310,10 @@ export function ReplaceCreativeModal({
 
           {/* CTA Text */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <label htmlFor={`${fieldId}-cta`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Call-to-Action (CTA) Button Text
             </label>
-            <input
+            <input id={`${fieldId}-cta`}
               type="text"
               value={ctaText}
               onChange={(e) => setCtaText(e.target.value)}

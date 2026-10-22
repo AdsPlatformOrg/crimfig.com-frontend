@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AdsDisputeItem } from '../../../types/disputes';
+import { apiData, arrayData } from '../../../lib/api-data';
 import { fetchDisputes, createDispute } from '../../../lib/disputes-api';
 
 interface DisputesTabProps {
@@ -13,17 +14,21 @@ interface DisputesTabProps {
 export function DisputesTab({
   role = 'advertiser',
   campaigns = [],
-  websites = [],
 }: DisputesTabProps) {
   const [disputes, setDisputes] = useState<AdsDisputeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [placementOptions, setPlacementOptions] = useState<Array<{ id: string; label: string }>>([]);
 
   // Form State
   const [scope, setScope] = useState<'campaign' | 'placement' | 'general'>(role === 'advertiser' ? 'campaign' : 'placement');
   const [selectedCampaignId, setSelectedCampaignId] = useState(campaigns[0]?.id || '');
-  const [selectedPlacementId, setSelectedPlacementId] = useState(websites[0]?.id || '');
+  const [selectedPlacementId, setSelectedPlacementId] = useState('');
   const [periodFrom, setPeriodFrom] = useState(new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]);
   const [periodTo, setPeriodTo] = useState(new Date().toISOString().split('T')[0]);
   const [reason, setReason] = useState(
@@ -37,18 +42,28 @@ export function DisputesTab({
   const [viewingDispute, setViewingDispute] = useState<AdsDisputeItem | null>(null);
 
   useEffect(() => {
+    let active = true;
     async function load() {
-      setIsLoading(true);
-      const data = await fetchDisputes(role);
-      setDisputes(data);
-      setIsLoading(false);
+      setIsLoading(true); setLoadError(null);
+      try {
+        const [data, owned] = await Promise.all([fetchDisputes(role), role === 'promoter' ? apiData('/api/v1/placements') : Promise.resolve([])]);
+        if (active) {
+          setDisputes(data);
+          const choices = arrayData<any>(owned).map(item => ({ id: item.id, label: item.campaign?.title || item.id }));
+          setPlacementOptions(choices); setSelectedPlacementId(choices[0]?.id || '');
+        }
+      }
+      catch (err) { if (active) setLoadError(err instanceof Error ? err.message : 'Disputes unavailable.'); }
+      finally { if (active) setIsLoading(false); }
     }
     load();
-  }, [role]);
+    return () => { active = false; };
+  }, [role, loadAttempt]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!details.trim()) return;
+    if ((scope === 'campaign' && !selectedCampaignId) || (scope === 'placement' && !selectedPlacementId)) { setError('Choose an owned campaign or placement for this dispute.'); return; }
 
     setIsSubmitting(true);
     try {
@@ -66,7 +81,7 @@ export function DisputesTab({
       setIsModalOpen(false);
       setDetails('');
     } catch (err) {
-      console.error('Failed to create dispute:', err);
+      setError(err instanceof Error ? err.message : 'Dispute creation could not be confirmed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,8 +93,14 @@ export function DisputesTab({
 
   const underReviewCount = disputes.filter(d => d.status === 'open' || d.status === 'under_review').length;
 
+  if (loadError) return <div role="alert" style={{ padding: 24, color: 'var(--text-secondary)' }}>
+    <p>{loadError}</p>
+    <button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</button>
+  </div>;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {error && <p role="alert">{error}</p>}
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -359,7 +380,7 @@ export function DisputesTab({
                 </div>
               )}
 
-              {scope === 'placement' && websites.length > 0 && (
+              {scope === 'placement' && placementOptions.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                     Select Placement / Domain
@@ -377,8 +398,8 @@ export function DisputesTab({
                       background: 'var(--input-bg, #FFFFFF)',
                     }}
                   >
-                    {websites.map((w) => (
-                      <option key={w.id} value={w.id}>{w.domain}</option>
+                    {placementOptions.map((w) => (
+                      <option key={w.id} value={w.id}>{w.label}</option>
                     ))}
                   </select>
                 </div>

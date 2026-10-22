@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_BILLING_API_URL ||
       (process.env.NODE_ENV === 'production'
         ? 'https://billing-api-production-bb4c.up.railway.app'
-        : 'http://127.0.0.1:4000');
+        : 'http://127.0.0.1:3008');
 
     return [
       {

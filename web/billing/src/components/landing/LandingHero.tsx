@@ -81,7 +81,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               margin: 0,
             }}
           >
-            Multi-Currency Escrow,{' '}
+            Wallet Funding,{' '}
             <span
               style={{
                 background: 'var(--gradient-crimson)',
@@ -89,9 +89,9 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Instant Bank Rails
+              Campaign Escrow
             </span>{' '}
-            &amp; Automated Rewards
+            &amp; Account Visibility
           </h1>
 
           {/* Subheading */}
@@ -104,7 +104,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               maxWidth: '620px',
             }}
           >
-            Seamlessly move funds across USD &amp; NGN. Fund wallets with card tokens, automate creator payouts in under 5 seconds to Nigerian NUBAN banks, and unlock ecosystem-wide rewards from Ads, Video tips, and referrals.
+            Review wallet funding, campaign escrow and transaction history in one dashboard. Withdrawals, automated subscriptions and rewards redemption are currently unavailable.
           </p>
 
           {/* CTAs */}
@@ -187,15 +187,15 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <ShieldCheck style={{ width: 16, height: 16, color: 'var(--color-success)' }} />
-              <span>PCI-DSS Level 1 Encrypted</span>
+              <span>Authenticated Account Access</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Zap style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
-              <span>&lt; 5s Median NUBAN Payout</span>
+              <span>Withdrawals Currently Unavailable</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Building2 style={{ width: 16, height: 16, color: 'var(--color-info)' }} />
-              <span>CBN FX Transparent Index</span>
+              <span>Server-Confirmed Funding Quotes</span>
             </div>
           </div>
         </div>
@@ -255,7 +255,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                     Universal Wallet
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    Multi-App Escrow Active
+                    Illustrative Wallet Preview
                   </div>
                 </div>
               </div>
@@ -274,7 +274,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                 }}
               >
                 <CheckCircle2 style={{ width: 12, height: 12 }} />
-                <span>Live Rate: ₦{fxRate.toLocaleString()}/$</span>
+                <span>Example Rate: ₦{fxRate.toLocaleString()}/$</span>
               </div>
             </div>
 
@@ -333,10 +333,10 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
                   <Zap style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
-                  <span>Instant Payout</span>
+                  <span>Illustrative NGN Value</span>
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Auto-routed to GTBank, Access, Zenith or UBA via NUBAN.
+                  Illustrative conversion only. Bank withdrawals are unavailable.
                 </div>
               </div>
 
@@ -353,7 +353,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                   <span>Rewards Engine</span>
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Earn points from Ads share &amp; Video tips; redeem 1-click.
+                  Example only. Rewards issuance and redemption are not available.
                 </div>
               </div>
             </div>
@@ -404,7 +404,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                 }}
               >
                 <ArrowUpRight style={{ width: 15, height: 15 }} />
-                <span>Withdraw to NUBAN</span>
+                <span>Check Withdrawal Availability</span>
               </button>
             </div>
           </div>

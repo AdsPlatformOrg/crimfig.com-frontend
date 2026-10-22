@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { getApiUrl, clientConfig } from '@/lib/config';
+import { loginDestination } from '@/lib/login-return';
+import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 export default function LoginPage() {
@@ -18,7 +19,7 @@ export default function LoginPage() {
 
     try {
       const res = await fetch(getApiUrl('/api/v1/auth/login'), {
-        method: 'POST',
+        method: 'POST', credentials: 'include', redirect: 'error', signal: AbortSignal.timeout(10000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
@@ -26,20 +27,14 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');
 
+      const params = new URLSearchParams(window.location.search);
       if (data.requiresMfa) {
-        window.location.href = `/mfa-challenge?token=${encodeURIComponent(data.mfaChallengeToken)}`;
+        params.set('token', data.mfaChallengeToken);
+        window.location.assign(`/mfa-challenge?${params.toString()}`);
       } else {
-        // If there are redirect query parameters (OAuth flow)
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUri = urlParams.get('redirect_uri');
-        const clientId = urlParams.get('client_id');
-
-        if (clientId && redirectUri) {
-          window.location.href = `/consent?${urlParams.toString()}`;
-        } else {
-          window.location.href = '/dashboard';
-        }
+        window.location.assign(loginDestination(params));
       }
+
     } catch (err: any) {
       setError(err.message);
     } finally {

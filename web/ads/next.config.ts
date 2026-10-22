@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_ADS_API_URL ||
       (process.env.NODE_ENV === 'production'
         ? 'https://ads-api-production-d889.up.railway.app'
-        : 'http://127.0.0.1:4001');
+        : 'http://127.0.0.1:3004');
 
     return [
       {

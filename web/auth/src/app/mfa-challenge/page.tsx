@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { loginDestination } from '@/lib/login-return';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
@@ -24,7 +25,7 @@ function MfaChallengeContent() {
       }
 
       const res = await fetch(getApiUrl('/api/v1/mfa/verify'), {
-        method: 'POST',
+        method: 'POST', credentials: 'include', redirect: 'error', signal: AbortSignal.timeout(10000),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${mfaChallengeToken}`,
@@ -35,15 +36,8 @@ function MfaChallengeContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Verification failed');
 
-      // Check if there are OAuth parameters to redirect back to consent
-      const clientId = searchParams.get('client_id');
-      const redirectUri = searchParams.get('redirect_uri');
+      window.location.assign(loginDestination(new URLSearchParams(searchParams.toString())));
 
-      if (clientId && redirectUri) {
-        window.location.href = `/consent?${searchParams.toString()}`;
-      } else {
-        window.location.href = '/dashboard';
-      }
     } catch (err: any) {
       setError(err.message);
     } finally {

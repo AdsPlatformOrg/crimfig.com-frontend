@@ -26,8 +26,11 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         style={{
           maxWidth: '1280px',
           margin: '0 auto',
-          padding: '0 24px',
-          height: '72px',
+          padding: '12px 24px',
+          minHeight: '72px',
+          boxSizing: 'border-box',
+          flexWrap: 'wrap',
+          gap: '12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -39,7 +42,7 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
           size={42}
           app="Billing"
           appBadge="Fintech Engine"
-          subtext="Multi-Currency Escrow, Instant Payouts & Rewards"
+          subtext="Wallet Funding, Campaign Escrow & History"
         />
 
         {/* Navigation Anchor Links */}

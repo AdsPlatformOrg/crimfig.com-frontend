@@ -25,23 +25,23 @@ export function LandingPartners() {
   const securityPillars = [
     {
       icon: ShieldCheck,
-      title: 'PCI-DSS Level 1 Tokenization',
-      description: 'Zero card numbers or CVVs touch CrimFig servers. Payment credentials are tokenized directly within Level-1 audited vaults managed by Paystack & Stripe.'
+      title: 'Provider Checkout Consent',
+      description: 'Checkout uses Paystack. Saving a reusable payment authorization requires explicit consent; saved-card charging is unavailable.'
     },
     {
       icon: Lock,
-      title: '256-Bit TLS & At-Rest Encryption',
-      description: 'Bank-grade AES-256 encryption protects every stored token, transaction signature, and withdrawal instruction across distributed database replicas.'
+      title: 'Authenticated Financial Requests',
+      description: 'Dashboard requests require a verified account and owner checks. Deployment encryption and credential-storage controls require environment verification.'
     },
     {
       icon: Zap,
-      title: 'NIBSS Instant Payment (NIP) Clearing',
-      description: 'Direct interbank settlement routes verify account holder names in real-time before initiating payout transfers, eliminating misrouted transfers.'
+      title: 'Bank Account Resolution',
+      description: 'Supported account details can be checked before saving. This does not enable a payout or guarantee bank processing times.'
     },
     {
       icon: Server,
-      title: 'High-Availability Ledger SLA',
-      description: 'Distributed ledger architecture ensures 99.99% system availability, sub-second balance locking, and automated dispute resolution mechanisms.'
+      title: 'Recorded Funding Status',
+      description: 'Confirmed and pending transactions are distinguished in account history. No public availability SLA or automatic dispute resolution is promised.'
     }
   ];
 
@@ -85,10 +85,10 @@ export function LandingPartners() {
               margin: '0 0 16px',
             }}
           >
-            Bank-Grade Security &amp; Interbank Rails
+            Account Controls &amp; Provider Availability
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Every naira and dollar flowing through CrimFig Billing is protected by audited fintech protocols and direct integration with accredited commercial payment switches.
+            Account access, payment status and supported features are shown in the dashboard. Provider integrations and deployment controls require verification before live rollout.
           </p>
         </div>
 
@@ -157,15 +157,15 @@ export function LandingPartners() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Direct Commercial Payout Rails
+                Example Bank Directory
               </h3>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                Instant real-time NUBAN resolution across all licensed Nigerian deposit money banks.
+                Bank names below are examples. Use the dashboard provider list to check current availability.
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--color-success)', fontWeight: 600 }}>
               <CheckCircle2 style={{ width: 14, height: 14 }} />
-              <span>NIP Switch Status: 100% Operational</span>
+              <span>Payouts currently unavailable</span>
             </div>
           </div>
 
@@ -193,7 +193,7 @@ export function LandingPartners() {
                   {b.name}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
-                  <span>CBN: {b.code}</span>
+                  <span>Example code: {b.code}</span>
                   <span>{b.type}</span>
                 </div>
               </div>

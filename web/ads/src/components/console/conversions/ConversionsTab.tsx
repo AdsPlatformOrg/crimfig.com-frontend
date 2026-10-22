@@ -17,11 +17,14 @@ interface ConversionsTabProps {
   advertiserId?: string;
 }
 
-export function ConversionsTab({ advertiserId = 'adv_demo_9841' }: ConversionsTabProps) {
+export function ConversionsTab({ advertiserId = 'YOUR_ADVERTISER_ID' }: ConversionsTabProps) {
   const [subTab, setSubTab] = useState<'events' | 'pixel' | 'postback' | 'apikeys'>('events');
   const [conversions, setConversions] = useState<AdsConversionItem[]>([]);
   const [apiKeys, setApiKeys] = useState<AdvertiserApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   // New API Key Modal State
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
@@ -39,21 +42,24 @@ export function ConversionsTab({ advertiserId = 'adv_demo_9841' }: ConversionsTa
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
     async function load() {
-      setIsLoading(true);
-      const [convData, keysData] = await Promise.all([
-        fetchConversions(),
-        fetchApiKeys(),
-      ]);
-      setConversions(convData);
-      setApiKeys(keysData);
-      setIsLoading(false);
+      setIsLoading(true); setLoadError(null);
+      try {
+        const [convData, keysData] = await Promise.all([fetchConversions(), fetchApiKeys()]);
+        if (active) { setConversions(convData); setApiKeys(keysData); }
+      } catch (err) { if (active) setLoadError(err instanceof Error ? err.message : 'Conversion data unavailable.'); }
+      finally { if (active) setIsLoading(false); }
+
     }
     load();
-  }, []);
+    return () => { active = false; };
+  }, [loadAttempt]);
 
   // Summary Metrics
   const attributedCount = conversions.filter(c => c.status === 'attributed').length;
+  const valuesComplete = conversions.filter(c => c.status === 'attributed').every(c => c.valueUsd != null);
+  const chargesComplete = conversions.filter(c => c.status === 'attributed').every(c => c.chargedUsd != null);
   const totalRevenue = conversions
     .filter(c => c.status === 'attributed')
     .reduce((sum, c) => sum + (c.valueUsd || 0), 0);
@@ -77,18 +83,7 @@ export function ConversionsTab({ advertiserId = 'adv_demo_9841' }: ConversionsTa
       setGeneratedKeyResult(created);
       setApiKeys(prev => [created, ...prev]);
     } catch (err) {
-      // Demo fallback if backend offline
-      const mockKey: AdvertiserApiKeyItem = {
-        id: `key_${Date.now()}`,
-        advertiserId,
-        name: newKeyName.trim(),
-        prefix: `cf_adv_live_${Math.random().toString(36).substring(2, 6)}`,
-        scopes: newKeyScopes,
-        rawSecretKey: `cf_sec_${Math.random().toString(36).substring(2)}${Math.random().toString(36).substring(2)}`,
-        createdAt: new Date().toISOString(),
-      };
-      setGeneratedKeyResult(mockKey);
-      setApiKeys(prev => [mockKey, ...prev]);
+      setError(err instanceof Error ? err.message : 'API key creation could not be confirmed.');
     } finally {
       setIsGeneratingKey(false);
     }
@@ -98,17 +93,23 @@ export function ConversionsTab({ advertiserId = 'adv_demo_9841' }: ConversionsTa
     if (!confirm('Are you sure you want to revoke this API key? Any automated S2S postback scripts using it will fail immediately.')) {
       return;
     }
-    await revokeApiKey(id);
-    setApiKeys(prev => prev.map(k => k.id === id ? { ...k, revokedAt: new Date().toISOString() } : k));
+    try {
+      await revokeApiKey(id);
+      setApiKeys(prev => prev.map(k => k.id === id ? { ...k, revokedAt: new Date().toISOString() } : k));
+    } catch (err) { setError(err instanceof Error ? err.message : 'Revocation could not be confirmed.'); }
+
   };
 
   const handleReverseConversion = async () => {
     if (!reverseTarget) return;
     setIsReversing(true);
-    await reverseConversion(reverseTarget.id, reverseReason);
-    setConversions(prev => prev.map(c => c.id === reverseTarget.id ? { ...c, status: 'reversed' } : c));
-    setIsReversing(false);
-    setReverseTarget(null);
+    try {
+      await reverseConversion(reverseTarget.id, reverseReason);
+      setConversions(prev => prev.map(c => c.id === reverseTarget.id ? { ...c, status: 'reversed' } : c));
+      setReverseTarget(null);
+    } catch (err) { setError(err instanceof Error ? err.message : 'Reversal could not be confirmed.'); }
+    finally { setIsReversing(false); }
+
   };
 
   const pixelSnippet = `<!-- CrimFig Universal Conversion Pixel -->
@@ -138,8 +139,16 @@ window.cfq.push(['track', 'purchase', {
     "currency": "USD"
   }'`;
 
+  if (isLoading) return <p role="status" style={{ padding: 24, color: 'var(--text-secondary)' }}>Loading conversion data...</p>;
+
+  if (loadError) return <div role="alert" style={{ padding: 24, color: 'var(--text-secondary)' }}>
+    <p>{loadError}</p>
+    <button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</button>
+  </div>;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {error && <p role="alert">{error}</p>}
       {/* Header & Subtitle */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -147,7 +156,7 @@ window.cfq.push(['track', 'purchase', {
             Conversion Tracking & CPA Attribution
           </h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-            Measure real-world sales, leads, and signups. Unlock outcome-based CPA bidding and 72-hour fraud protection.
+            Review recorded sales, leads and signups. Attribution does not confirm a funded payout; CPA billing is unavailable.
           </p>
         </div>
 
@@ -188,7 +197,7 @@ window.cfq.push(['track', 'purchase', {
             {attributedCount.toLocaleString()}
           </div>
           <span style={{ fontSize: '12px', color: '#10B981', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-            ✓ Verified with signed click IDs
+            Recorded server attribution; not payout proof
           </span>
         </div>
 
@@ -197,7 +206,7 @@ window.cfq.push(['track', 'purchase', {
             Attributed Revenue
           </span>
           <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', marginTop: '6px' }}>
-            ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {valuesComplete ? `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Unavailable'}
           </div>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
             Gross merchandise value (GMV)
@@ -209,7 +218,7 @@ window.cfq.push(['track', 'purchase', {
             Average CPA Cost
           </span>
           <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '6px' }}>
-            ${avgCpa}
+            {chargesComplete ? `$${avgCpa}` : 'Unavailable'}
           </div>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
             Cost per verified acquisition
@@ -218,13 +227,13 @@ window.cfq.push(['track', 'purchase', {
 
         <div style={{ padding: '20px', borderRadius: '12px', background: 'var(--card-bg, #FFFFFF)', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Fraud Protection Hold
+            Settlement Availability
           </span>
           <div style={{ fontSize: '28px', fontWeight: 800, color: '#3B82F6', marginTop: '6px' }}>
-            72 Hours
+            Unavailable
           </div>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
-            Reversible refund clearance window
+            Funded clearance is not enabled
           </span>
         </div>
       </div>
@@ -279,7 +288,7 @@ window.cfq.push(['track', 'purchase', {
                   <th style={{ padding: '12px 18px', fontWeight: 600 }}>Value</th>
                   <th style={{ padding: '12px 18px', fontWeight: 600 }}>Source</th>
                   <th style={{ padding: '12px 18px', fontWeight: 600 }}>Status</th>
-                  <th style={{ padding: '12px 18px', fontWeight: 600 }}>72h Holdback</th>
+                  <th style={{ padding: '12px 18px', fontWeight: 600 }}>Clearance</th>
                   <th style={{ padding: '12px 18px', fontWeight: 600, textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
@@ -301,7 +310,7 @@ window.cfq.push(['track', 'purchase', {
                         </div>
                       </td>
                       <td style={{ padding: '14px 18px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {conv.valueUsd && conv.valueUsd > 0 ? `$${conv.valueUsd.toFixed(2)}` : '—'}
+                        {conv.valueUsd != null ? `$${conv.valueUsd.toFixed(2)}` : '—'}
                       </td>
                       <td style={{ padding: '14px 18px' }}>
                         <span style={{
@@ -337,11 +346,11 @@ window.cfq.push(['track', 'purchase', {
                         {conv.status === 'attributed' ? (
                           isHoldbackActive ? (
                             <span style={{ fontSize: '11px', color: '#3B82F6', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              ⏱ Pending Clearance
+                              Recorded hold; payout unconfirmed
                             </span>
                           ) : (
                             <span style={{ fontSize: '11px', color: '#10B981', fontWeight: 500 }}>
-                              ✓ Settled & Released
+                              Settlement not confirmed
                             </span>
                           )
                         ) : (
@@ -363,7 +372,7 @@ window.cfq.push(['track', 'purchase', {
                               cursor: 'pointer',
                             }}
                           >
-                            Reverse Refund
+                            Request Reversal
                           </button>
                         )}
                       </td>
@@ -384,7 +393,7 @@ window.cfq.push(['track', 'purchase', {
               1. Add CrimFig Pixel to your Website
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px' }}>
-              Paste this lightweight snippet into the <code style={{ color: 'var(--color-crimson)' }}>&lt;head&gt;</code> of all your web pages. It automatically preserves the signed <code style={{ color: 'var(--color-crimson)' }}>cf_click</code> identifier in a first-party cookie for 30 days.
+              Paste this lightweight snippet into the <code style={{ color: 'var(--color-crimson)' }}>&lt;head&gt;</code> of all your web pages. Publisher installation and trusted delivery evidence remain under review. This example references the <code style={{ color: 'var(--color-crimson)' }}>cf_click</code> identifier; do not treat browser-reported events as payable evidence.
             </p>
 
             <div style={{ position: 'relative', background: '#171B2A', borderRadius: '8px', padding: '16px', overflowX: 'auto' }}>
@@ -486,19 +495,19 @@ window.cfq.push(['track', 'purchase', {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
             <div style={{ background: 'var(--card-bg, #FFFFFF)', borderRadius: '12px', border: '1px solid var(--border-color)', padding: '20px' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 8px', color: 'var(--text-primary)' }}>
-                Deduplication Guarantee
+                Recorded Event Deduplication
               </h4>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                Every event is uniquely keyed by <code style={{ color: 'var(--color-crimson)' }}>(advertiser_id, order_id, event)</code>. If both your browser pixel and backend postback fire for the same purchase, it counts strictly once.
+                Server events check <code style={{ color: 'var(--color-crimson)' }}>(advertiser_id, order_id, event)</code>. Browser telemetry is separate and cannot reserve the authoritative server order key; concurrency and historical reconciliation still require verification.
               </p>
             </div>
 
             <div style={{ background: 'var(--card-bg, #FFFFFF)', borderRadius: '12px', border: '1px solid var(--border-color)', padding: '20px' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 8px', color: 'var(--text-primary)' }}>
-                72-Hour Fraud Clearance
+                Financial Reconciliation
               </h4>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                CPA promoter earnings remain in a mandatory 72-hour holdback. If an order is fraudulent or refunded, call <code style={{ color: 'var(--color-crimson)' }}>POST /conversions/:id/reverse</code> to claw back the charge.
+                Recorded hold timestamps do not prove settled earnings. Request a conversion reversal with <code style={{ color: 'var(--color-crimson)' }}>POST /conversions/:id/reverse</code> ; this does not confirm a wallet refund or payout cancellation.
               </p>
             </div>
           </div>
@@ -710,13 +719,13 @@ window.cfq.push(['track', 'purchase', {
 
                 <div style={{ background: '#171B2A', padding: '14px', borderRadius: '8px', marginBottom: '20px', position: 'relative' }}>
                   <code style={{ color: '#E2E8F0', fontSize: '13px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                    {generatedKeyResult.rawSecretKey || `cf_sec_${generatedKeyResult.prefix}_mock998811`}
+                    {generatedKeyResult.rawSecretKey || 'Secret unavailable'}
                   </code>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                   <button
-                    onClick={() => handleCopy(generatedKeyResult.rawSecretKey || `cf_sec_${generatedKeyResult.prefix}_mock998811`, 'created_key')}
+                    onClick={() => generatedKeyResult.rawSecretKey && handleCopy(generatedKeyResult.rawSecretKey, 'created_key')}
                     style={{
                       padding: '9px 18px',
                       borderRadius: '8px',
@@ -775,10 +784,10 @@ window.cfq.push(['track', 'purchase', {
             boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
           }}>
             <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px', color: '#EF4444' }}>
-              Reverse Conversion Refund
+              Reverse Recorded Conversion
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 16px', lineHeight: 1.5 }}>
-              Reversing order <strong style={{ color: 'var(--text-primary)' }}>{reverseTarget.orderId}</strong> (${reverseTarget.valueUsd?.toFixed(2)}) will cancel promoter payout for this acquisition during the 72h holdback window.
+              Reversing order <strong style={{ color: 'var(--text-primary)' }}>{reverseTarget.orderId}</strong> (${reverseTarget.valueUsd?.toFixed(2)}) will request reversal of the recorded conversion. Any financial adjustment requires separate reconciliation.
             </p>
 
             <div style={{ marginBottom: '20px' }}>
