@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
+import { validTheme } from '../lib/theme';
 
 export function ThemeSwitcher() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
-    const saved = (localStorage.getItem('crimfig-theme') as 'light' | 'dark') || 'light';
+    let saved: 'light' | 'dark' = 'light';
+    try { const value = localStorage.getItem('crimfig-theme'); if (validTheme(value)) saved = value; } catch { /* Storage can be unavailable. */ }
     setTheme(saved);
     document.documentElement.setAttribute('data-theme', saved);
   }, []);
 
   const toggleTheme = (newTheme: 'light' | 'dark') => {
     setTheme(newTheme);
-    localStorage.setItem('crimfig-theme', newTheme);
+    try { localStorage.setItem('crimfig-theme', newTheme); } catch { /* Keep the current page usable. */ }
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 

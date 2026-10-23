@@ -186,7 +186,7 @@ export default function AdsPlatformApp() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [catalog, setCatalog] = useState<Campaign[]>([]);
   const [placements, setPlacements] = useState<any[]>([]);
-  const [dataError, setDataError] = useState<string | null>(null);
+  const [failedLoads, setFailedLoads] = useState<number[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
   const [dataAttempt, setDataAttempt] = useState(0);
   const [creationUncertain, setCreationUncertain] = useState(false);
@@ -228,7 +228,7 @@ export default function AdsPlatformApp() {
   useEffect(() => {
     if (view !== 'console' || sessionStatus !== 'authenticated') return;
     let active = true;
-    setIsLoadingCampaigns(true); setIsLoadingWebsites(true); setDataError(null);
+    setIsLoadingCampaigns(true); setIsLoadingWebsites(true); setFailedLoads([]);
     void (async () => {
       const results = await Promise.allSettled([loadCampaigns(true), loadCampaigns(false), loadWebsites(), apiData<any>('/api/v1/promoters/reels-consent'), apiData<any[]>('/api/v1/placements').then(value => arrayData<any>(value)), apiData<any[]>('/api/v1/promoters/apps').then(value => arrayData<any>(value)), apiData<any>('/api/v1/analytics/promoter')]);
       if (!active) return;
@@ -240,7 +240,7 @@ export default function AdsPlatformApp() {
       if (promoterAnalytics.status === 'fulfilled' && Number.isFinite(promoterAnalytics.value?.earningsUsd)) setPromoterEarnings(promoterAnalytics.value.earningsUsd);
       if (sites.status === 'fulfilled') setWebsites(sites.value);
       if (consent.status === 'fulfilled') setReelsConsent(consent.value?.consentGiven === 1);
-      if (results.some(result => result.status === 'rejected')) setDataError('Some account data could not be loaded. Unavailable data is not a confirmed empty result.');
+      setFailedLoads(results.flatMap((result, index) => result.status === 'rejected' ? [index] : []));
       setIsLoadingCampaigns(false); setIsLoadingWebsites(false);
     })();
     return () => { active = false; };
@@ -353,10 +353,25 @@ export default function AdsPlatformApp() {
 
   if (sessionStatus !== 'authenticated') return <SessionGate><></></SessionGate>;
 
+  const promoterDependencies: Record<string, number[]> = {
+    websites: [2], individuals: [1, 3, 4], mobile_apps: [5], marketplace: [1], disputes: [2],
+  };
+  const promoterSectionUnavailable = (promoterDependencies[promoterSection] || [])
+    .some(index => failedLoads.includes(index));
+  const unavailableSection = (
+    <div className="theme-card" role="status" style={{ padding: 24, color: 'var(--text-secondary)' }}>
+      <p>This section is temporarily unavailable. Please try again shortly.</p>
+      <button type="button" onClick={() => setDataAttempt(value => value + 1)}
+        style={{ marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer' }}>
+        Try again
+      </button>
+    </div>
+  );
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)' }}>
-      {(dataError || actionError) && <div role="alert" style={{ position: 'sticky', top: 0, zIndex: 1200, padding: '12px 24px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)' }}>
-        {actionError || dataError} <button style={{ marginLeft: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer' }} onClick={() => setDataAttempt(value => value + 1)}>Refresh account data</button>
+      {actionError && <div role="alert" style={{ position: 'sticky', top: 0, zIndex: 1200, padding: '12px 24px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)' }}>
+        {actionError} <button style={{ marginLeft: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer' }} onClick={() => setDataAttempt(value => value + 1)}>Refresh account data</button>
       </div>}
       {/* Top Console Navigation Bar */}
       <header
@@ -773,7 +788,7 @@ export default function AdsPlatformApp() {
                   }}
                 >
                   <Globe style={{ width: 16, height: 16 }} />
-                  Websites & Embeds ({websites.length})
+                  Websites & Embeds {!isLoadingWebsites && !failedLoads.includes(2) && `(${websites.length})`}
                 </button>
                 <button
                   type="button"
@@ -811,7 +826,7 @@ export default function AdsPlatformApp() {
                   }}
                 >
                   <Smartphone style={{ width: 16, height: 16 }} />
-                  Mobile Apps ({apps.length})
+                  Mobile Apps {!isLoadingCampaigns && !failedLoads.includes(5) && `(${apps.length})`}
                 </button>
                 <button
                   type="button"
@@ -830,7 +845,7 @@ export default function AdsPlatformApp() {
                   }}
                 >
                   <Layers style={{ width: 16, height: 16 }} />
-                  Browse Ad Campaigns ({catalog.length})
+                  Browse Ad Campaigns {!isLoadingCampaigns && !failedLoads.includes(1) && `(${catalog.length})`}
                 </button>
                 <button
                   type="button"
@@ -892,13 +907,14 @@ export default function AdsPlatformApp() {
               </div>
             </div>
 
+            {promoterSectionUnavailable && unavailableSection}
             {/* SECTION: QUALITY & TRUST */}
             {promoterSection === 'quality' && (
               <PromoterQualityCard apiBase={API_BASE} />
             )}
 
             {/* SECTION: DISPUTES & APPEALS */}
-            {promoterSection === 'disputes' && (
+            {promoterSection === 'disputes' && !promoterSectionUnavailable && (
               <DisputesTab role="promoter" websites={websites} />
             )}
 
@@ -908,7 +924,7 @@ export default function AdsPlatformApp() {
             )}
 
             {/* SECTION 1: WEBSITES */}
-            {promoterSection === 'websites' && (
+            {promoterSection === 'websites' && !promoterSectionUnavailable && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
@@ -1037,7 +1053,7 @@ export default function AdsPlatformApp() {
             )}
 
             {/* SECTION 2: INDIVIDUALS */}
-            {promoterSection === 'individuals' && (
+            {promoterSection === 'individuals' && !promoterSectionUnavailable && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="theme-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
@@ -1143,7 +1159,7 @@ export default function AdsPlatformApp() {
             )}
 
             {/* SECTION 3: MOBILE APPS */}
-            {promoterSection === 'mobile_apps' && (
+            {promoterSection === 'mobile_apps' && !promoterSectionUnavailable && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
@@ -1154,7 +1170,7 @@ export default function AdsPlatformApp() {
                   </div>
                 </div>
 
-                {apps.length === 0 ? (
+                {isLoadingCampaigns ? <CardSkeleton count={2} /> : apps.length === 0 ? (
                   <EmptyState
                     icon={Smartphone}
                     title="No Mobile Apps Registered"
@@ -1179,7 +1195,7 @@ export default function AdsPlatformApp() {
             )}
 
             {/* SECTION 4: MARKETPLACE */}
-            {promoterSection === 'marketplace' && (
+            {promoterSection === 'marketplace' && !promoterSectionUnavailable && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
@@ -1338,7 +1354,7 @@ export default function AdsPlatformApp() {
         {/* ========================================================================= */}
         {role === 'advertiser' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            {advertiserTab === 'billing' ? (
+            {failedLoads.includes(0) && ['campaigns', 'disputes'].includes(advertiserTab) ? unavailableSection : advertiserTab === 'billing' ? (
               <BillingLedger initialRole="advertiser" onRoleChange={(r) => setRole(r)} />
             ) : advertiserTab === 'conversions' ? (
               <ConversionsTab />
