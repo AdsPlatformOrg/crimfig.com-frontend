@@ -1,6 +1,8 @@
 'use client';
+import { MediaPreview } from '../MediaPreview';
+import { sessionFetch } from '../../lib/session';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, AlertCircle, RefreshCw, Eye, ExternalLink, Filter } from 'lucide-react';
 
 interface PendingCampaign {
@@ -20,6 +22,7 @@ interface PendingCreative {
   bodyText: string;
   ctaText: string;
   imageUrl?: string;
+  videoUrl?: string;
   destinationUrl: string;
   mediaFormat: string;
   adFormat?: string;
@@ -40,6 +43,8 @@ interface AdminModerationQueueProps {
 export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   const [queue, setQueue] = useState<ModerationQueue | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'creatives' | 'campaigns'>('creatives');
   const [decisionNote, setDecisionNote] = useState<{ [id: string]: string }>({});
   const [decisionReason, setDecisionReason] = useState<{ [id: string]: string }>({});
@@ -47,65 +52,25 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
 
   const [reviewStage, setReviewStage] = useState<'reviewer' | 'manager'>('reviewer');
 
-  const fetchQueue = async () => {
-    setIsLoading(true);
+  const fetchQueue = useCallback(async () => {
+    setIsLoading(true); setError(null);
     try {
-      const res = await fetch(`${apiBase}/api/v1/admin/ads/moderation/queue?stage=${reviewStage}`, {
-        headers: { 'Accept': 'application/json' },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setQueue(json.data);
-      } else {
-        // Fallback demo data
-        setQueue({
-          campaigns: [
-            {
-              id: 'camp-dem-1',
-              advertiserId: 'adv-001',
-              title: 'Paystack Fintech Launch 2026',
-              status: reviewStage === 'reviewer' ? 'under_review' : 'pending_manager_approval',
-              pricingModel: 'cpc',
-              budgetUsdCents: 50000,
-              createdAt: new Date().toISOString(),
-            },
-          ],
-          creatives: [
-            {
-              id: 'crt-dem-1',
-              campaignId: 'camp-dem-1',
-              headline: 'Fast, Borderless Payments Across Africa',
-              bodyText: 'Integrate Paystack in minutes. Accept cards, bank transfers, and mobile money securely.',
-              ctaText: 'Sign Up Now',
-              destinationUrl: 'https://paystack.com',
-              mediaFormat: 'image',
-              adFormat: 'card',
-              reviewStatus: 'pending',
-              createdAt: new Date().toISOString(),
-            },
-          ],
-          totalPending: 2,
-        });
-      }
-    } catch (e) {
-      setQueue({
-        campaigns: [],
-        creatives: [],
-        totalPending: 0,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchQueue();
+      const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/queue?stage=${reviewStage}`);
+      if (!res.ok) throw new Error(res.status === 403 ? 'You do not have permission to view this queue.' : 'Moderation queue unavailable.');
+      const json = await res.json();
+      if (!Array.isArray(json.data?.campaigns) || !Array.isArray(json.data?.creatives)) throw new Error('Invalid moderation queue response.');
+      setQueue(json.data);
+    } catch (err) {
+      setQueue(null); setError(err instanceof Error ? err.message : 'Moderation queue unavailable.');
+    } finally { setIsLoading(false); }
   }, [apiBase, reviewStage]);
+
+  useEffect(() => { void fetchQueue(); }, [fetchQueue]);
 
   const handleCreativeDecision = async (id: string, decision: 'approved' | 'rejected') => {
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
-      const res = await fetch(`${apiBase}/api/v1/admin/ads/moderation/creatives/${id}/decision`, {
+      const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/creatives/${id}/decision`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -125,10 +90,10 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             : null,
         );
       } else {
-        alert('Action failed. Please verify admin permissions.');
+        setActionMessage('Action failed. Please verify admin permissions.');
       }
     } catch (e) {
-      alert('Network error communicating with moderation API.');
+      setActionMessage('Network error communicating with moderation API.');
     } finally {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
@@ -142,7 +107,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
           ? `${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/primary-review`
           : `${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/manager-approval`;
 
-      const res = await fetch(endpoint, {
+      const res = await sessionFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -163,10 +128,10 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
         );
       } else {
         const errorJson = await res.json().catch(() => null);
-        alert(errorJson?.message || 'Action failed. Please verify admin permissions.');
+        setActionMessage(errorJson?.message || 'Action failed. Please verify admin permissions.');
       }
     } catch (e) {
-      alert('Network error communicating with moderation API.');
+      setActionMessage('Network error communicating with moderation API.');
     } finally {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
@@ -177,22 +142,22 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
       'SUPER ADMIN EMERGENCY OVERRIDE:\nEnter a mandatory, documented justification for overriding the dual-reviewer workflow (min 10 chars):'
     );
     if (!reason || reason.trim().length < 10) {
-      alert('Override cancelled: A valid documented reason (at least 10 characters) is required for immutable audit logging.');
+      setActionMessage('Override cancelled: A valid documented reason (at least 10 characters) is required for immutable audit logging.');
       return;
     }
 
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
-      const res = await fetch(`${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/emergency-override`, {
+      const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/emergency-override`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           overrideReason: reason.trim(),
-          note: decisionNote[id] || 'Emergency bypass initiated by Super Admin',
+          decision: 'approved',
         }),
       });
       if (res.ok) {
-        alert('Campaign emergency override successful. Status set to Approved with audit trail.');
+        setActionMessage('Campaign emergency override successful. Status set to Approved with audit trail.');
         setQueue((prev) =>
           prev
             ? {
@@ -204,10 +169,10 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
         );
       } else {
         const errorJson = await res.json().catch(() => null);
-        alert(errorJson?.message || 'Emergency override failed. Ensure you have super_admin privileges.');
+        setActionMessage(errorJson?.message || 'Emergency override failed. Ensure you have super_admin privileges.');
       }
     } catch (e) {
-      alert('Network error communicating with moderation API.');
+      setActionMessage('Network error communicating with moderation API.');
     } finally {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
@@ -215,6 +180,8 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {error && <p role="alert">{error}</p>}
+      {actionMessage && <div role="status" style={{ padding: 16, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', overflowWrap: 'anywhere' }}>{actionMessage} <button type="button" onClick={() => setActionMessage(null)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>Dismiss</button></div>}
       {/* Header bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
         <div>
@@ -222,11 +189,11 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             Compliance &amp; Moderation
           </span>
           <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-            Review Queue ({queue?.totalPending ?? 0} Pending)
+            {error ? 'Review Queue Unavailable' : isLoading ? 'Loading review queue' : `Review Queue (${queue?.totalPending ?? 0} Pending)`}
           </h2>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', maxWidth: '100%' }}>
           <button
             type="button"
             onClick={() => setActiveTab('creatives')}
@@ -241,7 +208,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
               color: activeTab === 'creatives' ? '#FFFFFF' : 'var(--text-secondary)',
             }}
           >
-            Creative Assets ({queue?.creatives.length ?? 0})
+            Creative Assets ({error ? '—' : queue?.creatives.length ?? 0})
           </button>
           <button
             type="button"
@@ -257,10 +224,10 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
               color: activeTab === 'campaigns' ? '#FFFFFF' : 'var(--text-secondary)',
             }}
           >
-            Campaigns ({queue?.campaigns.length ?? 0})
+            Campaigns ({error ? '—' : queue?.campaigns.length ?? 0})
           </button>
           {activeTab === 'campaigns' && (
-            <div style={{ display: 'inline-flex', padding: '2px', backgroundColor: 'var(--badge-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'inline-flex', flexWrap: 'wrap', padding: '2px', backgroundColor: 'var(--badge-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <button
                 type="button"
                 onClick={() => setReviewStage('reviewer')}
@@ -350,6 +317,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                       {crt.bodyText}
                     </p>
+                    {(crt.imageUrl || crt.videoUrl) && <MediaPreview source={(crt.videoUrl || crt.imageUrl)!} mode="review" />}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', fontSize: '12px', color: 'var(--color-crimson)' }}>
                       <span>CTA: {crt.ctaText}</span>
                       <span>·</span>
@@ -484,7 +452,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                       cursor: 'pointer',
                     }}
                   >
-                    {reviewStage === 'reviewer' ? 'Approve & Pass to Manager' : 'Approve & Activate Live'}
+                    {reviewStage === 'reviewer' ? 'Approve & Pass to Manager' : 'Approve Campaign'}
                   </button>
                   <button
                     type="button"

@@ -1,3 +1,4 @@
+import { themeBootstrap } from '../lib/theme';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
@@ -57,7 +58,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={poppins.className} data-theme="light">
+    <html lang="en" className={`${poppins.className} ${poppins.variable}`} data-theme="light" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
       <body>
         {children}
       </body>

@@ -24,8 +24,13 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  shared/session: {}
+
   web/ads:
     dependencies:
+      '@crimfig/session':
+        specifier: workspace:*
+        version: link:../../shared/session
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -57,6 +62,9 @@ importers:
 
   web/auth:
     dependencies:
+      '@crimfig/session':
+        specifier: workspace:*
+        version: link:../../shared/session
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -88,6 +96,9 @@ importers:
 
   web/billing:
     dependencies:
+      '@crimfig/session':
+        specifier: workspace:*
+        version: link:../../shared/session
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

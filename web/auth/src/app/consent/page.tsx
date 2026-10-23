@@ -1,48 +1,31 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getApiUrl } from '@/lib/config';
+import { approveConsent, consentSession } from '@/lib/consent';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 
 function ConsentContent() {
   const searchParams = useSearchParams();
   const clientId = searchParams.get('client_id') || 'Ecosystem App';
-  const redirectUri = searchParams.get('redirect_uri');
+  const pending = useRef(false);
+  const [attempted, setAttempted] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleApprove = async () => {
+    if (pending.current || attempted) return;
+    pending.current = true;
+    setAttempted(true);
     setLoading(true);
     setError('');
-
     try {
-      const res = await fetch(getApiUrl('/api/v1/oauth/authorize/approve'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: clientId,
-          redirect_uri: redirectUri,
-          response_type: searchParams.get('response_type') || 'code',
-          scope: searchParams.get('scope'),
-          state: searchParams.get('state'),
-          code_challenge: searchParams.get('code_challenge'),
-          code_challenge_method: searchParams.get('code_challenge_method'),
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Authorization failed');
-
-      if (redirectUri && data.code) {
-        const url = new URL(redirectUri);
-        url.searchParams.set('code', data.code);
-        if (data.state) url.searchParams.set('state', data.state);
-        window.location.href = url.toString();
-      }
-    } catch (err: any) {
-      setError(err.message);
+      const callback = await approveConsent(new URLSearchParams(searchParams.toString()), (path, init) =>
+        consentSession().request(new URL(path, window.location.origin), init));
+      window.location.assign(callback);
+    } catch {
+      setError('Authorization could not be confirmed. Return to the requesting application and start again.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +40,7 @@ function ConsentContent() {
       />
 
       {error && (
-        <div className="alert-error" style={{ marginBottom: '20px' }}>
+        <div role="alert" className="alert-error" style={{ marginBottom: '20px' }}>
           <span>{error}</span>
         </div>
       )}
@@ -102,7 +85,7 @@ function ConsentContent() {
           type="button"
           onClick={handleApprove}
           className="btn-primary"
-          disabled={loading}
+          disabled={loading || attempted}
           style={{ flex: 1 }}
         >
           {loading ? 'Authorizing...' : 'Authorize'}

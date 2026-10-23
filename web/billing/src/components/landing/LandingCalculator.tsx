@@ -57,7 +57,7 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               marginBottom: '12px'
             }}
           >
-            Cost &amp; Speed Analysis
+            Illustrative Conversion
           </div>
           <h2
             style={{
@@ -68,10 +68,10 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               margin: '0 0 16px',
             }}
           >
-            Zero Hidden FX Spread. Instant Liquidity.
+            Explore an Example Conversion
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Compare CrimFig's zero-margin transparent conversion and automated NUBAN payout rails directly against traditional international SWIFT wire transfers.
+            Illustration only: this calculator uses a sample rate of ₦1,550 per USD and hypothetical fees. It is not a current quote, fee schedule or payout offer.
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               Transfer Amount Simulator
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 24px' }}>
-              Enter any amount to preview real-time conversion and fee savings.
+              Enter an amount to explore the hypothetical calculation.
             </p>
 
             <div style={{ marginBottom: '20px' }}>
@@ -169,14 +169,14 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               }}
             >
               <div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Recipient Receives (NGN)</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Example NGN Value</div>
                 <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-crimson)' }}>
                   ₦{ngnValue.toLocaleString('en-NG', { maximumFractionDigits: 0 })}
                 </div>
               </div>
               <div style={{ textAlign: 'right', fontSize: '11px', color: 'var(--text-muted)' }}>
-                Index: <strong>₦{fxRate.toLocaleString()}/$</strong><br />
-                Latency: <strong>⚡ &lt; 5s</strong>
+                Sample rate: <strong>₦{fxRate.toLocaleString()}/$</strong><br />
+                Payouts: <strong>Unavailable</strong>
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
             }}
           >
             <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 16px' }}>
-              Head-to-Head Comparison
+              Hypothetical Fee Comparison
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -212,18 +212,18 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--color-success)' }} />
-                    <span>CrimFig Instant Rail</span>
+                    <span>Zero-Fee Example</span>
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    0% spread markup • Immediate settlement to NUBAN
+                    Hypothetical model, not CrimFig pricing
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-success)' }}>
-                    $0 Transfer Fee
+                    Example Fee: $0
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    ~4.2 seconds
+                    No speed guarantee
                   </div>
                 </div>
               </div>
@@ -243,18 +243,18 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                     <XCircle style={{ width: 16, height: 16, color: 'var(--color-error)' }} />
-                    <span>Traditional SWIFT Wire</span>
+                    <span>Fee-Bearing Example</span>
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    $45 cable charge + 4.5% bank FX margin
+                    Assumed $45 fee + 4.5% markup
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-error)' }}>
-                    -${traditionalTotalCost.toFixed(2)} USD lost
+                    -${traditionalTotalCost.toFixed(2)} USD example cost
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    3 to 5 business days
+                    Timing not modeled
                   </div>
                 </div>
               </div>
@@ -274,7 +274,7 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               }}
             >
               <div style={{ fontSize: '13px', fontWeight: 700 }}>
-                Estimated Savings with CrimFig:
+                Difference Between Examples:
               </div>
               <div style={{ fontSize: '18px', fontWeight: 800 }}>
                 +${crimfigSavings.toFixed(2)} USD
@@ -306,7 +306,7 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
               onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
             >
-              <span>Access Wallet &amp; Start Transfer</span>
+              <span>View Wallet Availability</span>
               <ArrowRight style={{ width: 16, height: 16 }} />
             </button>
           </div>

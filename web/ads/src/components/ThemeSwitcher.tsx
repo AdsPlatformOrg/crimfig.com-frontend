@@ -1,21 +1,29 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { validTheme, type Theme } from '../lib/theme';
 import { Sun, Moon } from 'lucide-react';
 
 export function ThemeSwitcher() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
-    const saved = (localStorage.getItem('crimfig-theme') as 'light' | 'dark') || 'light';
-    setTheme(saved);
-    document.documentElement.setAttribute('data-theme', saved);
+    const sync = () => { const value = document.documentElement.getAttribute('data-theme'); setTheme(validTheme(value) ? value : 'light'); };
+    const stored = (event: StorageEvent) => {
+      if (event.key !== 'crimfig-theme' && event.key !== null) return;
+      document.documentElement.setAttribute('data-theme', validTheme(event.newValue) ? event.newValue : 'light'); sync();
+    };
+    sync();
+    window.addEventListener('crimfig-theme-change', sync);
+    window.addEventListener('storage', stored);
+    return () => { window.removeEventListener('crimfig-theme-change', sync); window.removeEventListener('storage', stored); };
   }, []);
 
-  const toggleTheme = (newTheme: 'light' | 'dark') => {
-    setTheme(newTheme);
-    localStorage.setItem('crimfig-theme', newTheme);
+  const toggleTheme = (newTheme: Theme) => {
+    try { localStorage.setItem('crimfig-theme', newTheme); } catch { /* In-document preference still works. */ }
     document.documentElement.setAttribute('data-theme', newTheme);
+    setTheme(newTheme);
+    window.dispatchEvent(new Event('crimfig-theme-change'));
   };
 
   return (
@@ -49,6 +57,7 @@ export function ThemeSwitcher() {
           boxShadow: theme === 'light' ? 'var(--shadow-sm)' : 'none',
         }}
         aria-label="Switch to Light Theme"
+        aria-pressed={theme === 'light'}
       >
         <Sun style={{ width: 14, height: 14, color: '#F59E0B' }} />
         <span>Light</span>
@@ -71,6 +80,7 @@ export function ThemeSwitcher() {
           boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
         }}
         aria-label="Switch to Dark Theme"
+        aria-pressed={theme === 'dark'}
       >
         <Moon style={{ width: 14, height: 14, color: '#818CF8' }} />
         <span>Dark</span>

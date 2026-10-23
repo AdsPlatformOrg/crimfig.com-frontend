@@ -63,7 +63,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
             How Much Can You Earn?
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Adjust your monthly traffic and audience engagement to estimate your potential payouts with CrimFig's 70% promoter revenue share.
+            Illustration only: traffic, prices, a 70% example share and sample FX are hypothetical. These are not earned funds or a payout offer.
           </p>
         </div>
 
@@ -199,7 +199,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
           >
             <div>
               <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Estimated Monthly Earnings
+                Hypothetical Monthly Example
               </span>
               <div style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 900, lineHeight: 1.1, margin: '8px 0 4px', letterSpacing: '-1px' }}>
                 ${totalMonthlyEarningsUsd.toLocaleString()}
@@ -222,15 +222,15 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Promoter Payout Split</span>
-                <span style={{ fontWeight: 700 }}>70% Direct Payout</span>
+                <span style={{ fontWeight: 700 }}>70% Example Share</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Settlement Cycle</span>
-                <span style={{ fontWeight: 700 }}>Instant Escrow Wallet</span>
+                <span style={{ fontWeight: 700 }}>Settlement Unavailable</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Pacing Cap Protection</span>
-                <span style={{ fontWeight: 700 }}>Guaranteed Rates</span>
+                <span style={{ fontWeight: 700 }}>Illustrative Assumptions</span>
               </div>
             </div>
 
@@ -257,7 +257,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)')}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
             >
-              <span>Claim These Earnings</span>
+              <span>View Promoter Console</span>
               <ArrowRight style={{ width: 16, height: 16 }} />
             </button>
           </div>

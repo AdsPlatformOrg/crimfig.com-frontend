@@ -46,7 +46,7 @@
   --color-info-bg: #DBEAFE;
 
   /* Typography */
-  --font-primary: 'Poppins', Arial, Helvetica, sans-serif;
+  --font-primary: var(--font-poppins), Arial, Helvetica, sans-serif;
   --text-display: 3rem;
   --text-h1: 2.25rem;
   --text-h2: 1.75rem;
@@ -191,4 +191,15 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--border-hover);
   border-radius: 3px;
+}
+
+
+/* Honor reduced motion while keeping visible loading/status text and focus feedback. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

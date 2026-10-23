@@ -14,16 +14,16 @@ export function LandingFeatures() {
     },
     {
       icon: Zap,
-      title: 'Sub-15ms Edge Delivery',
+      title: 'Publisher Delivery Planning',
       description:
-        'Raw embed execution and interaction events are logged in an append-only stream with high-precision timestamps. Never slows down host website loading times.',
-      tag: 'Ultra-Low Latency',
+        'Raw embed execution and interaction events are logged in an append-only stream with high-precision timestamps. Publisher performance and browser compatibility require installation testing.',
+      tag: 'Performance Testing Pending',
     },
     {
       icon: ShieldCheck,
       title: 'Deferred Verification Engine',
       description:
-        'Eliminates blocking synchronous verification checks. Background cron workers reconcile DNS TXT records, meta tags, and bundle IDs every 30–60 minutes.',
+        'Website ownership uses explicit DNS or HTML proof checks. Mobile verification and automatic review scheduling are not currently available.',
       tag: 'Fraud-Resistant Audits',
     },
     {
@@ -42,9 +42,9 @@ export function LandingFeatures() {
     },
     {
       icon: Hand,
-      title: 'Guaranteed Escrow Payouts',
+      title: 'Funded Campaign Escrow',
       description:
-        'Every campaign budget is locked upfront in escrow. When promoters deliver verified clicks and views, earnings are immediately available for wallet withdrawals.',
+        'Campaign activation requires server-confirmed escrow. Publisher settlement and withdrawals remain unavailable pending financial verification.',
       tag: 'Secure Settlements',
     },
   ];
@@ -85,7 +85,7 @@ export function LandingFeatures() {
               margin: '0 0 16px',
             }}
           >
-            Built for maximum impact and zero lag
+            Campaign Tools &amp; Publisher Planning
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
             Everything you need to launch high-converting advertising campaigns or monetize your digital properties with premium sponsored creatives.

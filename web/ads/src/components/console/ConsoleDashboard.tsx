@@ -1,5 +1,6 @@
 'use client';
 
+import { dashboardData } from '../../lib/analytics-api';
 import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
@@ -19,7 +20,6 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
-import { ReplaceCreativeModal } from './ReplaceCreativeModal';
 
 interface DashboardSummary {
   period: string;
@@ -95,83 +95,22 @@ export function ConsoleDashboard({
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Replacement Modal state
-  const [replacementCreative, setReplacementCreative] = useState<any | null>(null);
 
-  // Mock / Live data state
-  const [summary, setSummary] = useState<DashboardSummary>({
-    period: '30d',
-    startDate: '2026-09-10T00:00:00Z',
-    endDate: '2026-10-10T00:00:00Z',
-    campaignCounts: { total: 4, active: 3, paused: 1, underReview: 0, draft: 0 },
-    creativeAlertCounts: { rejected: 1, pendingReview: 0 },
-    financials: { totalBudgetUsd: 1450.0, totalSpentUsd: 582.4, remainingBudgetUsd: 867.6 },
-    performance: {
-      impressions: 142850,
-      clicks: 4890,
-      hovers: 12420,
-      touches: 6180,
-      ctr: 3.42,
-      avgCpmUsd: 4.08,
-      avgCpcUsd: 0.12,
-    },
-  });
-
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
-  const [channelData, setChannelData] = useState<ChannelBreakdown[]>([
-    { channel: 'Websites (Embed Codes)', impressions: 78500, clicks: 2680, percentage: 55.0 },
-    { channel: 'Mobile Apps (Native SDK)', impressions: 42150, clicks: 1470, percentage: 29.5 },
-    { channel: 'Reels & Social Links', impressions: 22200, clicks: 740, percentage: 15.5 },
-  ]);
-
-  const [alerts, setAlerts] = useState<AlertItem[]>([
-    {
-      id: 'alert_rejected_1',
-      type: 'error',
-      title: 'Creative Asset Rejected: "High-Yield Cloud Mining"',
-      message: 'Asset was flagged by compliance policy. Inline replacement required before this ad can run.',
-      severity: 'high',
-      actionLabel: 'Replace Asset Now',
-    },
-    {
-      id: 'alert_low_budget_2',
-      type: 'warning',
-      title: 'Campaign Low on Budget: Tech Summit 2026',
-      message: 'Remaining balance is below $50.00. Top up campaign budget to maintain continuous serving.',
-      severity: 'medium',
-      actionLabel: 'Manage Budget',
-    },
-  ]);
-
-  // Generate smooth simulated timeseries points according to selected period
+  const [channelData, setChannelData] = useState<ChannelBreakdown[]>([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    setIsLoading(true);
-    const days = period === '7d' ? 7 : period === '90d' ? 90 : 30;
-    const now = new Date();
-    const points: TimeseriesPoint[] = [];
-
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(now.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const baseImp = Math.floor(3500 + Math.sin(i * 0.4) * 1200 + Math.random() * 800);
-      const baseClicks = Math.floor(baseImp * 0.034 + Math.random() * 40);
-      const baseHovers = Math.floor(baseImp * 0.08);
-      const baseTouches = Math.floor(baseImp * 0.04);
-      const spend = Number(((baseImp * 0.0035) + (baseClicks * 0.12)).toFixed(2));
-
-      points.push({
-        date: dateStr,
-        impressions: baseImp,
-        clicks: baseClicks,
-        hovers: baseHovers,
-        touches: baseTouches,
-        spendUsd: spend,
-      });
-    }
-
-    setTimeseries(points);
-    setTimeout(() => setIsLoading(false), 200);
-  }, [period, customStartDate, customEndDate]);
+    let active = true;
+    setIsLoading(true); setError(null);
+    void dashboardData(period).then(result => {
+      if (active) { setSummary(result.summary); setTimeseries(result.timeseries); setChannelData(result.channels); setAlerts(result.alerts); }
+    }).catch(err => { if (active) setError(err instanceof Error ? err.message : 'Analytics unavailable.'); })
+      .finally(() => { if (active) setIsLoading(false); });
+  return () => { active = false; };
+  }, [period, attempt]);
 
   // Compute SVG coordinates for the area chart
   const maxImp = Math.max(...timeseries.map((p) => p.impressions), 100);
@@ -187,6 +126,12 @@ export function ConsoleDashboard({
     .join(' ');
 
   const areaString = `0,${chartHeight} ${pointsString} ${chartWidth},${chartHeight}`;
+
+  if (isLoading) return <div role="status" className="theme-card" style={{ padding: 24 }}>Loading account analytics…</div>;
+  if (error || !summary) return <div role="alert" className="theme-card" style={{ padding: 24 }}>
+    <p>{error || 'Account analytics unavailable.'}</p><button onClick={() => setAttempt(value => value + 1)}>Retry analytics</button>
+  </div>;
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
@@ -215,7 +160,7 @@ export function ConsoleDashboard({
             Ads Console Dashboard
           </h2>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-            Real-time campaign delivery, promoter attribution, and engagement metrics.
+            Recorded account activity, including events pending verification. Use Billing for settled charges.
           </p>
         </div>
 
@@ -231,7 +176,7 @@ export function ConsoleDashboard({
               border: '1px solid var(--border-subtle)',
             }}
           >
-            {(['7d', '30d', '90d', 'custom'] as const).map((p) => (
+            {(['7d', '30d', '90d'] as const).map((p) => (
               <button
                 key={p}
                 type="button"
@@ -358,17 +303,7 @@ export function ConsoleDashboard({
                 <button
                   type="button"
                   onClick={() => {
-                    if (alert.id.includes('rejected')) {
-                      setReplacementCreative({
-                        id: 'demo-creative-id',
-                        campaignId: 'demo-camp-id',
-                        headline: 'High-Yield Cloud Mining',
-                        destinationUrl: 'https://example.com/promo',
-                        rejectionReason: 'Financial claim flagged by automated compliance filter.',
-                      });
-                    } else {
-                      onNavigateToCampaigns('active');
-                    }
+                    onNavigateToCampaigns(alert.type === 'error' ? 'rejected' : 'active');
                   }}
                   style={{
                     padding: '8px 16px',
@@ -400,33 +335,33 @@ export function ConsoleDashboard({
           gap: '20px',
         }}
       >
-        {/* Card 1: Total Ad Spend */}
+        {/* Card 1: Campaign budget used (lifetime) */}
         <div className="theme-card" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Total Ad Spend</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Campaign budget used (lifetime)</span>
             <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
-              +14.2%
+              Lifetime
             </span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 4px' }}>
             ${summary.financials.totalSpentUsd.toFixed(2)}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Remaining in escrow: <strong style={{ color: 'var(--color-success)' }}>${summary.financials.remainingBudgetUsd.toFixed(2)}</strong>
+            Remaining campaign budget: <strong style={{ color: 'var(--color-success)' }}>${summary.financials.remainingBudgetUsd.toFixed(2)}</strong>
           </div>
         </div>
 
         {/* Card 2: Impressions / Views */}
         <div className="theme-card" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Verified Views</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Recorded Impressions</span>
             <Eye style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
           </div>
           <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 4px' }}>
             {summary.performance.impressions.toLocaleString()}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Avg. CPM: <strong>${summary.performance.avgCpmUsd.toFixed(2)} USD</strong>
+            Budget-based CPM: <strong>${summary.performance.avgCpmUsd.toFixed(2)} USD</strong>
           </div>
         </div>
 
@@ -440,7 +375,7 @@ export function ConsoleDashboard({
             {summary.performance.clicks.toLocaleString()}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            CTR: <strong>{summary.performance.ctr.toFixed(2)}%</strong> (Avg. CPC: ${summary.performance.avgCpcUsd.toFixed(2)})
+            CTR: <strong>{summary.performance.ctr.toFixed(2)}%</strong> (Budget-based CPC: ${summary.performance.avgCpcUsd.toFixed(2)})
           </div>
         </div>
 
@@ -471,7 +406,7 @@ export function ConsoleDashboard({
                 Engagement Timeseries
               </h3>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                Daily impression volume & verified interaction pacing ({period.toUpperCase()})
+                Daily recorded impression volume and interaction pacing ({period.toUpperCase()})
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', fontWeight: 600 }}>
@@ -481,7 +416,7 @@ export function ConsoleDashboard({
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-fig-dark)' }} />
-                <span>Spend ($)</span>
+                <span>Estimated spend ($)</span>
               </div>
             </div>
           </div>
@@ -591,7 +526,7 @@ export function ConsoleDashboard({
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Deferred Verification Cron:</span>
             <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-success)' }} />
-              Active (Every 30m)
+              Not monitored here
             </span>
           </div>
         </div>
@@ -671,18 +606,7 @@ export function ConsoleDashboard({
         </div>
       </div>
 
-      {/* Inline Asset Replacement Modal if triggered */}
-      {replacementCreative && (
-        <ReplaceCreativeModal
-          isOpen={!!replacementCreative}
-          onClose={() => setReplacementCreative(null)}
-          creative={replacementCreative}
-          onReplaceSuccess={() => {
-            setAlerts((prev) => prev.filter((a) => !a.id.includes('rejected')));
-            alert('Creative asset successfully replaced! Re-submitted for compliance review.');
-          }}
-        />
-      )}
+
     </div>
   );
 }

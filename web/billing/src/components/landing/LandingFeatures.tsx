@@ -19,38 +19,38 @@ export function LandingFeatures() {
     {
       icon: Wallet,
       title: 'Dual-Currency Multi-App Escrow',
-      description: 'Unified USD & NGN balance. Hold USD, convert at transparent live FX rates, and seamlessly fund campaigns, gifts, and services across all CrimFig apps.',
+      description: 'View your USD wallet and a quoted NGN equivalent. Funding and campaign escrow use server-confirmed records; other ecosystem payment features remain in development.',
       badge: 'Core Engine'
     },
     {
       icon: CreditCard,
       title: 'Tokenized Card Vaults',
-      description: 'Integrated with Paystack & Stripe Level-1 PCI-DSS vaults. Supports Visa, Mastercard, and Verve with 3D-Secure authentication and zero server-side card storage.',
-      badge: 'PCI-DSS Level 1'
+      description: 'Paystack checkout can save a reusable authorization with your consent. Saved-card charging and Stripe payments are not currently available.',
+      badge: 'Explicit Consent'
     },
     {
       icon: Building2,
-      title: 'Sub-5s NUBAN Bank Payouts',
-      description: 'Real-time account resolution and instant automated transfers to Nigerian commercial banks (GTBank, Access, Zenith, UBA, FirstBank, Kuda) with zero manual delay.',
-      badge: '< 5s Latency'
+      title: 'Nigerian Bank Account Checks',
+      description: 'Resolve supported bank account details before saving an account. Withdrawals are currently unavailable; no payout speed is promised.',
+      badge: 'Account Resolution'
     },
     {
       icon: Coins,
       title: 'Integrated Rewards & Cashback',
-      description: 'Monetize Ads publisher shares, video gifts, and referrals. 100 Points = $1.00 USD, redeemable with a single click directly into your main spending wallet.',
-      badge: '100 pts = $1'
+      description: 'Rewards and referral features are planned. Points issuance, cash conversion and redemption are not currently available.',
+      badge: 'Planned'
     },
     {
       icon: Sparkles,
       title: 'Unified App Subscriptions',
-      description: 'One card on file powers enterprise tiers for Chat, Creator badges for Stream, and commission-free features for Ads Studio without re-entering payment info.',
-      badge: 'Zero Friction'
+      description: 'Browse available app plans and existing subscription records. Subscription charging and activation are not currently available.',
+      badge: 'Plan Catalog'
     },
     {
       icon: FileText,
-      title: 'Immutable Ledger & Auditing',
-      description: 'Every deposit, transfer, escrow lock, and withdrawal is recorded in a cryptographically verifiable double-entry transaction ledger with audit exports.',
-      badge: 'Double-Entry'
+      title: 'Transaction History',
+      description: 'Review recorded funding and campaign escrow transactions. Pending records remain pending until confirmed by the server.',
+      badge: 'Recorded Activity'
     }
   ];
 
@@ -97,7 +97,7 @@ export function LandingFeatures() {
             Engineered for High-Velocity Creator &amp; Business Cashflow
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            CrimFig Billing eliminates cross-border friction, banking delays, and isolated wallets with a single unified financial ledger designed specifically for the African digital creator economy.
+            Review confirmed funding and campaign escrow records. Feature availability is shown in the dashboard; unconfirmed operations do not create a balance.
           </p>
         </div>
 

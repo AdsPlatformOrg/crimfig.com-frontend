@@ -22,10 +22,7 @@ import {
   fetchBillingOverview,
   fetchSettlementBatches,
   triggerManualSettlement,
-  MOCK_TRANSACTIONS,
 } from '../../../lib/billing-api';
-import { FundWalletModal } from './FundWalletModal';
-import { WithdrawFundsModal } from './WithdrawFundsModal';
 import { EscrowBreakdownDrawer } from './EscrowBreakdownDrawer';
 
 interface BillingLedgerProps {
@@ -37,16 +34,15 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
   const [role, setRole] = useState<'advertiser' | 'promoter'>(initialRole);
   const [wallet, setWallet] = useState<WalletBalance | null>(null);
   const [escrows, setEscrows] = useState<EscrowAllocation[]>([]);
-  const [transactions, setTransactions] = useState<BillingTransaction[]>(MOCK_TRANSACTIONS);
+  const [transactions] = useState<BillingTransaction[]>([]);
   const [settlementBatches, setSettlementBatches] = useState<SettlementBatch[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'deposits' | 'spend' | 'earnings' | 'withdrawals'>('all');
 
   // Modals
-  const [isFundOpen, setIsFundOpen] = useState(false);
-  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isEscrowDrawerOpen, setIsEscrowDrawerOpen] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setRole(initialRole);
@@ -54,12 +50,12 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
 
   useEffect(() => {
     async function loadData() {
-      const overview = await fetchBillingOverview();
-      setWallet(overview.wallet);
-      setEscrows(overview.escrows);
+      try {
+        const overview = await fetchBillingOverview(); setWallet(overview.wallet); setEscrows(overview.escrows);
+      } catch (err) { setLoadError(err instanceof Error ? err.message : 'Billing overview unavailable.'); }
+      try { setSettlementBatches(await fetchSettlementBatches()); }
+      catch (err) { setLoadError(err instanceof Error ? err.message : 'Settlement history unavailable.'); }
 
-      const batches = await fetchSettlementBatches();
-      setSettlementBatches(batches);
     }
     loadData();
   }, []);
@@ -69,64 +65,9 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleFundSuccess = (amountUsd: number, amountNgn: number, reference: string) => {
-    if (!wallet) return;
-    const newWallet: WalletBalance = {
-      ...wallet,
-      availableUsd: wallet.availableUsd + amountUsd,
-      availableUsdCents: wallet.availableUsdCents + amountUsd * 100,
-      totalUsd: wallet.totalUsd + amountUsd,
-      totalUsdCents: wallet.totalUsdCents + amountUsd * 100,
-      estimatedNgn: Math.round((wallet.availableUsd + amountUsd) * wallet.exchangeRate),
-    };
-    setWallet(newWallet);
-
-    const newTx: BillingTransaction = {
-      id: `tx_${Date.now()}`,
-      type: 'wallet_fund',
-      status: 'completed',
-      amountUsd,
-      grossAmountUsd: amountUsd,
-      netAmountUsd: amountUsd,
-      amountNgn,
-      exchangeRate: wallet.exchangeRate,
-      balanceBeforeUsd: wallet.availableUsd,
-      balanceAfterUsd: wallet.availableUsd + amountUsd,
-      description: 'Paystack Card Funding',
-      reference,
-      createdAt: new Date().toISOString(),
-    };
-    setTransactions([newTx, ...transactions]);
-    showToast(`Funded $${amountUsd.toFixed(2)} (₦${amountNgn.toLocaleString()}) successfully!`);
-  };
-
-  const handleWithdrawSuccess = (amountUsd: number, amountNgn: number, bankName: string, accountNum: string) => {
-    if (!wallet) return;
-    const newWallet: WalletBalance = {
-      ...wallet,
-      availableUsd: Math.max(0, wallet.availableUsd - amountUsd),
-      availableUsdCents: Math.max(0, wallet.availableUsdCents - amountUsd * 100),
-      totalUsd: Math.max(0, wallet.totalUsd - amountUsd),
-      totalUsdCents: Math.max(0, wallet.totalUsdCents - amountUsd * 100),
-      estimatedNgn: Math.round(Math.max(0, wallet.availableUsd - amountUsd) * wallet.exchangeRate),
-    };
-    setWallet(newWallet);
-
-    const newTx: BillingTransaction = {
-      id: `tx_${Date.now()}`,
-      type: 'wallet_withdraw',
-      status: 'completed',
-      amountUsd,
-      amountNgn,
-      exchangeRate: wallet.exchangeRate,
-      balanceBeforeUsd: wallet.availableUsd,
-      balanceAfterUsd: wallet.availableUsd - amountUsd,
-      description: `Transfer to ${bankName} (${accountNum.slice(-4)})`,
-      reference: `pstk_trf_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
-    setTransactions([newTx, ...transactions]);
-    showToast(`Dispatched $${amountUsd.toFixed(2)} payout to ${bankName}!`);
+  const openBilling = () => {
+    const base = process.env.NEXT_PUBLIC_BILLING_WEB_URL || (process.env.NODE_ENV === 'production' ? 'https://billing.crimfig.com' : 'http://localhost:3007');
+    window.location.assign(new URL('/?view=console', base).href);
   };
 
   const handleTriggerSettlement = async () => {
@@ -137,7 +78,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
       const updatedBatches = await fetchSettlementBatches();
       setSettlementBatches(updatedBatches);
     } catch {
-      showToast('Settlement reconciliation cycle simulated and committed.');
+      showToast('Settlement could not be confirmed. Reconcile before trying again.');
     } finally {
       setIsSettling(false);
     }
@@ -153,12 +94,18 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
     return true;
   });
 
-  const availableUsd = wallet ? wallet.availableUsd : 451.8;
+  const availableUsd = wallet ? wallet.availableUsd : 0;
   const lockedEscrowUsd = escrows.reduce((sum, e) => sum + e.remainingUsd, 0);
-  const exchangeRate = wallet ? wallet.exchangeRate : 1625.5;
+  const exchangeRate = wallet ? wallet.exchangeRate : 0;
+
+  if (!wallet) return <div role={loadError ? 'alert' : 'status'} style={{ padding: 24, color: 'var(--text-secondary)' }}>
+    <p>{loadError || 'Loading billing overview…'}</p>
+    <button onClick={openBilling}>Open Billing</button>
+  </div>;
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px', width: '100%', boxSizing: 'border-box' }}>
+      {loadError && <p role="alert">{loadError}</p>}
       {/* Toast Alert */}
       {toastMessage && (
         <div
@@ -336,12 +283,12 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             </div>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--color-crimson)', marginBottom: '4px' }}>
-            ${role === 'advertiser' ? lockedEscrowUsd.toFixed(2) : (availableUsd * 0.55).toFixed(2)}
+            ${role === 'advertiser' ? lockedEscrowUsd.toFixed(2) : (wallet ? (wallet.availableUsd * 0.55).toFixed(2) : '0.00')}
           </div>
           <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
             {role === 'advertiser'
               ? `${escrows.length} Active Campaigns Reserved`
-              : 'Verified 30-min settlement payout'}
+              : 'Verified 55% platform publisher share'}
           </div>
         </div>
 
@@ -375,10 +322,12 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             </div>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>
-            ${role === 'advertiser' ? '360.50' : '50.00'}
+            {role === 'advertiser'
+              ? `$${escrows.reduce((sum, e) => sum + (e.consumedUsd || 0), 0).toFixed(2)}`
+              : '$0.00'}
           </div>
           <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            {role === 'advertiser' ? '100% verified non-fraudulent impressions' : 'Transferred to verified NUBAN'}
+            {role === 'advertiser' ? 'Calculated from campaign escrows' : 'Transferred to verified NUBAN'}
           </div>
         </div>
 
@@ -437,7 +386,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             <>
               <button
                 type="button"
-                onClick={() => setIsFundOpen(true)}
+                onClick={openBilling}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -480,7 +429,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           ) : (
             <button
               type="button"
-              onClick={() => setIsWithdrawOpen(true)}
+              onClick={openBilling}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -592,7 +541,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           </div>
 
           <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Showing {filteredTransactions.length} transaction entries
+            Transaction history is available in the Billing dashboard. Showing {filteredTransactions.length} entries loaded here.
           </span>
         </div>
 
@@ -611,109 +560,102 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
               </tr>
             </thead>
             <tbody>
-              {filteredTransactions.map((tx) => {
-                const isPositive = tx.type === 'wallet_fund' || tx.type === 'ads_earning';
-                return (
-                  <tr
-                    key={tx.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background-color 0.1s ease',
-                    }}
-                  >
-                    <td style={{ padding: '14px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '8px',
-                            backgroundColor: isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(212, 20, 58, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: isPositive ? '#22c55e' : 'var(--color-crimson)',
-                          }}
-                        >
-                          {isPositive ? (
-                            <ArrowDownLeft style={{ width: 14, height: 14 }} />
-                          ) : (
-                            <ArrowUpRight style={{ width: 14, height: 14 }} />
-                          )}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tx.description}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
-                            {tx.type.replace('_', ' ')}
+              {filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No transactions found for this filter. Full ledger history is managed in the Billing console.
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((tx) => {
+                  const isPositive = tx.type === 'wallet_fund' || tx.type === 'ads_earning';
+                  return (
+                    <tr
+                      key={tx.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background-color 0.1s ease',
+                      }}
+                    >
+                      <td style={{ padding: '14px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '8px',
+                              backgroundColor: isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(212, 20, 58, 0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: isPositive ? '#22c55e' : 'var(--color-crimson)',
+                            }}
+                          >
+                            {isPositive ? (
+                              <ArrowDownLeft style={{ width: 14, height: 14 }} />
+                            ) : (
+                              <ArrowUpRight style={{ width: 14, height: 14 }} />
+                            )}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tx.description}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                              {tx.type.replace('_', ' ')}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td style={{ padding: '14px 20px', fontWeight: 700, color: isPositive ? '#22c55e' : 'var(--text-primary)' }}>
-                      {isPositive ? '+' : '-'}${tx.amountUsd.toFixed(2)}
-                    </td>
+                      <td style={{ padding: '14px 20px', fontWeight: 700, color: isPositive ? '#22c55e' : 'var(--text-primary)' }}>
+                        {isPositive ? '+' : '-'}${tx.amountUsd.toFixed(2)}
+                      </td>
 
-                    <td style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>
-                      {tx.amountNgn ? `₦${Math.round(tx.amountNgn).toLocaleString()}` : '—'}
-                    </td>
+                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>
+                        {tx.amountNgn ? `₦${Math.round(tx.amountNgn).toLocaleString()}` : '—'}
+                      </td>
 
-                    <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {tx.balanceAfterUsd !== undefined ? `$${tx.balanceAfterUsd.toFixed(2)}` : '—'}
-                    </td>
+                      <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {tx.balanceAfterUsd !== undefined ? `$${tx.balanceAfterUsd.toFixed(2)}` : '—'}
+                      </td>
 
-                    <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '12px' }}>
-                      {tx.reference}
-                    </td>
+                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '12px' }}>
+                        {tx.reference}
+                      </td>
 
-                    <td style={{ padding: '14px 20px' }}>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '9999px',
-                          backgroundColor: tx.status === 'completed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(234, 179, 8, 0.1)',
-                          color: tx.status === 'completed' ? '#22c55e' : '#eab308',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {tx.status}
-                      </span>
-                    </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            padding: '3px 8px',
+                            borderRadius: '9999px',
+                            backgroundColor: tx.status === 'completed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(234, 179, 8, 0.1)',
+                            color: tx.status === 'completed' ? '#22c55e' : '#eab308',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {tx.status}
+                        </span>
+                      </td>
 
-                    <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontSize: '12px' }}>
-                      {new Date(tx.createdAt).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontSize: '12px' }}>
+                        {new Date(tx.createdAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Modals */}
-      <FundWalletModal
-        isOpen={isFundOpen}
-        onClose={() => setIsFundOpen(false)}
-        onSuccess={handleFundSuccess}
-        exchangeRate={exchangeRate}
-      />
-
-      <WithdrawFundsModal
-        isOpen={isWithdrawOpen}
-        onClose={() => setIsWithdrawOpen(false)}
-        onSuccess={handleWithdrawSuccess}
-        availableUsd={availableUsd}
-        exchangeRate={exchangeRate}
-      />
-
       <EscrowBreakdownDrawer
         isOpen={isEscrowDrawerOpen}
         onClose={() => setIsEscrowDrawerOpen(false)}

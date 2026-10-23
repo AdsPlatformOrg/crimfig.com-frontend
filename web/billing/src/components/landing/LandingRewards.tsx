@@ -30,22 +30,22 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
       icon: Layers,
       title: 'Ads Network Monetization',
       source: 'CrimFig Ads Network',
-      description: 'Webmasters, bloggers, and app developers earn rewards points on every verified ad impression, click, and user engagement across their traffic.',
-      yieldRate: 'Up to 75% Publisher Share'
+      description: 'Publisher cash earnings require funded, verified settlement. Planned rewards points are separate and are not awarded from raw impressions or clicks.',
+      yieldRate: 'Settlement Rules Pending'
     },
     {
       icon: Tv,
       title: 'Creator Video & Reels Tips',
       source: 'CrimFig Stream & Social',
-      description: 'Streamers and video creators receive community tip gifts and badges from live viewers. 100% of gift values convert directly to CF-Points.',
-      yieldRate: 'Instant Settlement'
+      description: 'Creator gifts and rewards are planned features; this page does not represent an available payment or points entitlement.',
+      yieldRate: 'Planned Feature'
     },
     {
       icon: Users,
       title: 'Developer & User Referrals',
       source: 'Ecosystem Growth Protocol',
-      description: 'Earn persistent points cashback whenever invited creators launch campaigns, fund wallets, or subscribe to premium developer tiers.',
-      yieldRate: 'Lifetime Tier Residuals'
+      description: 'Referral rewards require an approved, funded program and verified qualifying activity. No referral payout is currently available.',
+      yieldRate: 'Program Pending'
     }
   ];
 
@@ -90,10 +90,10 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
               margin: '0 0 16px',
             }}
           >
-            Turn Ecosystem Engagement Into Real Bank Balance
+            Explore Planned Ecosystem Rewards
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Rewards are not isolated loyalty points. Powered by our unified financial ledger, every point earned across Ads, Live Streaming, and Referrals settles directly to your wallet at a transparent peg: <strong>100 Points = $1.00 USD</strong>.
+            Rewards are planned and require a funded program. The example below assumes <strong>100 example points = $1</strong> for illustration only; it is not an approved redemption rate or cash entitlement.
           </p>
         </div>
 
@@ -178,17 +178,17 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <Coins style={{ width: 20, height: 20, color: 'var(--color-crimson)' }} />
               <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Interactive Points-to-Cash Meter
+                Illustrative Points Conversion
               </h3>
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
-              Select or slide your accumulated rewards points to calculate their immediate cash value. Once redeemed in your console, funds are immediately unlocked for withdrawal to your Nigerian bank.
+              Adjust example points to explore a hypothetical conversion at a sample FX rate. These are not your points or a redeemable balance; rewards and withdrawals are unavailable.
             </p>
 
             {/* Slider */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                <span>Points Accumulated:</span>
+                <span>Example Points:</span>
                 <span style={{ color: 'var(--color-crimson)', fontSize: '16px' }}>{pointsSlider.toLocaleString()} CF-Points</span>
               </div>
               <input
@@ -222,7 +222,7 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Instant Redeemable Value
+              Hypothetical Example Value
             </div>
             <div>
               <div style={{ fontSize: '38px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
@@ -235,7 +235,7 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
             </div>
 
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              1-Click Settlement into your main USD balance with zero commission or lock-in period.
+              Illustration only. Final program rates, eligibility and availability are not established here.
             </div>
 
             <button
@@ -261,7 +261,7 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
               onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
             >
               <Wallet style={{ width: 16, height: 16 }} />
-              <span>Redeem in Console</span>
+              <span>View Rewards Availability</span>
               <ArrowRight style={{ width: 14, height: 14 }} />
             </button>
           </div>

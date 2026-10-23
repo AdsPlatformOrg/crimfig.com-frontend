@@ -1,6 +1,7 @@
 'use client';
+import { sessionFetch } from '../../lib/session';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, Activity, ArrowUpRight, Ban } from 'lucide-react';
 
 interface QualityData {
@@ -24,50 +25,18 @@ export function PromoterQualityCard({ apiBase }: QualityCardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchQuality = async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchQuality = useCallback(async () => {
+    setIsLoading(true); setError(null);
     try {
-      const res = await fetch(`${apiBase}/api/v1/promoters/quality`, {
-        headers: { 'Accept': 'application/json' },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setData(json.data);
-      } else {
-        // Fallback for demo / preview
-        setData({
-          promoterId: 'demo-promoter',
-          trustScore: 92,
-          isSuspended: false,
-          suspensionReason: null,
-          totalInteractions: 14820,
-          validInteractions: 14610,
-          invalidInteractions: 210,
-          invalidRatePct: 1.42,
-          status: 'good',
-        });
-      }
-    } catch (e: any) {
-      setData({
-        promoterId: 'demo-promoter',
-        trustScore: 88,
-        isSuspended: false,
-        suspensionReason: null,
-        totalInteractions: 8200,
-        validInteractions: 8050,
-        invalidInteractions: 150,
-        invalidRatePct: 1.83,
-        status: 'good',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchQuality();
+      const res = await sessionFetch(`${apiBase}/api/v1/promoters/quality`);
+      if (!res.ok) throw new Error('Quality telemetry could not be loaded.');
+      const json = await res.json();
+      if (!json.data || typeof json.data.trustScore !== 'number') throw new Error('Invalid quality response.');
+      setData(json.data);
+    } catch (err) { setData(null); setError(err instanceof Error ? err.message : 'Quality telemetry unavailable.'); }
+    finally { setIsLoading(false); }
   }, [apiBase]);
+  useEffect(() => { void fetchQuality(); }, [fetchQuality]);
 
   if (isLoading) {
     return (
@@ -78,7 +47,7 @@ export function PromoterQualityCard({ apiBase }: QualityCardProps) {
     );
   }
 
-  if (!data) return null;
+  if (!data) return <div role="alert" className="theme-card" style={{ padding: 24 }}><p>{error || 'Quality telemetry unavailable.'}</p><button onClick={fetchQuality}>Retry</button></div>;
 
   const scoreColor = data.isSuspended
     ? 'var(--color-danger, #D4143A)'

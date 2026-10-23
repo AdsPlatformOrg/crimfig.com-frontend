@@ -1,4 +1,9 @@
 'use client';
+import { useDialog } from '../lib/use-dialog';
+import { SessionGate, SignOutButton, useSessionStatus } from '../components/SessionGate';
+import { apiData, arrayData } from '../lib/api-data';
+import { loadCampaigns, loadWebsites, createCampaignWorkflow, CampaignWorkflowError, setCampaignStatus, registerWebsite, verifyWebsite } from '../lib/campaigns-api';
+import { sessionFetch } from '../lib/session';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -83,6 +88,7 @@ interface Campaign {
   cpmUsd: number;
   status: 'active' | 'paused' | 'under_review' | 'draft' | 'rejected' | 'suspended' | 'trash';
   moderationStatus?: 'draft' | 'pending_primary_review' | 'pending_manager_approval' | 'approved' | 'rejected';
+  metricsLoaded?: boolean;
   impressions: number;
   clicks: number;
   hovers?: number;
@@ -125,8 +131,12 @@ interface InteractionLog {
 const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_ADS_API_URL || 'https://ads-api-production-d889.up.railway.app');
 
 export default function AdsPlatformApp() {
+  const sessionStatus = useSessionStatus();
   // Top Level View: Landing Page vs Management Console
-  const [view, setView] = useState<'landing' | 'console'>('landing');
+  const [view, setView] = useState<'loading' | 'landing' | 'console'>('loading');
+  useEffect(() => {
+    setView(new URLSearchParams(window.location.search).get('view') === 'console' ? 'console' : 'landing');
+  }, []);
 
   // Main Console Role: 'advertiser' vs 'promoter' vs 'admin'
   const [role, setRole] = useState<'advertiser' | 'promoter' | 'admin'>('advertiser');
@@ -171,91 +181,20 @@ export default function AdsPlatformApp() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // Reels Consent State
-  const [reelsConsent, setReelsConsent] = useState(true);
+  const [reelsConsent, setReelsConsent] = useState(false);
 
-  // Default Campaigns including active, paused, under_review, and rejected for rich demonstration
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    {
-      id: 'camp_001',
-      title: 'CrimFig Cloud Infrastructure Launch',
-      category: 'Technology',
-      format: 'card',
-      channels: ['websites', 'mobile_apps'],
-      budgetUsd: 500,
-      spentUsd: 218.4,
-      cpcUsd: 0.15,
-      cpmUsd: 0.02,
-      status: 'active',
-      impressions: 48900,
-      clicks: 1820,
-      hovers: 3950,
-      touches: 1680,
-      headline: 'Deploy globally distributed microservices with <15ms latency',
-      destinationUrl: 'https://crimfig.com',
-      imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'camp_002',
-      title: 'Pan-African Tech Summit 2026',
-      category: 'Technology',
-      format: 'banner',
-      channels: ['websites', 'individuals'],
-      budgetUsd: 350,
-      spentUsd: 142.1,
-      cpcUsd: 0.12,
-      cpmUsd: 0.015,
-      status: 'active',
-      impressions: 34100,
-      clicks: 1240,
-      hovers: 2420,
-      touches: 980,
-      headline: 'Register now for Lagos & Nairobi developer conference passes',
-      destinationUrl: 'https://crimfig.com/summit',
-      imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 'camp_003',
-      title: 'High-Yield Cloud Mining Promo',
-      category: 'Finance',
-      format: 'card',
-      channels: ['websites'],
-      budgetUsd: 200,
-      spentUsd: 0,
-      cpcUsd: 0.25,
-      cpmUsd: 0.03,
-      status: 'rejected',
-      impressions: 0,
-      clicks: 0,
-      hovers: 0,
-      touches: 0,
-      headline: 'Earn up to 25% passive crypto returns daily',
-      destinationUrl: 'https://example.com/mining',
-      rejectionReason: 'Financial claim flagged by compliance policy. Guaranteed returns are not permitted.',
-    },
-    {
-      id: 'camp_004',
-      title: 'CrimFig Reels Creator Fund',
-      category: 'Entertainment',
-      format: 'video',
-      channels: ['individuals'],
-      budgetUsd: 400,
-      spentUsd: 221.9,
-      cpcUsd: 0.18,
-      cpmUsd: 0.025,
-      status: 'active',
-      impressions: 59850,
-      clicks: 1830,
-      hovers: 6050,
-      touches: 3520,
-      headline: 'Get paid directly for your viral reels and creator posts',
-      destinationUrl: 'https://reels.crimfig.com',
-      videoUrl: 'https://cdn.crimfig.com/creatives/reels.mp4',
-    },
-  ]);
-
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [catalog, setCatalog] = useState<Campaign[]>([]);
+  const [placements, setPlacements] = useState<any[]>([]);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [dataAttempt, setDataAttempt] = useState(0);
+  const [creationUncertain, setCreationUncertain] = useState(false);
+  const [pendingWrites, setPendingWrites] = useState<Set<string>>(new Set());
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [apps, setApps] = useState<PromoterApp[]>([]);
   const [logs, setLogs] = useState<InteractionLog[]>([]);
+  const [promoterEarnings, setPromoterEarnings] = useState<number | null>(null);
 
   // Modals
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
@@ -286,60 +225,26 @@ export default function AdsPlatformApp() {
   const [newWebDomain, setNewWebDomain] = useState('');
   const [newWebMethod, setNewWebMethod] = useState<'html_file_and_meta_tag' | 'dns_txt'>('html_file_and_meta_tag');
 
-  // Fetch Live Data on mount
   useEffect(() => {
-    async function loadData() {
-      setIsLoadingCampaigns(true);
-      setIsLoadingWebsites(true);
-
-      try {
-        const campRes = await fetch(`${API_BASE}/api/v1/campaigns/catalog`);
-        if (campRes.ok) {
-          const json = await campRes.json();
-          if (json.data && Array.isArray(json.data)) {
-            setCampaigns(json.data.map((c: any) => ({
-              id: c.id,
-              title: c.title,
-              category: c.category || 'General',
-              format: c.format || 'card',
-              channels: c.channels || ['websites'],
-              budgetUsd: c.budgetUsdCents ? c.budgetUsdCents / 100 : 0,
-              spentUsd: c.spentUsdCents ? c.spentUsdCents / 100 : 0,
-              cpcUsd: c.costPerClickCents ? c.costPerClickCents / 100 : 0.1,
-              cpmUsd: c.costPerImpressionCents ? c.costPerImpressionCents / 100 : 0.01,
-              status: c.status || 'active',
-              impressions: c.impressionsCount || 0,
-              clicks: c.clicksCount || 0,
-              headline: c.headline || c.title,
-              destinationUrl: c.destinationUrl || 'https://crimfig.com',
-            })));
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load campaigns:', e);
-      } finally {
-        setIsLoadingCampaigns(false);
-      }
-
-      try {
-        const webRes = await fetch(`${API_BASE}/api/v1/promoters/sites`, {
-          headers: { 'x-user-id': 'demo-promoter' }
-        });
-        if (webRes.ok) {
-          const json = await webRes.json();
-          if (json.data && Array.isArray(json.data)) {
-            setWebsites(json.data);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load sites:', e);
-      } finally {
-        setIsLoadingWebsites(false);
-      }
-    }
-
-    loadData();
-  }, []);
+    if (view !== 'console' || sessionStatus !== 'authenticated') return;
+    let active = true;
+    setIsLoadingCampaigns(true); setIsLoadingWebsites(true); setDataError(null);
+    void (async () => {
+      const results = await Promise.allSettled([loadCampaigns(true), loadCampaigns(false), loadWebsites(), apiData<any>('/api/v1/promoters/reels-consent'), apiData<any[]>('/api/v1/placements').then(value => arrayData<any>(value)), apiData<any[]>('/api/v1/promoters/apps').then(value => arrayData<any>(value)), apiData<any>('/api/v1/analytics/promoter')]);
+      if (!active) return;
+      const [own, publicCatalog, sites, consent, ownedPlacements, ownedApps, promoterAnalytics] = results;
+      if (own.status === 'fulfilled') setCampaigns(own.value);
+      if (publicCatalog.status === 'fulfilled') setCatalog(publicCatalog.value);
+      if (ownedPlacements.status === 'fulfilled') setPlacements(ownedPlacements.value);
+      if (ownedApps.status === 'fulfilled') setApps(ownedApps.value.map(app => ({ ...app, isVerified: app.verificationStatus === 'verified' })));
+      if (promoterAnalytics.status === 'fulfilled' && Number.isFinite(promoterAnalytics.value?.earningsUsd)) setPromoterEarnings(promoterAnalytics.value.earningsUsd);
+      if (sites.status === 'fulfilled') setWebsites(sites.value);
+      if (consent.status === 'fulfilled') setReelsConsent(consent.value?.consentGiven === 1);
+      if (results.some(result => result.status === 'rejected')) setDataError('Some account data could not be loaded. Unavailable data is not a confirmed empty result.');
+      setIsLoadingCampaigns(false); setIsLoadingWebsites(false);
+    })();
+    return () => { active = false; };
+  }, [view, sessionStatus, dataAttempt]);
 
   // Copy helper
   const handleCopy = (text: string, id: string) => {
@@ -354,153 +259,85 @@ export default function AdsPlatformApp() {
     if (!newCampTitle || newCampCreatives.length === 0) return;
     const validCreatives = newCampCreatives.filter((c) => c.headline.trim() && c.destinationUrl.trim());
     if (validCreatives.length === 0) {
-      alert('Please provide at least one complete ad creative with headline and destination URL.');
+      setActionError('Please provide at least one complete ad creative with headline and destination URL.');
       return;
     }
     setIsSubmitting(true);
 
+    setActionError(null);
+    if (creationUncertain) { setIsSubmitting(false); return; }
+    setCreationUncertain(true);
     try {
-      // 1. Create Campaign
-      const primaryFormat = validCreatives[0].adFormat || 'card';
-      const res = await fetch(`${API_BASE}/api/v1/campaigns`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': 'demo-advertiser' },
-        body: JSON.stringify({
-          title: newCampTitle,
-          budgetUsd: Number(newCampBudget),
-          format: primaryFormat,
-          pricingModel: newCampPricingModel,
-          targetCpaUsd: newCampPricingModel === 'cpa' ? newCampTargetCpa : undefined,
-          targetCpcvUsd: newCampPricingModel === 'cpcv' ? newCampTargetCpcv : undefined,
-          costPerClickCents: newCampPricingModel === 'cpc' ? 10 : 10,
-          costPerImpressionCents: newCampPricingModel === 'cpm' ? 1 : 1,
-        }),
-      });
-
-      const created = res.ok ? (await res.json()).data : null;
-      const campaignId = created?.id || `camp_${Date.now()}`;
-
-      // 2. Attach each creative to the campaign via API
-      for (const crt of validCreatives) {
-        try {
-          await fetch(`${API_BASE}/api/v1/campaigns/${campaignId}/creatives`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-user-id': 'demo-advertiser' },
-            body: JSON.stringify({
-              headline: crt.headline,
-              destinationUrl: crt.destinationUrl,
-              adFormat: crt.adFormat,
-              mediaFormat: crt.mediaFormat || 'image',
-              imageUrl: crt.imageUrl,
-              videoUrl: crt.videoUrl,
-            }),
-          });
-        } catch (crtErr) {
-          console.warn('Creative upload deferred:', crtErr);
-        }
-      }
-
-      const distinctFormats = Array.from(new Set(validCreatives.map((c) => c.adFormat)));
-
-      const newCamp: Campaign = {
-        id: campaignId,
-        title: newCampTitle,
-        category: newCampCategory,
-        format: primaryFormat,
-        formats: distinctFormats,
-        creatives: validCreatives,
-        channels: newCampChannels,
-        budgetUsd: Number(newCampBudget),
-        spentUsd: 0,
-        cpcUsd: 0.10,
-        cpmUsd: 0.01,
-        status: 'under_review',
-        impressions: 0,
-        clicks: 0,
-        headline: validCreatives[0].headline,
-        destinationUrl: validCreatives[0].destinationUrl,
-      };
-
-      setCampaigns([newCamp, ...campaigns]);
-      setIsCreateCampaignOpen(false);
-      setNewCampTitle('');
-      setNewCampCreatives([
-        {
-          headline: '',
-          destinationUrl: '',
-          adFormat: 'card',
-          mediaFormat: 'image',
-        },
-      ]);
+      await createCampaignWorkflow({ title: newCampTitle, budgetUsd: Number(newCampBudget), format: validCreatives[0].adFormat, pricingModel: newCampPricingModel }, validCreatives);
+      setIsCreateCampaignOpen(false); setNewCampTitle('');
+      setNewCampCreatives([{ headline: '', destinationUrl: '', adFormat: 'card', mediaFormat: 'image' }]);
+      setCreationUncertain(false);
     } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+      setActionError(err instanceof Error ? err.message : 'Campaign creation could not be confirmed. Refresh before retrying.');
+      if (err instanceof CampaignWorkflowError) setIsCreateCampaignOpen(false);
+    } finally { setIsSubmitting(false); setDataAttempt(value => value + 1); }
   };
 
-  // Add Website Submit
   const handleAddWebsite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newWebDomain) return;
-    setIsSubmitting(true);
-
-    const clean = newWebDomain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-    const token = `cf_verify_${Math.random().toString(36).substring(2, 12)}`;
-
+    e.preventDefault(); if (!newWebDomain || isSubmitting) return;
+    setIsSubmitting(true); setActionError(null);
     try {
-      await fetch(`${API_BASE}/api/v1/promoters/sites`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': 'demo-promoter' },
-        body: JSON.stringify({ domain: clean, verificationMethod: newWebMethod })
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
-
-    const newSite: PromoterWebsite = {
-      id: `web_${Date.now()}`,
-      domain: clean,
-      url: `https://${clean}`,
-      verificationToken: token,
-      verificationMethod: newWebMethod,
-      isVerified: false,
-      lastPingAt: 'Pending verification',
-      activePlacementCount: 0,
-    };
-
-    setWebsites([newSite, ...websites]);
-    setIsAddWebsiteOpen(false);
-    setNewWebDomain('');
+      const site = await registerWebsite(newWebDomain.trim(), newWebMethod);
+      setWebsites(items => [site, ...items]); setIsAddWebsiteOpen(false); setNewWebDomain('');
+    } catch (err) { setActionError(err instanceof Error ? err.message : 'Website registration could not be confirmed.'); }
+    finally { setIsSubmitting(false); }
   };
 
-  // Verify Website action
-  const handleVerifyWebsite = (siteId: string) => {
-    setWebsites(websites.map(w => w.id === siteId ? { ...w, isVerified: true, lastPingAt: 'Just now (verified)' } : w));
+  const handleVerifyWebsite = async (siteId: string) => {
+    if (pendingWrites.has(siteId)) return;
+    setPendingWrites(items => new Set(items).add(siteId)); setActionError(null);
+    try {
+      const result = await verifyWebsite(siteId);
+      setWebsites(items => items.map(site => site.id === siteId ? result.site : site));
+      if (!result.site.isVerified) setActionError(result.error || 'Domain verification did not succeed. Check your verification records.');
+    } catch (err) { setActionError(err instanceof Error ? err.message : 'Verification could not be confirmed.'); }
+    finally { setPendingWrites(items => { const next = new Set(items); next.delete(siteId); return next; }); }
   };
 
-  // Toggle Campaign status
-  const handleToggleStatus = (campId: string) => {
-    setCampaigns(campaigns.map(c => {
-      if (c.id === campId) {
-        return { ...c, status: c.status === 'active' ? 'paused' : 'active' };
-      }
-      return c;
-    }));
+  const handleToggleStatus = async (campId: string) => {
+    const campaign = campaigns.find(item => item.id === campId);
+    if (!campaign || pendingWrites.has(campId)) return;
+    setPendingWrites(items => new Set(items).add(campId)); setActionError(null);
+    try {
+      const updated = await setCampaignStatus(campId, campaign.status === 'active' ? 'paused' : 'active');
+      if (updated?.id !== campId) throw new Error('Campaign update could not be confirmed.');
+      setCampaigns(items => items.map(item => item.id === campId ? { ...item, status: updated.status, moderationStatus: updated.moderationStatus } : item));
+    } catch (err) { setActionError(err instanceof Error ? err.message : 'Campaign update could not be confirmed.'); }
+    finally { setPendingWrites(items => { const next = new Set(items); next.delete(campId); return next; }); }
+  };
+
+  const toggleReelsConsent = async () => {
+    if (pendingWrites.has('consent')) return;
+    setPendingWrites(items => new Set(items).add('consent')); setActionError(null);
+    try {
+      const result = await apiData<any>('/api/v1/promoters/reels-consent', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ consent: !reelsConsent }) });
+      if (![0, 1].includes(result?.consentGiven)) throw new Error('Consent update could not be confirmed.');
+      setReelsConsent(result.consentGiven === 1);
+    } catch (err) { setActionError(err instanceof Error ? err.message : 'Consent update could not be confirmed.'); }
+    finally { setPendingWrites(items => { const next = new Set(items); next.delete('consent'); return next; }); }
   };
 
   // Compute stats
   const totalAdvertiserBudget = campaigns.reduce((a, b) => a + b.budgetUsd, 0);
   const totalAdvertiserSpent = campaigns.reduce((a, b) => a + b.spentUsd, 0);
-  const totalPromoterEarned = logs.reduce((a, b) => a + b.earningUsd, 0);
+  const totalPromoterEarned = promoterEarnings;
 
   const categories = ['All', 'Technology', 'Entertainment', 'Finance', 'Lifestyle', 'Gaming'];
 
   const filteredCampaigns = selectedCategory === 'All'
-    ? campaigns
-    : campaigns.filter(c => c.category.toLowerCase() === selectedCategory.toLowerCase());
+    ? catalog
+    : catalog.filter(c => c.category.toLowerCase() === selectedCategory.toLowerCase());
+
+  const createDialog = useDialog(view === 'console' && sessionStatus === 'authenticated' && isCreateCampaignOpen, () => setIsCreateCampaignOpen(false));
+  const websiteDialog = useDialog(view === 'console' && sessionStatus === 'authenticated' && isAddWebsiteOpen, () => setIsAddWebsiteOpen(false));
+  const embedDialog = useDialog(view === 'console' && sessionStatus === 'authenticated' && Boolean(isEmbedCodeModalOpen), () => setIsEmbedCodeModalOpen(null));
+
+  if (view === 'loading') return <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>Opening Ads…</main>;
 
   if (view === 'landing') {
     return (
@@ -514,8 +351,13 @@ export default function AdsPlatformApp() {
     );
   }
 
+  if (sessionStatus !== 'authenticated') return <SessionGate><></></SessionGate>;
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)' }}>
+      {(dataError || actionError) && <div role="alert" style={{ position: 'sticky', top: 0, zIndex: 1200, padding: '12px 24px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)' }}>
+        {actionError || dataError} <button style={{ marginLeft: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer' }} onClick={() => setDataAttempt(value => value + 1)}>Refresh account data</button>
+      </div>}
       {/* Top Console Navigation Bar */}
       <header
         style={{
@@ -531,8 +373,10 @@ export default function AdsPlatformApp() {
           style={{
             maxWidth: '1280px',
             margin: '0 auto',
-            padding: '0 24px',
-            height: '70px',
+            padding: '12px 24px',
+            minHeight: '70px',
+            width: '100%',
+            boxSizing: 'border-box',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -541,7 +385,7 @@ export default function AdsPlatformApp() {
           }}
         >
           {/* Brand Identity & Back to Landing */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', maxWidth: '100%' }}>
             <div
               style={{
                 width: '40px',
@@ -604,12 +448,15 @@ export default function AdsPlatformApp() {
           </div>
 
           {/* Mode Switcher: Advertiser Studio vs Promoter Hub */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 padding: '4px',
+                flexWrap: 'wrap',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
                 borderRadius: '12px',
                 backgroundColor: 'var(--bg-surface)',
                 border: '1px solid var(--border-subtle)',
@@ -683,6 +530,9 @@ export default function AdsPlatformApp() {
                   display: 'flex',
                   alignItems: 'center',
                   padding: '4px',
+                flexWrap: 'wrap',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
                   borderRadius: '12px',
                   backgroundColor: 'var(--bg-surface)',
                   border: '1px solid var(--border-subtle)',
@@ -790,8 +640,9 @@ export default function AdsPlatformApp() {
           </div>
 
           {/* Right Controls: Theme Switcher & Wallet Trigger */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
             <ThemeSwitcher />
+            <SignOutButton />
 
             <button
               type="button"
@@ -850,7 +701,7 @@ export default function AdsPlatformApp() {
                     Promoter Monetization Hub
                   </h1>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px', maxWidth: '640px' }}>
-                    Display verified ecosystem ads on your websites, mobile apps, or share trackable referral links to earn USD revenue for every impression and click.
+                    Register properties and manage owned links. Publisher ad delivery and funded settlement remain in development.
                   </p>
                 </div>
 
@@ -885,8 +736,8 @@ export default function AdsPlatformApp() {
                   </div>
                   <div>
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total Accrued Earnings</span>
-                    <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>${totalPromoterEarned.toFixed(2)} USD</div>
-                    <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: 600 }}>Ready for instant bank withdrawal</span>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>{totalPromoterEarned === null ? '—' : `$${totalPromoterEarned.toFixed(2)} USD`}</div>
+                    <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: 600 }}>Check available and held funds in Billing</span>
                   </div>
                 </div>
               </div>
@@ -979,7 +830,7 @@ export default function AdsPlatformApp() {
                   }}
                 >
                   <Layers style={{ width: 16, height: 16 }} />
-                  Browse Ad Campaigns ({campaigns.length})
+                  Browse Ad Campaigns ({catalog.length})
                 </button>
                 <button
                   type="button"
@@ -1063,7 +914,7 @@ export default function AdsPlatformApp() {
                   <div>
                     <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Registered Websites</h3>
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      Verify ownership and embed script tags to start serving ads.
+                      Verify website ownership. Publisher installation codes are not available yet.
                     </p>
                   </div>
                   <button
@@ -1094,7 +945,7 @@ export default function AdsPlatformApp() {
                   <EmptyState
                     icon={Globe}
                     title="No Websites Registered Yet"
-                    description="Register your domain or blog to earn USD by embedding verified CrimFig display ad units."
+                    description="Register your domain and complete ownership checks. Publisher installation codes remain unavailable."
                     actionLabel="+ Add Your First Website"
                     onAction={() => setIsAddWebsiteOpen(true)}
                   />
@@ -1125,13 +976,19 @@ export default function AdsPlatformApp() {
                           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
                             Status: {site.lastPingAt}
                           </p>
+                          {!site.isVerified && <details style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
+                            <summary>Ownership verification instructions</summary>
+                            <p>{site.verificationMethod === 'dns_txt' ? 'Add this TXT value at your domain root:' : 'Add this meta tag inside your website head:'}</p>
+                            <code style={{ display: 'block', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>{site.verificationMethod === 'dns_txt' ? `crimfig-site-verification=${site.verificationToken}` : `<meta name="crimfig-site-verification" content="${site.verificationToken}" />`}</code>
+                          </details>}
                         </div>
 
                         <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           {!site.isVerified ? (
                             <button
                               type="button"
-                              onClick={() => handleVerifyWebsite(site.id)}
+                              disabled={pendingWrites.has(site.id)}
+                                  onClick={() => handleVerifyWebsite(site.id)}
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -1151,7 +1008,8 @@ export default function AdsPlatformApp() {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => setIsEmbedCodeModalOpen({ domain: site.domain, publisherKey: site.verificationToken })}
+                              disabled
+                              title="Installation codes require the upcoming ad-space setup"
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -1166,7 +1024,7 @@ export default function AdsPlatformApp() {
                                 cursor: 'pointer'
                               }}
                             >
-                              <Code2 style={{ width: 14, height: 14 }} /> Get Embed Tag
+                              <Code2 style={{ width: 14, height: 14 }} /> Ad-space setup pending
                             </button>
                           )}
                           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{site.activePlacementCount} active ads</span>
@@ -1197,7 +1055,8 @@ export default function AdsPlatformApp() {
 
                     <button
                       type="button"
-                      onClick={() => setReelsConsent(!reelsConsent)}
+                      onClick={toggleReelsConsent}
+                      disabled={pendingWrites.has('consent')}
                       style={{
                         padding: '6px 14px',
                         borderRadius: '9999px',
@@ -1216,7 +1075,7 @@ export default function AdsPlatformApp() {
 
                 {isLoadingCampaigns ? (
                   <CardSkeleton count={2} />
-                ) : campaigns.length === 0 ? (
+                ) : placements.length === 0 ? (
                   <EmptyState
                     icon={Share2}
                     title="No Active Share Campaigns"
@@ -1224,14 +1083,15 @@ export default function AdsPlatformApp() {
                   />
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-                    {campaigns.map((camp) => {
-                      const shareLink = `https://ads.crimfig.com/api/v1/delivery/go/token_${camp.id}?pid=promoter_live`;
+                    {placements.map((placement) => {
+                      const camp = { ...placement.campaign, headline: placement.creative?.headline, cpcUsd: 0 };
+                      const shareLink = placement.shareLink;
                       return (
-                        <div key={camp.id} className="theme-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div key={placement.id} className="theme-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)' }}>{camp.category}</span>
                             <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--badge-bg)', color: 'var(--text-secondary)' }}>
-                              ${camp.cpcUsd.toFixed(2)} / Click
+                              Verified settlement determines earnings
                             </span>
                           </div>
                           <h4 style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>{camp.title}</h4>
@@ -1255,7 +1115,7 @@ export default function AdsPlatformApp() {
                             />
                             <button
                               type="button"
-                              onClick={() => handleCopy(shareLink, camp.id)}
+                              onClick={() => handleCopy(shareLink, placement.id)}
                               style={{
                                 padding: '8px 14px',
                                 borderRadius: '6px',
@@ -1300,7 +1160,7 @@ export default function AdsPlatformApp() {
                     title="No Mobile Apps Registered"
                     description="Connect your mobile applications with our React Native or Native SDK to earn revenue from in-app ads."
                     actionLabel="+ Register First Mobile App"
-                    onAction={() => alert('Mobile SDK documentation available at docs.crimfig.com/sdk')}
+                    onAction={() => setActionError('Mobile SDK installation is not available yet.')}
                   />
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
@@ -1379,20 +1239,27 @@ export default function AdsPlatformApp() {
                           <div style={{ marginTop: '16px', padding: '12px', borderRadius: '8px', backgroundColor: 'var(--bg-page)', border: '1px solid var(--border-subtle)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                             <div>
                               <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Promoter Payout</span>
-                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)' }}>${(camp.cpcUsd * 0.7).toFixed(3)} / Click</span>
+                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)' }}>Verified settlement only</span>
                             </div>
                             <div>
                               <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Impression Payout</span>
-                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)' }}>${(camp.cpmUsd * 0.7).toFixed(4)} / View</span>
+                              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)' }}>No guaranteed payout</span>
                             </div>
                           </div>
                         </div>
 
                         <button
                           type="button"
-                          onClick={() => {
-                            setPromoterSection('individuals');
-                            alert(`Applied to ${camp.title}! Share link ready in Individual Promoters.`);
+                          disabled={pendingWrites.has(camp.id)}
+                          onClick={async () => {
+                            if (pendingWrites.has(camp.id)) return;
+                            setPendingWrites(items => new Set(items).add(camp.id)); setActionError(null);
+                            try {
+                              const placement = await apiData<any>('/api/v1/placements', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ campaignId: camp.id }) });
+                              if (!placement?.id || typeof placement.shareLink !== 'string') throw new Error('Placement creation could not be confirmed. Refresh before retrying.');
+                              setDataAttempt(value => value + 1); setPromoterSection('individuals');
+                            } catch (err) { setActionError(err instanceof Error ? err.message : 'Placement creation could not be confirmed.'); }
+                            finally { setPendingWrites(items => { const next = new Set(items); next.delete(camp.id); return next; }); }
                           }}
                           style={{
                             width: '100%',
@@ -1422,10 +1289,10 @@ export default function AdsPlatformApp() {
                 <div>
                   <h4 style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Radio style={{ width: 16, height: 16, color: 'var(--color-success)' }} />
-                    Live Interaction Stream
+                    Activity Details
                   </h4>
                   <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                    Real-time log of verified impressions and clicks accrued by your channels.
+                    Recorded totals are available in analytics; per-event detail is not loaded here.
                   </p>
                 </div>
               </div>
@@ -1433,8 +1300,8 @@ export default function AdsPlatformApp() {
               {logs.length === 0 ? (
                 <EmptyState
                   icon={Inbox}
-                  title="No Interactions Recorded Yet"
-                  description="When your website or shared links receive visitor views and clicks, verified event logs will stream here."
+                  title="Event Details Unavailable"
+                  description="Per-event activity is not loaded here. View recorded totals in analytics and settled earnings in Billing."
                 />
               ) : (
                 <div style={{ overflowX: 'auto' }}>
@@ -1474,7 +1341,7 @@ export default function AdsPlatformApp() {
             {advertiserTab === 'billing' ? (
               <BillingLedger initialRole="advertiser" onRoleChange={(r) => setRole(r)} />
             ) : advertiserTab === 'conversions' ? (
-              <ConversionsTab advertiserId="adv_demo_9841" />
+              <ConversionsTab />
             ) : advertiserTab === 'disputes' ? (
               <DisputesTab role="advertiser" campaigns={campaigns} />
             ) : advertiserTab === 'dashboard' ? (
@@ -1524,7 +1391,7 @@ export default function AdsPlatformApp() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsCreateCampaignOpen(true)}
+                      onClick={() => { setCreationUncertain(false); setIsCreateCampaignOpen(true); }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1753,28 +1620,28 @@ export default function AdsPlatformApp() {
                                     if (col.key === 'views') {
                                       return (
                                         <td key={col.key} style={{ padding: '14px 16px' }}>
-                                          {camp.impressions.toLocaleString()}
+                                          {camp.metricsLoaded ? camp.impressions.toLocaleString() : '—'}
                                         </td>
                                       );
                                     }
                                     if (col.key === 'clicks') {
                                       return (
                                         <td key={col.key} style={{ padding: '14px 16px', color: 'var(--color-success)', fontWeight: 600 }}>
-                                          {camp.clicks.toLocaleString()}
+                                          {camp.metricsLoaded ? camp.clicks.toLocaleString() : '—'}
                                         </td>
                                       );
                                     }
                                     if (col.key === 'hovers') {
                                       return (
                                         <td key={col.key} style={{ padding: '14px 16px' }}>
-                                          {(camp.hovers || Math.round(camp.impressions * 0.08)).toLocaleString()}
+                                          {camp.metricsLoaded ? (camp.hovers ?? 0).toLocaleString() : '—'}
                                         </td>
                                       );
                                     }
                                     if (col.key === 'touches') {
                                       return (
                                         <td key={col.key} style={{ padding: '14px 16px' }}>
-                                          {(camp.touches || Math.round(camp.impressions * 0.04)).toLocaleString()}
+                                          {camp.metricsLoaded ? (camp.touches ?? 0).toLocaleString() : '—'}
                                         </td>
                                       );
                                     }
@@ -1782,7 +1649,7 @@ export default function AdsPlatformApp() {
                                       const ctr = camp.impressions > 0 ? (camp.clicks / camp.impressions) * 100 : 0;
                                       return (
                                         <td key={col.key} style={{ padding: '14px 16px', fontWeight: 700 }}>
-                                          {ctr.toFixed(2)}%
+                                          {camp.metricsLoaded ? `${ctr.toFixed(2)}%` : '—'}
                                         </td>
                                       );
                                     }
@@ -1793,7 +1660,14 @@ export default function AdsPlatformApp() {
                                             {camp.status === 'rejected' && (
                                               <button
                                                 type="button"
-                                                onClick={() => setReplacementCreative(camp)}
+                                                onClick={async () => {
+                                                  try {
+                                                    const details = await apiData<any>(`/api/v1/campaigns/${encodeURIComponent(camp.id)}`);
+                                                    const creative = arrayData<any>(details.creatives).find(item => item.reviewStatus === 'rejected');
+                                                    if (!creative) throw new Error('No rejected creative is available for replacement.');
+                                                    setReplacementCreative({ ...creative, title: camp.title });
+                                                  } catch (err) { setActionError(err instanceof Error ? err.message : 'Creative details unavailable.'); }
+                                                }}
                                                 style={{
                                                   padding: '6px 12px',
                                                   borderRadius: '6px',
@@ -1811,6 +1685,7 @@ export default function AdsPlatformApp() {
                                             {camp.status !== 'rejected' && camp.status !== 'trash' && (
                                               <button
                                                 type="button"
+                                                disabled={pendingWrites.has(camp.id)}
                                                 onClick={() => handleToggleStatus(camp.id)}
                                                 style={{
                                                   padding: '6px 12px',
@@ -1931,10 +1806,11 @@ export default function AdsPlatformApp() {
 
       {/* MODAL: CREATE CAMPAIGN */}
       {isCreateCampaignOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="theme-card" style={{ width: '100%', maxWidth: '520px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div ref={createDialog} role="dialog" aria-modal="true" aria-label="Create Ad Campaign" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '520px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
             <button
               type="button"
+              aria-label="Close Create Ad Campaign"
               onClick={() => setIsCreateCampaignOpen(false)}
               style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
             >
@@ -1948,8 +1824,8 @@ export default function AdsPlatformApp() {
 
             <form onSubmit={handleCreateCampaign} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Campaign Title</label>
-                <input
+                <label htmlFor="ads-campaign-title" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Campaign Title</label>
+                <input id="ads-campaign-title"
                   type="text"
                   required
                   value={newCampTitle}
@@ -1961,8 +1837,8 @@ export default function AdsPlatformApp() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Budget (USD)</label>
-                  <input
+                  <label htmlFor="ads-campaign-budget" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Budget (USD)</label>
+                  <input id="ads-campaign-budget"
                     type="number"
                     min="5"
                     required
@@ -1972,8 +1848,10 @@ export default function AdsPlatformApp() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Category</label>
-                  <select
+                  <label htmlFor="ads-campaign-category" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Category</label>
+                  <select id="ads-campaign-category"
+                    disabled
+                    title="Category targeting is not available yet"
                     value={newCampCategory}
                     onChange={(e) => setNewCampCategory(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
@@ -1995,14 +1873,15 @@ export default function AdsPlatformApp() {
                     Pricing &amp; Bidding Model
                   </label>
                   <select
+                    aria-label="Pricing and bidding model"
                     value={newCampPricingModel}
                     onChange={(e) => setNewCampPricingModel(e.target.value as any)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
                   >
                     <option value="cpc">CPC — Pay per Click ($0.10+)</option>
                     <option value="cpm">CPM — Pay per 1,000 Views ($1.00+)</option>
-                    <option value="cpa">CPA — Pay per Acquisition / Sale ($2.00+)</option>
-                    <option value="cpcv">CPCV — Cost per Completed Video ($0.05+)</option>
+                    <option value="cpa" disabled>CPA — Pay per Acquisition / Sale ($2.00+)</option>
+                    <option value="cpcv" disabled>CPCV — Cost per Completed Video ($0.05+)</option>
                   </select>
                 </div>
 
@@ -2016,7 +1895,8 @@ export default function AdsPlatformApp() {
                       step="0.5"
                       min="1"
                       required
-                      value={newCampTargetCpa}
+                      aria-label="Target CPA (USD)"
+                    value={newCampTargetCpa}
                       onChange={(e) => setNewCampTargetCpa(Number(e.target.value))}
                       style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
                     />
@@ -2033,7 +1913,8 @@ export default function AdsPlatformApp() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={newCampTargetCpcv}
+                      aria-label="Target CPCV (USD)"
+                    value={newCampTargetCpcv}
                       onChange={(e) => setNewCampTargetCpcv(Number(e.target.value))}
                       style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
                     />
@@ -2104,7 +1985,8 @@ export default function AdsPlatformApp() {
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <select
-                            value={crt.adFormat}
+                            aria-label={`Ad ${idx + 1} format`}
+                        value={crt.adFormat}
                             onChange={(e: any) => {
                               const updated = [...newCampCreatives];
                               updated[idx].adFormat = e.target.value;
@@ -2128,6 +2010,7 @@ export default function AdsPlatformApp() {
                           {newCampCreatives.length > 1 && (
                             <button
                               type="button"
+                              aria-label={`Remove ad ${idx + 1}`}
                               onClick={() => setNewCampCreatives(newCampCreatives.filter((_, i) => i !== idx))}
                               style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
                             >
@@ -2141,6 +2024,7 @@ export default function AdsPlatformApp() {
                         type="text"
                         required
                         placeholder={`Headline copy for ${crt.adFormat.toUpperCase()} ad`}
+                        aria-label={`Ad ${idx + 1} headline`}
                         value={crt.headline}
                         onChange={(e) => {
                           const updated = [...newCampCreatives];
@@ -2162,6 +2046,7 @@ export default function AdsPlatformApp() {
                         type="url"
                         required
                         placeholder="Click Destination URL"
+                        aria-label={`Ad ${idx + 1} destination URL`}
                         value={crt.destinationUrl}
                         onChange={(e) => {
                           const updated = [...newCampCreatives];
@@ -2202,6 +2087,7 @@ export default function AdsPlatformApp() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <input
                             type="file"
+                          aria-label={`Ad ${idx + 1} media file`}
                             accept={crt.adFormat === 'video' ? 'video/mp4,video/webm,image/gif' : 'image/jpeg,image/png,image/webp,image/avif,image/gif'}
                             onChange={async (e) => {
                               const file = e.target.files?.[0];
@@ -2209,7 +2095,7 @@ export default function AdsPlatformApp() {
 
                               // Browser compatibility hints for advertiser
                               if (file.type === 'video/webm') {
-                                alert('Format Note: WebM has partial hardware acceleration on older iOS/Safari browsers. MP4 is recommended for maximum reach.');
+                                setActionError('Format Note: WebM has partial hardware acceleration on older iOS/Safari browsers. MP4 is recommended for maximum reach.');
                               }
 
                               // Strict client-side validation
@@ -2220,7 +2106,7 @@ export default function AdsPlatformApp() {
                                 const actualText = isVideo
                                   ? `${(file.size / (1024 * 1024)).toFixed(1)}MB`
                                   : `${(file.size / 1024).toFixed(1)}KB`;
-                                alert(`Upload rejected: File size is ${actualText}, exceeding the ${limitText} platform restriction. Server optimization is disabled; please resize or encode your file locally.`);
+                                setActionError(`Upload rejected: File size is ${actualText}, exceeding the ${limitText} platform restriction. Server optimization is disabled; please resize or encode your file locally.`);
                                 e.target.value = '';
                                 return;
                               }
@@ -2229,7 +2115,7 @@ export default function AdsPlatformApp() {
                               formData.append('file', file);
 
                               try {
-                                const uploadRes = await fetch(`${API_BASE}/api/v1/uploads/direct`, {
+                                const uploadRes = await sessionFetch(`${API_BASE}/api/v1/uploads/direct`, {
                                   method: 'POST',
                                   body: formData,
                                 });
@@ -2246,10 +2132,10 @@ export default function AdsPlatformApp() {
                                   setNewCampCreatives(updated);
                                 } else {
                                   const errJson = await uploadRes.json().catch(() => null);
-                                  alert(errJson?.message || 'File upload failed. Ensure file meets restrictions.');
+                                  setActionError(errJson?.message || 'File upload failed. Ensure file meets restrictions.');
                                 }
                               } catch {
-                                alert('Network error uploading asset to Firebase bucket.');
+                                setActionError('The media upload could not be confirmed.');
                               }
                             }}
                             style={{ fontSize: '11px', color: 'var(--text-secondary)' }}
@@ -2268,7 +2154,7 @@ export default function AdsPlatformApp() {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || creationUncertain}
                 style={{
                   padding: '12px',
                   backgroundColor: 'var(--color-crimson)',
@@ -2296,10 +2182,11 @@ export default function AdsPlatformApp() {
 
       {/* MODAL: ADD WEBSITE */}
       {isAddWebsiteOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="theme-card" style={{ width: '100%', maxWidth: '460px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div ref={websiteDialog} role="dialog" aria-modal="true" aria-label="Register Website" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '460px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
             <button
               type="button"
+              aria-label="Close Register Website"
               onClick={() => setIsAddWebsiteOpen(false)}
               style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
             >
@@ -2308,13 +2195,13 @@ export default function AdsPlatformApp() {
 
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Register Website</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-              Add your website domain to receive embed tags and start earning.
+              Register your website and verify ownership. Publisher installation codes remain unavailable.
             </p>
 
             <form onSubmit={handleAddWebsite} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Domain Name</label>
-                <input
+                <label htmlFor="ads-website-domain" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Domain Name</label>
+                <input id="ads-website-domain"
                   type="text"
                   required
                   value={newWebDomain}
@@ -2325,8 +2212,8 @@ export default function AdsPlatformApp() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Verification Method</label>
-                <select
+                <label htmlFor="ads-website-method" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Verification Method</label>
+                <select id="ads-website-method"
                   value={newWebMethod}
                   onChange={(e: any) => setNewWebMethod(e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
@@ -2373,11 +2260,12 @@ export default function AdsPlatformApp() {
         });
         const placementMeta = CRIMFIG_PLACEMENTS[selectedPlacement];
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
-            <div className="theme-card" style={{ width: '100%', maxWidth: '620px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
+            <div ref={embedDialog} role="dialog" aria-modal="true" aria-label="Publisher Installation Code" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '620px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
               <button
                 type="button"
-                onClick={() => setIsEmbedCodeModalOpen(null)}
+                aria-label="Close Publisher Installation Code"
+              onClick={() => setIsEmbedCodeModalOpen(null)}
                 style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
                 <X style={{ width: 20, height: 20 }} />
@@ -2470,15 +2358,9 @@ export default function AdsPlatformApp() {
           isOpen={!!replacementCreative}
           onClose={() => setReplacementCreative(null)}
           creative={replacementCreative}
-          onReplaceSuccess={(updated) => {
-            setCampaigns((prev) =>
-              prev.map((c) =>
-                c.id === replacementCreative.id
-                  ? { ...c, headline: updated.headline || c.headline, status: 'under_review', rejectionReason: undefined }
-                  : c
-              )
-            );
-            alert(`Creative asset for "${replacementCreative.title}" replaced and re-submitted for review!`);
+          onReplaceSuccess={() => {
+            setDataAttempt(value => value + 1);
+
           }}
         />
       )}
