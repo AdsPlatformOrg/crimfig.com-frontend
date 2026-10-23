@@ -5,7 +5,7 @@
   "description": "CrimFig Frontend — Next.js web apps and React Native mobile apps for all ecosystem subdomains",
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=20.0.0",
+    "node": "^20.19.0 || ^22.13.0 || >=24",
     "pnpm": ">=9.0.0",
     "npm": "PLEASE_USE_PNPM_INSTEAD",
     "yarn": "PLEASE_USE_PNPM_INSTEAD"
