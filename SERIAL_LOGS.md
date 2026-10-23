@@ -229,3 +229,46 @@ Billing backend build and diff whitespace checks PASS. local-docker remains igno
 
 Still open: explicit undispatched cancel/dispatch UI, fee-aware failure/reversal reconciliation,
 provider acceptance, funded settlement, subscription engine and remaining full-plan acceptance gates.
+
+## ACT-20261022-011 — Continued refund recovery (2026-10-22 09:30 UTC)
+
+Checkpoint commits created on dev: frontend fd99f8f, backend 3313be3. No push/production merge.
+Continued immediately: unsent reservation cancellation UI and exact-reference cancellation response
+validation; new API test. JED's subsequent decision: deduct confirmed non-refundable charges from
+failed/reversed withdrawal refunds. Quote UI discloses this and original-rate nearest-cent rounding.
+
+Backend now supports atomic fee-deducted refunds only when a separately reviewed internal evidence
+receipt matches reference, quote, mode, currency, outcome and transfer code. Costs must be nonnegative
+integer kobo within the quoted fee/levy limits; two different reviewer identities are required. Missing
+proof retains the reserve. Original FX converts retained costs; receipt records refund and retained
+amounts. Concurrent failure/reversal completions refund once. This is the ledger consumer, NOT a
+completed operator evidence-ingestion/approval workflow; no public endpoint can submit that receipt.
+
+Evidence: 32 fee/refund math tests PASS; 41 separate real Docker PostgreSQL tests PASS using synthetic
+reviewed evidence. No actual transfer/refund, production data changes or provider-fee acceptance.
+Provider sources: https://paystack.com/docs/api/transfer/ ;
+https://paystack.com/docs/api/transfer-control/ ; https://support.paystack.com/en/articles/7573314 .
+Provider samples do not establish levy refund semantics: fee_charged alone is not a reconciled net cost.
+Remaining: operator evidence workflow, full UI verification for this addition, settlement, subscriptions,
+and all remaining acceptance gates. Execution continues; PLAN-0009 remains IN_PROGRESS.
+
+
+## ACT-20261022-019 — Continuous implementation and verification
+
+Refund review checkpoint: full backend suite 332 PASS, 42 opt-in PG cases skipped (Docker engine unavailable). Frontend 75 PASS from preceding run; final Billing production build and post-build tsc PASS; temporary fixture removed. Actual refund component in synthetic 375px iframe: viewport/document both 375, light/dark and keyboard focus inspected. No provider calls in fixture. Ads attribution prerequisite removes default signing secret, validates versioned token structure/TTL/IP and persisted serve binding, and rejects fabricated mobile attestation/reward success. Initial 20 token tests and Ads build PASS; expanded checks pending. Plan remains IN_PROGRESS; settlement/subscriptions and real provider/environment acceptance remain open.
+
+
+## ACT-20261022-020 — Subscription engine and approved ad price units
+
+- JED confirmed standard CPM per 1,000 eligible impressions and CPC per eligible click. New campaign/serve pricingVersion=2; historical rows stay version 1. Migration 0015 is registered after journal entry 0013; existing standalone/unregistered 0014 is not silently adopted. Migration has NOT run against existing databases. Auction ranks normalized eCPM but records immutable per-event nano-USD prices; exact carry avoids per-impression cent rounding. Six pricing tests pass.
+- Subscription initial checkout: request UUID persisted before one provider initialize; common atomic completion for signed webhook and server Verify callback; exact amount/currency/mode/email/owner/intent binding. Paid entitlement has a bounded UTC calendar period and verified receipt. Callback routing separates subscription payments from wallet funding.
+- Recurring engine: explicit authenticated consent, owned saved authorization, fixed USD price and maximum NGN debit; durable generation/reference before one charge call, no resend after uncertainty, period-end cancellation, recovery after cancellation preserves paid access but keeps future renewal disabled. Bounded worker scans use cursors to avoid starvation and require BILLING_SUBSCRIPTION_RENEWALS_ENABLED=true (not enabled locally).
+- Dashboard: one-period checkout/recovery integrated; recurring-consent UI still pending. Synthetic actual-component browser proof: one POST total across checkout/status confirmation, 375px viewport/document, light/dark and keyboard focus inspected. Fixture removed.
+- Verification: 370 general backend PASS; 48 separate real PostgreSQL cases PASS (new disposable SCRAM PostgreSQL 17 fallback, provider doubles only), all temporary cluster files removed. Frontend 80 PASS. Final Billing frontend production build/post-build tsc PASS. Ads/Billing Nest builds PASS; targeted backend lint PASS. Latest pricing/token focused suites 29 PASS. Full suite predates the six new pricing cases; no inflated combined final-run claim.
+- Remaining: funded settlement/clearance and historical reconciliation; renewal settings UI and expanded release/worker/provider acceptance; session/OAuth/a11y/DTO/deployed configuration checks; final merges and push. No actual provider payments/charges/transfers, production migration, merge, push or deployment.
+
+## ACT-20261023-001 — Requested dev / production synchronization
+
+JED explicitly requested committing current work to dev, merging to production and pushing origin after updating RAILWAY_API_TOKEN. This request supersedes the earlier conditional release timing; PLAN-0009 remains IN_PROGRESS. Verified 381 general backend tests PASS, 53 isolated PostgreSQL tests PASS (temporary cluster removed), 80 frontend tests PASS, Ads/Billing backend and frontend production builds PASS, Billing post-build types PASS and changed backend TypeScript lint PASS. Initial sandbox loopback/PostgreSQL failures were resolved by authorized execution outside sandbox; directory-wide lint included generated JS, then changed-source TypeScript lint passed.
+
+Next PLAN-0009: complete funded-claim rejection/rebate workflow; verify the present recurring-preferences UI; historical financial reconciliation and deployed schema/migrations 0015/0016 review; provider/worker/callback, real session/cookie/OAuth and accessibility/DTO acceptance. No production database migration or provider money operation performed. Railway deployment outcome is not established by Git synchronization.

@@ -17,7 +17,7 @@ export default function BillingRoot() {
       const requestedView = urlParams.get('view');
       const requestedTab = urlParams.get('tab');
 
-      if (requestedView === 'console' || urlParams.has('reference') || urlParams.has('trxref') || urlParams.has('funding_request')) {
+      if (requestedView === 'console' || urlParams.has('reference') || urlParams.has('trxref') || urlParams.has('funding_request') || urlParams.has('subscription_request')) {
         setView('console');
       }
       if (requestedTab && ['overview', 'cards', 'subscriptions', 'bank_accounts', 'transactions', 'rewards'].includes(requestedTab)) {

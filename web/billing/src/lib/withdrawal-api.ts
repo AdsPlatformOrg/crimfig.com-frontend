@@ -7,7 +7,7 @@ export interface WithdrawalQuote {
   transferFeeKobo: number; stampDutyKobo: number; totalFeeKobo: number;
   rate: number; expiresAt: string;
 }
-export interface WithdrawalStatus { reference: string; status: string; confirmation?: string }
+export interface WithdrawalStatus { reference: string; status: string; confirmation?: string; refund?: { grossUsdCents: number; refundUsdCents: number; retainedUsdCents: number; retainedKobo: number } }
 export function withdrawalRequest(search: string): string | null {
   const values = new URLSearchParams(search).getAll('withdrawal_request');
   if (!values.length) return null;
@@ -32,6 +32,9 @@ export async function quoteWithdrawal(input: { requestId: string; bankAccountId:
 function status(data: WithdrawalStatus, reference?: string) {
   if (!data || !/^wd_[a-f0-9]{40}$/.test(data.reference) || (reference && data.reference !== reference) ||
       !['pending', 'processing', 'completed', 'failed', 'reversed', 'cancelled'].includes(data.status)) throw new Error('Withdrawal status could not be confirmed.');
+  if (data.refund && (!['failed', 'reversed'].includes(data.status) ||
+      ![data.refund.grossUsdCents, data.refund.refundUsdCents, data.refund.retainedUsdCents, data.refund.retainedKobo].every(n => Number.isSafeInteger(n) && n >= 0 && n <= 2147483647) ||
+      data.refund.refundUsdCents + data.refund.retainedUsdCents !== data.refund.grossUsdCents)) throw new Error('Refund breakdown could not be confirmed.');
   return data;
 }
 export async function confirmWithdrawal(quote: WithdrawalQuote) {
@@ -42,4 +45,10 @@ export async function confirmWithdrawal(quote: WithdrawalQuote) {
 export async function recoverWithdrawal(requestId: string) {
   if (!uuid.test(requestId)) throw new Error('Invalid withdrawal request.');
   return status(await billingData(`/api/v1/withdrawals/requests/${requestId}`));
+}
+export async function cancelUndispatchedWithdrawal(reference: string) {
+  if (!/^wd_[a-f0-9]{40}$/.test(reference)) throw new Error('Invalid withdrawal reference.');
+  const data = await billingData(`/api/v1/withdrawals/${reference}/cancel`, post({}));
+  if (!data || data.status !== 'cancelled' || data.reference !== reference || typeof data.withdrawalId !== 'string') throw new Error('Cancellation could not be confirmed. Check withdrawal status.');
+  return { reference, status: 'cancelled', confirmation: 'confirmed' };
 }

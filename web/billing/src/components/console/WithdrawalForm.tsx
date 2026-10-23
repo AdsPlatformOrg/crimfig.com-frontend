@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { confirmWithdrawal, quoteWithdrawal, recoverWithdrawal, withdrawalRequest, type WithdrawalQuote, type WithdrawalStatus } from '../../lib/withdrawal-api';
+import { cancelUndispatchedWithdrawal, confirmWithdrawal, quoteWithdrawal, recoverWithdrawal, withdrawalRequest, type WithdrawalQuote, type WithdrawalStatus } from '../../lib/withdrawal-api';
 
 interface Bank { id: string; bankName: string; accountNumber: string; accountName: string }
 const ngn = (kobo: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(kobo / 100);
@@ -51,13 +51,22 @@ export function WithdrawalForm({ banks, availableUsd, onRefresh }: { banks: Bank
     if (mounted.current) { setResult(next); await onRefresh(); }
   });
   const terminal = result && ['completed', 'failed', 'reversed', 'cancelled'].includes(result.status);
+  const cancel = () => run(async () => {
+    if (!result || result.confirmation !== 'not_dispatched' || result.status !== 'pending') return;
+    const next = await cancelUndispatchedWithdrawal(result.reference);
+    if (mounted.current) { setResult(next); await onRefresh(); }
+  });
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
     {error && <p role="alert" style={{ color: 'var(--color-crimson)' }}>{error}</p>}
     {requestId || invalidRecovery ? <>
       <p role="status">{result ? `Withdrawal status: ${result.status}.` : 'A withdrawal request needs a status check. No new payout will be sent by checking.'}</p>
+      {result?.refund && <p>Returned to your wallet: <strong>${(result.refund.refundUsdCents / 100).toFixed(2)}</strong>. Confirmed non-refundable charges: ${(result.refund.retainedUsdCents / 100).toFixed(2)} ({ngn(result.refund.retainedKobo)} at your original exchange rate).</p>}
       {result?.confirmation === 'operator_approval_required' && <p>Provider approval is required. Your funds remain reserved.</p>}
       {result?.confirmation === 'unconfirmed' && <p>Provider confirmation is unavailable. Your request is retained for reconciliation.</p>}
-      {result?.confirmation === 'not_dispatched' && result.status === 'pending' && <p>Your funds are reserved, but the transfer has not been sent. Contact support with your request ID.</p>}
+      {result?.confirmation === 'not_dispatched' && result.status === 'pending' && <>
+        <p>Your funds are reserved, but the transfer has not been sent. You can cancel this reservation and review a new payout.</p>
+        <button type="button" style={control} disabled={busy} onClick={cancel}>Cancel unsent withdrawal and release funds</button>
+      </>}
       {requestId && <p style={{ overflowWrap: 'anywhere', fontSize: 12 }}>Request: {requestId}</p>}
       <button type="button" style={control} disabled={busy || invalidRecovery} onClick={recover}>{busy ? 'Checking…' : 'Check withdrawal status'}</button>
       {terminal && <button type="button" style={control} disabled={busy} onClick={() => {
@@ -85,6 +94,7 @@ export function WithdrawalForm({ banks, availableUsd, onRefresh }: { banks: Bank
           <dt><strong>You receive</strong></dt><dd style={{ margin: 0, textAlign: 'right', overflowWrap: 'anywhere' }}><strong>{ngn(quote.netKobo)}</strong></dd>
         </dl>
         <p style={{ fontSize: 12 }}>Charges are deducted from your payout. Quote expires at {new Date(quote.expiresAt).toLocaleTimeString()}.</p>
+        <p style={{ fontSize: 12 }}>If the transfer fails or is reversed, confirmed non-refundable charges are deducted from your refund using this exchange rate, rounded to the nearest USD cent.</p>
       </section>}
       <button type="button" style={{ ...control, background: 'var(--color-crimson)', color: '#fff', fontWeight: 600 }} disabled={busy || !banks.length || availableUsd === null} onClick={quote ? confirm : review}>
         {busy ? 'Please wait…' : quote ? `Confirm payout of ${ngn(quote.netKobo)}` : 'Review fees and net payout'}

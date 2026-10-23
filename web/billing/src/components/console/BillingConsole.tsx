@@ -1,5 +1,7 @@
 'use client';
 
+import { SubscriptionCheckout, CheckoutPlan } from './SubscriptionCheckout';
+import { SubscriptionPreferences } from './SubscriptionPreferences';
 import { WithdrawalForm } from './WithdrawalForm';
 import { billingData, resolveBank, saveBank } from '../../lib/billing-api';
 import { fundingReturn, fundingRequest, recoverFundingRequest, verifyFundingReference, startFunding, FundingStartError, loadTransactions } from '../../lib/funding-api';
@@ -60,6 +62,7 @@ interface Subscription {
   priceUsd: number;
   status: string;
   nextBillingDate: string;
+  currentPeriodEnd: string;
   last4?: string;
 }
 
@@ -135,6 +138,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
   // Withdrawal Modal
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+
+  const [checkoutPlan, setCheckoutPlan] = useState<CheckoutPlan | null>(null);
 
   // Real Collections
   const [cards, setCards] = useState<SavedCard[]>([]);
@@ -222,6 +227,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     lifecycleGeneration.current++;
     void refreshAccountData();
     if (new URLSearchParams(window.location.search).has('withdrawal_request')) setIsWithdrawOpen(true);
+    if (new URLSearchParams(window.location.search).has('subscription_request')) { setActiveTab('subscriptions'); return invalidateRequests; }
     const returned = fundingReturn(window.location.search);
     const request = fundingRequest(window.location.search);
     if (request.kind === 'invalid' || returned.kind === 'invalid') { setFundingCheck({ phase: 'invalid', reference: null }); return invalidateRequests; }
@@ -497,7 +503,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* Balance Highlights Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '20px' }}>
               {/* Primary Balance Card */}
               <div
                 className="theme-card"
@@ -792,15 +798,23 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Active Subscriptions</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Centralized recurring billing across all CrimFig ecosystem applications.</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Manage paid periods and renewal preferences across CrimFig applications.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+            <SubscriptionPreferences subscriptions={subscriptions} cards={cards} />
+            <SubscriptionCheckout plan={checkoutPlan} onConfirmed={async () => {
+              const rows = await billingData('/api/v1/subscriptions');
+              if (!Array.isArray(rows)) throw new Error('Subscription list unavailable');
+              setSubscriptions(rows.map((item: any) => ({ ...item, priceUsd: item.priceUsdCents / 100, planName: item.plan, nextBillingDate: item.nextBillingDate || '' })));
+              await refreshAccountData();
+            }} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '16px' }}>
               {appPlans.map(plan => {
-                const isSubscribed = subscriptions.some(s => s.appSlug === plan.appSlug && s.status === 'active');
+                const isSubscribed = subscriptions.some(s => s.appSlug === plan.appSlug && s.status === 'active' && Date.parse(s.currentPeriodEnd) > Date.now());
                 return (
                   <div
-                    key={plan.appSlug}
+                    key={plan.id}
                     className="theme-card"
                     style={{
                       padding: '24px',
@@ -835,8 +849,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
                     <button
                       type="button"
-                      disabled={true}
-                      onClick={() => setOperationError('Subscription checkout is currently unavailable. Your subscription was not changed.')}
+                      disabled={isSubscribed}
+                      onClick={() => setCheckoutPlan(plan)}
                       style={{
                         padding: '10px',
                         borderRadius: '8px',
@@ -848,7 +862,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                         cursor: isSubscribed ? 'default' : 'pointer'
                       }}
                     >
-                      {isSubscribed ? 'Subscribed' : 'Checkout unavailable'}
+                      {isSubscribed ? 'Subscribed' : 'Review subscription'}
                     </button>
                   </div>
                 );
