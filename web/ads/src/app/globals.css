@@ -94,9 +94,27 @@
   --color-gray-200: #E2E8F0;
   --color-gray-100: #F1F5F9;
   --color-gray-50: #F8FAFC;
-  --shadow-xl: 0 20px 35px rgba(15, 23, 42, 0.12);
-  --radius-sm: 4px;  --radius-md: 8px;  --radius-lg: 12px;
-  --radius-xl: 16px; --radius-2xl: 24px; --radius-full: 9999px;
+  /* ── shadcn/ui Standard CSS Variable Mappings (PLAN-0028) ── */
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 348 83% 46%;       /* #D4143A CrimFig Crimson */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 348 83% 46%;
+  --radius: 0.5rem;
 }
 
 [data-theme="dark"] {
@@ -110,6 +128,27 @@
   --text-muted: #64748B;
   --badge-bg: #1E293B;
   --color-crimson: #E31B45;
+
+  /* shadcn dark theme mappings */
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 10%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 10%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 348 83% 50%;       /* #E31B45 CrimFig Crimson Light */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 348 83% 50%;
 }
 
 * {
