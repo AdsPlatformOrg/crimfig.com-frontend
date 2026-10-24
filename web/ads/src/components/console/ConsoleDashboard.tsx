@@ -21,7 +21,6 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AdvertiserMilestonesCard } from './AdvertiserMilestonesCard';
-import { WhoToFollowWidget, TrendingWidget, QuickHelpWidget } from '../templates/SidebarWidgets';
 
 interface DashboardSummary {
   period: string;
@@ -610,27 +609,6 @@ export function ConsoleDashboard({
 
       {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
       <AdvertiserMilestonesCard />
-
-      {/* Modern Discovery & Recommendations Rail (PLAN-0025) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginTop: '10px' }}>
-        <WhoToFollowWidget
-          title="Recommended Publishers for Direct Deals"
-          items={[
-            { id: 'p1', name: 'TechCrunch Wire', handle: '@techwire', badge: 'Top Tier' },
-            { id: 'p2', name: 'Indie Hackers Circle', handle: '@indiecircle', badge: 'Verified' },
-            { id: 'p3', name: 'Developer Digest', handle: '@devdigest', badge: 'High Yield' },
-          ]}
-          viewAllHref="/websites"
-        />
-        <TrendingWidget
-          title="Trending Publisher Ad Slots"
-          items={[
-            { id: 't1', title: 'Header leaderboard on top finance blog (140k daily impressions)', metricLabel: 'Floor: $1.20 CPM' },
-            { id: 't2', title: 'In-feed native cards in gaming community hub (95k reach)', metricLabel: 'Floor: $0.85 CPM' },
-          ]}
-        />
-        <QuickHelpWidget />
-      </div>
     </div>
   );
 }
