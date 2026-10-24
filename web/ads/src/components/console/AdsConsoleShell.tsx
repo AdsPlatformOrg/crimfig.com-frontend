@@ -222,6 +222,34 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
             </Link>
           </div>
 
+          {/* Center Search Input */}
+          <div style={{ flex: '1 1 240px', maxWidth: '420px', minWidth: '180px', position: 'relative' }}>
+            <input
+              type="search"
+              placeholder="Search campaigns, placements, or slots..."
+              style={{
+                width: '100%',
+                padding: '7px 14px 7px 34px',
+                fontSize: '13px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onChange={(e) => {
+                // Global search dispatch or query param
+              }}
+            />
+            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+          </div>
+
           {/* Mode Switcher: Advertiser Studio vs Promoter Hub vs Admin Console */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
             <div
