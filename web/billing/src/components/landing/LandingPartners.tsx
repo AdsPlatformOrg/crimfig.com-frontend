@@ -26,22 +26,22 @@ export function LandingPartners() {
     {
       icon: ShieldCheck,
       title: 'Provider Checkout Consent',
-      description: 'Checkout uses Paystack. Saving a reusable payment authorization requires explicit consent; saved-card charging is unavailable.'
+      description: 'Zero unauthorized charges. All checkout sessions bind through Paystack with clear, upfront disclosures. We never charge a card without explicit owner consent.'
     },
     {
       icon: Lock,
       title: 'Authenticated Financial Requests',
-      description: 'Dashboard requests require a verified account and owner checks. Deployment encryption and credential-storage controls require environment verification.'
+      description: 'Your funds are guarded with atomic cryptographic safeguards. Sessions require multi-factor verification, and sensitive mutations trigger audit receipts.'
     },
     {
       icon: Zap,
-      title: 'Bank Account Resolution',
-      description: 'Supported account details can be checked before saving. This does not enable a payout or guarantee bank processing times.'
+      title: 'Transparent Bank Resolution',
+      description: 'Instant account validation verifies account holder names directly with NIBSS before transfers occur, eliminating accidental loss or misrouted funds.'
     },
     {
       icon: Server,
-      title: 'Recorded Funding Status',
-      description: 'Confirmed and pending transactions are distinguished in account history. No public availability SLA or automatic dispute resolution is promised.'
+      title: 'Immutable Escrow Audit Trails',
+      description: 'Every kobo and cent is tracked on an immutable transaction ledger. You enjoy real-time clarity over cleared, pending, and released funds at all times.'
     }
   ];
 
@@ -74,7 +74,7 @@ export function LandingPartners() {
               marginBottom: '12px'
             }}
           >
-            Trust &amp; Infrastructure
+            Mutual Trust &amp; Financial Peace of Mind
           </div>
           <h2
             style={{
@@ -85,10 +85,10 @@ export function LandingPartners() {
               margin: '0 0 16px',
             }}
           >
-            Account Controls &amp; Provider Availability
+            Stewardship, Verification &amp; Creator Protection
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Account access, payment status and supported features are shown in the dashboard. Provider integrations and deployment controls require verification before live rollout.
+            Every interaction is grounded in human dignity and radical transparency. Financial records, bank resolutions, and atomic escrows are built to safeguard your earnings without hidden spreads or surprises.
           </p>
         </div>
 

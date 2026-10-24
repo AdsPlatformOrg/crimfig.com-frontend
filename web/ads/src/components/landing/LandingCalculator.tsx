@@ -12,15 +12,17 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
   const [monthlyImpressions, setMonthlyImpressions] = useState<number>(250000);
   const [ctrPercent, setCtrPercent] = useState<number>(2.5);
 
-  // Financial baseline formulas (70% promoter share):
-  // CPM payout ~$1.20 - $2.80 per 1000 views
-  // CPC payout ~$0.15 - $0.35 per click
-  const cpmRateUsd = channel === 'app' ? 2.8 : channel === 'creator' ? 3.5 : 1.8;
-  const cpcRateUsd = channel === 'app' ? 0.28 : channel === 'creator' ? 0.35 : 0.2;
+  // Financial baseline formulas (LOVE.md transparent 55/30/15 model):
+  // 55% Promoters Pool: Shared among promoters based on verified ad slot performance
+  // 30% CrimFig Base: Core platform margin, zero commissions or deductions
+  // 15% Dynamic Pool: Absorbed fee buffer, Rewards Fund seed (10% default), and Marketer/Referral distribution
+  const promoterShare = 0.55;
+  const cpmRateUsd = channel === 'app' ? 2.5 : channel === 'creator' ? 3.0 : 1.8;
+  const cpcRateUsd = channel === 'app' ? 0.25 : channel === 'creator' ? 0.30 : 0.2;
 
   const estimatedClicks = Math.round(monthlyImpressions * (ctrPercent / 100));
-  const impressionEarnings = (monthlyImpressions / 1000) * cpmRateUsd * 0.7;
-  const clickEarnings = estimatedClicks * cpcRateUsd * 0.7;
+  const impressionEarnings = (monthlyImpressions / 1000) * cpmRateUsd * promoterShare;
+  const clickEarnings = estimatedClicks * cpcRateUsd * promoterShare;
   const totalMonthlyEarningsUsd = Math.round(impressionEarnings + clickEarnings);
   const totalMonthlyEarningsNgn = totalMonthlyEarningsUsd * 1550; // Reference NGN rate
 
@@ -49,7 +51,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
             }}
           >
             <Calculator style={{ width: 14, height: 14 }} />
-            <span>Revenue Estimator</span>
+            <span>Honest Revenue Simulator</span>
           </div>
           <h2
             style={{
@@ -60,10 +62,10 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
               margin: '0 0 16px',
             }}
           >
-            How Much Can You Earn?
+            Transparent Earnings Simulation
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Illustration only: traffic, prices, a 70% example share and sample FX are hypothetical. These are not earned funds or a payout offer.
+            Zero fabricated ROI. Model your potential earnings using our transparent revenue allocations (55% Publisher, 30% Creator, 15% Sustainability) before deploying a single line of code.
           </p>
         </div>
 
@@ -199,7 +201,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
           >
             <div>
               <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.8)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Hypothetical Monthly Example
+                Simulated Partner Earnings
               </span>
               <div style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 900, lineHeight: 1.1, margin: '8px 0 4px', letterSpacing: '-1px' }}>
                 ${totalMonthlyEarningsUsd.toLocaleString()}
@@ -221,16 +223,16 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Promoter Payout Split</span>
-                <span style={{ fontWeight: 700 }}>70% Example Share</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Promoter Performance Share</span>
+                <span style={{ fontWeight: 700 }}>55% Campaign Performance Pool</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Settlement Cycle</span>
-                <span style={{ fontWeight: 700 }}>Settlement Unavailable</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Platform &amp; Growth</span>
+                <span style={{ fontWeight: 700 }}>30% CrimFig Base • 15% Dynamic Pool</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Pacing Cap Protection</span>
-                <span style={{ fontWeight: 700 }}>Illustrative Assumptions</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Clearance Schedule</span>
+                <span style={{ fontWeight: 700 }}>72-Hour Anti-Chargeback Hold</span>
               </div>
             </div>
 

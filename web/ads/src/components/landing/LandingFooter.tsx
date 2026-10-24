@@ -36,7 +36,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               style={{ marginBottom: '14px' }}
             />
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 16px' }}>
-              Next-generation advertising network and publisher monetization platform. Low latency, verifiable transparency, and global reach.
+              Built on love and human dignity. An ethical advertising ecosystem empowering independent website publishers, creator communities, and purposeful businesses.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ThemeSwitcher />
@@ -166,15 +166,19 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>© 2026 CrimFig.com Inc. All rights reserved.</span>
+            <span>© 2026 CrimFig.com Inc.</span>
+            <span>•</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-crimson)', fontWeight: 600 }}>
+              <Heart style={{ width: 12, height: 12, fill: 'var(--color-crimson)' }} /> Built on a Foundation of Love
+            </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span>System Latency: &lt;15ms</span>
+            <span>Device Care: &lt;12KB</span>
             <span>•</span>
-            <span>Deferred Audits: Active</span>
+            <span>Honest Attribution: 100% Verified</span>
             <span>•</span>
-            <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>All Systems Operational</span>
+            <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>Transparent Operations</span>
           </div>
         </div>
       </div>

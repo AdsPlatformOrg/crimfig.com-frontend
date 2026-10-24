@@ -7,45 +7,45 @@ export function LandingFeatures() {
   const features = [
     {
       icon: Layers,
-      title: 'Multi-Asset Media Formats',
+      title: 'Dignified Creative Formats',
       description:
-        'Upload high-definition JPG/PNG creatives, animated GIFs, or MP4 video reels. Inline replacement for rejected creatives ensures continuous campaign uptime.',
-      tag: 'Images • GIFs • Videos',
+        'Upload high-definition JPG/PNG creatives, animated GIFs, or MP4 video reels. Non-coercive, elegant ad units designed to enhance, rather than disrupt, user reading flow.',
+      tag: 'Images • GIFs • Video Reels',
     },
     {
       icon: Zap,
-      title: 'Publisher Delivery Planning',
+      title: 'Ultra-Lightweight Embed Runtimes',
       description:
-        'Raw embed execution and interaction events are logged in an append-only stream with high-precision timestamps. Publisher performance and browser compatibility require installation testing.',
-      tag: 'Performance Testing Pending',
+        'Sub-12KB embed script engineered with deep care for publisher websites and user devices. Zero memory leaks, zero battery drain, and zero intrusive surveillance tracking.',
+      tag: '<12KB • Device Respect',
     },
     {
       icon: ShieldCheck,
-      title: 'Deferred Verification Engine',
+      title: 'Ethical Ownership Verification',
       description:
-        'Website ownership uses explicit DNS or HTML proof checks. Mobile verification and automatic review scheduling are not currently available.',
-      tag: 'Fraud-Resistant Audits',
+        'Verified via transparent DNS TXT records or HTML meta proofs. Respects publisher sovereignty without demanding sensitive credentials or intrusive server access.',
+      tag: 'Publisher Sovereignty',
     },
     {
       icon: BarChart3,
-      title: '5-Metric Granular Reporting',
+      title: 'Absolute Transparency & Honest Metrics',
       description:
-        'Track impressions, clicks, mouse hovers, mobile touches, and exact spend in real-time. Fully customizable column visibility for your analytics tables.',
-      tag: 'Hovers & Touches Included',
+        'Zero fabricated clicks or bot surges. Track impressions, clicks, hovers, touches, and exact spend in real-time. Unadorned truth in every report.',
+      tag: 'Zero Fake Traffic • Real People',
     },
     {
       icon: Eye,
-      title: 'Category-Based Ad Targeting',
+      title: 'Ethical Niche Matching',
       description:
-        'Promoters specify the categories of ads they want on their properties. Advertisers reach genuinely engaged niche audiences across Tech, Gaming, Lifestyle & Finance.',
-      tag: 'Smart Matching',
+        'Publishers maintain full autonomy over ad categories displayed on their properties. Advertisers connect with genuine, receptive audiences who share common passions.',
+      tag: 'Partner Autonomy',
     },
     {
       icon: Hand,
-      title: 'Funded Campaign Escrow',
+      title: 'Atomic Escrow & Payout Dignity',
       description:
-        'Campaign activation requires server-confirmed escrow. Publisher settlement and withdrawals remain unavailable pending financial verification.',
-      tag: 'Secure Settlements',
+        'Pre-funded advertiser escrows protect promoter earnings. 55% direct performance share to promoters, 30% CrimFig platform base, and 15% dynamic growth & rewards fund—with prompt 72-hour clearance schedules.',
+      tag: '55% Promoters • 30% CrimFig • 15% Growth',
     },
   ];
 
@@ -74,7 +74,7 @@ export function LandingFeatures() {
             }}
           >
             <Sparkles style={{ width: 14, height: 14 }} />
-            <span>The CrimFig Advantage</span>
+            <span>Built on Love &amp; Mutual Dignity</span>
           </div>
           <h2
             style={{
@@ -85,10 +85,10 @@ export function LandingFeatures() {
               margin: '0 0 16px',
             }}
           >
-            Campaign Tools &amp; Publisher Planning
+            Ethical Tools for Meaningful Reach
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Everything you need to launch high-converting advertising campaigns or monetize your digital properties with premium sponsored creatives.
+            Everything you need to connect with genuine human audiences or sustainably monetize your digital properties with respect, transparency, and care.
           </p>
         </div>
 

@@ -3,6 +3,8 @@
 import { SubscriptionCheckout, CheckoutPlan } from './SubscriptionCheckout';
 import { SubscriptionPreferences } from './SubscriptionPreferences';
 import { WithdrawalForm } from './WithdrawalForm';
+import { RewardsHub } from './RewardsHub';
+import { BillingSupportHub } from './BillingSupportHub';
 import { billingData, resolveBank, saveBank } from '../../lib/billing-api';
 import { fundingReturn, fundingRequest, recoverFundingRequest, verifyFundingReference, startFunding, FundingStartError, loadTransactions } from '../../lib/funding-api';
 import { walletView } from '../../lib/wallet-view';
@@ -34,7 +36,8 @@ import {
   Gift,
   ArrowLeft,
   Award,
-  Coins
+  Coins,
+  HelpCircle
 } from 'lucide-react';
 import { useDialog } from '../../lib/use-dialog';
 import { SignOutButton } from '../SessionGate';
@@ -42,6 +45,8 @@ import { ThemeSwitcher } from '../ThemeSwitcher';
 import { EmptyState } from '../EmptyState';
 import { TableSkeleton, CardSkeleton } from '../LoadingStates';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { DashboardSidebar, NavGroup } from '../DashboardSidebar';
+import { Menu } from 'lucide-react';
 
 interface SavedCard {
   id: string;
@@ -104,7 +109,9 @@ interface BillingConsoleProps {
 const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_BILLING_API_URL || 'https://billing-api-production-bb4c.up.railway.app');
 
 export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: BillingConsoleProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards' | 'support'>(initialTab);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Loading Indicators
   const [isLoadingCards, setIsLoadingCards] = useState(true);
@@ -363,9 +370,52 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
   const handleRedeemRewards = () => { setOperationError('Rewards redemption is currently unavailable. No balance was changed.'); };
 
+  const billingNavGroups: NavGroup[] = [
+    {
+      title: 'Overview',
+      items: [
+        { id: 'overview', label: 'Wallet Overview', icon: Wallet },
+      ],
+    },
+    {
+      title: 'Money & Escrow',
+      items: [
+        { id: 'fund_action', label: 'Fund Wallet', icon: ArrowDownLeft, action: () => setIsFundOpen(true) },
+        { id: 'withdraw_action', label: 'Withdraw Funds', icon: ArrowUpRight, action: () => setIsWithdrawOpen(true) },
+        { id: 'transactions', label: 'Transactions & Receipts', icon: Clock, badge: transactions.length },
+      ],
+    },
+    {
+      title: 'Payment Methods',
+      items: [
+        { id: 'cards', label: 'Saved Cards', icon: CreditCard, badge: cards.length },
+        { id: 'bank_accounts', label: 'Bank Accounts', icon: Building2, badge: bankAccounts.length },
+      ],
+    },
+    {
+      title: 'Subscriptions',
+      items: [
+        { id: 'subscriptions', label: 'My Subscriptions', icon: Sparkles, badge: subscriptions.length },
+      ],
+    },
+    {
+      title: 'Rewards',
+      items: [
+        { id: 'rewards', label: 'Rewards Hub', icon: Gift, badge: `${rewardsPoints.toLocaleString()} pts` },
+      ],
+    },
+    {
+      title: 'Support',
+      items: [
+        { id: 'support', label: 'Help & Support', icon: HelpCircle },
+      ],
+    },
+  ];
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       {operationError && <div role="alert" style={{ position: 'sticky', top: 0, zIndex: 1200, padding: '12px 24px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)' }}>{operationError} <button onClick={() => setOperationError(null)} style={{ marginLeft: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Dismiss</button></div>}
+      
       {/* Top Header */}
       <header
         style={{
@@ -377,8 +427,28 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           boxShadow: 'var(--shadow-sm)'
         }}
       >
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '12px 24px', minHeight: '64px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '12px 24px', minHeight: '64px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' }}>
+            {/* Mobile Menu Hamburger */}
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '6px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--badge-bg)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+              }}
+              title="Open Navigation Menu"
+            >
+              <Menu style={{ width: 18, height: 18 }} />
+            </button>
+
             {onReturnToLanding && (
               <button
                 type="button"
@@ -442,8 +512,30 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px', flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      {/* Main Workspace Layout with Unified DashboardSidebar Standard */}
+      <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
+        <DashboardSidebar
+          app="billing"
+          groups={billingNavGroups}
+          activeId={activeTab}
+          onSelect={(id) => {
+            if (['overview', 'cards', 'subscriptions', 'bank_accounts', 'transactions', 'rewards'].includes(id)) {
+              setActiveTab(id as any);
+            }
+          }}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
+          isMobileOpen={isMobileNavOpen}
+          onCloseMobile={() => setIsMobileNavOpen(false)}
+          switchAppLink={{
+            label: 'Ads Studio',
+            href: 'https://ads.crimfig.com',
+            icon: Layers,
+          }}
+        />
+
+        {/* Content Area */}
+        <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px', flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '28px', minWidth: 0 }}>
         
         {loadError && <p role="alert" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16 }}>{loadError}</p>}
         {(walletStatus === 'unavailable' || ledgerError) && <div role="alert" style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16 }}>
@@ -947,187 +1039,15 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
         {/* TAB 5: REWARDS & CASHBACK */}
         {activeTab === 'rewards' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '9999px',
-                    backgroundColor: 'var(--color-crimson)',
-                    color: '#FFFFFF',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}
-                >
-                  CrimFig Ecosystem
-                </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Rewards conversion unavailable</span>
-              </div>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Rewards &amp; Creator Cashback</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                Rewards issuance and redemption are unavailable. Publisher cash earnings require a separate funded settlement.
-              </p>
-            </div>
+          <RewardsHub
+            onReturnToWallet={() => setActiveTab('overview')}
+            onRefreshWalletBalance={() => void refreshAccountData()}
+          />
+        )}
 
-            {rewardsMessage && (
-              <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
-                <CheckCircle2 style={{ width: 16, height: 16 }} />
-                <span>{rewardsMessage}</span>
-              </div>
-            )}
-
-            {/* Rewards Summary Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-              <div
-                className="theme-card"
-                style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '14px',
-                  boxShadow: 'var(--shadow-sm)'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Available Balance</span>
-                  <Coins style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-crimson)' }}>
-                    {rewardsPoints.toLocaleString()} <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>CF-Points</span>
-                  </div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
-                    Cash conversion unavailable
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  disabled={rewardsPoints <= 0 || isRedeemingRewards}
-                  onClick={handleRedeemRewards}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    backgroundColor: rewardsPoints > 0 ? 'var(--color-crimson)' : 'var(--badge-bg)',
-                    color: rewardsPoints > 0 ? '#FFFFFF' : 'var(--text-muted)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    border: 'none',
-                    cursor: rewardsPoints > 0 ? 'pointer' : 'not-allowed',
-                    boxShadow: rewardsPoints > 0 ? 'var(--shadow-crimson)' : 'none',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {isRedeemingRewards ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} /> : <Sparkles style={{ width: 16, height: 16 }} />}
-                  {isRedeemingRewards ? 'Redeeming...' : 'Redeem to Main Wallet Balance'}
-                </button>
-              </div>
-
-              <div
-                className="theme-card"
-                style={{
-                  padding: '24px',
-                  borderRadius: '16px',
-                  backgroundColor: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  boxShadow: 'var(--shadow-sm)'
-                }}
-              >
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Active Earning Channels</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Ads Network Revenue Share</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>1,200 pts ($12.00)</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>CrimFig Stream &amp; Social Tips</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>850 pts ($8.50)</strong>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Community &amp; Dev Referrals</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>400 pts ($4.00)</strong>
-                  </div>
-                </div>
-                <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Rewards conversion and bank withdrawals are not currently available.
-                </div>
-              </div>
-            </div>
-
-            {/* Rewards Stream History */}
-            <div
-              className="theme-card"
-              style={{
-                borderRadius: '16px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                padding: '24px',
-                boxShadow: 'var(--shadow-sm)'
-              }}
-            >
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>Rewards Stream History</h3>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {rewardsHistory.map(r => (
-                  <div
-                    key={r.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--bg-page)',
-                      border: '1px solid var(--border-subtle)'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '8px',
-                          backgroundColor: r.points > 0 ? 'var(--color-success-bg)' : 'var(--badge-bg)',
-                          color: r.points > 0 ? 'var(--color-success)' : 'var(--text-muted)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <Award style={{ width: 18, height: 18 }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{r.title}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{r.date}</div>
-                      </div>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: r.points > 0 ? 'var(--color-success)' : 'var(--text-muted)' }}>
-                        {r.points > 0 ? `+${r.points.toLocaleString()}` : r.points.toLocaleString()} pts
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {r.usdEquivalent > 0 ? `+$${r.usdEquivalent.toFixed(2)} USD` : `-$${Math.abs(r.usdEquivalent).toFixed(2)} USD`}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* TAB 6: SUPPORT & HELPDESK */}
+        {activeTab === 'support' && (
+          <BillingSupportHub />
         )}
 
         {/* TAB 6: TRANSACTIONS */}
@@ -1195,6 +1115,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         )}
 
       </main>
+      </div>
 
       {/* MODAL: FUND WALLET */}
       {isFundOpen && (
