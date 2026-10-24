@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { DisputesTab } from '../../components/console/disputes/DisputesTab';
 
 export default function AdsDisputesPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="advertiser" initialAdvertiserTab="disputes" />
+      <AdsConsoleShell role="advertiser" activeNavId="disputes">
+        <DisputesTab role="advertiser" />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { BillingLedger } from '../../components/console/billing/BillingLedger';
 
 export default function AdsBillingPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="advertiser" initialAdvertiserTab="billing" />
+      <AdsConsoleShell role="advertiser" activeNavId="billing_escrow">
+        <BillingLedger initialRole="advertiser" />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

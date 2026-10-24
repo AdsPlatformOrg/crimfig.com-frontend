@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { PromoterMobileAppsView } from '../../components/console/promoter/PromoterMobileAppsView';
 
 export default function AdsMobileAppsPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="promoter" initialPromoterSection="mobile_apps" />
+      <AdsConsoleShell role="promoter" activeNavId="mobile_apps">
+        <PromoterMobileAppsView />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
+import { AdvertiserMilestonesCard } from './AdvertiserMilestonesCard';
 
 interface DashboardSummary {
   period: string;
@@ -599,13 +600,15 @@ export function ConsoleDashboard({
           <div>
             <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Ad Marketplace</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              Browse active sponsor campaigns by category
+               Browse active sponsor campaigns by category
             </div>
           </div>
           <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
         </div>
       </div>
 
+      {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
+      <AdvertiserMilestonesCard />
 
     </div>
   );

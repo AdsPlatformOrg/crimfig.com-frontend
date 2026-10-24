@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../../components/SessionGate';
-import { AdsConsole } from '../../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../../components/console/AdsConsoleShell';
+import { AdminModerationQueue } from '../../../components/console/AdminModerationQueue';
 
 export default function AdsAdminModerationPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="admin" initialAdminTab="moderation" />
+      <AdsConsoleShell role="admin" activeNavId="moderation">
+        <AdminModerationQueue apiBase="" />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }
