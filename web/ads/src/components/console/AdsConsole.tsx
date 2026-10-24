@@ -518,63 +518,52 @@ export function AdsConsole({
               <Menu style={{ width: 18, height: 18 }} />
             </button>
 
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                background: 'var(--gradient-crimson)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 900,
-                fontSize: '18px',
-                color: '#FFFFFF',
-                boxShadow: 'var(--shadow-crimson)',
-              }}
-            >
-              CF
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                CrimFig <span style={{ color: 'var(--color-crimson)' }}>Ads</span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '9999px',
-                    backgroundColor: 'var(--badge-bg)',
-                    color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-subtle)',
-                  }}
-                >
-                  Console
-                </span>
-              </div>
-            </div>
-
             <Link
               href="/"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-secondary)',
-                fontSize: '12px',
-                fontWeight: 600,
+                gap: '12px',
                 textDecoration: 'none',
-                transition: 'border-color 0.15s ease',
+                cursor: 'pointer',
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--color-crimson)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)')}
+              title="Return to CrimFig Ads Home"
             >
-              <ArrowLeft style={{ width: 13, height: 13 }} />
-              <span>Overview</span>
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '12px',
+                  background: 'var(--gradient-crimson)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 900,
+                  fontSize: '18px',
+                  color: '#FFFFFF',
+                  boxShadow: 'var(--shadow-crimson)',
+                }}
+              >
+                CF
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                  CrimFig <span style={{ color: 'var(--color-crimson)' }}>Ads</span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '9999px',
+                      backgroundColor: 'var(--badge-bg)',
+                      color: 'var(--text-secondary)',
+                      border: '1px solid var(--border-subtle)',
+                    }}
+                  >
+                    Console
+                  </span>
+                </div>
+              </div>
             </Link>
           </div>
 

@@ -490,33 +490,12 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               <Menu style={{ width: 18, height: 18 }} />
             </button>
 
-            <Link
-              href="/"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--badge-bg)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                transition: 'all 0.15s ease'
-              }}
-              title="Return to Billing Landing Page"
-            >
-              <ArrowLeft style={{ width: 14, height: 14 }} />
-              <span>Home</span>
-            </Link>
-
             <CrimFigLogo
               variant="brand"
               size={38}
               app="Billing"
               appBadge="Universal Escrow"
+              href="/"
             />
           </div>
 

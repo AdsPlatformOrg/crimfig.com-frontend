@@ -22,27 +22,7 @@ export default function AuthDashboardPage() {
       >
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '12px 24px', minHeight: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link
-              href="/"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--badge-bg)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              <ArrowLeft style={{ width: 14, height: 14 }} />
-              <span>Home</span>
-            </Link>
-
-            <CrimFigLogo variant="brand" size={38} app="Security" appBadge="Zero-Trust SSO" />
+            <CrimFigLogo variant="brand" size={38} app="Security" appBadge="Zero-Trust SSO" href="/" />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
