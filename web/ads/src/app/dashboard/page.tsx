@@ -1,7 +1,7 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { ThreeColumnSocialDashboardTemplate, defaultPrimaryNav } from '../../components/templates/ThreeColumnSocialDashboardTemplate';
 import { ConsoleDashboard } from '../../components/console/ConsoleDashboard';
 import { useRouter } from 'next/navigation';
 
@@ -10,13 +10,29 @@ export default function AdsDashboardPage() {
 
   return (
     <SessionGate>
-      <AdsConsoleShell role="advertiser" activeNavId="overview_dash">
+      <ThreeColumnSocialDashboardTemplate
+        headerProps={{
+          appName: 'Advertiser Studio',
+          searchPlaceholder: 'Search campaigns, creatives, or metrics...',
+          primaryAction: {
+            label: 'New Campaign',
+            href: '/campaigns/new',
+          },
+        }}
+        activeNavId="home"
+        primaryNav={defaultPrimaryNav}
+        tabs={[
+          { id: 'overview', label: 'Console Overview' },
+          { id: 'recent', label: 'Campaigns & Deals' },
+        ]}
+      >
         <ConsoleDashboard
           onNavigateToCampaigns={() => router.push('/campaigns')}
           onNavigateToPromoterHub={(section) => router.push(section ? `/${section}` : '/websites')}
           onOpenCreateCampaign={() => router.push('/campaigns/new')}
         />
-      </AdsConsoleShell>
+      </ThreeColumnSocialDashboardTemplate>
     </SessionGate>
   );
 }
+
