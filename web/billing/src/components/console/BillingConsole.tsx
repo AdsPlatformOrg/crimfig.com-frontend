@@ -373,18 +373,18 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
   const handleRedeemRewards = () => { setOperationError('Rewards redemption is currently unavailable. No balance was changed.'); };
 
-  const billingNavGroups: NavGroup[] = [
+  const billingWorkspace = ['payouts', 'bank_accounts'].includes(activeTab)
+    ? 'payouts'
+    : activeTab === 'rewards'
+      ? 'rewards'
+      : 'wallet';
+
+  const walletNavGroups: NavGroup[] = [
     {
-      title: 'Overview',
+      title: 'Wallet & Balances',
       items: [
         { id: 'overview', label: 'Wallet Overview', icon: Wallet },
-      ],
-    },
-    {
-      title: 'Money & Escrow',
-      items: [
         { id: 'fund_action', label: 'Fund Wallet', icon: ArrowDownLeft, action: () => setIsFundOpen(true) },
-        { id: 'withdraw_action', label: 'Withdraw Funds', icon: ArrowUpRight, action: () => setIsWithdrawOpen(true) },
         { id: 'transactions', label: 'Transactions & Receipts', icon: Clock, badge: transactions.length },
       ],
     },
@@ -392,28 +392,66 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       title: 'Payment Methods',
       items: [
         { id: 'cards', label: 'Saved Cards', icon: CreditCard, badge: cards.length },
-        { id: 'bank_accounts', label: 'Bank Accounts', icon: Building2, badge: bankAccounts.length },
-      ],
-    },
-    {
-      title: 'Subscriptions',
-      items: [
-        { id: 'subscriptions', label: 'My Subscriptions', icon: Sparkles, badge: subscriptions.length },
-      ],
-    },
-    {
-      title: 'Rewards',
-      items: [
-        { id: 'rewards', label: 'Rewards Hub', icon: Gift, badge: `${rewardsPoints.toLocaleString()} pts` },
+        { id: 'subscriptions', label: 'Subscriptions', icon: Sparkles, badge: subscriptions.length },
       ],
     },
     {
       title: 'Support',
       items: [
-        { id: 'support', label: 'Help & Support', icon: HelpCircle },
+        { id: 'support', label: 'Help & Inquiries', icon: HelpCircle },
       ],
     },
   ];
+
+  const payoutsNavGroups: NavGroup[] = [
+    {
+      title: 'Publisher & Payouts',
+      items: [
+        { id: 'bank_accounts', label: 'Bank Accounts', icon: Building2, badge: bankAccounts.length },
+        { id: 'withdraw_action', label: 'Request Withdrawal', icon: ArrowUpRight, action: () => setIsWithdrawOpen(true) },
+      ],
+    },
+    {
+      title: 'Settlement History',
+      items: [
+        { id: 'transactions', label: 'Payout Statements', icon: Clock, badge: transactions.length },
+      ],
+    },
+    {
+      title: 'Support',
+      items: [
+        { id: 'support', label: 'Payout Inquiries', icon: HelpCircle },
+      ],
+    },
+  ];
+
+  const rewardsNavGroups: NavGroup[] = [
+    {
+      title: 'Rewards & Perks',
+      items: [
+        { id: 'rewards', label: 'Rewards Hub', icon: Gift, badge: `${rewardsPoints.toLocaleString()} pts` },
+      ],
+    },
+    {
+      title: 'Redemption Statements',
+      items: [
+        { id: 'transactions', label: 'Redemption History', icon: Clock },
+      ],
+    },
+    {
+      title: 'Support',
+      items: [
+        { id: 'support', label: 'Rewards Inquiries', icon: HelpCircle },
+      ],
+    },
+  ];
+
+  const currentBillingNavGroups: NavGroup[] =
+    billingWorkspace === 'payouts'
+      ? payoutsNavGroups
+      : billingWorkspace === 'rewards'
+        ? rewardsNavGroups
+        : walletNavGroups;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
@@ -482,6 +520,83 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
             />
           </div>
 
+          {/* Segmented Workspace Switcher: Consumer/Business Wallet vs Merchant Payouts vs Rewards Hub */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px',
+                flexWrap: 'wrap',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
+                borderRadius: '12px',
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '12px',
+                fontWeight: 600,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: billingWorkspace === 'wallet' ? 'var(--color-fig-dark)' : 'transparent',
+                  color: billingWorkspace === 'wallet' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <Wallet style={{ width: 14, height: 14 }} />
+                <span>Wallet</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/payouts')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: billingWorkspace === 'payouts' ? 'var(--color-crimson)' : 'transparent',
+                  color: billingWorkspace === 'payouts' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <Building2 style={{ width: 14, height: 14 }} />
+                <span>Payouts</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/rewards')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  backgroundColor: billingWorkspace === 'rewards' ? 'var(--color-crimson)' : 'transparent',
+                  color: billingWorkspace === 'rewards' ? '#FFFFFF' : 'var(--text-secondary)',
+                }}
+              >
+                <Gift style={{ width: 14, height: 14 }} />
+                <span>Rewards</span>
+              </button>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', maxWidth: '100%' }}>
             <a
               href="https://ads.crimfig.com"
@@ -516,7 +631,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
         <DashboardSidebar
           app="billing"
-          groups={billingNavGroups}
+          groups={currentBillingNavGroups}
           activeId={activeTab}
           onSelect={(id) => {
             if (id === 'overview') router.push('/dashboard');
