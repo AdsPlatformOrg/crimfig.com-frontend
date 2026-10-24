@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Settings, Bell, Palette, Layout, ShieldAlert, LogOut, Check } from 'lucide-react';
 import { dashboardSession } from '../../../lib/session';
+import { Button } from '@/components/ui/button';
 
 export function AccountSettingsView() {
   const [budgetAlerts, setBudgetAlerts] = useState<boolean>(true);
@@ -122,26 +123,15 @@ export function AccountSettingsView() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-          <button
+          <Button
             type="button"
             onClick={handleSave}
-            style={{
-              padding: '8px 20px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            variant="default"
+            className="flex items-center gap-2"
           >
             {isSaved ? <Check size={14} /> : null}
             <span>{isSaved ? 'Preferences Saved' : 'Save Notifications'}</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -157,44 +147,26 @@ export function AccountSettingsView() {
           CrimFig defaults to a crisp light theme. You can toggle your active theme in the platform footer or choose your default preference.
         </p>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => {
               document.documentElement.setAttribute('data-theme', 'light');
               localStorage.setItem('crimfig-theme', 'light');
             }}
-            style={{
-              padding: '10px 18px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-surface)',
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
           >
             Light Theme (Default)
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => {
               document.documentElement.setAttribute('data-theme', 'dark');
               localStorage.setItem('crimfig-theme', 'dark');
             }}
-            style={{
-              padding: '10px 18px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--color-fig-dark)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
           >
             Dark Mode
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -210,26 +182,15 @@ export function AccountSettingsView() {
           Sign out of all active browser sessions across devices. This clears active access tokens while preserving all account data and campaigns.
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-          <button
+          <Button
             type="button"
+            variant="destructive"
             onClick={handleSignOutAll}
-            style={{
-              padding: '9px 18px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-error-bg)',
-              color: 'var(--color-error)',
-              border: '1px solid rgba(220, 38, 38, 0.3)',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            className="flex items-center gap-2"
           >
             <LogOut size={14} />
             <span>Sign Out All Active Sessions</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

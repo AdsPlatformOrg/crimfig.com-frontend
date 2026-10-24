@@ -5,6 +5,8 @@ import { dashboardSession } from '../../../lib/session';
 import { apiData } from '../../../lib/api-data';
 import { User, Shield, Globe, Smartphone, Share2, ExternalLink, Calendar, Mail, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface PromoterProfile {
   id: string;
@@ -82,21 +84,9 @@ export function UserProfileView() {
               <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {profile?.displayName || 'CrimFig Account User'}
               </span>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'var(--color-success-bg)',
-                  color: 'var(--color-success)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
+              <Badge variant="outline" className="border-green-600/30 text-green-700 bg-green-50 flex items-center gap-1 font-semibold">
                 <CheckCircle2 size={12} /> Verified Session
-              </span>
+              </Badge>
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               {userId && <span>ID: <code style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{userId}</code></span>}
@@ -105,28 +95,16 @@ export function UserProfileView() {
               </span>
             </div>
           </div>
-          <Link
-            href={`${authUrl}/dashboard`}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--badge-bg)',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-              fontWeight: 600,
-              textDecoration: 'none',
-              transition: 'border-color 0.15s ease',
-            }}
-          >
-            <span>Manage Security & Password</span>
-            <ExternalLink size={14} />
-          </Link>
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link
+              href={`${authUrl}/dashboard`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>Manage Security & Password</span>
+              <ExternalLink size={14} />
+            </Link>
+          </Button>
         </div>
 
         {/* Roles & Personas */}
