@@ -26,6 +26,7 @@ import { ThemeSwitcher } from '../ThemeSwitcher';
 import { SignOutButton } from '../SessionGate';
 import { DashboardSidebar, type NavGroup } from '../DashboardSidebar';
 import { apiData } from '../../lib/api-data';
+import { Button, Badge } from '../ui';
 
 export interface AdsConsoleShellProps {
   children: React.ReactNode;

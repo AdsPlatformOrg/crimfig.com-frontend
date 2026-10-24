@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, ArrowLeft, RefreshCw } from 'lucide-react';
 import { getApiUrl } from '../lib/config';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from './ui';
 
 interface StaffStatusResponse {
   userId: string | null;
@@ -72,20 +73,16 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
           fontFamily: "'Poppins', Arial, Helvetica, sans-serif",
         }}
       >
-        <div
+        <Card
           style={{
             maxWidth: '420px',
             width: '100%',
             padding: '32px',
-            backgroundColor: 'var(--bg-elevated, #FFFFFF)',
-            border: '1px solid var(--border-subtle, #E2E8F0)',
-            borderRadius: '16px',
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '16px',
-            boxShadow: 'var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.05))',
           }}
         >
           <RefreshCw
@@ -102,7 +99,7 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
           <p style={{ fontSize: '13px', color: 'var(--text-secondary, #475569)', margin: 0 }}>
             Verifying account administrator privileges and security tokens...
           </p>
-        </div>
+        </Card>
       </main>
     );
   }
@@ -118,21 +115,17 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
         fontFamily: "'Poppins', Arial, Helvetica, sans-serif",
       }}
     >
-      <section
+      <Card
         style={{
           maxWidth: '520px',
           width: '100%',
           boxSizing: 'border-box',
-          backgroundColor: 'var(--bg-elevated, #FFFFFF)',
-          border: '1px solid var(--border-subtle, #E2E8F0)',
-          borderRadius: '16px',
           padding: '40px 32px',
           textAlign: 'center',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: '20px',
-          boxShadow: 'var(--shadow-md, 0 4px 12px rgba(15, 23, 42, 0.07))',
         }}
       >
         <div
@@ -219,46 +212,25 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
             width: '100%',
           }}
         >
-          <button
-            type="button"
+          <Button
             onClick={() => router.push('/dashboard')}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '10px 20px',
-              backgroundColor: 'var(--color-crimson, #D4143A)',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              border: 'none',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'opacity 0.15s ease',
             }}
           >
             <ArrowLeft size={16} />
             <span>Return to Account Overview</span>
-          </button>
-          <Link
-            href="/login"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '10px 16px',
-              backgroundColor: 'transparent',
-              color: 'var(--text-secondary, #475569)',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle, #E2E8F0)',
-              fontSize: '14px',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push('/login')}
           >
             Switch Account
-          </Link>
+          </Button>
         </div>
-      </section>
+      </Card>
     </main>
   );
 }

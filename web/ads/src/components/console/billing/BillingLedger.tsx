@@ -24,6 +24,21 @@ import {
   triggerManualSettlement,
 } from '../../../lib/billing-api';
 import { EscrowBreakdownDrawer } from './EscrowBreakdownDrawer';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Table as ShadTable,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  Badge,
+  Button,
+} from '../../ui';
 
 interface BillingLedgerProps {
   initialRole?: 'advertiser' | 'promoter';
@@ -496,15 +511,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
       </div>
 
       {/* Transaction & Settlement Table */}
-      <div
-        style={{
-          backgroundColor: 'var(--bg-surface)',
-          borderRadius: '20px',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sm)',
-          overflow: 'hidden',
-        }}
-      >
+      <Card style={{ overflow: 'hidden' }}>
         {/* Table Tabs */}
         <div
           style={{
@@ -653,7 +660,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {/* Modals */}
       <EscrowBreakdownDrawer
