@@ -3,6 +3,7 @@
 import React from 'react';
 import { Wallet, ShieldCheck, ArrowRight, ExternalLink } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 
 interface LandingFooterProps {
   onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
@@ -130,7 +131,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             &copy; 2026 CrimFig Ecosystem Ltd. All rights reserved. Account and feature availability may vary.
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={() => onLaunchConsole('rewards')}
@@ -145,6 +146,8 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             >
               Explore Rewards Program &rarr;
             </button>
+
+            <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>
         </div>
       </div>

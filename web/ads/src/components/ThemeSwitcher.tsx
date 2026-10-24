@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 import { validTheme, type Theme } from '../lib/theme';
 import { Sun, Moon } from 'lucide-react';
 
-export function ThemeSwitcher() {
+export interface ThemeSwitcherProps {
+  showLabel?: boolean;
+  labelPrefix?: string;
+}
+
+export function ThemeSwitcher({ showLabel = false, labelPrefix = 'Theme:' }: ThemeSwitcherProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
@@ -27,19 +32,25 @@ export function ThemeSwitcher() {
   };
 
   return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '3px',
-        borderRadius: '9999px',
-        backgroundColor: 'var(--badge-bg)',
-        border: '1px solid var(--border-subtle)',
-        fontSize: '12px',
-        fontWeight: 500,
-      }}
-    >
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+      {showLabel && (
+        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          {labelPrefix}
+        </span>
+      )}
+      <div
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          padding: '3px',
+          borderRadius: '9999px',
+          backgroundColor: 'var(--badge-bg)',
+          border: '1px solid var(--border-subtle)',
+          fontSize: '12px',
+          fontWeight: 500,
+        }}
+      >
       <button
         type="button"
         onClick={() => toggleTheme('light')}
@@ -85,6 +96,7 @@ export function ThemeSwitcher() {
         <Moon style={{ width: 14, height: 14, color: '#818CF8' }} />
         <span>Dark</span>
       </button>
+      </div>
     </div>
   );
 }

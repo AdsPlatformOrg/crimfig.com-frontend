@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 
 export function LandingFooter() {
   const currentYear = new Date().getFullYear();
@@ -115,10 +116,11 @@ export function LandingFooter() {
           }}
         >
           <span>© {currentYear} CrimFig Technologies. All rights reserved.</span>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <span>Privacy Policy</span>
             <span>Terms of Service</span>
             <span>Security Whitepaper</span>
+            <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>
         </div>
       </div>

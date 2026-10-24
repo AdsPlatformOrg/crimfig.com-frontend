@@ -621,7 +621,6 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               <ExternalLink style={{ width: 12, height: 12, color: 'var(--text-muted)' }} />
             </a>
 
-            <ThemeSwitcher />
             <SignOutButton />
           </div>
         </div>
@@ -1233,6 +1232,37 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           </div>
         )}
 
+        {/* Billing Console Footer */}
+        <footer
+          style={{
+            borderTop: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-surface)',
+            padding: '18px 24px',
+            marginTop: 'auto',
+          }}
+        >
+          <div
+            style={{
+              maxWidth: '1200px',
+              margin: '0 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '16px',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CrimFig Billing &amp; Escrow</span>
+              <span>•</span>
+              <span>© {new Date().getFullYear()} CrimFig Ecosystem</span>
+            </div>
+
+            <ThemeSwitcher showLabel labelPrefix="Theme:" />
+          </div>
+        </footer>
       </main>
       </div>
 

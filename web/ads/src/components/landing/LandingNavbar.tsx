@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ArrowRight, Sparkles, Layers, DollarSign, ShieldCheck } from 'lucide-react';
-import { ThemeSwitcher } from '../ThemeSwitcher';
 import { CrimFigLogo } from '../CrimFigLogo';
 
 interface LandingNavbarProps {
@@ -105,8 +104,6 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
 
         {/* Action Controls & Launch Console */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <ThemeSwitcher />
-
           <button
             type="button"
             onClick={() => onLaunchConsole('advertiser')}

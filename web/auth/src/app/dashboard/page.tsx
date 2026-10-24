@@ -46,7 +46,6 @@ export default function AuthDashboardPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <ThemeSwitcher />
             <Link
               href="/login"
               style={{
@@ -146,6 +145,38 @@ export default function AuthDashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Auth Dashboard Footer */}
+      <footer
+        style={{
+          borderTop: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-elevated)',
+          padding: '18px 24px',
+          marginTop: 'auto',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px',
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CrimFig Central Auth</span>
+            <span>•</span>
+            <span>© {new Date().getFullYear()} CrimFig Technologies</span>
+          </div>
+
+          <ThemeSwitcher showLabel labelPrefix="Theme:" />
+        </div>
+      </footer>
     </div>
   );
 }

@@ -310,9 +310,8 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
             </div>
           </div>
 
-          {/* Right Controls: Theme Switcher & Wallet Trigger */}
+          {/* Right Controls: Sign Out & Wallet Trigger */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
-            <ThemeSwitcher />
             <SignOutButton />
 
             <button
@@ -377,21 +376,55 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
         />
 
         {/* Page Content Slot */}
-        <main
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '32px 24px',
-            flex: 1,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '32px',
-            minWidth: 0,
-          }}
-        >
-          {children}
-        </main>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <main
+            style={{
+              maxWidth: '1200px',
+              margin: '0 auto',
+              padding: '32px 24px',
+              flex: 1,
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '32px',
+              minWidth: 0,
+            }}
+          >
+            {children}
+          </main>
+
+          {/* Console Workspace Footer */}
+          <footer
+            style={{
+              borderTop: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--bg-surface)',
+              padding: '18px 24px',
+              marginTop: 'auto',
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '1200px',
+                margin: '0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '16px',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CrimFig Ads</span>
+                <span>•</span>
+                <span>© {new Date().getFullYear()} CrimFig Ecosystem</span>
+              </div>
+
+              <ThemeSwitcher showLabel labelPrefix="Theme:" />
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
   );
