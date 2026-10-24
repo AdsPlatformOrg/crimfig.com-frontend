@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Layers,
   ShieldCheck,
@@ -71,14 +71,7 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  useEffect(() => {
-    if (websiteId) {
-      loadSlots();
-      loadDirectCampaigns();
-    }
-  }, [websiteId]);
-
-  const loadSlots = async () => {
+  const loadSlots = useCallback(async () => {
     if (!websiteId) return;
     try {
       setIsLoading(true);
@@ -92,9 +85,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [websiteId]);
 
-  const loadDirectCampaigns = async () => {
+  const loadDirectCampaigns = useCallback(async () => {
     if (!websiteId) return;
     try {
       const res = await sessionFetch(`/api/v1/adstation/websites/${websiteId}/direct-campaigns`);
@@ -105,7 +98,14 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
     } catch {
       // Keep UI clean
     }
-  };
+  }, [websiteId]);
+
+  useEffect(() => {
+    if (websiteId) {
+      loadSlots();
+      loadDirectCampaigns();
+    }
+  }, [websiteId, loadSlots, loadDirectCampaigns]);
 
   const handleCreateSlot = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -43,6 +43,7 @@ interface AdminModerationQueueProps {
 export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   const [queue, setQueue] = useState<ModerationQueue | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isForbidden, setIsForbidden] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'creatives' | 'campaigns'>('creatives');
@@ -53,10 +54,15 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   const [reviewStage, setReviewStage] = useState<'reviewer' | 'manager'>('reviewer');
 
   const fetchQueue = useCallback(async () => {
-    setIsLoading(true); setError(null);
+    setIsLoading(true); setError(null); setIsForbidden(false);
     try {
       const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/queue?stage=${reviewStage}`);
-      if (!res.ok) throw new Error(res.status === 403 ? 'You do not have permission to view this queue.' : 'Moderation queue unavailable.');
+      if (res.status === 403) {
+        setIsForbidden(true);
+        setQueue(null);
+        return;
+      }
+      if (!res.ok) throw new Error('Moderation queue unavailable.');
       const json = await res.json();
       if (!Array.isArray(json.data?.campaigns) || !Array.isArray(json.data?.creatives)) throw new Error('Invalid moderation queue response.');
       setQueue(json.data);
@@ -177,6 +183,74 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
   };
+
+  if (isForbidden) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
+              Compliance &amp; Moderation
+            </span>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+              Staff Reviewer Access Required
+            </h2>
+          </div>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '48px 24px',
+            textAlign: 'center',
+            borderRadius: '16px',
+            border: '1px dashed var(--border-subtle)',
+            backgroundColor: 'var(--bg-surface)',
+          }}
+        >
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--badge-bg)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-crimson)',
+              marginBottom: '16px',
+            }}
+          >
+            <ShieldCheck style={{ width: '28px', height: '28px' }} />
+          </div>
+          <h3 style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '18px', marginBottom: '8px' }}>
+            Restricted Moderation Queue
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '520px', lineHeight: 1.6, marginBottom: '20px' }}>
+            This workspace queue is reserved for assigned compliance reviewers, managers, and system administrators. If you require moderation privileges for ad campaigns or creatives, contact your organization admin to grant the appropriate staff role.
+          </p>
+          <a
+            href="/dashboard"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--color-crimson)',
+              color: '#FFFFFF',
+              fontWeight: 600,
+              fontSize: '13px',
+              textDecoration: 'none',
+            }}
+          >
+            Return to Dashboard
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
