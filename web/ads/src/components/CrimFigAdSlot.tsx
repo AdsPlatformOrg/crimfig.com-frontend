@@ -108,33 +108,57 @@ export function CrimFigAdSlot({
   );
 }
 
+// ── Verification Snippet Generators ───────────────────────────────────────
+// Generates the site ownership DNS TXT record or HTML meta tag a promoter adds.
+export function generateCrimFigDnsTxtRecord(verificationToken: string, domain: string): { host: string; recordType: string; value: string } {
+  return {
+    host: '@',
+    recordType: 'TXT',
+    value: `crimfig-site-verification=${verificationToken}`,
+  };
+}
+
+export function generateCrimFigVerifyMetaTag(verificationToken: string): string {
+  return `<!-- CrimFig Site Ownership Verification — add inside <head> -->
+<meta name="crimfig-site-verification" content="${verificationToken}" />`;
+}
+
 // ── Embed Code Generator ─────────────────────────────────────────────────────
-// Generates the raw HTML string a promoter copies into their website source.
+// Generates the raw HTML string for Publisher Network or Owned-Site Direct Spaces
 export function generateCrimFigEmbedCode({
   placement,
   publisherKey,
   domain,
+  mode = 'publisher_network',
+  allowHomeNetworkFill = false,
 }: {
   placement: CrimFigPlacement;
   publisherKey: string;
   domain: string;
+  mode?: 'publisher_network' | 'owned_site_direct';
+  allowHomeNetworkFill?: boolean;
 }): string {
   const slotConfig = CRIMFIG_PLACEMENTS[placement];
   if (!slotConfig) return '';
 
-  return `<!-- CrimFig Publisher Network — ${slotConfig.label} -->
+  const commentTitle = mode === 'owned_site_direct'
+    ? 'CrimFig Ad Spaces — Owned-Site Direct Deal Slot (Free Barter Tier)'
+    : `CrimFig Publisher Network — ${slotConfig.label}`;
+
+  return `<!-- ${commentTitle} -->
 <!-- Place this code inside your <body> where you want the ad to appear. -->
-<!-- For each individual ad position, use a separate code block with a unique placement handle. -->
 
 <script async src="https://ads.crimfig.com/api/v1/delivery/pub-loader.js?pk=${publisherKey}" crossorigin="anonymous"></script>
 
-<!-- ${slotConfig.label} | Domain: ${domain} -->
+<!-- ${slotConfig.label} | Domain: ${domain} | Mode: ${mode} -->
 <ins class="crimfig-pub-slot"
      style="display:block"
      data-cf-network="crimfig"
      data-cf-publisher="${publisherKey}"
      data-cf-placement="${slotConfig.slotId}"
      data-cf-handle="${placement}"
+     data-cf-mode="${mode}"
+     ${mode === 'owned_site_direct' ? `data-cf-network-fill="${allowHomeNetworkFill ? 'true' : 'false'}"` : ''}
      data-cf-responsive="true"
      data-cf-format="auto"></ins>
 
@@ -143,9 +167,3 @@ export function generateCrimFigEmbedCode({
 </script>`;
 }
 
-// ── Verification Meta Tag Generator ─────────────────────────────────────────
-// Generates the site ownership verification meta tag a promoter adds to <head>.
-export function generateCrimFigVerifyMetaTag(verificationToken: string): string {
-  return `<!-- CrimFig Site Ownership Verification — add to your <head> -->
-<meta name="cf-site-verify" content="${verificationToken}" />`;
-}
