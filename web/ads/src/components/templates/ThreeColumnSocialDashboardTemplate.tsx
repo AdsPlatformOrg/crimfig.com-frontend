@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ModernTemplateHeader, HeaderProps } from './ModernTemplateHeader';
 import { WhoToFollowWidget, TrendingWidget, QuickHelpWidget } from './SidebarWidgets';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 import './template-layout.css';
 
 export interface NavLinkItem {
@@ -217,6 +218,39 @@ export const ThreeColumnSocialDashboardTemplate: React.FC<ThreeColumnSocialDashb
 
         </div>
       </div>
+
+      {/* Standardized Console Footer with Theme: Light Dark */}
+      <footer
+        style={{
+          borderTop: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-elevated)',
+          padding: '18px 24px',
+          marginTop: 'auto',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1280px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px',
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CrimFig Platform</span>
+            <span>•</span>
+            <span>© {new Date().getFullYear()} CrimFig Ecosystem</span>
+          </div>
+
+          <ThemeSwitcher showLabel labelPrefix="Theme:" />
+        </div>
+      </footer>
     </div>
   );
 };
+
