@@ -1,0 +1,374 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * CrimFig Design System — Modern Admin & Social Layout Styles
+ * Adapted from 3-Column SaaS/Community Layout (TailwindFlex @katherine-glenn/quora-reddit-2)
+ * Pure CSS with CSS custom variables, brand tokens, and dark theme support.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* Container Layout */
+.cf-template-root {
+  min-height: 100vh;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.cf-template-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.cf-template-header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .cf-template-header-container {
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cf-template-header-container {
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 220px 1fr auto;
+    gap: 32px;
+  }
+}
+
+.cf-template-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Search Bar */
+.cf-template-search-wrapper {
+  flex: 1;
+  max-width: 680px;
+  position: relative;
+}
+
+.cf-template-search-input {
+  width: 100%;
+  padding: 8px 16px 8px 40px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.cf-template-search-input:focus {
+  border-color: var(--color-crimson);
+  background-color: var(--bg-elevated);
+  box-shadow: 0 0 0 3px rgba(212, 20, 58, 0.15);
+}
+
+.cf-template-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Header Actions */
+.cf-template-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.cf-template-action-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  background: var(--gradient-crimson);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  text-decoration: none;
+}
+
+.cf-template-action-btn-primary:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
+}
+
+.cf-template-icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  position: relative;
+}
+
+.cf-template-icon-btn:hover {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+/* 3-Column Page Body */
+.cf-template-body {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px;
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .cf-template-body {
+    padding: 32px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cf-template-grid {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+@media (min-width: 1280px) {
+  .cf-template-grid {
+    grid-template-columns: 240px minmax(0, 1fr) 320px;
+    gap: 32px;
+  }
+}
+
+/* Left Sidebar Rail */
+.cf-template-sidebar-left {
+  position: sticky;
+  top: 88px;
+}
+
+.cf-template-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.cf-template-nav-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 8px 12px 4px 12px;
+}
+
+.cf-template-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.cf-template-nav-item:hover {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.cf-template-nav-item.active {
+  background-color: var(--bg-elevated);
+  color: var(--color-crimson);
+  font-weight: 600;
+  border-left: 3px solid var(--color-crimson);
+}
+
+/* Main Content Area */
+.cf-template-main-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Tab Segment Controller */
+.cf-template-tabs-nav {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.cf-template-tab-btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.cf-template-tab-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+}
+
+.cf-template-tab-btn.active {
+  color: var(--color-crimson);
+  background-color: var(--bg-surface);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Card Feed Items */
+.cf-template-card {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cf-template-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.cf-template-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cf-template-card-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cf-template-card-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cf-template-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cf-template-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.cf-template-stat-item:hover {
+  color: var(--color-crimson);
+  background-color: var(--bg-surface);
+}
+
+/* Right Sidebar Rail */
+.cf-template-sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 88px;
+}
+
+.cf-template-widget {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cf-template-widget-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cf-template-widget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cf-template-widget-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
