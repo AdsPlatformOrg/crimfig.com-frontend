@@ -10,6 +10,8 @@ import { fundingReturn, fundingRequest, recoverFundingRequest, verifyFundingRefe
 import { walletView } from '../../lib/wallet-view';
 import { sessionFetch } from '../../lib/session';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Wallet,
   CreditCard,
@@ -103,12 +105,13 @@ interface RewardItem {
 
 interface BillingConsoleProps {
   onReturnToLanding?: () => void;
-  initialTab?: 'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards';
+  initialTab?: 'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards' | 'support';
 }
 
 const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_BILLING_API_URL || 'https://billing-api-production-bb4c.up.railway.app');
 
 export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: BillingConsoleProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards' | 'support'>(initialTab);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -449,30 +452,27 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               <Menu style={{ width: 18, height: 18 }} />
             </button>
 
-            {onReturnToLanding && (
-              <button
-                type="button"
-                onClick={onReturnToLanding}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--badge-bg)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-                title="Return to Billing Landing Page"
-              >
-                <ArrowLeft style={{ width: 14, height: 14 }} />
-                <span>Home</span>
-              </button>
-            )}
+            <Link
+              href="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--badge-bg)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-primary)',
+                fontSize: '12px',
+                fontWeight: 600,
+                textDecoration: 'none',
+                transition: 'all 0.15s ease'
+              }}
+              title="Return to Billing Landing Page"
+            >
+              <ArrowLeft style={{ width: 14, height: 14 }} />
+              <span>Home</span>
+            </Link>
 
             <CrimFigLogo
               variant="brand"
@@ -519,9 +519,13 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           groups={billingNavGroups}
           activeId={activeTab}
           onSelect={(id) => {
-            if (['overview', 'cards', 'subscriptions', 'bank_accounts', 'transactions', 'rewards'].includes(id)) {
-              setActiveTab(id as any);
-            }
+            if (id === 'overview') router.push('/dashboard');
+            else if (id === 'cards') router.push('/cards');
+            else if (id === 'subscriptions') router.push('/subscriptions');
+            else if (id === 'bank_accounts') router.push('/payouts');
+            else if (id === 'transactions') router.push('/transactions');
+            else if (id === 'rewards') router.push('/rewards');
+            else if (id === 'support') router.push('/support');
           }}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
