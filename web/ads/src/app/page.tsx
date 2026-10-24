@@ -20,9 +20,9 @@ export default function AdsRootPage() {
     <LandingPage
       onLaunchConsole={(role, section) => {
         if (role === 'promoter') {
-          if (section === 'individuals') router.push('/individuals');
-          else if (section === 'mobile_apps') router.push('/mobile_apps');
-          else router.push('/websites');
+          if (section === 'individuals') router.push('/promoter/individuals');
+          else if (section === 'mobile_apps') router.push('/promoter/mobile-apps');
+          else router.push('/promoter');
         } else {
           router.push('/dashboard');
         }
