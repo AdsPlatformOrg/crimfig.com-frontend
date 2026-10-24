@@ -376,53 +376,93 @@ export function AdsConsole({
     </div>
   );
 
-  const adsNavGroups: NavGroup[] = [
+  const advertiserNavGroups: NavGroup[] = [
     {
-      title: 'Overview',
+      title: 'Studio',
       items: [
         { id: 'overview_dash', label: 'Advertiser Dashboard', icon: TrendingUp },
       ],
     },
     {
-      title: 'Advertise',
+      title: 'Campaign Management',
       items: [
-        { id: 'campaigns', label: 'Campaigns', icon: Layers, badge: campaigns.length },
+        { id: 'campaigns', label: 'All Campaigns', icon: Layers, badge: campaigns.length },
+        { id: 'new_campaign', label: 'Create Campaign', icon: Plus },
+      ],
+    },
+    {
+      title: 'Performance & Protection',
+      items: [
         { id: 'conversions', label: 'Conversions & CPA', icon: Target },
         { id: 'disputes', label: 'Disputes & Rebates', icon: ShieldAlert },
+      ],
+    },
+    {
+      title: 'Finance & Account',
+      items: [
         { id: 'billing_escrow', label: 'Billing & Escrow', icon: CreditCard },
-      ],
-    },
-    {
-      title: 'Website Inventory',
-      items: [
-        { id: 'websites', label: 'Websites & Verification', icon: Globe, badge: websites.length },
-        { id: 'individuals', label: 'Individual Promoters', icon: UserCheck },
-        { id: 'mobile_apps', label: 'Mobile Apps', icon: Smartphone, badge: apps.length },
-        { id: 'marketplace', label: 'Ad Marketplace', icon: Share2 },
-        { id: 'quality', label: 'Traffic Quality & Score', icon: ShieldCheck },
-      ],
-    },
-    {
-      title: 'Admin Moderation',
-      items: [
-        { id: 'moderation', label: 'Review Queue', icon: ShieldCheck },
-        { id: 'admin_disputes', label: 'Traffic Adjustments', icon: ShieldAlert },
-      ],
-    },
-    {
-      title: 'Account & Help',
-      items: [
         { id: 'notifications', label: 'Notifications', icon: Bell, badge: '2' },
         { id: 'support', label: 'Help & Support', icon: HelpCircle },
       ],
     },
   ];
 
+  const promoterNavGroups: NavGroup[] = [
+    {
+      title: 'Monetization',
+      items: [
+        { id: 'websites', label: 'Websites & Ad Slots', icon: Globe, badge: websites.length },
+        { id: 'individuals', label: 'Links & Reels Social', icon: Share2 },
+        { id: 'mobile_apps', label: 'Mobile Apps SDK', icon: Smartphone, badge: apps.length },
+      ],
+    },
+    {
+      title: 'Deals & Discovery',
+      items: [
+        { id: 'marketplace', label: 'Ad Marketplace', icon: Share2 },
+        { id: 'quality', label: 'Quality & Trust Score', icon: ShieldCheck },
+      ],
+    },
+    {
+      title: 'Earnings & Account',
+      items: [
+        { id: 'billing_escrow', label: 'Earnings & Payouts', icon: CreditCard },
+        { id: 'notifications', label: 'Notifications', icon: Bell },
+        { id: 'support', label: 'Support & Knowledge', icon: HelpCircle },
+      ],
+    },
+  ];
+
+  const adminNavGroups: NavGroup[] = [
+    {
+      title: 'Governance & Audits',
+      items: [
+        { id: 'moderation', label: 'Creative Review Queue', icon: ShieldCheck },
+        { id: 'admin_disputes', label: 'Traffic Adjustments', icon: ShieldAlert },
+      ],
+    },
+    {
+      title: 'System & Health',
+      items: [
+        { id: 'quality', label: 'Traffic Integrity Engine', icon: ShieldCheck },
+        { id: 'notifications', label: 'Admin Alerts', icon: Bell },
+        { id: 'support', label: 'Support Queue', icon: HelpCircle },
+      ],
+    },
+  ];
+
+  const currentNavGroups: NavGroup[] =
+    role === 'admin'
+      ? adminNavGroups
+      : role === 'promoter'
+        ? promoterNavGroups
+        : advertiserNavGroups;
+
   const activeNavId =
     role === 'admin'
       ? (adminTab === 'moderation' ? 'moderation' : 'admin_disputes')
       : role === 'promoter'
-        ? promoterSection
+        ? (promoterSection === 'billing' ? 'billing_escrow' : promoterSection)
         : (advertiserTab === 'dashboard' ? 'overview_dash' : advertiserTab === 'billing' ? 'billing_escrow' : advertiserTab);
 
   return (
@@ -651,11 +691,13 @@ export function AdsConsole({
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 71px)', position: 'relative' }}>
         <DashboardSidebar
           app="ads"
-          groups={adsNavGroups}
+          groups={currentNavGroups}
           activeId={activeNavId}
           onSelect={(id) => {
             if (id === 'overview_dash') {
               router.push('/dashboard');
+            } else if (id === 'new_campaign') {
+              router.push('/campaigns/new');
             } else if (['campaigns', 'conversions', 'disputes', 'notifications', 'support'].includes(id)) {
               router.push(`/${id}`);
             } else if (id === 'billing_escrow') {
