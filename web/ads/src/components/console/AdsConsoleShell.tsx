@@ -21,6 +21,8 @@ import {
   Plus,
   Layers,
   ChevronRight,
+  User,
+  Settings,
 } from 'lucide-react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { SignOutButton } from '../SessionGate';
@@ -58,6 +60,8 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
       title: 'Finance & Account',
       items: [
         { id: 'billing_escrow', label: 'Billing & Escrow', icon: CreditCard, href: '/billing' },
+        { id: 'profile', label: 'User Profile', icon: User, href: '/profile' },
+        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
         { id: 'notifications', label: 'Notifications', icon: Bell, href: '/notifications' },
         { id: 'support', label: 'Help & Support', icon: HelpCircle, href: '/support' },
       ],
@@ -86,6 +90,8 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
       title: 'Earnings & Account',
       items: [
         { id: 'billing_escrow', label: 'Earnings & Payouts', icon: CreditCard, href: '/billing' },
+        { id: 'profile', label: 'User Profile', icon: User, href: '/profile' },
+        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
         { id: 'notifications', label: 'Notifications', icon: Bell, href: '/notifications' },
         { id: 'support', label: 'Support & Knowledge', icon: HelpCircle, href: '/support' },
       ],
