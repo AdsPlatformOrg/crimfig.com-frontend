@@ -104,12 +104,14 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
     {
       title: 'System & Health',
       items: [
+        { id: 'admin_tests', label: 'API Test Suite', icon: Sparkles, href: '/admin/tests' },
         { id: 'quality', label: 'Traffic Integrity Engine', icon: ShieldCheck, href: '/quality' },
         { id: 'notifications', label: 'Admin Alerts', icon: Bell, href: '/notifications' },
         { id: 'support', label: 'Support Queue', icon: HelpCircle, href: '/support' },
       ],
     },
   ];
+
 
   const currentNavGroups: NavGroup[] =
     role === 'admin' ? adminNavGroups : role === 'promoter' ? promoterNavGroups : advertiserNavGroups;
@@ -379,8 +381,11 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
               router.push('/admin/moderation');
             } else if (id === 'admin_disputes') {
               router.push('/admin/disputes');
+            } else if (id === 'admin_tests') {
+              router.push('/admin/tests');
             }
           }}
+
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
           isMobileOpen={isMobileNavOpen}
