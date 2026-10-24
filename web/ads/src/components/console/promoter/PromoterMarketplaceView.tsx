@@ -5,6 +5,7 @@ import { Layers, Check, Loader2 } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
 import { EmptyState } from '../../EmptyState';
 import { CardSkeleton } from '../../LoadingStates';
+import { FeedCardItem } from '../../templates/FeedCardItem';
 
 interface CampaignItem {
   id: string;
@@ -108,86 +109,71 @@ export function PromoterMarketplaceView() {
           onAction={() => setSelectedCategory('All')}
         />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {filtered.map((camp) => (
-            <div
+            <FeedCardItem
               key={camp.id}
-              className="theme-card"
-              style={{
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '16px',
+              id={camp.id}
+              author={{
+                name: camp.category + ' Sponsor Network',
+                subtitle: `Verified Brand • ${camp.format.toUpperCase()} Placement`,
+                roleBadge: '55% RevShare',
               }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
-                    {camp.category}
-                  </span>
-                  <span
+              title={camp.title}
+              content={
+                <div>
+                  {camp.headline && (
+                    <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {camp.headline}
+                    </p>
+                  )}
+                  <div
                     style={{
-                      fontSize: '11px',
-                      padding: '2px 8px',
-                      borderRadius: '9999px',
-                      backgroundColor: 'var(--badge-bg)',
-                      color: 'var(--text-secondary)',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '12px',
                     }}
                   >
-                    {camp.format?.toUpperCase() || 'CARD'}
-                  </span>
-                </div>
-                <h4 style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', marginTop: '8px' }}>
-                  {camp.title}
-                </h4>
-                {camp.headline && (
-                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>{camp.headline}</p>
-                )}
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Settlement Window</span>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>72h Clearance Hold</span>
+                    </div>
 
-                <div
-                  style={{
-                    marginTop: '16px',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--bg-page)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '8px',
-                  }}
-                >
-                  <div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Promoter Share</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)' }}>55% Net Revenue</span>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Settlement</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>72h Verified Hold</span>
+                    <button
+                      type="button"
+                      disabled={pendingWrites.has(camp.id) || appliedIds.has(camp.id)}
+                      onClick={() => handleApply(camp.id)}
+                      style={{
+                        padding: '8px 18px',
+                        backgroundColor: appliedIds.has(camp.id) ? 'var(--color-success)' : 'var(--color-crimson)',
+                        color: '#FFFFFF',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: appliedIds.has(camp.id) ? 'default' : 'pointer',
+                        boxShadow: appliedIds.has(camp.id) ? 'none' : 'var(--shadow-crimson)',
+                      }}
+                    >
+                      {appliedIds.has(camp.id) ? '✓ Placement Active' : pendingWrites.has(camp.id) ? 'Activating...' : 'Apply for Ad Placement'}
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              <button
-                type="button"
-                disabled={pendingWrites.has(camp.id) || appliedIds.has(camp.id)}
-                onClick={() => handleApply(camp.id)}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: appliedIds.has(camp.id) ? 'var(--color-success)' : 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: appliedIds.has(camp.id) ? 'default' : 'pointer',
-                  boxShadow: appliedIds.has(camp.id) ? 'none' : 'var(--shadow-crimson)',
-                }}
-              >
-                {appliedIds.has(camp.id) ? '✓ Applied' : pendingWrites.has(camp.id) ? 'Applying...' : 'Apply to Promote'}
-              </button>
-            </div>
+              }
+              tags={[camp.category.toLowerCase(), camp.format.toLowerCase(), 'revshare']}
+              metrics={{
+                likes: 24,
+                replies: 5,
+                views: '1.8k',
+                shares: 12,
+              }}
+            />
           ))}
         </div>
       )}
