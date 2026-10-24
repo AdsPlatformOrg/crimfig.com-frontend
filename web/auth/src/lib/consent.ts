@@ -35,9 +35,14 @@ export function consentRequest(params: URLSearchParams): ConsentRequest {
     throw new Error('Unsupported authorization callback');
   }
   if ((params.get('response_type') || 'code') !== 'code') throw new Error('Unsupported authorization response type');
+  if (params.get('code_challenge_method') !== 'S256' || !/^[a-zA-Z0-9_-]{43}$/.test(params.get('code_challenge') || '')) throw new Error('S256 PKCE is required');
+  const scopes = [...new Set((params.get('scope') || 'openid').split(' ').filter(Boolean))];
+  if (!scopes.length || scopes.some(scope => !['openid', 'profile', 'email'].includes(scope))) throw new Error('Unsupported authorization scope');
+  if (client_id.length > 100 || redirect_uri.length > 2048 || (params.get('state') || '').length > 512) throw new Error('Authorization parameters are too long');
   return {
     client_id, redirect_uri, response_type: 'code',
     ...Object.fromEntries(keys.slice(3).filter(key => params.has(key)).map(key => [key, params.get(key)!])),
+    scope: scopes.join(' '),
   };
 }
 
