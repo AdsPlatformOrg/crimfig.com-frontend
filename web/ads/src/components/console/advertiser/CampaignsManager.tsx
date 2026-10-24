@@ -17,6 +17,17 @@ import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
 import { TablePreferencesModal, type ColumnConfig } from '../TablePreferencesModal';
 import { ReplaceCreativeModal } from '../ReplaceCreativeModal';
+import {
+  Card,
+  Table as ShadTable,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  Button,
+  Badge,
+} from '../../ui';
 
 interface CampaignCreativeItem {
   id?: string;
@@ -261,19 +272,19 @@ export function CampaignsManager() {
           onAction={() => router.push('/campaigns/new')}
         />
       ) : (
-        <div className="theme-card" style={{ overflow: 'hidden' }}>
+        <Card style={{ overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', textAlign: 'left', fontSize: '13px', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface)' }}>
+            <ShadTable style={{ width: '100%', textAlign: 'left', fontSize: '13px', borderCollapse: 'collapse' }}>
+              <TableHeader>
+                <TableRow style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface)' }}>
                   {visibleCols.map((c) => (
-                    <th key={c.key} style={{ padding: '14px 16px', textAlign: c.key === 'actions' ? 'right' : 'left' }}>
+                    <TableHead key={c.key} style={{ padding: '14px 16px', textAlign: c.key === 'actions' ? 'right' : 'left' }}>
                       {c.label}
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {displayList.map((camp) => (
                   <tr key={camp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     {visibleCols.map((col) => {
@@ -476,10 +487,10 @@ export function CampaignsManager() {
                     })}
                   </tr>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </ShadTable>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Table Preferences Modal */}

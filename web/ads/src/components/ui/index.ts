@@ -5,3 +5,8 @@ export * from './dialog';
 export * from './dropdown-menu';
 export * from './tabs';
 export * from './tooltip';
+export * from './card';
+export * from './table';
+export * from './separator';
+export * from './avatar';
+export * from './skeleton';

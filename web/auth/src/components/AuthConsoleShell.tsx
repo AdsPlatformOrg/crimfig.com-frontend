@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -14,30 +15,31 @@ interface AuthConsoleShellProps {
 }
 
 export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff = false }: AuthConsoleShellProps) {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const authNavGroups: NavGroup[] = [
     {
-      label: 'Identity & Security',
+      title: 'Identity & Security',
       items: [
-        { label: 'Security Overview', href: '/dashboard', icon: Lock },
-        { label: 'Credentials & 2FA', href: '/security', icon: Key },
-        { label: 'Active Sessions', href: '/sessions', icon: Smartphone },
-        { label: 'Connected Apps', href: '/apps', icon: Key },
+        { id: 'dashboard', label: 'Security Overview', href: '/dashboard', icon: Lock },
+        { id: 'security', label: 'Credentials & 2FA', href: '/security', icon: Key },
+        { id: 'sessions', label: 'Active Sessions', href: '/sessions', icon: Smartphone },
+        { id: 'apps', label: 'Connected Apps', href: '/apps', icon: Key },
       ],
     },
     {
-      label: 'Workspace',
+      title: 'Workspace',
       items: [
-        { label: 'Organization & Team', href: '/org', icon: Users },
+        { id: 'org', label: 'Organization & Team', href: '/org', icon: Users },
       ],
     },
     ...(isStaff
       ? [
           {
-            label: 'Administration',
+            title: 'Administration',
             items: [
-              { label: 'Staff Identity Console', href: '/admin', icon: ShieldAlert },
+              { id: 'admin', label: 'Staff Identity Console', href: '/admin', icon: ShieldAlert },
             ],
           },
         ]
@@ -143,10 +145,13 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
           className="auth-desktop-sidebar"
         >
           <DashboardSidebar
-            navGroups={authNavGroups}
-            activePath={activePath}
+            groups={authNavGroups}
+            activeId={activePath.replace('/', '') || 'dashboard'}
+            onSelect={(id) => {
+              if (id === 'dashboard') router.push('/dashboard');
+              else router.push(`/${id}`);
+            }}
             app="auth"
-            themeToggleSlot={<ThemeSwitcher showLabel labelPrefix="Theme:" />}
           />
         </aside>
 

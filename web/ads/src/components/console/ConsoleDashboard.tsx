@@ -21,6 +21,9 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AdvertiserMilestonesCard } from './AdvertiserMilestonesCard';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 interface DashboardSummary {
   period: string;
@@ -327,7 +330,7 @@ export function ConsoleDashboard({
       )}
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          3. PRIMARY KPI SUMMARY CARDS
+          3. PRIMARY KPI SUMMARY CARDS (shadcn/ui Enhanced)
           ────────────────────────────────────────────────────────────────────────── */}
       <div
         style={{
@@ -337,90 +340,111 @@ export function ConsoleDashboard({
         }}
       >
         {/* Card 1: Campaign budget used (lifetime) */}
-        <div className="theme-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Campaign budget used (lifetime)</span>
-            <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
-              Lifetime
-            </span>
-          </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 4px' }}>
-            ${summary.financials.totalSpentUsd.toFixed(2)}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Remaining campaign budget: <strong style={{ color: 'var(--color-success)' }}>${summary.financials.remainingBudgetUsd.toFixed(2)}</strong>
-          </div>
-        </div>
+        <Card>
+          <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Campaign budget used (lifetime)</span>
+              <Badge variant="secondary" style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
+                Lifetime
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent style={{ padding: '0 24px 20px 24px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
+              ${summary.financials.totalSpentUsd.toFixed(2)}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              Remaining campaign budget: <strong style={{ color: 'var(--color-success)' }}>${summary.financials.remainingBudgetUsd.toFixed(2)}</strong>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Card 2: Impressions / Views */}
-        <div className="theme-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Recorded Impressions</span>
-            <Eye style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
-          </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 4px' }}>
-            {summary.performance.impressions.toLocaleString()}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Budget-based CPM: <strong>${summary.performance.avgCpmUsd.toFixed(2)} USD</strong>
-          </div>
-        </div>
+        <Card>
+          <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Recorded Impressions</span>
+              <Eye style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
+            </div>
+          </CardHeader>
+          <CardContent style={{ padding: '0 24px 20px 24px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
+              {summary.performance.impressions.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              Budget-based CPM: <strong>${summary.performance.avgCpmUsd.toFixed(2)} USD</strong>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Card 3: Clicks & CTR */}
-        <div className="theme-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Clicks & Conversion</span>
-            <MousePointer style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
-          </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', margin: '8px 0 4px' }}>
-            {summary.performance.clicks.toLocaleString()}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            CTR: <strong>{summary.performance.ctr.toFixed(2)}%</strong> (Budget-based CPC: ${summary.performance.avgCpcUsd.toFixed(2)})
-          </div>
-        </div>
+        <Card>
+          <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Clicks & Conversion</span>
+              <MousePointer style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
+            </div>
+          </CardHeader>
+          <CardContent style={{ padding: '0 24px 20px 24px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', margin: '4px 0 4px' }}>
+              {summary.performance.clicks.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              CTR: <strong>{summary.performance.ctr.toFixed(2)}%</strong> (Budget-based CPC: ${summary.performance.avgCpcUsd.toFixed(2)})
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Card 4: Hovers & Touches (Granular Attribution) */}
-        <div className="theme-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Hovers & Touches</span>
-            <Hand style={{ width: 16, height: 16, color: '#3B82F6' }} />
-          </div>
-          <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 4px' }}>
-            {(summary.performance.hovers + summary.performance.touches).toLocaleString()}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            {summary.performance.hovers.toLocaleString()} Desktop • {summary.performance.touches.toLocaleString()} Mobile Touch
-          </div>
-        </div>
+        <Card>
+          <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Hovers & Touches</span>
+              <Hand style={{ width: 16, height: 16, color: '#3B82F6' }} />
+            </div>
+          </CardHeader>
+          <CardContent style={{ padding: '0 24px 20px 24px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
+              {(summary.performance.hovers + summary.performance.touches).toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              {summary.performance.hovers.toLocaleString()} Desktop • {summary.performance.touches.toLocaleString()} Mobile Touch
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
+
       {/* ──────────────────────────────────────────────────────────────────────────
-          4. TIMESERIES AREA CHART & CHANNEL BREAKDOWN
+          4. TIMESERIES AREA CHART & CHANNEL BREAKDOWN (shadcn/ui Enhanced)
           ────────────────────────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
         {/* Left: Engagement Area Chart */}
-        <div className="theme-card" style={{ padding: '28px', gridColumn: 'span 2' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-                Engagement Timeseries
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                Daily recorded impression volume and interaction pacing ({period.toUpperCase()})
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', fontWeight: 600 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-crimson)' }} />
-                <span>Impressions</span>
+        <Card style={{ gridColumn: 'span 2' }}>
+          <CardHeader style={{ padding: '24px 28px 20px 28px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
+                  Engagement Timeseries
+                </CardTitle>
+                <CardDescription style={{ fontSize: '12px', margin: 0 }}>
+                  Daily recorded impression volume and interaction pacing ({period.toUpperCase()})
+                </CardDescription>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-fig-dark)' }} />
-                <span>Estimated spend ($)</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-crimson)' }} />
+                  <span>Impressions</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-fig-dark)' }} />
+                  <span>Estimated spend ($)</span>
+                </div>
               </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent style={{ padding: '0 28px 28px 28px' }}>
+
 
           {/* SVG Smooth Curve Area Chart */}
           <div style={{ width: '100%', overflowX: 'auto' }}>
@@ -477,23 +501,26 @@ export function ConsoleDashboard({
             <span>{timeseries[Math.floor(timeseries.length / 2)]?.date}</span>
             <span>{timeseries[timeseries.length - 1]?.date}</span>
           </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Right: Channel Breakdown */}
-        <div className="theme-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+        <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <CardHeader style={{ padding: '24px 28px 12px 28px' }}>
+            <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
               Channel Attribution
-            </h3>
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 24px' }}>
+            </CardTitle>
+            <CardDescription style={{ fontSize: '12px', margin: 0 }}>
               Audience acquisition distribution across network surfaces
-            </p>
-
+            </CardDescription>
+          </CardHeader>
+          <CardContent style={{ padding: '0 28px 24px 28px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {channelData.map((ch, idx) => (
                 <div key={idx}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                     <span style={{ color: 'var(--text-primary)' }}>{ch.channel}</span>
+
                     <span style={{ color: 'var(--color-crimson)' }}>{ch.percentage}%</span>
                   </div>
                   <div style={{ height: '8px', borderRadius: '9999px', backgroundColor: 'var(--badge-bg)', overflow: 'hidden' }}>
@@ -513,15 +540,17 @@ export function ConsoleDashboard({
                 </div>
               ))}
             </div>
-          </div>
+          </CardContent>
 
           <div
             style={{
-              paddingTop: '20px',
+              padding: '16px 28px',
               borderTop: '1px solid var(--border-subtle)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
+              backgroundColor: 'var(--bg-surface, #F8FAFC)',
+              borderRadius: '0 0 16px 16px',
             }}
           >
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Deferred Verification Cron:</span>
@@ -530,8 +559,9 @@ export function ConsoleDashboard({
               Not monitored here
             </span>
           </div>
-        </div>
+        </Card>
       </div>
+
 
       {/* ──────────────────────────────────────────────────────────────────────────
           5. QUICK ACTIONS & STATUS DIRECTORY
@@ -543,15 +573,14 @@ export function ConsoleDashboard({
           gap: '20px',
         }}
       >
-        <div
-          className="theme-card"
+        <Card
           style={{
             padding: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             cursor: 'pointer',
-            transition: 'border-color 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
           onClick={() => onNavigateToCampaigns()}
         >
@@ -562,17 +591,16 @@ export function ConsoleDashboard({
             </div>
           </div>
           <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-        </div>
+        </Card>
 
-        <div
-          className="theme-card"
+        <Card
           style={{
             padding: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             cursor: 'pointer',
-            transition: 'border-color 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
           onClick={() => onNavigateToPromoterHub('websites')}
         >
@@ -583,17 +611,16 @@ export function ConsoleDashboard({
             </div>
           </div>
           <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-        </div>
+        </Card>
 
-        <div
-          className="theme-card"
+        <Card
           style={{
             padding: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             cursor: 'pointer',
-            transition: 'border-color 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
           onClick={() => onNavigateToPromoterHub('marketplace')}
         >
@@ -604,8 +631,9 @@ export function ConsoleDashboard({
             </div>
           </div>
           <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-        </div>
+        </Card>
       </div>
+
 
       {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
       <AdvertiserMilestonesCard />
