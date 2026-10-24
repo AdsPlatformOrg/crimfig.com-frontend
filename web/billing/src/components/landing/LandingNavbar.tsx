@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ArrowRight, Sparkles, Wallet, ShieldCheck, Gift } from 'lucide-react';
-import { ThemeSwitcher } from '../ThemeSwitcher';
 import { CrimFigLogo } from '../CrimFigLogo';
 
 interface LandingNavbarProps {
@@ -110,10 +109,8 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
           </a>
         </nav>
 
-        {/* CTA & Theme Controls */}
+        {/* CTA Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <ThemeSwitcher />
-
           <button
             type="button"
             onClick={() => onLaunchConsole('overview')}

@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, KeyRound, Sparkles } from 'lucide-react';
-import { ThemeSwitcher } from '../ThemeSwitcher';
 import { CrimFigLogo } from '../CrimFigLogo';
 
 export function LandingNavbar() {
@@ -87,8 +86,6 @@ export function LandingNavbar() {
 
         {/* Action Controls & Sign In */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <ThemeSwitcher />
-
           <Link
             href="/login"
             style={{

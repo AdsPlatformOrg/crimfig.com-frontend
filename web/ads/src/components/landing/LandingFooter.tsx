@@ -39,7 +39,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               Built on love and human dignity. An ethical advertising ecosystem empowering independent website publishers, creator communities, and purposeful businesses.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ThemeSwitcher />
+              <ThemeSwitcher showLabel labelPrefix="Theme:" />
             </div>
           </div>
 

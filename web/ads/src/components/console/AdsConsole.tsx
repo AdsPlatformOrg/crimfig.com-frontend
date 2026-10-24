@@ -655,9 +655,8 @@ export function AdsConsole({
             </div>
           </div>
 
-          {/* Right Controls: Theme Switcher & Wallet Trigger */}
+          {/* Right Controls: Sign Out & Wallet Trigger */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
-            <ThemeSwitcher />
             <SignOutButton />
 
             <button
@@ -1893,8 +1892,7 @@ export function AdsConsole({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Appearance:</span>
-            <ThemeSwitcher />
+            <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>
         </div>
       </footer>
