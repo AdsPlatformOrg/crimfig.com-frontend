@@ -200,8 +200,13 @@ export default function AdsPlatformApp() {
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
   const [isAddWebsiteOpen, setIsAddWebsiteOpen] = useState(false);
   const [isEmbedCodeModalOpen, setIsEmbedCodeModalOpen] = useState<{ domain: string; publisherKey: string } | null>(null);
+  const [isAdSpacesModalOpen, setIsAdSpacesModalOpen] = useState(false);
+  const [selectedPlacementSite, setSelectedPlacementSite] = useState<PromoterWebsite | null>(null);
+  const [adSpaceMode, setAdSpaceMode] = useState<'publisher_network' | 'owned_site_direct'>('publisher_network');
+  const [allowHomeNetworkFill, setAllowHomeNetworkFill] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedPlacement, setSelectedPlacement] = useState<CrimFigPlacement>('banner_top');
+
 
   // Form: Create Campaign
   const [newCampTitle, setNewCampTitle] = useState('');
@@ -992,55 +997,90 @@ export default function AdsPlatformApp() {
                           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
                             Status: {site.lastPingAt}
                           </p>
-                          {!site.isVerified && <details style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
-                            <summary>Ownership verification instructions</summary>
-                            <p>{site.verificationMethod === 'dns_txt' ? 'Add this TXT value at your domain root:' : 'Add this meta tag inside your website head:'}</p>
-                            <code style={{ display: 'block', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>{site.verificationMethod === 'dns_txt' ? `crimfig-site-verification=${site.verificationToken}` : `<meta name="crimfig-site-verification" content="${site.verificationToken}" />`}</code>
-                          </details>}
+                          {!site.isVerified && (
+                            <div style={{ marginTop: '12px', padding: '12px', borderRadius: '8px', backgroundColor: 'var(--badge-bg)', border: '1px solid var(--border-subtle)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
+                                  DNS TXT Verification Record
+                                </span>
+                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Type: TXT</span>
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr auto', gap: '8px', alignItems: 'center', fontSize: '12px', backgroundColor: 'var(--bg-page)', padding: '8px', borderRadius: '6px' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Host:</span>
+                                <code style={{ fontFamily: 'monospace', color: 'var(--text-primary)' }}>@ (or {site.domain})</code>
+                                <button
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText('@')}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px' }}
+                                  title="Copy Host"
+                                >
+                                  <Copy style={{ width: 12, height: 12 }} />
+                                </button>
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr auto', gap: '8px', alignItems: 'center', fontSize: '12px', backgroundColor: 'var(--bg-page)', padding: '8px', borderRadius: '6px', marginTop: '6px' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Value:</span>
+                                <code style={{ fontFamily: 'monospace', color: 'var(--color-crimson)', wordBreak: 'break-all' }}>crimfig-site-verification={site.verificationToken}</code>
+                                <button
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(`crimfig-site-verification=${site.verificationToken}`)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px' }}
+                                  title="Copy TXT Value"
+                                >
+                                  <Copy style={{ width: 12, height: 12 }} />
+                                </button>
+                              </div>
+                              <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                                Add this TXT record at your DNS provider (Cloudflare, Namecheap, GoDaddy). Verification checks the root domain in real time.
+                              </p>
+                            </div>
+                          )}
                         </div>
 
-                        <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                           {!site.isVerified ? (
                             <button
                               type="button"
                               disabled={pendingWrites.has(site.id)}
-                                  onClick={() => handleVerifyWebsite(site.id)}
+                              onClick={() => handleVerifyWebsite(site.id)}
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
-                                padding: '6px 12px',
-                                backgroundColor: 'var(--color-success)',
+                                padding: '8px 16px',
+                                backgroundColor: 'var(--color-crimson)',
                                 color: '#FFFFFF',
                                 fontSize: '12px',
                                 fontWeight: 600,
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 border: 'none',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                boxShadow: 'var(--shadow-crimson)'
                               }}
                             >
-                              <ShieldCheck style={{ width: 14, height: 14 }} /> Verify Ownership
+                              <ShieldCheck style={{ width: 14, height: 14 }} /> {pendingWrites.has(site.id) ? 'Checking DNS...' : 'Verify DNS Record Now'}
                             </button>
                           ) : (
                             <button
                               type="button"
-                              disabled
-                              title="Installation codes require the upcoming ad-space setup"
+                              onClick={() => {
+                                setSelectedPlacementSite(site);
+                                setIsAdSpacesModalOpen(true);
+                              }}
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
-                                padding: '6px 12px',
+                                padding: '8px 16px',
                                 backgroundColor: 'var(--color-fig-dark)',
                                 color: '#FFFFFF',
                                 fontSize: '12px',
                                 fontWeight: 600,
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 border: 'none',
                                 cursor: 'pointer'
                               }}
                             >
-                              <Code2 style={{ width: 14, height: 14 }} /> Ad-space setup pending
+                              <Code2 style={{ width: 14, height: 14 }} /> Manage Ad Spaces &amp; Get Code
                             </button>
                           )}
                           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{site.activePlacementCount} active ads</span>
@@ -2376,11 +2416,181 @@ export default function AdsPlatformApp() {
           creative={replacementCreative}
           onReplaceSuccess={() => {
             setDataAttempt(value => value + 1);
-
           }}
         />
       )}
 
+      {/* MODAL: WEBSITE AD SPACES & DEVELOPER CODE GENERATOR (PLAN-0010) */}
+      {isAdSpacesModalOpen && selectedPlacementSite && (() => {
+        const placementMeta = CRIMFIG_PLACEMENTS[selectedPlacement];
+        const generatedCode = generateCrimFigEmbedCode({
+          placement: selectedPlacement,
+          publisherKey: `pk_${selectedPlacementSite.verificationToken.slice(0, 16)}`,
+          domain: selectedPlacementSite.domain,
+          mode: adSpaceMode,
+          allowHomeNetworkFill,
+        });
+
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div className="glass-card" style={{ width: '100%', maxWidth: '640px', maxHeight: '90vh', overflowY: 'auto', padding: '28px', borderRadius: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Manage Ad Spaces &amp; Code</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    Domain: <code style={{ color: 'var(--color-crimson)', fontFamily: 'monospace' }}>{selectedPlacementSite.domain}</code>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAdSpacesModalOpen(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
+                >
+                  <X style={{ width: 20, height: 20 }} />
+                </button>
+              </div>
+
+              {/* Mode Selection Segmented Control */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Ad Space Inventory Mode
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAdSpaceMode('publisher_network')}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: adSpaceMode === 'publisher_network' ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
+                      backgroundColor: adSpaceMode === 'publisher_network' ? 'var(--badge-bg)' : 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>Monetized Network</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Earn 55% revenue split showing CrimFig ecosystem ads.
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAdSpaceMode('owned_site_direct')}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '10px',
+                      border: adSpaceMode === 'owned_site_direct' ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
+                      backgroundColor: adSpaceMode === 'owned_site_direct' ? 'var(--badge-bg)' : 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>Direct Deal (Free Barter)</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Traffic outside deals 100% free; host 1 CrimFig barter slot.
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Barter Conditions notice when in Owned-Site Direct mode */}
+              {adSpaceMode === 'owned_site_direct' && (
+                <div style={{ padding: '12px 14px', borderRadius: '8px', backgroundColor: 'var(--badge-bg)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                  <div style={{ fontWeight: 600, color: 'var(--color-crimson)', marginBottom: '4px' }}>
+                    CrimFig Barter Agreement &amp; Compliance Policy
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                    Free ad serving is granted on the condition that at least one other active ad slot on your site displays occasional CrimFig platform ads. Our team reviews barter sites for fair play.
+                  </p>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={allowHomeNetworkFill}
+                      onChange={(e) => setAllowHomeNetworkFill(e.target.checked)}
+                      style={{ accentColor: 'var(--color-crimson)' }}
+                    />
+                    <span style={{ fontSize: '12px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                      Occasionally display CrimFig network ads on Home slots (simplifies team review)
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {/* Step 1: Placement Dimensions */}
+              <div>
+                <label htmlFor="adspace-select-placement" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Placement Position &amp; Dimensions
+                </label>
+                <select
+                  id="adspace-select-placement"
+                  value={selectedPlacement}
+                  onChange={(e) => setSelectedPlacement(e.target.value as CrimFigPlacement)}
+                  className="input-field"
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '13px', color: 'var(--text-primary)' }}
+                >
+                  {Object.entries(CRIMFIG_PLACEMENTS).map(([key, val]) => (
+                    <option key={key} value={key}>{val.label}</option>
+                  ))}
+                </select>
+                {placementMeta && (
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                    💡 {placementMeta.recommended}
+                  </p>
+                )}
+              </div>
+
+              {/* Step 2: Generated Code Block */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    HTML Installation Snippet
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(generatedCode, 'ad_space_code')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      backgroundColor: copiedToken === 'ad_space_code' ? 'var(--color-success)' : 'var(--color-crimson)',
+                      color: '#FFFFFF',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {copiedToken === 'ad_space_code' ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
+                    {copiedToken === 'ad_space_code' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <div style={{ borderRadius: '8px', backgroundColor: 'var(--bg-page)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+                  <pre style={{ margin: 0, padding: '12px', overflowX: 'auto', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                    {generatedCode}
+                  </pre>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsAdSpacesModalOpen(false)}
+                  style={{ padding: '8px 18px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
+
+
