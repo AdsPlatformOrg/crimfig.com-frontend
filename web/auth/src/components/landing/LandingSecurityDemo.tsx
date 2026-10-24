@@ -45,10 +45,10 @@ export function LandingSecurityDemo() {
               marginBottom: '16px',
             }}
           >
-            How CrimFig Protects Your Identity
+            Digital Sanctuary &amp; Sovereign Control
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            See how CrimFig delivers smooth access for individuals while giving businesses centralized control and enterprise-grade security.
+            Your account is your private space. Explore how CrimFig guards your sovereign credentials, honors your consent, and keeps you in full control without third-party tracking.
           </p>
 
           {/* Tab Selector */}

@@ -18,39 +18,39 @@ export function LandingFeatures() {
   const features = [
     {
       icon: Wallet,
-      title: 'Dual-Currency Multi-App Escrow',
-      description: 'View your USD wallet and a quoted NGN equivalent. Funding and campaign escrow use server-confirmed records; other ecosystem payment features remain in development.',
-      badge: 'Core Engine'
+      title: 'Atomic Multi-App Escrow',
+      description: 'Your funds are secured within strict atomic transactions with explicit timeouts. Transparent dual-currency balances (USD & NGN) with zero hidden currency spreads.',
+      badge: 'Atomic Locks'
     },
     {
       icon: CreditCard,
-      title: 'Tokenized Card Vaults',
-      description: 'Paystack checkout can save a reusable authorization with your consent. Saved-card charging and Stripe payments are not currently available.',
-      badge: 'Explicit Consent'
+      title: 'Tokenized Card Security',
+      description: 'Bank-grade PCI tokenization through Paystack with explicit user consent. We never store raw card numbers, CVVs, or unverified authorization credentials.',
+      badge: 'Zero Storage Risk'
     },
     {
       icon: Building2,
-      title: 'Nigerian Bank Account Checks',
-      description: 'Resolve supported bank account details before saving an account. Withdrawals are currently unavailable; no payout speed is promised.',
-      badge: 'Account Resolution'
+      title: 'Transparent Bank Verification',
+      description: 'Real-time account name resolution before any withdrawal attempt. Full pre-transaction disclosure of CBN statutory stamp charges and provider switch fees.',
+      badge: 'Fee Disclosed Upfront'
     },
     {
       icon: Coins,
-      title: 'Integrated Rewards & Cashback',
-      description: 'Rewards and referral features are planned. Points issuance, cash conversion and redemption are not currently available.',
-      badge: 'Planned'
+      title: 'Fund-Backed Rewards Utility',
+      description: 'Ground all platform points in verifiable platform reserves. We reject speculative tokens and artificial pump-and-dump loops.',
+      badge: 'Zero Speculation'
     },
     {
       icon: Sparkles,
-      title: 'Unified App Subscriptions',
-      description: 'Browse available app plans and existing subscription records. Subscription charging and activation are not currently available.',
-      badge: 'Plan Catalog'
+      title: 'Fair Subscription Management',
+      description: 'Transparent billing cycles with instant self-service cancellation. Zero deceptive renewal traps or hidden auto-debit loops.',
+      badge: 'Human Autonomy'
     },
     {
       icon: FileText,
-      title: 'Transaction History',
-      description: 'Review recorded funding and campaign escrow transactions. Pending records remain pending until confirmed by the server.',
-      badge: 'Recorded Activity'
+      title: 'Immutable Audit Accounting',
+      description: 'Integer-cent precision ledger ensures mathematical accuracy. Every debit, credit, fee, and escrow release is tied to an immutable audit receipt.',
+      badge: 'Mathematical Truth'
     }
   ];
 
@@ -83,7 +83,7 @@ export function LandingFeatures() {
               marginBottom: '12px'
             }}
           >
-            Fintech Architecture
+              Financial Stewardship &amp; Integrity
           </div>
           <h2
             style={{
@@ -94,10 +94,10 @@ export function LandingFeatures() {
               margin: '0 0 16px',
             }}
           >
-            Engineered for High-Velocity Creator &amp; Business Cashflow
+            Engineered for Creator Dignity &amp; Absolute Truth
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Review confirmed funding and campaign escrow records. Feature availability is shown in the dashboard; unconfirmed operations do not create a balance.
+            Every naira and dollar is stewarded with care. Atomic transactions, pre-disclosed bank transfer fees, and verifiable multi-signature reserves protect your work and capital.
           </p>
         </div>
 

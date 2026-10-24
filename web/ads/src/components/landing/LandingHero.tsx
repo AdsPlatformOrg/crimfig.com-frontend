@@ -60,7 +60,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
             }}
           >
             <Sparkles style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
-            <span>Next-Generation Ad Network & Multi-Channel Monetization</span>
+            <span>Built on Love &amp; Purpose • People Over Extractive Clicks</span>
             <span
               style={{
                 width: '6px',
@@ -82,7 +82,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
               margin: '0 0 24px',
             }}
           >
-            Advertise with precision.{' '}
+            Empower human creators.{' '}
             <span
               style={{
                 background: 'var(--gradient-crimson)',
@@ -91,7 +91,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
                 display: 'inline-block',
               }}
             >
-              Review verified campaign activity.
+              Advertise with dignity and truth.
             </span>
           </h1>
 
@@ -102,10 +102,10 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
               lineHeight: 1.6,
               color: 'var(--text-secondary)',
               margin: '0 auto 40px',
-              maxWidth: '680px',
+              maxWidth: '720px',
             }}
           >
-            CrimFig Ads connects forward-thinking advertisers with websites, mobile applications, and verified social creators. Campaign management and ownership checks are available; publisher delivery and funded settlement remain in development.
+            CrimFig Ads connects purposeful businesses with ethical website publishers and genuine social creators. We reject surveillance bloat and extractive dark patterns—offering ultra-lightweight embeds, absolute reporting honesty, and fair revenue splits that honor creator labor.
           </p>
 
           {/* Dual Action CTAs */}
@@ -140,7 +140,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)')}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
             >
-              <span>Start Advertising</span>
+              <span>Advertise Purposefully</span>
               <ArrowRight style={{ width: 17, height: 17 }} />
             </button>
 
@@ -171,7 +171,7 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
               }}
             >
               <UserCheck style={{ width: 17, height: 17, color: 'var(--color-crimson)' }} />
-              <span>Earn as a Promoter</span>
+              <span>Monetize with Dignity</span>
             </button>
           </div>
 
@@ -189,20 +189,20 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
             }}
           >
             <div>
-              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>&lt;15ms</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Embed Latency</div>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>&lt;12KB</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Device-Respecting Embeds</div>
             </div>
             <div>
-              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)' }}>70%</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Promoter Revenue Share</div>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)' }}>55 / 30 / 15</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>55% Promoters • 30% CrimFig • 15% Growth</div>
             </div>
             <div>
-              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>3-Tier</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Web, App & Reels Network</div>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>100%</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Human Verified Impressions</div>
             </div>
             <div>
-              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-success)' }}>100%</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Verified Audit Delivery</div>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-success)' }}>$0.00</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Honest Base • Zero Fake ROI</div>
             </div>
           </div>
         </div>

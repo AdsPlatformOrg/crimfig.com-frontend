@@ -66,7 +66,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               }}
             >
               <Zap style={{ width: 14, height: 14 }} />
-              Universal Financial Infrastructure
+              Protected by Atomic Escrow • Zero Hidden Spreads
             </span>
           </div>
 
@@ -81,7 +81,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               margin: 0,
             }}
           >
-            Wallet Funding,{' '}
+            Financial peace of mind.{' '}
             <span
               style={{
                 background: 'var(--gradient-crimson)',
@@ -89,9 +89,9 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Campaign Escrow
+              Atomic escrow
             </span>{' '}
-            &amp; Account Visibility
+            &amp; absolute transparency.
           </h1>
 
           {/* Subheading */}
@@ -101,10 +101,10 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               color: 'var(--text-secondary)',
               lineHeight: 1.6,
               margin: 0,
-              maxWidth: '620px',
+              maxWidth: '640px',
             }}
           >
-            Review wallet funding, campaign escrow and transaction history in one dashboard. Withdrawals, automated subscriptions and rewards redemption are currently unavailable.
+            CrimFig Billing protects buyers, sellers, advertisers, and creators with atomic transactional integrity. Every fee is disclosed upfront, every transfer is verified, and genuine zero balances are honored honestly with zero hidden charges.
           </p>
 
           {/* CTAs */}

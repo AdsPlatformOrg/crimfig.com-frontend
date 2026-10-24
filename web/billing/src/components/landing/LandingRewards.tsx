@@ -90,10 +90,10 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
               margin: '0 0 16px',
             }}
           >
-            Explore Planned Ecosystem Rewards
+            Sustainable Utility, Zero Speculation
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Rewards are planned and require a funded program. The example below assumes <strong>100 example points = $1</strong> for illustration only; it is not an approved redemption rate or cash entitlement.
+            We reject predatory gamification and synthetic tokens. CrimFig rewards are backed by verified ecosystem revenue reserves, designed to honor real human participation and sustainable creator growth.
           </p>
         </div>
 

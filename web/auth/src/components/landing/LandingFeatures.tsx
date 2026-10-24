@@ -63,10 +63,10 @@ export function LandingFeatures() {
               marginBottom: '16px',
             }}
           >
-            Engineered for Uncompromising Security & Scale
+            Digital Sanctuary &amp; Sovereign Stewardship
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Designed for individuals who value privacy and companies that need reliable, high-integrity access management.
+            Built for individuals who cherish privacy and teams that value structural clarity, psychological safety, and absolute zero data exploitation.
           </p>
         </div>
 

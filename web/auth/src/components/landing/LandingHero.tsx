@@ -56,7 +56,7 @@ export function LandingHero() {
             }}
           >
             <ShieldCheck style={{ width: 15, height: 15, color: 'var(--color-crimson)' }} />
-            <span>Unified Account & Business Security</span>
+            <span>Digital Sanctuary • Sovereign Identity &amp; Human Dignity</span>
           </div>
 
           {/* Heading */}
@@ -70,7 +70,7 @@ export function LandingHero() {
               marginBottom: '24px',
             }}
           >
-            One Identity Across the Entire{' '}
+            Your sovereign identity.{' '}
             <span
               style={{
                 background: 'var(--gradient-crimson)',
@@ -78,8 +78,9 @@ export function LandingHero() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              CrimFig Ecosystem
-            </span>
+              Protected with care
+            </span>{' '}
+            across CrimFig.
           </h1>
 
           {/* Subtitle */}
@@ -92,9 +93,7 @@ export function LandingHero() {
               margin: '0 auto 40px',
             }}
           >
-            Seamlessly manage your <strong>Ads</strong>, <strong>Billing</strong>, <strong>Reels</strong>,{' '}
-            <strong>Stream</strong>, and <strong>Chat</strong> with a single sign-in. Built with two-step login protection,
-            multi-user business workspaces, and verified privacy controls.
+            We treat your personal data as a sacred trust, not an asset to monetize. Access <strong>Ads</strong>, <strong>Billing</strong>, and creator workspaces with cryptographic passkeys, zero third-party tracking, and instant device sovereignty.
           </p>
 
           {/* CTAs */}

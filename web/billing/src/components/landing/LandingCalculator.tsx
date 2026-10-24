@@ -57,7 +57,7 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               marginBottom: '12px'
             }}
           >
-            Illustrative Conversion
+            Radical Fee Transparency &amp; Honest Calculations
           </div>
           <h2
             style={{
@@ -68,10 +68,10 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               margin: '0 0 16px',
             }}
           >
-            Explore an Example Conversion
+            Plain-Language Payout &amp; Conversion Simulator
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Illustration only: this calculator uses a sample rate of ₦1,550 per USD and hypothetical fees. It is not a current quote, fee schedule or payout offer.
+            No hidden fees, no opaque currency markups. We believe creators and businesses deserve complete honesty. See an upfront breakdown of standard processor charges and real net proceeds.
           </p>
         </div>
 

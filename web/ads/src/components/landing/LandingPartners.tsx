@@ -12,50 +12,50 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
     {
       id: 'websites' as const,
       icon: Globe,
-      title: 'Websites & Publishers',
-      subtitle: 'Register your property and verify ownership',
-      badge: 'Webmasters',
+      title: 'Websites & Independent Publishers',
+      subtitle: 'Monetize with dignity • Sub-12KB embeds',
+      badge: '55% Revenue Share',
       description:
-        'Display adaptive banner ads, cards, and interstitial units across your web pages. Domain ownership is validated via DNS TXT record or HTML meta tag.',
+        'Display non-intrusive, adaptive banners and cards that respect user reading flow. Validate domain ownership via DNS TXT or HTML meta tags with full creative veto power.',
       features: [
-        'Responsive ad units (728x90, 300x250, 160x600)',
-        'Publisher installation options under development',
-        'Explicit domain ownership proof required',
-        'Filter out unwanted advertiser categories',
+        'Responsive, device-caring ad units (728x90, 300x250, 160x600)',
+        'Guaranteed 55% publisher revenue share',
+        'Independent DNS/Meta verification without credential risks',
+        'Complete control over displayed ad categories',
       ],
-      ctaText: 'Register Website',
+      ctaText: 'Partner Your Website',
     },
     {
       id: 'mobile_apps' as const,
       icon: Smartphone,
       title: 'Mobile App Developers',
-      subtitle: 'Mobile installation support is planned',
-      badge: 'SDK Planned',
+      subtitle: 'Native SDK monetization in development',
+      badge: 'Transparent Payouts',
       description:
-        'Monetize your iOS and Android mobile games, utilities, and apps with native banner, card, and video interstitial placements with bundle ID verification.',
+        'Monetize your iOS and Android mobile games, utilities, and applications with native, privacy-preserving card and rewarded video placements.',
       features: [
-        'Native SDK availability pending',
-        'Rewarded video & high-engagement interstitials',
-        'Mobile ownership verification pending',
-        'No earnings rate is guaranteed',
+        'Lightweight, battery-efficient SDK architecture',
+        'Rewarded video & high-engagement respectful interstitials',
+        'Transparent clearance timelines without surprise chargebacks',
+        'Honest reporting without simulated engagement data',
       ],
-      ctaText: 'Connect Mobile App',
+      ctaText: 'Explore Mobile SDK',
     },
     {
       id: 'individuals' as const,
       icon: UserCheck,
-      title: 'Creators & Social Promoters',
-      subtitle: 'Share signed links on Reels, Bio, and Socials',
-      badge: '1-Click Reels Consent',
+      title: 'Creators & Village Voices',
+      subtitle: 'Monetize your audience with genuine care',
+      badge: 'Performance Share Pool',
       description:
-        'Owned placement links and consent records are managed in the console. Automatic creator monetization and payouts require further implementation.',
+        'Share verified HMAC-signed recommendations across Reels, bios, and communities. Zero spam—recommend products you believe in and earn from the 55% performance pool plus milestone rewards.',
       features: [
-        'HMAC-signed tamper-proof promoter share links',
-        '1-Click OAuth consent for Crimfig Reels placement',
-        'Earnings require funded, attributed settlement',
-        'Real-time earnings tracking in personal dashboard',
+        'Cryptographically signed tamper-proof promoter share links',
+        '1-Click consent for verified CrimFig Reels integration',
+        'Real-time earnings tracking with transparent fees',
+        'Direct creator advocacy and compassionate support',
       ],
-      ctaText: 'Start as Creator',
+      ctaText: 'Join as a Creator',
     },
   ];
 
@@ -84,7 +84,7 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
             }}
           >
             <Sparkles style={{ width: 14, height: 14 }} />
-            <span>Monetization Channels</span>
+            <span>The Creator Village</span>
           </div>
           <h2
             style={{
@@ -95,10 +95,10 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
               margin: '0 0 16px',
             }}
           >
-            Partner with CrimFig: 3 Ways to Earn
+            People Over Transactions: 3 Ways to Partner
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Whether you own a high-traffic news portal, publish an indie mobile app, or build an active social following, CrimFig Ads provides tailored tools to monetize your audience.
+            Whether you run an independent blog, publish an indie utility, or speak to a dedicated creator audience, CrimFig honors your work with radical transparency and dignified rewards.
           </p>
         </div>
 
