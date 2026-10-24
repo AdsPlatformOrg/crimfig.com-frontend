@@ -50,8 +50,8 @@ export const ModernTemplateHeader: React.FC<HeaderProps> = ({
   },
   navigationItems = [
     { label: 'Home', href: '/dashboard', active: true },
-    { label: 'Marketplace', href: '/marketplace' },
-    { label: 'Sites & Placements', href: '/websites' },
+    { label: 'Marketplace', href: '/promoter/marketplace' },
+    { label: 'Sites & Placements', href: '/promoter/websites' },
     { label: 'Performance', href: '/reports' },
   ],
 }) => {

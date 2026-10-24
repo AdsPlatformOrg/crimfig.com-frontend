@@ -13,7 +13,7 @@ export default function AdsDashboardPage() {
       <AdsConsoleShell role="advertiser" activeNavId="overview">
         <ConsoleDashboard
           onNavigateToCampaigns={() => router.push('/campaigns')}
-          onNavigateToPromoterHub={(section) => router.push(section ? `/${section}` : '/websites')}
+          onNavigateToPromoterHub={(section) => router.push(section ? `/promoter/${section}` : '/promoter')}
           onOpenCreateCampaign={() => router.push('/campaigns/new')}
         />
       </AdsConsoleShell>

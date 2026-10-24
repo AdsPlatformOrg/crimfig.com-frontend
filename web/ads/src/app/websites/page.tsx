@@ -1,15 +1,14 @@
 'use client';
 
-import { SessionGate } from '../../components/SessionGate';
-import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
-import { PromoterWebsitesView } from '../../components/console/promoter/PromoterWebsitesView';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function AdsWebsitesPage() {
-  return (
-    <SessionGate>
-      <AdsConsoleShell role="promoter" activeNavId="websites">
-        <PromoterWebsitesView />
-      </AdsConsoleShell>
-    </SessionGate>
-  );
+export default function WebsitesRedirectPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/promoter/websites');
+  }, [router]);
+
+  return null;
 }

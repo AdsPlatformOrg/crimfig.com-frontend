@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -27,6 +25,7 @@ import {
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { SignOutButton } from '../SessionGate';
 import { DashboardSidebar, type NavGroup } from '../DashboardSidebar';
+import { apiData } from '../../lib/api-data';
 
 export interface AdsConsoleShellProps {
   children: React.ReactNode;
@@ -38,6 +37,25 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
+
+  useEffect(() => {
+    let active = true;
+    async function checkStaff() {
+      try {
+        const res = await apiData<{ isStaff: boolean }>('/api/v1/ecosystem/staff-status').catch(() => null);
+        if (active && res) {
+          setIsStaffUser(Boolean(res.isStaff));
+        }
+      } catch {
+        // Safe default: non-staff
+      }
+    }
+    void checkStaff();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Advertiser Nav Groups
   const advertiserNavGroups: NavGroup[] = [
@@ -73,17 +91,17 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
     {
       title: 'Monetization',
       items: [
-        { id: 'websites', label: 'Websites & Ad Slots', icon: Globe, href: '/websites' },
-        { id: 'adstation', label: 'AdStation Direct Deals', icon: Layers, href: '/adstation' },
-        { id: 'individuals', label: 'Links & Reels Social', icon: Share2, href: '/individuals' },
-        { id: 'mobile_apps', label: 'Mobile Apps SDK', icon: Smartphone, href: '/mobile_apps' },
+        { id: 'websites', label: 'Websites & Ad Slots', icon: Globe, href: '/promoter/websites' },
+        { id: 'adstation', label: 'AdStation Direct Deals', icon: Layers, href: '/promoter/adstation' },
+        { id: 'individuals', label: 'Links & Reels Social', icon: Share2, href: '/promoter/individuals' },
+        { id: 'mobile_apps', label: 'Mobile Apps SDK', icon: Smartphone, href: '/promoter/mobile-apps' },
       ],
     },
     {
       title: 'Deals & Discovery',
       items: [
-        { id: 'marketplace', label: 'Ad Marketplace', icon: Share2, href: '/marketplace' },
-        { id: 'quality', label: 'Quality & Trust Score', icon: ShieldCheck, href: '/quality' },
+        { id: 'marketplace', label: 'Ad Marketplace', icon: Share2, href: '/promoter/marketplace' },
+        { id: 'quality', label: 'Quality & Trust Score', icon: ShieldCheck, href: '/promoter/quality' },
       ],
     },
     {
@@ -234,7 +252,13 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           <div style={{ flex: '1 1 240px', maxWidth: '420px', minWidth: '180px', position: 'relative' }}>
             <input
               type="search"
-              placeholder="Search campaigns, placements, or slots..."
+              placeholder={
+                role === 'admin'
+                  ? 'Search moderation queue, dispute UUIDs, or audit logs...'
+                  : role === 'promoter'
+                  ? 'Search verified domains, ad slots, or direct deals...'
+                  : 'Search campaigns, creatives, or keywords...'
+              }
               style={{
                 width: '100%',
                 padding: '7px 14px 7px 34px',
@@ -258,7 +282,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
             </span>
           </div>
 
-          {/* Mode Switcher: Advertiser Studio vs Promoter Hub vs Admin Console */}
+          {/* Mode Switcher: Advertiser Studio vs Promoter Hub (Admin Console conditionally shown) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
             <div
               style={{
@@ -296,7 +320,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
               </button>
               <button
                 type="button"
-                onClick={() => router.push('/websites')}
+                onClick={() => router.push('/promoter')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -313,30 +337,77 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
                 <UserCheck style={{ width: 14, height: 14 }} />
                 <span>Promoter Hub</span>
               </button>
+              {(isStaffUser || role === 'admin') && (
+                <button
+                  type="button"
+                  onClick={() => router.push('/admin/moderation')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    backgroundColor: role === 'admin' ? 'var(--color-fig-dark)' : 'transparent',
+                    color: role === 'admin' ? '#FFFFFF' : 'var(--text-secondary)',
+                  }}
+                >
+                  <ShieldCheck style={{ width: 14, height: 14 }} />
+                  <span>Admin Console</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Right Controls: Contextual Primary CTA, Wallet Trigger & Sign Out */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
+            {role === 'advertiser' ? (
               <button
                 type="button"
-                onClick={() => router.push('/admin/moderation')}
+                onClick={() => router.push('/campaigns/new')}
                 style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
                   padding: '6px 14px',
                   borderRadius: '8px',
+                  background: 'var(--gradient-crimson)',
+                  color: '#FFFFFF',
                   border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 700,
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: role === 'admin' ? 'var(--color-fig-dark)' : 'transparent',
-                  color: role === 'admin' ? '#FFFFFF' : 'var(--text-secondary)',
+                  boxShadow: 'var(--shadow-crimson)',
                 }}
               >
-                <ShieldCheck style={{ width: 14, height: 14 }} />
-                <span>Admin Console</span>
+                <Plus style={{ width: 14, height: 14 }} />
+                <span>New Campaign</span>
               </button>
-            </div>
-          </div>
+            ) : role === 'promoter' ? (
+              <button
+                type="button"
+                onClick={() => router.push('/promoter/websites?action=new')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--color-fig-dark)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                <Plus style={{ width: 14, height: 14 }} />
+                <span>Add Property</span>
+              </button>
+            ) : null}
 
-          {/* Right Controls: Sign Out & Wallet Trigger */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
             <SignOutButton />
 
             <button
@@ -377,12 +448,22 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
               router.push('/dashboard');
             } else if (id === 'new_campaign') {
               router.push('/campaigns/new');
-            } else if (['campaigns', 'conversions', 'disputes', 'notifications', 'support'].includes(id)) {
+            } else if (['campaigns', 'conversions', 'disputes', 'notifications', 'support', 'profile', 'settings'].includes(id)) {
               router.push(`/${id}`);
             } else if (id === 'billing_escrow') {
               router.push('/billing');
-            } else if (['websites', 'adstation', 'individuals', 'mobile_apps', 'marketplace', 'quality'].includes(id)) {
-              router.push(`/${id}`);
+            } else if (id === 'websites') {
+              router.push('/promoter/websites');
+            } else if (id === 'adstation') {
+              router.push('/promoter/adstation');
+            } else if (id === 'individuals') {
+              router.push('/promoter/individuals');
+            } else if (id === 'mobile_apps') {
+              router.push('/promoter/mobile-apps');
+            } else if (id === 'marketplace') {
+              router.push('/promoter/marketplace');
+            } else if (id === 'quality') {
+              router.push('/promoter/quality');
             } else if (id === 'moderation') {
               router.push('/admin/moderation');
             } else if (id === 'admin_disputes') {

@@ -1,15 +1,14 @@
 'use client';
 
-import { SessionGate } from '../../components/SessionGate';
-import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
-import { PromoterMobileAppsView } from '../../components/console/promoter/PromoterMobileAppsView';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function AdsMobileAppsPage() {
-  return (
-    <SessionGate>
-      <AdsConsoleShell role="promoter" activeNavId="mobile_apps">
-        <PromoterMobileAppsView />
-      </AdsConsoleShell>
-    </SessionGate>
-  );
+export default function MobileAppsRedirectPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/promoter/mobile-apps');
+  }, [router]);
+
+  return null;
 }

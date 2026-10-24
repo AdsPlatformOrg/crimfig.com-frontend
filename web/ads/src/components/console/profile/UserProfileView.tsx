@@ -147,7 +147,7 @@ export function UserProfileView() {
       {/* Quick Action Navigation Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
         <Link
-          href="/websites"
+          href="/promoter/websites"
           className="theme-card"
           style={{ padding: '20px', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}
         >
@@ -160,7 +160,7 @@ export function UserProfileView() {
           </p>
         </Link>
         <Link
-          href="/mobile_apps"
+          href="/promoter/mobile-apps"
           className="theme-card"
           style={{ padding: '20px', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}
         >
@@ -173,7 +173,7 @@ export function UserProfileView() {
           </p>
         </Link>
         <Link
-          href="/individuals"
+          href="/promoter/individuals"
           className="theme-card"
           style={{ padding: '20px', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}
         >
