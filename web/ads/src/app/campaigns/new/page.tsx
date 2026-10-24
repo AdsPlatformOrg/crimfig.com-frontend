@@ -1,12 +1,21 @@
 'use client';
 
 import { SessionGate } from '../../../components/SessionGate';
-import { AdsConsole } from '../../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../../components/console/AdsConsoleShell';
+import { CampaignCreationWizard } from '../../../components/console/CampaignCreationWizard';
+import { useRouter } from 'next/navigation';
 
 export default function AdsNewCampaignPage() {
+  const router = useRouter();
+
   return (
     <SessionGate>
-      <AdsConsole initialRole="advertiser" initialAdvertiserTab="new_campaign" />
+      <AdsConsoleShell role="advertiser" activeNavId="new_campaign">
+        <CampaignCreationWizard
+          onCancel={() => router.push('/campaigns')}
+          onSuccess={() => router.push('/campaigns')}
+        />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

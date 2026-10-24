@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { NotificationCenter } from '../../components/console/NotificationCenter';
 
 export default function AdsNotificationsPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="advertiser" initialAdvertiserTab="notifications" />
+      <AdsConsoleShell role="advertiser" activeNavId="notifications">
+        <NotificationCenter />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { HelpSupportHub } from '../../components/console/HelpSupportHub';
 
 export default function AdsSupportPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="advertiser" initialAdvertiserTab="support" />
+      <AdsConsoleShell role="advertiser" activeNavId="support">
+        <HelpSupportHub />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

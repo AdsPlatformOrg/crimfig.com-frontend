@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { PromoterIndividualsView } from '../../components/console/promoter/PromoterIndividualsView';
 
 export default function AdsIndividualsPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="promoter" initialPromoterSection="individuals" />
+      <AdsConsoleShell role="promoter" activeNavId="individuals">
+        <PromoterIndividualsView />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }

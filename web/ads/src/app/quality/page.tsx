@@ -1,12 +1,15 @@
 'use client';
 
 import { SessionGate } from '../../components/SessionGate';
-import { AdsConsole } from '../../components/console/AdsConsole';
+import { AdsConsoleShell } from '../../components/console/AdsConsoleShell';
+import { PromoterQualityCard } from '../../components/console/PromoterQualityCard';
 
 export default function AdsQualityPage() {
   return (
     <SessionGate>
-      <AdsConsole initialRole="promoter" initialPromoterSection="quality" />
+      <AdsConsoleShell role="promoter" activeNavId="quality">
+        <PromoterQualityCard apiBase="" />
+      </AdsConsoleShell>
     </SessionGate>
   );
 }
