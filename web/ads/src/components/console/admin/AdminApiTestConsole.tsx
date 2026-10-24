@@ -139,31 +139,21 @@ export function AdminApiTestConsole() {
 
     // Billing & Escrow Endpoints
     {
-      id: 'billing-wallet-summary',
-      name: 'Wallet & Locked Escrow Balances',
+      id: 'billing-overview',
+      name: 'Advertiser Balance & Escrow Overview',
       category: 'billing',
       method: 'GET',
-      route: '/api/v1/billing/wallets/me',
+      route: '/api/v1/ads/billing/overview',
       authGuard: 'CrimfigAuthGuard',
       isSensitiveSession: false,
       status: 'idle',
     },
     {
-      id: 'billing-banks-list',
-      name: 'Supported Bank List for Payouts',
+      id: 'billing-settlements',
+      name: 'Historical Settlement Batches Log',
       category: 'billing',
       method: 'GET',
-      route: '/api/v1/billing/banks',
-      authGuard: 'CrimfigAuthGuard',
-      isSensitiveSession: false,
-      status: 'idle',
-    },
-    {
-      id: 'billing-receipts',
-      name: 'Settlement Receipt Proof Log',
-      category: 'billing',
-      method: 'GET',
-      route: '/api/v1/billing/settlement/receipts',
+      route: '/api/v1/ads/billing/settlements',
       authGuard: 'CrimfigAuthGuard',
       isSensitiveSession: false,
       status: 'idle',
@@ -264,15 +254,23 @@ export function AdminApiTestConsole() {
     } catch (err: any) {
       const elapsed = Math.round(performance.now() - startTime);
 
-      // In sandbox/staging mock environments, 200 or clean expected response codes are valid
       setTests((prev) =>
         prev.map((t) =>
           t.id === testId
             ? {
                 ...t,
-                status: 'passed', // Graceful handle of mock responses in local dev
+                status: 'failed',
                 lastRunTimeMs: elapsed,
-                responsePreview: JSON.stringify({ status: 'verified', check: 'Contract Invariant Intact' }, null, 2),
+                errorMessage: err?.message || 'Request failed',
+                responsePreview: JSON.stringify(
+                  {
+                    error: err?.name || 'Error',
+                    message: err?.message || 'Request returned an error or non-2xx status code',
+                    status: 'failed',
+                  },
+                  null,
+                  2
+                ),
               }
             : t
         )
@@ -434,6 +432,11 @@ export function AdminApiTestConsole() {
                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>
                         {test.route}
                       </div>
+                      {test.status === 'failed' && test.errorMessage && (
+                        <div style={{ fontSize: '11px', color: 'var(--color-crimson)', marginTop: '4px', fontWeight: 500 }}>
+                          Error: {test.errorMessage}
+                        </div>
+                      )}
                     </td>
 
                     <td style={{ padding: '14px 16px' }}>
@@ -479,6 +482,11 @@ export function AdminApiTestConsole() {
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: 'var(--color-success)' }}>
                           <CheckCircle2 size={13} />
                           <span>Passed ({test.lastRunTimeMs}ms)</span>
+                        </span>
+                      ) : test.status === 'failed' ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: 'var(--color-crimson)' }}>
+                          <XCircle size={13} />
+                          <span>Failed ({test.lastRunTimeMs}ms)</span>
                         </span>
                       ) : test.status === 'running' ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: 'var(--color-crimson)' }}>
