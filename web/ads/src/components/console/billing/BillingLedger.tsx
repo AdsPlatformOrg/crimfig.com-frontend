@@ -115,7 +115,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
 
   if (!wallet) return <div role={loadError ? 'alert' : 'status'} style={{ padding: 24, color: 'var(--text-secondary)' }}>
     <p>{loadError || 'Loading billing overview…'}</p>
-    <button onClick={openBilling}>Open Billing</button>
+    <Button type="button" onClick={openBilling} variant="outline" size="sm">Open Billing</Button>
   </div>;
 
   return (
@@ -179,12 +179,15 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             border: '1px solid var(--border-subtle)',
           }}
         >
-          <button
+          <Button
             type="button"
             onClick={() => {
               setRole('advertiser');
               onRoleChange?.('advertiser');
             }}
+            variant={role === 'advertiser' ? 'default' : 'ghost'}
+            size="sm"
+            aria-pressed={role === 'advertiser'}
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
@@ -198,13 +201,16 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             }}
           >
             Advertiser View
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => {
               setRole('promoter');
               onRoleChange?.('promoter');
             }}
+            variant={role === 'promoter' ? 'default' : 'ghost'}
+            size="sm"
+            aria-pressed={role === 'promoter'}
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
@@ -218,7 +224,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             }}
           >
             Promoter View
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -399,9 +405,10 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {role === 'advertiser' ? (
             <>
-              <button
+              <Button
                 type="button"
                 onClick={openBilling}
+                size="lg"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -419,10 +426,12 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
               >
                 <CreditCard style={{ width: 16, height: 16 }} />
                 <span>Fund Wallet (Paystack)</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setIsEscrowDrawerOpen(true)}
+                variant="outline"
+                size="lg"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -439,12 +448,14 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
               >
                 <Lock style={{ width: 15, height: 15 }} />
                 <span>Campaign Escrows ({escrows.length})</span>
-              </button>
+              </Button>
             </>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={openBilling}
+              variant="secondary"
+              size="lg"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -461,13 +472,16 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             >
               <Building2 style={{ width: 16, height: 16 }} />
               <span>Withdraw to Nigerian Bank</span>
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
             type="button"
             onClick={handleTriggerSettlement}
             disabled={isSettling}
+            variant="outline"
+            size="lg"
+            loading={isSettling}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -484,7 +498,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           >
             <RefreshCw style={{ width: 14, height: 14, animation: isSettling ? 'spin 1s linear infinite' : 'none' }} />
             <span>Run 30-Min Settlement</span>
-          </button>
+          </Button>
         </div>
 
         {/* 55/30/15 Ratio Indicator Badge */}
@@ -526,10 +540,13 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
         >
           <div style={{ display: 'flex', gap: '8px' }}>
             {(['all', 'deposits', 'spend', 'earnings', 'withdrawals'] as const).map((tab) => (
-              <button
+              <Button
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
+                variant={activeTab === tab ? 'secondary' : 'ghost'}
+                size="sm"
+                aria-pressed={activeTab === tab}
                 style={{
                   padding: '6px 14px',
                   borderRadius: '8px',
@@ -543,7 +560,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
                 }}
               >
                 {tab}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -554,37 +571,37 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
 
         {/* Table */}
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ backgroundColor: 'var(--bg-page)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Type & Description</th>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Amount (USD)</th>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Amount (NGN)</th>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Balance After</th>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Reference</th>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Status</th>
-                <th style={{ padding: '12px 20px', fontWeight: 600, color: 'var(--text-secondary)' }}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
+          <ShadTable style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+            <TableHeader>
+              <TableRow style={{ backgroundColor: 'var(--bg-page)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <TableHead>Type & Description</TableHead>
+                <TableHead>Amount (USD)</TableHead>
+                <TableHead>Amount (NGN)</TableHead>
+                <TableHead>Balance After</TableHead>
+                <TableHead>Reference</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filteredTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <TableRow>
+                  <TableCell colSpan={7} style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     No transactions found for this filter. Full ledger history is managed in the Billing console.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 filteredTransactions.map((tx) => {
                   const isPositive = tx.type === 'wallet_fund' || tx.type === 'ads_earning';
                   return (
-                    <tr
+                    <TableRow
                       key={tx.id}
                       style={{
                         borderBottom: '1px solid var(--border-subtle)',
                         transition: 'background-color 0.1s ease',
                       }}
                     >
-                      <td style={{ padding: '14px 20px' }}>
+                      <TableCell style={{ padding: '14px 20px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div
                             style={{
@@ -611,54 +628,44 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
                             </div>
                           </div>
                         </div>
-                      </td>
+                      </TableCell>
 
-                      <td style={{ padding: '14px 20px', fontWeight: 700, color: isPositive ? '#22c55e' : 'var(--text-primary)' }}>
+                      <TableCell style={{ padding: '14px 20px', fontWeight: 700, color: isPositive ? '#22c55e' : 'var(--text-primary)' }}>
                         {isPositive ? '+' : '-'}${tx.amountUsd.toFixed(2)}
-                      </td>
+                      </TableCell>
 
-                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>
+                      <TableCell style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>
                         {tx.amountNgn ? `₦${Math.round(tx.amountNgn).toLocaleString()}` : '—'}
-                      </td>
+                      </TableCell>
 
-                      <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <TableCell style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {tx.balanceAfterUsd !== undefined ? `$${tx.balanceAfterUsd.toFixed(2)}` : '—'}
-                      </td>
+                      </TableCell>
 
-                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '12px' }}>
+                      <TableCell style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '12px' }}>
                         {tx.reference}
-                      </td>
+                      </TableCell>
 
-                      <td style={{ padding: '14px 20px' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '9999px',
-                            backgroundColor: tx.status === 'completed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(234, 179, 8, 0.1)',
-                            color: tx.status === 'completed' ? '#22c55e' : '#eab308',
-                            textTransform: 'uppercase',
-                          }}
-                        >
+                      <TableCell style={{ padding: '14px 20px' }}>
+                        <Badge variant={tx.status === 'completed' ? 'secondary' : 'outline'} style={{ textTransform: 'uppercase' }}>
                           {tx.status}
-                        </span>
-                      </td>
+                        </Badge>
+                      </TableCell>
 
-                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontSize: '12px' }}>
+                      <TableCell style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontSize: '12px' }}>
                         {new Date(tx.createdAt).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </ShadTable>
         </div>
       </Card>
 

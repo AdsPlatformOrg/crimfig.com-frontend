@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { Globe, Smartphone, UserCheck, CheckCircle2, ArrowRight, Code2, ShieldAlert, Sparkles } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 
 interface LandingPartnersProps {
   onJoinAsPromoter: (type: 'websites' | 'mobile_apps' | 'individuals') => void;
@@ -112,8 +114,9 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
           {tiers.map((tier) => {
             const Icon = tier.icon;
             return (
-              <div
+              <Card
                 key={tier.id}
+                variant="interactive"
                 style={{
                   borderRadius: '20px',
                   backgroundColor: 'var(--bg-surface)',
@@ -187,33 +190,16 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
                   </ul>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => onJoinAsPromoter(tier.id)}
-                  style={{
-                    width: '100%',
-                    padding: '14px 20px',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--color-crimson)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: 'var(--shadow-crimson)',
-                    transition: 'opacity 0.15s ease',
-                  }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = '0.92')}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+                  style={{ width: '100%' }}
+                  size="lg"
                 >
                   <span>{tier.ctaText}</span>
                   <ArrowRight style={{ width: 15, height: 15 }} />
-                </button>
-              </div>
+                </Button>
+              </Card>
             );
           })}
         </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export function LandingFAQ() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
@@ -85,9 +86,13 @@ export function LandingFAQ() {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <button
+                <Button
                   type="button"
+                  id={`auth-faq-trigger-${idx}`}
                   onClick={() => setOpenIdx(isOpen ? null : idx)}
+                  variant="ghost"
+                  aria-expanded={isOpen}
+                  aria-controls={`auth-faq-${idx}`}
                   style={{
                     width: '100%',
                     padding: '20px 24px',
@@ -95,13 +100,7 @@ export function LandingFAQ() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: '16px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
                     textAlign: 'left',
-                    color: 'var(--text-primary)',
-                    fontWeight: 700,
-                    fontSize: '16px',
                   }}
                 >
                   <span>{faq.q}</span>
@@ -110,20 +109,22 @@ export function LandingFAQ() {
                   ) : (
                     <ChevronDown style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
                   )}
-                </button>
+                </Button>
 
-                {isOpen && (
-                  <div
-                    style={{
-                      padding: '0 24px 20px',
-                      color: 'var(--text-secondary)',
-                      fontSize: '14px',
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {faq.a}
-                  </div>
-                )}
+                <div
+                  id={`auth-faq-${idx}`}
+                  role="region"
+                  aria-labelledby={`auth-faq-trigger-${idx}`}
+                  hidden={!isOpen}
+                  style={{
+                    padding: '0 24px 20px',
+                    color: 'var(--text-secondary)',
+                    fontSize: '14px',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {faq.a}
+                </div>
               </div>
             );
           })}

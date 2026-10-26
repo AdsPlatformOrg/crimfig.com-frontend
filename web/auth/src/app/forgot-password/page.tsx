@@ -4,6 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -36,34 +40,35 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="auth-centered-container">
-      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <AuthBrandHeader
         title="Reset Password"
         subtitle="Enter your email to receive a password reset link"
       />
 
       {error && (
-        <div className="alert-error" style={{ marginBottom: '20px' }}>
+        <Alert variant="destructive" style={{ marginBottom: '20px' }}>
           <span>{error}</span>
-        </div>
+        </Alert>
       )}
 
       {submitted ? (
         <div>
-          <div className="alert-success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
+          <Alert variant="success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
             <span>If an account with this email exists, a password reset link has been sent. Please check your inbox.</span>
-          </div>
-          <Link href="/login" className="btn-secondary">
-            Back to Sign In
-          </Link>
+          </Alert>
+          <Button asChild variant="secondary" className="cf-auth-full-button">
+            <Link href="/login">Back to Sign In</Link>
+          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            <label htmlFor="reset-email" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
               EMAIL ADDRESS
             </label>
-            <input
+            <Input
+              id="reset-email"
               type="email"
               className="input-field"
               placeholder="name@example.com"
@@ -74,9 +79,9 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
+          <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
             {loading ? 'Sending Link...' : 'Send Reset Link'}
-          </button>
+          </Button>
         </form>
       )}
 
@@ -95,8 +100,7 @@ export default function ForgotPasswordPage() {
           Sign In
         </Link>
       </div>
+      </Card>
     </div>
-  </div>
   );
 }
-

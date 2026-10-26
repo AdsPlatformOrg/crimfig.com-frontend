@@ -3,6 +3,7 @@ import { sessionFetch } from '../../lib/session';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, Activity, ArrowUpRight, Ban } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface QualityData {
   promoterId: string;
@@ -47,7 +48,7 @@ export function PromoterQualityCard({ apiBase }: QualityCardProps) {
     );
   }
 
-  if (!data) return <div role="alert" className="theme-card" style={{ padding: 24 }}><p>{error || 'Quality telemetry unavailable.'}</p><button onClick={fetchQuality}>Retry</button></div>;
+  if (!data) return <div role="alert" className="theme-card" style={{ padding: 24 }}><p>{error || 'Quality telemetry unavailable.'}</p><Button type="button" onClick={fetchQuality} variant="outline" size="sm">Retry</Button></div>;
 
   const scoreColor = data.isSuspended
     ? 'var(--color-danger, #D4143A)'

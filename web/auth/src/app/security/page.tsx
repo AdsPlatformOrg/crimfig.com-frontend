@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { AuthConsoleShell } from '../../components/AuthConsoleShell';
 import { Key, Lock, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 
 export default function SecuritySettingsPage() {
   return (
@@ -22,7 +24,7 @@ export default function SecuritySettingsPage() {
         </div>
 
         {/* Password Section */}
-        <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Key size={20} color="var(--color-crimson)" />
             <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Account Password</h2>
@@ -31,28 +33,14 @@ export default function SecuritySettingsPage() {
             Choose a strong, unique password with at least 8 characters, numbers, and symbols.
           </p>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <Link
-              href="/forgot-password"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-page)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Change Password
-            </Link>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/forgot-password">Change Password</Link>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         {/* 2FA Section */}
-        <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Lock size={20} color="var(--color-crimson)" />
             <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Multi-Factor Authentication (MFA)</h2>
@@ -61,24 +49,11 @@ export default function SecuritySettingsPage() {
             Require a verification code from Google Authenticator, Authy, or 1Password when signing in from an unrecognized device.
           </p>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <Link
-              href="/mfa-challenge"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '13px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Configure Authenticator App
-            </Link>
+            <Button asChild size="sm">
+              <Link href="/mfa-challenge">Configure Authenticator App</Link>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     </AuthConsoleShell>
   );

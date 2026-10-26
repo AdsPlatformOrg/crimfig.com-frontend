@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { AdsDisputeItem } from '../../../types/disputes';
 import { apiData, arrayData } from '../../../lib/api-data';
 import { fetchDisputes, createDispute } from '../../../lib/disputes-api';
+import { Button } from '../../ui/button';
+import { Textarea } from '../../ui/textarea';
 
 interface DisputesTabProps {
   role?: 'advertiser' | 'promoter';
@@ -95,7 +97,7 @@ export function DisputesTab({
 
   if (loadError) return <div role="alert" style={{ padding: 24, color: 'var(--text-secondary)' }}>
     <p>{loadError}</p>
-    <button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</button>
+    <Button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</Button>
   </div>;
 
   return (
@@ -114,7 +116,7 @@ export function DisputesTab({
           </p>
         </div>
 
-        <button
+        <Button
           onClick={() => setIsModalOpen(true)}
           style={{
             padding: '9px 16px',
@@ -132,7 +134,7 @@ export function DisputesTab({
           }}
         >
           <span>+</span> {role === 'advertiser' ? 'Report Suspicious Traffic' : 'Submit Quality Appeal'}
-        </button>
+        </Button>
       </div>
 
       {/* KPI Cards */}
@@ -268,7 +270,7 @@ export function DisputesTab({
                       )}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right' }}>
-                      <button
+                      <Button
                         onClick={() => setViewingDispute(d)}
                         style={{
                           padding: '5px 10px',
@@ -282,7 +284,7 @@ export function DisputesTab({
                         }}
                       >
                         View Details
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -332,10 +334,11 @@ export function DisputesTab({
                     ? [{ key: 'campaign', label: 'Specific Campaign' }, { key: 'general', label: 'General Account' }]
                     : [{ key: 'placement', label: 'Specific Placement' }, { key: 'general', label: 'General Account' }]
                   ).map((s) => (
-                    <button
+                    <Button
                       key={s.key}
                       type="button"
                       onClick={() => setScope(s.key as any)}
+                      aria-pressed={scope === s.key}
                       style={{
                         flex: 1,
                         padding: '8px 12px',
@@ -349,7 +352,7 @@ export function DisputesTab({
                       }}
                     >
                       {s.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -486,31 +489,21 @@ export function DisputesTab({
 
               {/* Details */}
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                <label htmlFor="dispute-supporting-details" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                   Supporting Details & Observations (≤ 1000 characters)
                 </label>
-                <textarea
+                <Textarea
+                  id="dispute-supporting-details"
                   rows={4}
                   required
                   placeholder="Provide specific hour timestamps, referrers, or analytics discrepancies..."
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)',
-                    background: 'var(--input-bg, #FFFFFF)',
-                    outline: 'none',
-                    resize: 'none',
-                  }}
                 />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button
+                <Button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   style={{
@@ -524,8 +517,8 @@ export function DisputesTab({
                   }}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isSubmitting}
                   style={{
@@ -540,7 +533,7 @@ export function DisputesTab({
                   }}
                 >
                   {isSubmitting ? 'Filing Report...' : 'Submit Case'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -609,7 +602,7 @@ export function DisputesTab({
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-              <button
+              <Button
                 onClick={() => setViewingDispute(null)}
                 style={{
                   padding: '9px 18px',
@@ -623,7 +616,7 @@ export function DisputesTab({
                 }}
               >
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>

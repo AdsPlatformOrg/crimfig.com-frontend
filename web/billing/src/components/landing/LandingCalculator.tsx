@@ -12,6 +12,9 @@ import {
   XCircle,
   HelpCircle
 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 
 interface LandingCalculatorProps {
   onCalculate: () => void;
@@ -79,14 +82,14 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr',
+            gridTemplateColumns: 'minmax(0, 1fr)',
             gap: '32px',
             alignItems: 'center',
           }}
           className="calc-grid"
         >
           {/* Controls Box */}
-          <div
+          <Card
             className="theme-card"
             style={{
               padding: '32px',
@@ -104,14 +107,15 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
             </p>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>
+              <label htmlFor="billing-transfer-amount" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>
                 Transfer / Payout Amount (USD)
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-muted)', fontSize: '18px' }}>
                   $
                 </span>
-                <input
+                <Input
+                  id="billing-transfer-amount"
                   type="number"
                   min="20"
                   step="10"
@@ -134,24 +138,16 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
               {/* Quick Select Chips */}
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                 {[50, 100, 250, 500, 1500, 5000].map(val => (
-                  <button
+                  <Button
                     key={val}
                     type="button"
                     onClick={() => setUsdAmount(val)}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      border: usdAmount === val ? '1px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
-                      backgroundColor: usdAmount === val ? 'rgba(212, 20, 58, 0.08)' : 'var(--bg-page)',
-                      color: usdAmount === val ? 'var(--color-crimson)' : 'var(--text-secondary)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
+                    variant={usdAmount === val ? 'default' : 'outline'}
+                    size="sm"
+                    aria-pressed={usdAmount === val}
                   >
                     ${val.toLocaleString()}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -179,10 +175,10 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
                 Payouts: <strong>Unavailable</strong>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Comparison Breakdown Card */}
-          <div
+          <Card
             className="theme-card"
             style={{
               padding: '32px',
@@ -282,41 +278,23 @@ export function LandingCalculator({ onCalculate }: LandingCalculatorProps) {
             </div>
 
             {/* CTA */}
-            <button
+            <Button
               type="button"
               onClick={onCalculate}
-              style={{
-                width: '100%',
-                marginTop: '20px',
-                padding: '14px',
-                borderRadius: '12px',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '14px',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: 'var(--shadow-crimson)',
-                transition: 'transform 0.15s ease'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+              size="lg"
+              style={{ width: '100%', marginTop: '20px' }}
             >
               <span>View Wallet Availability</span>
               <ArrowRight style={{ width: 16, height: 16 }} />
-            </button>
-          </div>
-        </div>
+            </Button>
+        </Card>
+      </div>
       </div>
 
       <style jsx>{`
         @media (min-width: 900px) {
           .calc-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
           }
         }
       `}</style>

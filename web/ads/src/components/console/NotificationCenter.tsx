@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import {
   Bell,
   CheckCircle2,
@@ -107,73 +109,45 @@ export function NotificationCenter() {
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
+          <Button
             type="button"
             onClick={() => setActiveTab('inbox')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'inbox' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'inbox' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            aria-pressed={activeTab === 'inbox'}
+            variant={activeTab === 'inbox' ? 'default' : 'outline'}
+            size="sm"
           >
             Inbox {unreadCount > 0 && `(${unreadCount} unread)`}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('settings')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'settings' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'settings' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            aria-pressed={activeTab === 'settings'}
+            variant={activeTab === 'settings' ? 'default' : 'outline'}
+            size="sm"
           >
             <Settings style={{ width: 14, height: 14 }} />
             <span>Preferences</span>
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* TAB 1: INBOX */}
       {activeTab === 'inbox' && (
-        <div className="theme-card" style={{ padding: '24px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
+        <Card className="theme-card" style={{ padding: '24px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
               Recent Alerts
             </h3>
             {unreadCount > 0 && (
-              <button
+              <Button
                 type="button"
                 onClick={markAllAsRead}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--badge-bg)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
+                variant="outline"
+                size="sm"
               >
                 <CheckCheck style={{ width: 14, height: 14 }} />
                 <span>Mark All as Read</span>
-              </button>
+              </Button>
             )}
           </div>
 
@@ -239,12 +213,12 @@ export function NotificationCenter() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* TAB 2: PREFERENCES */}
       {activeTab === 'settings' && (
-        <div className="theme-card" style={{ padding: '28px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <Card className="theme-card" style={{ padding: '28px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             Notification Dispatch Settings
           </h3>
@@ -301,7 +275,7 @@ export function NotificationCenter() {
               />
             </label>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

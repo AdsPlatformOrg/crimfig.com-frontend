@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ArrowRight, Sparkles, TrendingUp, ShieldCheck, Zap, Globe, Smartphone, UserCheck, Play } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface LandingHeroProps {
   onStartAdvertising: () => void;
@@ -119,60 +120,24 @@ export function LandingHero({ onStartAdvertising, onBecomePromoter }: LandingHer
               marginBottom: '48px',
             }}
           >
-            <button
+            <Button
               type="button"
               onClick={onStartAdvertising}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '16px 32px',
-                borderRadius: '12px',
-                background: 'var(--gradient-crimson)',
-                color: '#FFFFFF',
-                border: 'none',
-                fontSize: '15px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-crimson)',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
+              size="lg"
             >
               <span>Advertise Purposefully</span>
               <ArrowRight style={{ width: 17, height: 17 }} />
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={onBecomePromoter}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '16px 28px',
-                borderRadius: '12px',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '15px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'background-color 0.15s ease, border-color 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-crimson)';
-                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--badge-bg)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)';
-                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-surface)';
-              }}
+              variant="outline"
+              size="lg"
             >
               <UserCheck style={{ width: 17, height: 17, color: 'var(--color-crimson)' }} />
               <span>Monetize with Dignity</span>
-            </button>
+            </Button>
           </div>
 
           {/* Social Proof Stats Bar */}

@@ -4,6 +4,7 @@ import React from 'react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { ExternalLink, ShieldCheck, Heart } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { Button } from '../ui/button';
 
 interface LandingFooterProps {
   onLaunchConsole: (defaultRole?: 'advertiser' | 'promoter') => void;
@@ -50,22 +51,26 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <li>
-                <button
+                <Button
                   type="button"
                   onClick={() => onLaunchConsole('advertiser')}
-                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', cursor: 'pointer', textAlign: 'left', font: 'inherit' }}
+                  variant="link"
+                  size="sm"
+                  style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
                   Campaign Studio
-                </button>
+                </Button>
               </li>
               <li>
-                <button
+                <Button
                   type="button"
                   onClick={() => onLaunchConsole('advertiser')}
-                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', cursor: 'pointer', textAlign: 'left', font: 'inherit' }}
+                  variant="link"
+                  size="sm"
+                  style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
                   Performance Dashboard
-                </button>
+                </Button>
               </li>
               <li>
                 <a href="#what-we-do" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
@@ -87,31 +92,37 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <li>
-                <button
+                <Button
                   type="button"
                   onClick={() => onLaunchConsole('promoter')}
-                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', cursor: 'pointer', textAlign: 'left', font: 'inherit' }}
+                  variant="link"
+                  size="sm"
+                  style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
                   Website Embed Codes
-                </button>
+                </Button>
               </li>
               <li>
-                <button
+                <Button
                   type="button"
                   onClick={() => onLaunchConsole('promoter')}
-                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', cursor: 'pointer', textAlign: 'left', font: 'inherit' }}
+                  variant="link"
+                  size="sm"
+                  style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
                   Mobile App SDK Setup
-                </button>
+                </Button>
               </li>
               <li>
-                <button
+                <Button
                   type="button"
                   onClick={() => onLaunchConsole('promoter')}
-                  style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-secondary)', cursor: 'pointer', textAlign: 'left', font: 'inherit' }}
+                  variant="link"
+                  size="sm"
+                  style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
                   Creator Share Links
-                </button>
+                </Button>
               </li>
               <li>
                 <a href="#calculator" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>

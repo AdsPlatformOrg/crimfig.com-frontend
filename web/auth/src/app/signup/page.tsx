@@ -4,6 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -39,34 +43,35 @@ export default function SignupPage() {
 
   return (
     <div className="auth-centered-container">
-      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <AuthBrandHeader
         title="Create Account"
         subtitle="One CrimFig account for all ecosystem apps"
       />
 
       {error && (
-        <div className="alert-error" style={{ marginBottom: '20px' }}>
+        <Alert variant="destructive" style={{ marginBottom: '20px' }}>
           <span>{error}</span>
-        </div>
+        </Alert>
       )}
 
       {message ? (
         <div>
-          <div className="alert-success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
+          <Alert variant="success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
             <span>{message}</span>
-          </div>
-          <Link href="/login" className="btn-secondary">
-            Back to Sign In
-          </Link>
+          </Alert>
+          <Button asChild variant="secondary" className="cf-auth-full-button">
+            <Link href="/login">Back to Sign In</Link>
+          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            <label htmlFor="signup-email" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
               EMAIL ADDRESS
             </label>
-            <input
+            <Input
+              id="signup-email"
               type="email"
               className="input-field"
               placeholder="name@example.com"
@@ -78,10 +83,11 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            <label htmlFor="signup-phone" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
               PHONE NUMBER (OPTIONAL)
             </label>
-            <input
+            <Input
+              id="signup-phone"
               type="tel"
               className="input-field"
               placeholder="+2348012345678"
@@ -92,10 +98,11 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            <label htmlFor="signup-password" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
               PASSWORD
             </label>
-            <input
+            <Input
+              id="signup-password"
               type="password"
               className="input-field"
               placeholder="Min 8 characters"
@@ -107,9 +114,9 @@ export default function SignupPage() {
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
+          <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
             {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
+          </Button>
         </form>
       )}
 
@@ -128,8 +135,7 @@ export default function SignupPage() {
           Sign In
         </Link>
       </div>
+      </Card>
     </div>
-  </div>
   );
 }
-

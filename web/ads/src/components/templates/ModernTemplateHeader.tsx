@@ -1,18 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Search, 
-  Bell, 
-  Menu, 
-  X, 
-  User, 
-  Settings, 
-  LogOut, 
-  Plus, 
-  ChevronDown 
+import {
+  Search,
+  Bell,
+  Menu,
+  X,
+  User,
+  Settings,
+  LogOut,
+  Plus,
+  ChevronDown,
 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { CrimFigLogo } from '../CrimFigLogo';
 import './template-layout.css';
 
@@ -26,6 +29,7 @@ export interface HeaderProps {
   appName?: string;
   onSearch?: (query: string) => void;
   searchPlaceholder?: string;
+  onNotificationsClick?: () => void;
   primaryAction?: {
     label: string;
     href?: string;
@@ -43,263 +47,226 @@ export const ModernTemplateHeader: React.FC<HeaderProps> = ({
   appName = 'Studio',
   onSearch,
   searchPlaceholder = 'Search campaigns, creatives, or metrics...',
-  primaryAction = { label: 'New Campaign', href: '/campaigns/new' },
-  user = {
-    name: 'CrimFig Creator',
-    email: 'creator@crimfig.com',
-  },
-  navigationItems = [
-    { label: 'Home', href: '/dashboard', active: true },
-    { label: 'Marketplace', href: '/promoter/marketplace' },
-    { label: 'Sites & Placements', href: '/promoter/websites' },
-    { label: 'Performance', href: '/reports' },
-  ],
+  onNotificationsClick,
+  primaryAction,
+  user,
+  navigationItems = [],
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    onSearch?.(e.target.value);
+  useEffect(() => {
+    if (!mobileMenuOpen && !userMenuOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        mobileMenuButtonRef.current?.focus();
+      }
+      if (userMenuOpen) userMenuButtonRef.current?.focus();
+      setUserMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen, userMenuOpen]);
+
+  const renderPrimaryAction = (mobile = false) => {
+    if (!primaryAction) return null;
+    const className = mobile
+      ? 'cf-template-primary-action cf-template-mobile-action'
+      : 'cf-template-primary-action';
+    const content = (
+      <>
+        <Plus size={16} aria-hidden="true" />
+        <span>{primaryAction.label}</span>
+      </>
+    );
+
+    if (primaryAction.href) {
+      return (
+        <Button asChild size="sm" className={className}>
+          <Link href={primaryAction.href} onClick={() => setMobileMenuOpen(false)}>
+            {content}
+          </Link>
+        </Button>
+      );
+    }
+    if (primaryAction.onClick) {
+      return (
+        <Button
+          size="sm"
+          className={className}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            primaryAction.onClick?.();
+          }}
+        >
+          {content}
+        </Button>
+      );
+    }
+    return null;
   };
+
+  const renderNavigationLinks = () =>
+    navigationItems.map((item) => (
+      <Link
+        key={`${item.href}-${item.label}`}
+        href={item.href}
+        className={`cf-template-mobile-nav-link${item.active ? ' active' : ''}`}
+        aria-current={item.active ? 'page' : undefined}
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        {item.label}
+      </Link>
+    ));
+  const hasPrimaryAction = Boolean(primaryAction?.href || primaryAction?.onClick);
+  const hasNavigation = navigationItems.length > 0;
 
   return (
     <header className="cf-template-header">
       <div className="cf-template-header-container">
-        {/* Brand Area */}
         <div className="cf-template-logo-area">
-          <Link href="/" aria-label="CrimFig Home" style={{ display: 'flex', alignItems: 'center' }}>
+          <Link href="/" aria-label="CrimFig Home" className="cf-template-brand-link">
             <CrimFigLogo size={36} variant="brand" />
           </Link>
-          {appName && (
-            <span style={{ 
-              fontSize: '0.8125rem', 
-              fontWeight: 600, 
-              color: 'var(--text-muted)', 
-              borderLeft: '1px solid var(--border-subtle)', 
-              paddingLeft: '10px' 
-            }}>
-              {appName}
-            </span>
-          )}
+          {appName && <span className="cf-template-app-name">{appName}</span>}
         </div>
 
-        {/* Search Bar */}
-        <div className="cf-template-search-wrapper">
-          <div className="cf-template-search-icon">
-            <Search size={18} />
-          </div>
-          <input
-            type="search"
-            className="cf-template-search-input"
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={handleSearchChange}
-            aria-label="Search"
-          />
-        </div>
+        {hasNavigation && (
+          <nav className="cf-template-desktop-nav" aria-label="Primary navigation">
+            {renderNavigationLinks()}
+          </nav>
+        )}
 
-        {/* Desktop Header Actions */}
-        <div className="cf-template-header-actions" style={{ display: 'flex' }}>
-          {primaryAction && (
-            primaryAction.href ? (
-              <Link href={primaryAction.href} className="cf-template-action-btn-primary">
-                <Plus size={16} />
-                <span>{primaryAction.label}</span>
-              </Link>
-            ) : (
-              <button onClick={primaryAction.onClick} className="cf-template-action-btn-primary">
-                <Plus size={16} />
-                <span>{primaryAction.label}</span>
-              </button>
-            )
-          )}
-
-          {/* Notifications */}
-          <button 
-            type="button" 
-            className="cf-template-icon-btn" 
-            aria-label="View notifications"
-            onClick={() => {}}
-          >
-            <Bell size={18} />
-          </button>
-
-          {/* Profile Dropdown */}
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '4px',
+        {onSearch && (
+          <div className="cf-template-search-wrapper">
+            <div className="cf-template-search-icon" aria-hidden="true">
+              <Search size={18} />
+            </div>
+            <Input
+              type="search"
+              className="cf-template-search-input"
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                onSearch(event.target.value);
               }}
-              aria-expanded={userMenuOpen}
-              aria-label="User profile menu"
-            >
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  style={{ width: '32px', height: '32px', borderRadius: '9999px', objectFit: 'cover' }}
-                />
-              ) : (
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                }}>
-                  {user.name.charAt(0)}
-                </div>
-              )}
-              <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
-            </button>
+              aria-label="Search"
+            />
+          </div>
+        )}
 
-            {userMenuOpen && (
-              <div
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  marginTop: '8px',
-                  width: '200px',
-                  backgroundColor: 'var(--bg-elevated)',
-                  borderRadius: 'var(--radius-md)',
-                  boxShadow: 'var(--shadow-lg)',
-                  border: '1px solid var(--border-subtle)',
-                  padding: '6px 0',
-                  zIndex: 50,
-                }}
+        <div className="cf-template-header-actions">
+          {renderPrimaryAction()}
+          {onNotificationsClick && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="cf-template-notifications-button"
+              aria-label="View notifications"
+              onClick={onNotificationsClick}
+            >
+              <Bell size={18} aria-hidden="true" />
+            </Button>
+          )}
+
+          {user && (
+            <div className="cf-template-user-menu">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                ref={userMenuButtonRef}
+                onClick={() => setUserMenuOpen((open) => !open)}
+                aria-expanded={userMenuOpen}
+                aria-controls="cf-template-user-menu"
+                aria-label={`Profile menu for ${user.name}`}
               >
-                <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
+                {user.avatarUrl ? (
+                  <Image
+                    src={user.avatarUrl}
+                    alt=""
+                    width={32}
+                    height={32}
+                    unoptimized
+                    className="cf-template-avatar-image"
+                  />
+                ) : (
+                  <span className="cf-template-avatar-fallback" aria-hidden="true">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span className="cf-template-user-name">{user.name}</span>
+                <ChevronDown size={14} aria-hidden="true" />
+              </Button>
+
+              <div
+                id="cf-template-user-menu"
+                className="cf-template-user-menu-popover"
+                aria-label="User actions"
+                hidden={!userMenuOpen}
+              >
+                <div className="cf-template-user-summary">
+                  <div>{user.name}</div>
+                  <div>{user.email}</div>
                 </div>
-                <Link
-                  href="/profile"
-                  onClick={() => setUserMenuOpen(false)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    fontSize: '0.875rem',
-                    color: 'var(--text-secondary)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <User size={16} />
+                <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
+                  <User size={16} aria-hidden="true" />
                   <span>Profile</span>
                 </Link>
-                <Link
-                  href="/settings"
-                  onClick={() => setUserMenuOpen(false)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    fontSize: '0.875rem',
-                    color: 'var(--text-secondary)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <Settings size={16} />
+                <Link href="/settings" onClick={() => setUserMenuOpen(false)}>
+                  <Settings size={16} aria-hidden="true" />
                   <span>Settings</span>
                 </Link>
-                <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '4px 0' }} />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setUserMenuOpen(false);
                     window.location.href = 'https://auth.crimfig.com/logout';
                   }}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    fontSize: '0.875rem',
-                    color: 'var(--color-error)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
                 >
-                  <LogOut size={16} />
+                  <LogOut size={16} aria-hidden="true" />
                   <span>Sign out</span>
-                </button>
+                </Button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Mobile hamburger */}
-          <button
-            type="button"
-            className="cf-template-icon-btn"
-            style={{ display: 'none' }}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle navigation menu"
-          >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          {(hasNavigation || hasPrimaryAction) && (
+            <Button
+              ref={mobileMenuButtonRef}
+              type="button"
+              variant="outline"
+              size="icon"
+              className="cf-template-mobile-menu"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="cf-template-mobile-navigation"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <nav style={{
-          backgroundColor: 'var(--bg-elevated)',
-          borderTop: '1px solid var(--border-subtle)',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-        }}>
-          {navigationItems.map((item, idx) => (
-            <Link
-              key={idx}
-              href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: item.active ? 'var(--bg-surface)' : 'transparent',
-                color: item.active ? 'var(--color-crimson)' : 'var(--text-secondary)',
-                fontWeight: item.active ? 600 : 400,
-                textDecoration: 'none',
-                fontSize: '0.9375rem',
-              }}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '8px 0' }} />
-          {primaryAction && (
-            <Link
-              href={primaryAction.href || '#'}
-              className="cf-template-action-btn-primary"
-              style={{ width: '100%', justifyContent: 'center' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Plus size={16} />
-              <span>{primaryAction.label}</span>
-            </Link>
-          )}
+      {(hasNavigation || hasPrimaryAction) && (
+        <nav
+          id="cf-template-mobile-navigation"
+          className="cf-template-mobile-nav"
+          aria-label="Mobile navigation"
+          hidden={!mobileMenuOpen}
+        >
+          {renderNavigationLinks()}
+          {renderPrimaryAction(true)}
         </nav>
       )}
     </header>

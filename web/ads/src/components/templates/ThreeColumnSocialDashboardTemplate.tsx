@@ -16,6 +16,7 @@ import {
 import { ModernTemplateHeader, HeaderProps } from './ModernTemplateHeader';
 import { WhoToFollowWidget, TrendingWidget, QuickHelpWidget } from './SidebarWidgets';
 import { ThemeSwitcher } from '../ThemeSwitcher';
+import { Button } from '../ui/button';
 import './template-layout.css';
 
 export interface NavLinkItem {
@@ -165,10 +166,12 @@ export const ThreeColumnSocialDashboardTemplate: React.FC<ThreeColumnSocialDashb
                 {tabs.map((tab) => {
                   const isActive = tab.id === activeTab;
                   return (
-                    <button
+                    <Button
                       key={tab.id}
+                      type="button"
                       role="tab"
                       aria-selected={isActive}
+                      variant="ghost"
                       className={`cf-template-tab-btn ${isActive ? 'active' : ''}`}
                       onClick={() => handleTabClick(tab.id)}
                     >
@@ -182,7 +185,7 @@ export const ThreeColumnSocialDashboardTemplate: React.FC<ThreeColumnSocialDashb
                           ({tab.count})
                         </span>
                       )}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -253,4 +256,3 @@ export const ThreeColumnSocialDashboardTemplate: React.FC<ThreeColumnSocialDashb
     </div>
   );
 };
-

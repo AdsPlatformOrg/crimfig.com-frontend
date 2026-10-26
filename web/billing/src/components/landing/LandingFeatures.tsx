@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Card } from '../ui/card';
 import {
   Wallet,
   CreditCard,
@@ -112,7 +113,7 @@ export function LandingFeatures() {
           {features.map((feat, idx) => {
             const Icon = feat.icon;
             return (
-              <div
+              <Card
                 key={idx}
                 className="theme-card"
                 style={{
@@ -174,7 +175,7 @@ export function LandingFeatures() {
                     {feat.description}
                   </p>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

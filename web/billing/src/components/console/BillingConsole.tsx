@@ -48,6 +48,12 @@ import { EmptyState } from '../EmptyState';
 import { TableSkeleton, CardSkeleton } from '../LoadingStates';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { DashboardSidebar, NavGroup } from '../DashboardSidebar';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Menu } from 'lucide-react';
 
 interface SavedCard {
@@ -115,6 +121,18 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
   const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards' | 'support'>(initialTab);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMobileNavOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileNavOpen(false);
+        document.getElementById('billing-mobile-menu-toggle')?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMobileNavOpen]);
 
   // Loading Indicators
   const [isLoadingCards, setIsLoadingCards] = useState(true);
@@ -455,7 +473,12 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
-      {operationError && <div role="alert" style={{ position: 'sticky', top: 0, zIndex: 1200, padding: '12px 24px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)' }}>{operationError} <button onClick={() => setOperationError(null)} style={{ marginLeft: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Dismiss</button></div>}
+      {operationError && (
+        <Alert variant="destructive" style={{ position: 'sticky', top: 0, zIndex: 1200, justifyContent: 'space-between' }}>
+          <AlertDescription>{operationError}</AlertDescription>
+          <Button type="button" variant="outline" size="sm" onClick={() => setOperationError(null)}>Dismiss</Button>
+        </Alert>
+      )}
       
       {/* Top Header */}
       <header
@@ -471,24 +494,19 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '12px 24px', minHeight: '64px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' }}>
             {/* Mobile Menu Hamburger */}
-            <button
+            <Button
+              id="billing-mobile-menu-toggle"
               type="button"
+              variant="outline"
+              size="icon"
               onClick={() => setIsMobileNavOpen(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '6px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--badge-bg)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-              }}
-              title="Open Navigation Menu"
+              className="cf-console-mobile-menu"
+              aria-label="Open navigation menu"
+              aria-expanded={isMobileNavOpen}
+              aria-controls="billing-dashboard-sidebar"
             >
-              <Menu style={{ width: 18, height: 18 }} />
-            </button>
+              <Menu size={18} aria-hidden="true" />
+            </Button>
 
             <CrimFigLogo
               variant="brand"
@@ -516,89 +534,47 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 fontWeight: 600,
               }}
             >
-              <button
+              <Button
                 type="button"
                 onClick={() => router.push('/dashboard')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: billingWorkspace === 'wallet' ? 'var(--color-fig-dark)' : 'transparent',
-                  color: billingWorkspace === 'wallet' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
+                size="sm"
+                variant={billingWorkspace === 'wallet' ? 'default' : 'ghost'}
+                aria-pressed={billingWorkspace === 'wallet'}
               >
                 <Wallet style={{ width: 14, height: 14 }} />
                 <span>Wallet</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => router.push('/payouts')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: billingWorkspace === 'payouts' ? 'var(--color-crimson)' : 'transparent',
-                  color: billingWorkspace === 'payouts' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
+                size="sm"
+                variant={billingWorkspace === 'payouts' ? 'default' : 'ghost'}
+                aria-pressed={billingWorkspace === 'payouts'}
               >
                 <Building2 style={{ width: 14, height: 14 }} />
                 <span>Payouts</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => router.push('/rewards')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: billingWorkspace === 'rewards' ? 'var(--color-crimson)' : 'transparent',
-                  color: billingWorkspace === 'rewards' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
+                size="sm"
+                variant={billingWorkspace === 'rewards' ? 'default' : 'ghost'}
+                aria-pressed={billingWorkspace === 'rewards'}
               >
                 <Gift style={{ width: 14, height: 14 }} />
                 <span>Rewards</span>
-              </button>
+              </Button>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', maxWidth: '100%' }}>
-            <a
-              href="https://ads.crimfig.com"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--badge-bg)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none'
-              }}
-            >
-              <Layers style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
-              <span>Ads Studio</span>
-              <ExternalLink style={{ width: 12, height: 12, color: 'var(--text-muted)' }} />
-            </a>
+            <Button asChild variant="outline" size="sm">
+              <a href="https://ads.crimfig.com" target="_blank" rel="noreferrer">
+                <Layers style={{ width: 14, height: 14 }} />
+                <span>Ads Studio</span>
+                <ExternalLink style={{ width: 12, height: 12 }} />
+              </a>
+            </Button>
 
             <SignOutButton />
           </div>
@@ -634,26 +610,30 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         {/* Content Area */}
         <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px', flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '28px', minWidth: 0 }}>
         
-        {loadError && <p role="alert" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16 }}>{loadError}</p>}
-        {(walletStatus === 'unavailable' || ledgerError) && <div role="alert" style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16 }}>
-          {walletStatus === 'unavailable' ? 'Wallet balance could not be loaded. ' : ''}{ledgerError}
-          <button type="button" onClick={() => void refreshAccountData()} style={{ marginLeft: 12, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Refresh account data</button>
-        </div>}
-        {requestRecovery.phase !== 'none' && fundingCheck.phase !== 'confirmed' && <section aria-live="polite" style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16, overflowWrap: 'anywhere' }}>
+        {loadError && <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>}
+        {(walletStatus === 'unavailable' || ledgerError) && <Alert variant="destructive">
+          <AlertDescription>{walletStatus === 'unavailable' ? 'Wallet balance could not be loaded. ' : ''}{ledgerError}</AlertDescription>
+          <Button type="button" variant="outline" size="sm" onClick={() => void refreshAccountData()}>Refresh account data</Button>
+        </Alert>}
+        {requestRecovery.phase !== 'none' && fundingCheck.phase !== 'confirmed' && <Alert variant="info" style={{ overflowWrap: 'anywhere' }}>
+          <div>
           <strong>{requestRecovery.phase === 'ready' ? 'Existing checkout recovered' : requestRecovery.phase === 'missing' ? 'Continue this funding request' : requestRecovery.phase === 'loading' ? 'Recovering funding request' : 'Funding request needs a status check'}</strong>
           <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{requestRecovery.phase === 'ready' ? 'Resume the same checkout. No second payment intent was created.' : requestRecovery.phase === 'missing' ? 'No request was found for this account. Funding will reuse this request ID when you submit the amount.' : 'This request ID is retained across reloads. Recover it before starting another payment.'}</p>
           {requestRecovery.id && <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Request: {requestRecovery.id}</p>}
-          {requestRecovery.phase === 'ready' && requestRecovery.url && <button type="button" onClick={() => window.location.assign(requestRecovery.url!)} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Resume existing checkout</button>}
-          {requestRecovery.id && requestRecovery.phase !== 'loading' && <button type="button" onClick={() => void recoverRequest(requestRecovery.id!)} style={{ marginLeft: 8, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Recover request</button>}
-        </section>}
-        {fundingCheck.phase !== 'idle' && <section aria-live="polite" style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16, overflowWrap: 'anywhere' }}>
+          {requestRecovery.phase === 'ready' && requestRecovery.url && <Button type="button" variant="outline" size="sm" onClick={() => window.location.assign(requestRecovery.url!)}>Resume existing checkout</Button>}
+          {requestRecovery.id && requestRecovery.phase !== 'loading' && <Button type="button" variant="outline" size="sm" onClick={() => void recoverRequest(requestRecovery.id!)}>Recover request</Button>}
+          </div>
+        </Alert>}
+        {fundingCheck.phase !== 'idle' && <Alert variant={fundingCheck.phase === 'confirmed' ? 'success' : fundingCheck.phase === 'invalid' || fundingCheck.phase === 'unavailable' ? 'destructive' : 'info'} style={{ overflowWrap: 'anywhere' }}>
+          <div>
           <strong>{fundingCheck.phase === 'checking' ? 'Checking payment status' : fundingCheck.phase === 'confirmed' ? 'Payment confirmed by Billing' : fundingCheck.phase === 'pending' ? 'Payment is still pending' : fundingCheck.phase === 'invalid' ? 'Invalid payment return reference' : 'Payment status could not be confirmed'}</strong>
           <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{fundingCheck.phase === 'confirmed' ? 'The payment was recorded. Your balance and transaction history are refreshed separately below.' : 'A return link does not confirm payment. Check its status before starting another payment.'}</p>
           {fundingCheck.reference && <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Reference: {fundingCheck.reference}</p>}
-          {fundingCheck.reference && fundingCheck.phase !== 'confirmed' && <button type="button" disabled={fundingCheck.phase === 'checking'} onClick={() => void checkFunding(fundingCheck.reference!)} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>{fundingCheck.phase === 'checking' ? 'Checking…' : 'Check payment status'}</button>}
-          {['confirmed', 'invalid'].includes(fundingCheck.phase) && <button type="button" onClick={dismissFundingConfirmation} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Dismiss</button>}
-        </section>}
-        {fundAttemptUncertain && fundingCheck.phase === 'idle' && <div role="alert" style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 16 }}>Payment initialization could not be confirmed. Review pending transactions before starting another payment. <button type="button" onClick={() => { setIsFundOpen(false); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</button></div>}
+          {fundingCheck.reference && fundingCheck.phase !== 'confirmed' && <Button type="button" variant="outline" size="sm" disabled={fundingCheck.phase === 'checking'} loading={fundingCheck.phase === 'checking'} onClick={() => void checkFunding(fundingCheck.reference!)}>{fundingCheck.phase === 'checking' ? 'Checking…' : 'Check payment status'}</Button>}
+          {['confirmed', 'invalid'].includes(fundingCheck.phase) && <Button type="button" variant="outline" size="sm" onClick={dismissFundingConfirmation}>Dismiss</Button>}
+          </div>
+        </Alert>}
+        {fundAttemptUncertain && fundingCheck.phase === 'idle' && <Alert variant="warning"><div>Payment initialization could not be confirmed. Review pending transactions before starting another payment. <Button type="button" variant="outline" size="sm" onClick={() => { setIsFundOpen(false); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</Button></div></Alert>}
         {/* Navigation Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', overflowX: 'auto', fontSize: '13px', fontWeight: 600 }}>
           {[
@@ -664,27 +644,17 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
             { id: 'rewards', label: `Rewards & Cashback (${rewardsPoints.toLocaleString()} pts)`, icon: Gift },
             { id: 'transactions', label: `Transactions (${isLoadingTransactions ? '…' : ledgerError ? 'unavailable' : transactions.length})`, icon: Clock },
           ].map(tab => (
-            <button
+            <Button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id as any)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                backgroundColor: activeTab === tab.id ? 'var(--color-crimson)' : 'transparent',
-                color: activeTab === tab.id ? '#FFFFFF' : 'var(--text-secondary)',
-                whiteSpace: 'nowrap'
-              }}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              size="sm"
+              variant={activeTab === tab.id ? 'default' : 'ghost'}
+              aria-pressed={activeTab === tab.id}
             >
               <tab.icon style={{ width: 16, height: 16 }} />
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -694,7 +664,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
             {/* Balance Highlights Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '20px' }}>
               {/* Primary Balance Card */}
-              <div
+              <Card
                 className="theme-card"
                 style={{
                   padding: '24px',
@@ -727,56 +697,28 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                  <button
+                  <Button
                     type="button"
                     disabled={walletStatus !== 'ready' || fundAttemptUncertain || requestBlocksFunding || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)}
                     onClick={() => setIsFundOpen(true)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--color-crimson)',
-                      color: '#FFFFFF',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      border: 'none',
-                      cursor: 'pointer',
-                      boxShadow: 'var(--shadow-crimson)'
-                    }}
+                    style={{ flex: 1 }}
                   >
                     <ArrowDownLeft style={{ width: 16, height: 16 }} /> Fund Wallet
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => setIsWithdrawOpen(true)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--bg-page)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      border: '1px solid var(--border-subtle)',
-                      cursor: 'pointer'
-                    }}
+                    style={{ flex: 1 }}
                   >
                     <ArrowUpRight style={{ width: 16, height: 16 }} /> Withdraw to Bank
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
 
               {/* FX Index & Locked Funds */}
-              <div
+              <Card
                 className="theme-card"
                 style={{
                   padding: '24px',
@@ -794,9 +736,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                     <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       USD / NGN Quote Rate
                     </div>
-                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', fontWeight: 600 }}>
+                    <Badge variant={walletStatus === 'ready' ? 'secondary' : 'outline'}>
                       {walletStatus === 'ready' ? balance.rateSource : 'Unavailable'}
-                    </span>
+                    </Badge>
                   </div>
 
                   <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)' }}>
@@ -812,30 +754,20 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Reserved funds</div>
                     <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{walletStatus === 'ready' ? `$${balance.lockedUsd.toFixed(2)}` : '—'} USD</div>
                   </div>
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
                     onClick={() => setActiveTab('rewards')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: 'var(--color-crimson)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
                   >
                     <span>View Rewards ({rewardsPoints.toLocaleString()} pts)</span>
                     <ChevronRight style={{ width: 14, height: 14 }} />
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Quick Recent Transactions Preview */}
-            <div
+            <Card
               className="theme-card"
               style={{
                 borderRadius: '16px',
@@ -847,13 +779,13 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Recent Activity</h3>
-                <button
+                <Button
                   type="button"
+                  variant="link"
                   onClick={() => setActiveTab('transactions')}
-                  style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-crimson)', border: 'none', background: 'transparent', cursor: 'pointer' }}
                 >
                   View All &rarr;
-                </button>
+                </Button>
               </div>
 
               {isLoadingTransactions && <p role="status" style={{ color: 'var(--text-muted)' }}>Refreshing transaction history…</p>}
@@ -900,7 +832,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                   </div>
                 </div>
               ))}
-            </div>
+            </Card>
           </div>
         )}
 
@@ -912,26 +844,13 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Tokenized Cards</h2>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Saved payment authorizations from provider checkout. Saved-card charging is currently unavailable.</p>
               </div>
-              <button
+              <Button
                 type="button"
                 disabled={walletStatus !== 'ready' || fundAttemptUncertain || requestBlocksFunding || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)}
-                    onClick={() => setIsFundOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
+                onClick={() => setIsFundOpen(true)}
               >
                 <Plus style={{ width: 16, height: 16 }} /> Add Card via Deposit
-              </button>
+              </Button>
             </div>
 
             {cards.length === 0 ? (
@@ -963,9 +882,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                         {c.provider}
                       </span>
                       {c.isDefault && (
-                        <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', fontWeight: 600 }}>
+                      <Badge variant="secondary">
                           Default
-                        </span>
+                      </Badge>
                       )}
                     </div>
                     <div style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-primary)' }}>
@@ -1022,9 +941,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                           {plan.appSlug.toUpperCase()}
                         </span>
                         {isSubscribed && (
-                          <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', fontWeight: 600 }}>
+                          <Badge variant="secondary">
                             Active
-                          </span>
+                          </Badge>
                         )}
                       </div>
                       <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{plan.name}</h3>
@@ -1036,23 +955,15 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                       </ul>
                     </div>
 
-                    <button
+                    <Button
                       type="button"
                       disabled={isSubscribed}
                       onClick={() => setCheckoutPlan(plan)}
-                      style={{
-                        padding: '10px',
-                        borderRadius: '8px',
-                        backgroundColor: isSubscribed ? 'var(--badge-bg)' : 'var(--color-crimson)',
-                        color: isSubscribed ? 'var(--text-muted)' : '#FFFFFF',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        border: 'none',
-                        cursor: isSubscribed ? 'default' : 'pointer'
-                      }}
+                      variant={isSubscribed ? 'secondary' : 'default'}
+                      style={{ width: '100%' }}
                     >
                       {isSubscribed ? 'Subscribed' : 'Review subscription'}
-                    </button>
+                    </Button>
                   </div>
                 );
               })}
@@ -1068,25 +979,12 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Verified Payout Bank Accounts</h2>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Saved account details are verified by the payment provider. Payout availability is shown separately.</p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsAddBankOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
               >
                 <Plus style={{ width: 16, height: 16 }} /> Add Bank Account
-              </button>
+              </Button>
             </div>
 
             {bankAccounts.length === 0 ? (
@@ -1116,9 +1014,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{b.bankName}</span>
                       {b.isDefault && (
-                        <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', fontWeight: 600 }}>
+                        <Badge variant="secondary">
                           Primary Payout
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-crimson)', fontFamily: 'monospace' }}>
@@ -1159,7 +1057,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
             {isLoadingTransactions && <p role="status" style={{ color: 'var(--text-muted)' }}>Refreshing transaction history…</p>}
             {!isLoadingTransactions && !ledgerError && transactions.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No transactions recorded.</p>}
-            <div
+            <Card
               className="theme-card"
               style={{
                 borderRadius: '12px',
@@ -1168,46 +1066,44 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 overflow: 'hidden'
               }}
             >
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', color: 'var(--text-muted)' }}>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Type</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Description</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Reference</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Amount (USD)</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Amount (NGN)</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Date</th>
-                      <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <Table>
+                  <TableHeader>
+                    <TableRow style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-muted)' }}>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Reference</TableHead>
+                      <TableHead>Amount (USD)</TableHead>
+                      <TableHead>Amount (NGN)</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {transactions.map(t => (
-                      <tr key={t.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                        <td style={{ padding: '12px 16px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'var(--badge-bg)', color: 'var(--text-primary)' }}>
+                      <TableRow key={t.id}>
+                        <TableCell>
+                          <Badge variant="secondary">
                             {t.type.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 16px', fontWeight: 500, color: 'var(--text-primary)' }}>{t.description}</td>
-                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-muted)' }}>{t.reference}</td>
-                        <td style={{ padding: '12px 16px', fontWeight: 700, color: t.type === 'wallet_fund' || t.type === 'rewards_credit' ? 'var(--color-success)' : 'var(--text-primary)' }}>
+                          </Badge>
+                        </TableCell>
+                        <TableCell style={{ fontWeight: 500 }}>{t.description}</TableCell>
+                        <TableCell style={{ fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-muted)' }}>{t.reference}</TableCell>
+                        <TableCell style={{ fontWeight: 700, color: t.type === 'wallet_fund' || t.type === 'rewards_credit' ? 'var(--color-success)' : 'var(--text-primary)' }}>
                           ${t.amountUsd.toFixed(2)}
-                        </td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>{t.amountNgn === null ? '—' : `₦${t.amountNgn.toLocaleString()}`}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>{t.createdAt}</td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', backgroundColor: t.status === 'completed' ? 'var(--color-success-bg)' : 'var(--badge-bg)', color: t.status === 'completed' ? 'var(--color-success)' : 'var(--text-secondary)', fontWeight: 600 }}>
+                        </TableCell>
+                        <TableCell style={{ color: 'var(--text-secondary)' }}>{t.amountNgn === null ? '—' : `₦${t.amountNgn.toLocaleString()}`}</TableCell>
+                        <TableCell style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{t.createdAt}</TableCell>
+                        <TableCell>
+                          <Badge variant={t.status === 'completed' ? 'secondary' : 'outline'}>
                             {t.status}
-                          </span>
-                          {t.type === 'wallet_fund' && t.status === 'pending' && t.reference && <button type="button" disabled={fundingCheck.phase === 'checking'} onClick={() => selectFundingReference(t.reference!)} style={{ marginLeft: 8, padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>Check payment</button>}
-                        </td>
-                      </tr>
+                          </Badge>
+                          {t.type === 'wallet_fund' && t.status === 'pending' && t.reference && <Button type="button" variant="outline" size="sm" disabled={fundingCheck.phase === 'checking'} onClick={() => selectFundingReference(t.reference!)}>Check payment</Button>}
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  </TableBody>
+              </Table>
+            </Card>
           </div>
         )}
 
@@ -1249,14 +1145,16 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       {isFundOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
           <div ref={fundDialog} role="dialog" aria-modal="true" aria-label="Deposit to CrimFig Wallet" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '480px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               aria-label="Close Deposit to CrimFig Wallet"
               onClick={() => setIsFundOpen(false)}
-              style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+              style={{ position: 'absolute', top: '16px', right: '16px' }}
             >
               <X style={{ width: 20, height: 20 }} />
-            </button>
+            </Button>
 
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Deposit to CrimFig Wallet</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
@@ -1264,24 +1162,24 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
             </p>
 
             {paymentError ? (
-              <div role="alert" style={{ padding: '20px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <Alert variant="destructive" style={{ alignItems: 'center', flexDirection: 'column', textAlign: 'center' }}>
                 <AlertCircle style={{ width: 32, height: 32 }} />
-                <span>{paymentError}</span>
-                {fundAttemptUncertain ? <button type="button" onClick={() => { setIsFundOpen(false); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</button> : <button type="button" onClick={() => setPaymentError(null)}>Back to funding</button>}
-              </div>
+                <AlertDescription>{paymentError}</AlertDescription>
+                {fundAttemptUncertain ? <Button type="button" variant="outline" onClick={() => { setIsFundOpen(false); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</Button> : <Button type="button" variant="outline" onClick={() => setPaymentError(null)}>Back to funding</Button>}
+              </Alert>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label htmlFor="billing-fund-amount" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Deposit Amount (USD)</label>
                   <div style={{ position: 'relative' }}>
                     <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-muted)' }}>$</span>
-                    <input id="billing-fund-amount"
+                    <Input id="billing-fund-amount"
                       type="number"
                       min={1}
                       step={0.01}
                       value={fundAmountUsd}
                       onChange={(e) => setFundAmountUsd(Number(e.target.value))}
-                      style={{ width: '100%', padding: '10px 12px 10px 28px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}
+                      style={{ paddingLeft: '28px', fontSize: '16px', fontWeight: 700 }}
                     />
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: 600, marginTop: '4px' }}>
@@ -1291,10 +1189,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
                 <div>
                   <label htmlFor="billing-fund-method" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Payment Method</label>
-                  <select id="billing-fund-method"
+                  <select id="billing-fund-method" className="cf-input"
                     value={selectedCardId}
                     onChange={(e) => setSelectedCardId(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
                   >
                     <option value="new">Paystack / Card Gateway (Visa, Mastercard, Verve)</option>
                     {cards.map(c => (
@@ -1316,30 +1213,16 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                   </label>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   disabled={isProcessingPayment || fundAttemptUncertain || requestBlocksFunding || walletStatus !== 'ready' || fundAmountUsd < 1 || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)}
+                  loading={isProcessingPayment}
                   onClick={handleFundSubmit}
-                  style={{
-                    padding: '12px',
-                    backgroundColor: 'var(--color-crimson)',
-                    color: '#FFFFFF',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: 'var(--shadow-crimson)',
-                    marginTop: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
+                  style={{ marginTop: '8px' }}
                 >
                   {isProcessingPayment && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
                   {isProcessingPayment ? 'Processing...' : `Pay $${fundAmountUsd.toFixed(2)} USD`}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -1350,14 +1233,16 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       {isWithdrawOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
           <div ref={withdrawDialog} role="dialog" aria-modal="true" aria-label="Withdraw to Bank Account" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '480px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               aria-label="Close Withdraw to Bank Account"
               onClick={() => setIsWithdrawOpen(false)}
-              style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+              style={{ position: 'absolute', top: '16px', right: '16px' }}
             >
               <X style={{ width: 20, height: 20 }} />
-            </button>
+            </Button>
 
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Withdraw to Bank Account</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
@@ -1373,14 +1258,16 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       {isAddBankOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
           <div ref={bankDialog} role="dialog" aria-modal="true" aria-label="Connect Bank Account" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '480px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               aria-label="Close Connect Bank Account"
               onClick={() => setIsAddBankOpen(false)}
-              style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}
+              style={{ position: 'absolute', top: '16px', right: '16px' }}
             >
               <X style={{ width: 20, height: 20 }} />
-            </button>
+            </Button>
 
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Connect Bank Account</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
@@ -1390,10 +1277,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
             <form onSubmit={handleAddBank} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label htmlFor="billing-bank-code" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Select Bank</label>
-                <select id="billing-bank-code"
+                <select id="billing-bank-code" className="cf-input"
                   value={newBankCode}
                   onChange={(e) => { setNewBankCode(e.target.value); setResolvedAccountName(null); }}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)' }}
                 >
                   <option value="">Choose a supported bank</option>
                   {supportedBanks.map(bank => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
@@ -1403,60 +1289,41 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               <div>
                 <label htmlFor="billing-bank-number" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>10-Digit Account Number</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <input id="billing-bank-number"
+                  <Input id="billing-bank-number"
                     type="text"
                     maxLength={10}
                     value={newAccountNumber}
                     onChange={(e) => { setNewAccountNumber(e.target.value); setResolvedAccountName(null); }}
                     placeholder="0123456789"
-                    style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-page)', fontSize: '14px', color: 'var(--text-primary)', fontFamily: 'monospace' }}
+                    style={{ flex: 1, fontFamily: 'monospace' }}
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={handleResolveBank}
                     disabled={newAccountNumber.length < 10 || isResolving}
-                    style={{
-                      padding: '10px 16px',
-                      borderRadius: '8px',
-                      backgroundColor: 'var(--badge-bg)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
+                    loading={isResolving}
                   >
                     {isResolving ? 'Verifying...' : 'Verify'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {resolvedAccountName && (
-                <div style={{ padding: '12px 14px', borderRadius: '8px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
+                <Alert variant="success">
                   <CheckCircle2 style={{ width: 16, height: 16 }} />
-                  <span>{resolvedAccountName}</span>
-                </div>
+                  <AlertDescription>{resolvedAccountName}</AlertDescription>
+                </Alert>
               )}
 
-              <button
+              <Button
                 type="submit"
                 disabled={!resolvedAccountName || savingBank || !resolvedIdentity}
-                style={{
-                  padding: '12px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: resolvedAccountName ? 'pointer' : 'not-allowed',
-                  opacity: resolvedAccountName ? 1 : 0.5,
-                  boxShadow: 'var(--shadow-crimson)',
-                  marginTop: '8px'
-                }}
+                loading={savingBank}
+                style={{ marginTop: '8px' }}
               >
                 Save Bank Account
-              </button>
+              </Button>
             </form>
           </div>
         </div>

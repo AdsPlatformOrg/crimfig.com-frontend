@@ -4,6 +4,9 @@ import { Suspense, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { approveConsent, consentRequest, consentSession } from '@/lib/consent';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 function ConsentContent() {
   const searchParams = useSearchParams();
@@ -40,16 +43,16 @@ function ConsentContent() {
 
   return (
     <div className="auth-centered-container" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
-      <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', background: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}>
       <AuthBrandHeader
         title={`Authorize ${clientId}`}
         subtitle="Review the account information this application is requesting."
       />
 
       {(error || !request) && (
-        <div role="alert" className="alert-error" style={{ marginBottom: '20px' }}>
-          <span>{error || 'This authorization request is incomplete. Return to the requesting application and start again.'}</span>
-        </div>
+        <Alert variant="destructive" style={{ marginBottom: '20px' }}>
+          <AlertDescription>{error || 'This authorization request is incomplete. Return to the requesting application and start again.'}</AlertDescription>
+        </Alert>
       )}
 
       <div
@@ -79,25 +82,25 @@ function ConsentContent() {
       </div>
 
       <div style={{ display: 'flex', gap: '12px' }}>
-        <button
+        <Button
           type="button"
           onClick={() => window.history.back()}
-          className="btn-secondary"
+          variant="outline"
           style={{ flex: 1, color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={handleApprove}
-          className="btn-primary"
           disabled={loading || attempted || !request}
+          loading={loading}
           style={{ flex: 1 }}
         >
           {loading ? 'Authorizing...' : 'Authorize'}
-        </button>
+        </Button>
       </div>
-    </div>
+      </Card>
   </div>
   );
 }

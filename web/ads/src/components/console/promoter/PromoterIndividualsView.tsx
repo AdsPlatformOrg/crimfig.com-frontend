@@ -5,6 +5,8 @@ import { Share2, Video, Copy, Check, Loader2 } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
 import { EmptyState } from '../../EmptyState';
 import { CardSkeleton } from '../../LoadingStates';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
 
 interface Placement {
   id: string;
@@ -100,23 +102,16 @@ export function PromoterIndividualsView() {
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={toggleReelsConsent}
             disabled={pendingConsent}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: reelsConsent ? 'var(--color-success-bg)' : 'var(--badge-bg)',
-              color: reelsConsent ? 'var(--color-success)' : 'var(--text-muted)',
-            }}
+            aria-pressed={reelsConsent}
+            variant={reelsConsent ? 'secondary' : 'outline'}
+            size="sm"
           >
             {pendingConsent ? 'Saving...' : reelsConsent ? '✓ Reels Sync Enabled' : 'Reels Sync Off'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -167,7 +162,7 @@ export function PromoterIndividualsView() {
                 )}
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: 'auto' }}>
-                  <input
+                  <Input
                     type="text"
                     readOnly
                     value={placement.shareLink}
@@ -182,26 +177,14 @@ export function PromoterIndividualsView() {
                       fontFamily: 'monospace',
                     }}
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleCopy(placement.shareLink, placement.id)}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: '6px',
-                      backgroundColor: 'var(--color-crimson)',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
+                    size="sm"
                   >
                     {copiedToken === placement.id ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
                     {copiedToken === placement.id ? 'Copied' : 'Copy'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

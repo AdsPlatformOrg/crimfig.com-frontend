@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { AuthConsoleShell } from '../../components/AuthConsoleShell';
 import { ShieldCheck, UserCheck, Key, Lock, ExternalLink, Smartphone, Clock } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { Card } from '../../components/ui/card';
 
 export default function AuthDashboardPage() {
   return (
@@ -24,14 +26,14 @@ export default function AuthDashboardPage() {
         {/* Status Highlights */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
           {/* Card 1: Session Status */}
-          <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(22, 163, 74, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
                 <ShieldCheck size={22} />
               </div>
               <div>
                 <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Zero-Trust SSO</h3>
-                <span style={{ fontSize: '12px', color: '#16A34A', fontWeight: 600 }}>Active &amp; Guarded</span>
+                <Badge variant="secondary">Active &amp; Guarded</Badge>
               </div>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
@@ -42,10 +44,10 @@ export default function AuthDashboardPage() {
                 Review Active Devices →
               </Link>
             </div>
-          </div>
+          </Card>
 
           {/* Card 2: 2FA MFA */}
-          <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(212, 20, 58, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-crimson)' }}>
                 <Lock size={22} />
@@ -63,10 +65,10 @@ export default function AuthDashboardPage() {
                 Configure 2FA &amp; Passkeys →
               </Link>
             </div>
-          </div>
+          </Card>
 
           {/* Card 3: Connected Apps */}
-          <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3B82F6' }}>
                 <Key size={22} />
@@ -84,7 +86,7 @@ export default function AuthDashboardPage() {
                 Manage Authorizations →
               </Link>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </AuthConsoleShell>

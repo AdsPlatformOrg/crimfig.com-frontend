@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from 'react';
 import type { SessionSnapshot } from '@crimfig/session';
 import { dashboardSession, loginUrl } from '../lib/session';
+import { Button } from './ui/button';
 
 export function useSessionSnapshot() {
   const [snapshot, setSnapshot] = useState<SessionSnapshot>({ status: 'idle', expiresAt: null, signOut: null });
@@ -16,7 +17,7 @@ export function useSessionSnapshot() {
 export function useSessionStatus() { return useSessionSnapshot().status; }
 
 export function SignOutButton() {
-  return <button type="button" onClick={() => { void dashboardSession().logout().catch(() => { /* SessionGate displays revocation failure. */ }); }} style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer', font: 'inherit', fontSize: 13, whiteSpace: 'nowrap' }}>Sign out</button>;
+  return <Button type="button" variant="outline" size="sm" onClick={() => { void dashboardSession().logout().catch(() => { /* SessionGate displays revocation failure. */ }); }}>Sign out</Button>;
 }
 
 const actionStyle: CSSProperties = { display: 'inline-flex', background: 'var(--color-crimson)', color: 'var(--color-white)', padding: '12px 20px', borderRadius: 8, border: 0, cursor: 'pointer', font: 'inherit', textDecoration: 'none' };
@@ -139,13 +140,14 @@ export function SessionGate({ children }: { children: ReactNode }) {
                 Sign In to Continue
               </a>
             ) : (
-              <button
+              <Button
                 type="button"
-                style={{ ...actionStyle, width: '100%', boxSizing: 'border-box', justifyContent: 'center', fontWeight: 600, fontSize: '14px', borderRadius: '10px' }}
+                style={{ width: '100%' }}
+                size="lg"
                 onClick={() => void dashboardSession().bootstrap().catch(() => {})}
               >
                 Retry Connection
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -153,4 +155,3 @@ export function SessionGate({ children }: { children: ReactNode }) {
     </main>
   );
 }
-

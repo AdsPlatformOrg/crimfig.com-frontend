@@ -166,46 +166,21 @@ export function CampaignsManager() {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setIsTablePrefsOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
           >
             <SlidersHorizontal style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
             <span>Customize Columns</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => router.push('/campaigns/new')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 700,
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-crimson)',
-            }}
           >
             <Plus style={{ width: 16, height: 16 }} /> Create Campaign
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -224,23 +199,18 @@ export function CampaignsManager() {
           const count = tab.id === 'all' ? campaigns.length : campaigns.filter((c) => c.status === tab.id).length;
           const isSelected = statusFilter === tab.id;
           return (
-            <button
+            <Button
               key={tab.id}
               type="button"
               onClick={() => setStatusFilter(tab.id)}
+              variant={isSelected ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={isSelected}
               style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                backgroundColor: isSelected ? 'var(--color-crimson)' : 'var(--bg-surface)',
-                color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
+                minHeight: '36px',
               }}
             >
               <span>{tab.label}</span>
@@ -255,7 +225,7 @@ export function CampaignsManager() {
               >
                 {count}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -286,30 +256,22 @@ export function CampaignsManager() {
               </TableHeader>
               <TableBody>
                 {displayList.map((camp) => (
-                  <tr key={camp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <TableRow key={camp.id}>
                     {visibleCols.map((col) => {
                       if (col.key === 'campaign') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px' }}>
+                          <TableCell key={col.key}>
                             <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{camp.title}</div>
                             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{camp.headline}</div>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
                               {(camp.formats && camp.formats.length > 0 ? camp.formats : [camp.format]).map((fmt) => (
-                                <span
+                                <Badge
                                   key={fmt}
-                                  style={{
-                                    fontSize: '10px',
-                                    fontWeight: 700,
-                                    textTransform: 'uppercase',
-                                    padding: '1px 6px',
-                                    borderRadius: '4px',
-                                    backgroundColor: 'var(--badge-bg)',
-                                    color: 'var(--color-crimson)',
-                                    border: '1px solid var(--border-subtle)',
-                                  }}
+                                  variant="secondary"
+                                  style={{ textTransform: 'uppercase', color: 'var(--color-crimson)' }}
                                 >
                                   {fmt}
-                                </span>
+                                </Badge>
                               ))}
                             </div>
                             {camp.rejectionReason && (
@@ -317,7 +279,7 @@ export function CampaignsManager() {
                                 Reason: {camp.rejectionReason}
                               </div>
                             )}
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'status') {
@@ -329,29 +291,21 @@ export function CampaignsManager() {
                         const isPaused = camp.status === 'paused';
 
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px' }}>
+                          <TableCell key={col.key}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
-                              <span
+                              <Badge
+                                variant={isRejected ? 'destructive' : isActive ? 'secondary' : 'outline'}
                                 style={{
-                                  fontSize: '10px',
-                                  fontWeight: 700,
                                   letterSpacing: '0.04em',
-                                  padding: '2px 8px',
-                                  borderRadius: '9999px',
-                                  backgroundColor: isActive ? 'var(--color-success-bg)' : isPaused ? 'var(--color-soft-gray)' : 'rgba(23,27,42,0.06)',
-                                  color: isActive ? 'var(--color-success)' : isPaused ? 'var(--color-slate-500)' : 'var(--color-fig-dark)',
-                                  border: '1px solid',
-                                  borderColor: isActive ? 'rgba(16,185,129,0.3)' : 'rgba(0,0,0,0.08)',
+                                  backgroundColor: isActive ? 'var(--color-success-bg)' : isPaused ? 'var(--color-soft-gray)' : undefined,
+                                  color: isActive ? 'var(--color-success)' : isPaused ? 'var(--color-slate-500)' : undefined,
                                 }}
                               >
                                 ● {camp.status.replace('_', ' ').toUpperCase()}
-                              </span>
-                              <span
+                              </Badge>
+                              <Badge
+                                variant={isRejected ? 'destructive' : isApproved ? 'secondary' : 'outline'}
                                 style={{
-                                  fontSize: '10px',
-                                  fontWeight: 600,
-                                  padding: '2px 8px',
-                                  borderRadius: '9999px',
                                   backgroundColor: isApproved
                                     ? 'rgba(16, 185, 129, 0.1)'
                                     : isPendingTier2
@@ -381,64 +335,66 @@ export function CampaignsManager() {
                                       : isRejected
                                         ? 'REJECTED'
                                         : (camp.moderationStatus || 'DRAFT').toUpperCase()}
-                              </span>
+                              </Badge>
                             </div>
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'budget') {
-                        return <td key={col.key} style={{ padding: '14px 16px' }}>${camp.budgetUsd.toFixed(2)} USD</td>;
+                        return <TableCell key={col.key}>${camp.budgetUsd.toFixed(2)} USD</TableCell>;
                       }
                       if (col.key === 'spend') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px', fontWeight: 600, color: 'var(--color-crimson)' }}>
+                          <TableCell key={col.key} style={{ fontWeight: 600, color: 'var(--color-crimson)' }}>
                             ${camp.spentUsd.toFixed(2)} USD
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'views') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px' }}>
+                          <TableCell key={col.key}>
                             {camp.metricsLoaded ? camp.impressions.toLocaleString() : '—'}
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'clicks') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px', color: 'var(--color-success)', fontWeight: 600 }}>
+                          <TableCell key={col.key} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
                             {camp.metricsLoaded ? camp.clicks.toLocaleString() : '—'}
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'hovers') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px' }}>
+                          <TableCell key={col.key}>
                             {camp.metricsLoaded ? (camp.hovers ?? 0).toLocaleString() : '—'}
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'touches') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px' }}>
+                          <TableCell key={col.key}>
                             {camp.metricsLoaded ? (camp.touches ?? 0).toLocaleString() : '—'}
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'ctr') {
                         const ctr = camp.impressions > 0 ? (camp.clicks / camp.impressions) * 100 : 0;
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px', fontWeight: 700 }}>
+                          <TableCell key={col.key} style={{ fontWeight: 700 }}>
                             {camp.metricsLoaded ? `${ctr.toFixed(2)}%` : '—'}
-                          </td>
+                          </TableCell>
                         );
                       }
                       if (col.key === 'actions') {
                         return (
-                          <td key={col.key} style={{ padding: '14px 16px', textAlign: 'right' }}>
+                          <TableCell key={col.key} style={{ textAlign: 'right' }}>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                               {camp.status === 'rejected' && (
-                                <button
+                                <Button
                                   type="button"
+                                  variant="destructive"
+                                  size="sm"
                                   onClick={async () => {
                                     try {
                                       const details = await apiData<any>(`/api/v1/campaigns/${encodeURIComponent(camp.id)}`);
@@ -449,43 +405,29 @@ export function CampaignsManager() {
                                       setActionError(err instanceof Error ? err.message : 'Creative details unavailable.');
                                     }
                                   }}
-                                  style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '6px',
-                                    backgroundColor: 'var(--color-error)',
-                                    color: '#FFFFFF',
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                  }}
                                 >
                                   Replace Creative
-                                </button>
+                                </Button>
                               )}
                               {camp.status !== 'rejected' && camp.status !== 'trash' && (
-                                <button
+                                <Button
                                   type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  aria-label={camp.status === 'active' ? `Pause ${camp.title}` : `Resume ${camp.title}`}
                                   disabled={pendingWrites.has(camp.id)}
                                   onClick={() => handleToggleStatus(camp.id)}
-                                  style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '6px',
-                                    border: '1px solid var(--border-subtle)',
-                                    backgroundColor: 'var(--bg-page)',
-                                    cursor: 'pointer',
-                                  }}
                                 >
                                   {camp.status === 'active' ? <Pause style={{ width: 14, height: 14 }} /> : <Play style={{ width: 14, height: 14 }} />}
-                                </button>
+                                </Button>
                               )}
                             </div>
-                          </td>
+                          </TableCell>
                         );
                       }
-                      return <td key={col.key}>-</td>;
+                      return <TableCell key={col.key}>-</TableCell>;
                     })}
-                  </tr>
+                  </TableRow>
                 ))}
               </TableBody>
             </ShadTable>

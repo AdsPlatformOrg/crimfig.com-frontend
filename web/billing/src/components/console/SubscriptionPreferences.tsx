@@ -1,8 +1,10 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { renewalLimitKobo, renewalPreferences, RenewalPreferences, setRenewalConsent, stopRenewal } from '../../lib/subscription-api';
-
-const control: React.CSSProperties = { width: '100%', padding: '10px 12px', marginTop: 8, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)', fontSize: 13 };
+import { Alert, AlertDescription } from '../ui/alert';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 type SubscriptionChoice = { id: string; appSlug: string };
 type CardChoice = { id: string; provider: string; cardBrand: string; last4: string };
 
@@ -52,13 +54,13 @@ export function SubscriptionPreferences({ subscriptions, cards }: { subscription
     } finally { pending.current = false; if (alive.current) setBusy(false); }
   };
   if (!subscriptions.length && !uncertain) return null;
-  return <section aria-label="Subscription renewal preferences" className="theme-card" style={{ padding: 20, borderRadius: 12, border: '1px solid var(--border-subtle)', minWidth: 0 }}>
+  return <Card role="region" aria-label="Subscription renewal preferences" className="theme-card" style={{ padding: 20, minWidth: 0 }}>
     <h3 style={{ fontSize: 18, marginBottom: 12 }}>Renewal preferences</h3>
-    <label>Subscription<select style={control} value={id} disabled={busy || uncertain} onChange={event => {
+    <label>Subscription<select className="cf-input" style={{ marginTop: 8 }} value={id} disabled={busy || uncertain} onChange={event => {
       setId(event.target.value); setSettings(null); setAccepted(false); setMessage('');
     }}><option value="">Choose a subscription</option>{subscriptions.map(sub => <option key={sub.id} value={sub.id}>{sub.appSlug} · {sub.id.slice(0, 8)}</option>)}</select></label>
-    <button style={control} type="button" disabled={!id || busy} onClick={() => void run('read')}>{busy ? 'Checking…' : 'Check current settings'}</button>
-    {message && <p role="status" style={{ marginTop: 12, overflowWrap: 'anywhere' }}>{message}</p>}
+    <Button style={{ width: '100%', marginTop: 8 }} type="button" disabled={!id || busy} loading={busy} onClick={() => void run('read')}>{busy ? 'Checking…' : 'Check current settings'}</Button>
+    {message && <Alert variant="info" style={{ marginTop: 12 }}><AlertDescription>{message}</AlertDescription></Alert>}
     {settings && <>
       <p style={{ marginTop: 12 }}>${(settings.amountUsdCents / 100).toFixed(2)} per {settings.interval === 'annual' ? 'year' : 'month'}. Paid period ends {new Date(settings.currentPeriodEnd).toLocaleString()}.</p>
       <p>Automatic renewal: {settings.autoRenew ? 'on' : 'off'}. {settings.entitled ? 'Paid access is verified.' : 'No current paid access is verified.'}</p>
@@ -66,18 +68,18 @@ export function SubscriptionPreferences({ subscriptions, cards }: { subscription
       {!settings.renewalProcessingAvailable && <p>Automatic renewal processing is currently unavailable.</p>}
       {settings.autoRenew && <>
         <p>Turning renewal off preserves your paid period. A charge already submitted may still complete; check its payment status.</p>
-        <button type="button" style={control} disabled={busy || uncertain} onClick={() => void run('cancel')}>Turn off automatic renewal</button>
+        <Button type="button" variant="outline" style={{ width: '100%' }} disabled={busy || uncertain} onClick={() => void run('cancel')}>Turn off automatic renewal</Button>
       </>}
       {settings.entitled && settings.renewalProcessingAvailable && <fieldset disabled={busy || uncertain} style={{ border: 0, padding: 0, marginTop: 16, minWidth: 0 }}>
         <legend>Authorize future renewals</legend>
-        <label>Saved card<select style={control} value={cardId} onChange={event => { setCardId(event.target.value); setAccepted(false); }}>
+        <label>Saved card<select className="cf-input" style={{ marginTop: 8 }} value={cardId} onChange={event => { setCardId(event.target.value); setAccepted(false); }}>
           <option value="">Choose a saved card</option>{cards.filter(card => card.provider === 'paystack').map(card => <option key={card.id} value={card.id}>{card.cardBrand} ending {card.last4}</option>)}
         </select></label>
-        <label style={{ display: 'block', marginTop: 12 }}>Maximum charge per renewal (NGN)<input style={control} inputMode="decimal" value={limit} onChange={event => { setLimit(event.target.value); setAccepted(false); }} /></label>
+        <label style={{ display: 'block', marginTop: 12 }}>Maximum charge per renewal (NGN)<Input style={{ marginTop: 8 }} inputMode="decimal" value={limit} onChange={event => { setLimit(event.target.value); setAccepted(false); }} /></label>
         <p style={{ marginTop: 12 }}>Renewals use the current exchange rate. A charge above your limit will not be submitted. Saving consent does not charge you now.</p>
         <label style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'flex-start' }}><input type="checkbox" checked={accepted} onChange={event => setAccepted(event.target.checked)} />I authorize this card for the displayed recurring USD price, up to my NGN limit per renewal, until I turn renewal off.</label>
-        <button type="button" style={control} disabled={!accepted || !cardId || !limit} onClick={() => void run('enable')}>Save renewal authorization</button>
+        <Button type="button" style={{ width: '100%' }} disabled={!accepted || !cardId || !limit || busy || uncertain} loading={busy} onClick={() => void run('enable')}>Save renewal authorization</Button>
       </fieldset>}
     </>}
-  </section>;
+  </Card>;
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Card } from '../ui/card';
 import {
   ShieldCheck,
   Lock,
@@ -104,7 +105,7 @@ export function LandingPartners() {
           {securityPillars.map((p, idx) => {
             const Icon = p.icon;
             return (
-              <div
+              <Card
                 key={idx}
                 className="theme-card"
                 style={{
@@ -138,13 +139,13 @@ export function LandingPartners() {
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                   {p.description}
                 </p>
-              </div>
+              </Card>
             );
           })}
         </div>
 
         {/* Supported Commercial Banks Marquee */}
-        <div
+        <Card
           className="theme-card"
           style={{
             padding: '32px',
@@ -199,7 +200,7 @@ export function LandingPartners() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
     </section>
   );

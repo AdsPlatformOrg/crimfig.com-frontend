@@ -4,6 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { AuthConsoleShell } from '../../components/AuthConsoleShell';
 import { Key, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 
 export default function ConnectedAppsPage() {
   return (
@@ -24,42 +27,46 @@ export default function ConnectedAppsPage() {
         {/* First-Party Apps */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
           {/* App 1: Ads */}
-          <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>CrimFig Ads &amp; Publishing</h3>
-              <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(22, 163, 74, 0.12)', color: '#16A34A', padding: '2px 8px', borderRadius: '10px' }}>
+              <Badge variant="secondary">
                 Connected
-              </span>
+              </Badge>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
               Full access to advertiser campaigns, creative assets, and promoter ad spaces.
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
-              <a href="https://ads.crimfig.com" target="_blank" rel="noreferrer" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-crimson)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <span>Launch Ads Portal</span>
-                <ExternalLink size={14} />
-              </a>
+              <Button asChild variant="outline" size="sm">
+                <a href="https://ads.crimfig.com" target="_blank" rel="noreferrer">
+                  <span>Launch Ads Portal</span>
+                  <ExternalLink size={14} />
+                </a>
+              </Button>
             </div>
-          </div>
+          </Card>
 
           {/* App 2: Billing */}
-          <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Billing &amp; Escrow</h3>
-              <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(22, 163, 74, 0.12)', color: '#16A34A', padding: '2px 8px', borderRadius: '10px' }}>
+              <Badge variant="secondary">
                 Connected
-              </span>
+              </Badge>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
               Manage wallet funding, bank payouts, subscription renewals, and publisher milestones.
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
-              <a href="https://billing.crimfig.com" target="_blank" rel="noreferrer" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-crimson)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <span>Launch Billing Portal</span>
-                <ExternalLink size={14} />
-              </a>
+              <Button asChild variant="outline" size="sm">
+                <a href="https://billing.crimfig.com" target="_blank" rel="noreferrer">
+                  <span>Launch Billing Portal</span>
+                  <ExternalLink size={14} />
+                </a>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </AuthConsoleShell>

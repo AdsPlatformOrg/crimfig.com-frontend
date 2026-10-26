@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { ShieldCheck, KeyRound, Smartphone, Building2, Check, ArrowRight, Lock, Laptop } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 export function LandingSecurityDemo() {
-  const [activeTab, setActiveTab] = useState<'sso' | 'mfa' | 'org'>('sso');
+  const [activeTab, setActiveTab] = useState('sso');
 
   return (
     <section
@@ -16,6 +17,7 @@ export function LandingSecurityDemo() {
       }}
     >
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 48px' }}>
           <div
             style={{
@@ -52,98 +54,28 @@ export function LandingSecurityDemo() {
           </p>
 
           {/* Tab Selector */}
-          <div
-            style={{
-              display: 'inline-flex',
-              padding: '4px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--bg-page)',
-              border: '1px solid var(--border-subtle)',
-              marginTop: '16px',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setActiveTab('sso')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 18px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '13px',
-                backgroundColor: activeTab === 'sso' ? 'var(--color-crimson)' : 'transparent',
-                color: activeTab === 'sso' ? '#FFFFFF' : 'var(--text-secondary)',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <KeyRound style={{ width: 15, height: 15 }} />
+          <TabsList style={{ marginTop: '16px' }}>
+            <TabsTrigger value="sso">
+              <KeyRound style={{ width: 15, height: 15 }} aria-hidden="true" />
               <span>Single Sign-On (SSO)</span>
-            </button>
+            </TabsTrigger>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('mfa')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 18px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '13px',
-                backgroundColor: activeTab === 'mfa' ? 'var(--color-crimson)' : 'transparent',
-                color: activeTab === 'mfa' ? '#FFFFFF' : 'var(--text-secondary)',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Smartphone style={{ width: 15, height: 15 }} />
+            <TabsTrigger value="mfa">
+              <Smartphone style={{ width: 15, height: 15 }} aria-hidden="true" />
               <span>Two-Step Verification</span>
-            </button>
+            </TabsTrigger>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('org')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 18px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '13px',
-                backgroundColor: activeTab === 'org' ? 'var(--color-crimson)' : 'transparent',
-                color: activeTab === 'org' ? '#FFFFFF' : 'var(--text-secondary)',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Building2 style={{ width: 15, height: 15 }} />
+            <TabsTrigger value="org">
+              <Building2 style={{ width: 15, height: 15 }} aria-hidden="true" />
               <span>Team & Agency Workspaces</span>
-            </button>
-          </div>
+            </TabsTrigger>
+          </TabsList>
+
         </div>
 
         {/* Demo Card Showcase */}
-        <div
-          style={{
-            maxWidth: '820px',
-            margin: '0 auto',
-            padding: '36px',
-            borderRadius: '20px',
-            backgroundColor: 'var(--bg-page)',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'var(--shadow-lg)',
-          }}
-        >
-          {activeTab === 'sso' && (
-            <div>
+        <div className="auth-security-demo-card">
+            <TabsContent value="sso">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div
@@ -261,11 +193,9 @@ export function LandingSecurityDemo() {
                   </span>
                 </div>
               </div>
-            </div>
-          )}
+            </TabsContent>
 
-          {activeTab === 'mfa' && (
-            <div>
+            <TabsContent value="mfa">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div
@@ -342,11 +272,9 @@ export function LandingSecurityDemo() {
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', textAlign: 'center', margin: 0 }}>
                 Includes 10 printable emergency backup codes so you always retain access to your account.
               </p>
-            </div>
-          )}
+            </TabsContent>
 
-          {activeTab === 'org' && (
-            <div>
+            <TabsContent value="org">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div
@@ -420,9 +348,9 @@ export function LandingSecurityDemo() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            </TabsContent>
         </div>
+        </Tabs>
       </div>
     </section>
   );

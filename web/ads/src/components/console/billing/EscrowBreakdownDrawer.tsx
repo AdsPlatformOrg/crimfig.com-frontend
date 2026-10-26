@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Lock, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import type { EscrowAllocation } from '../../../types/billing';
+import { Button } from '../../ui/button';
 
 interface EscrowBreakdownDrawerProps {
   isOpen: boolean;
@@ -78,19 +79,15 @@ export function EscrowBreakdownDrawer({
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-              padding: '6px',
-            }}
+            variant="ghost"
+            size="icon"
+            aria-label="Close escrow breakdown"
           >
             <X style={{ width: 20, height: 20 }} />
-          </button>
+          </Button>
         </div>
 
         {/* Aggregate Summary Card */}
@@ -199,23 +196,15 @@ export function EscrowBreakdownDrawer({
                 </div>
 
                 {e.remainingUsd > 0 && onReleaseEscrow && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onReleaseEscrow(e.campaignId)}
-                    style={{
-                      marginTop: '6px',
-                      padding: '6px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                    }}
+                    style={{ marginTop: '6px' }}
+                    variant="outline"
+                    size="sm"
                   >
                     Release Remaining to Available Wallet
-                  </button>
+                  </Button>
                 )}
               </div>
             ))}

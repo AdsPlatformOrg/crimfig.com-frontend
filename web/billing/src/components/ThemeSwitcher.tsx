@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { validTheme, type Theme } from '../lib/theme';
 import { Sun, Moon } from 'lucide-react';
+import { Button } from './ui/button';
 
 export interface ThemeSwitcherProps {
   showLabel?: boolean;
@@ -51,9 +52,11 @@ export function ThemeSwitcher({ showLabel = false, labelPrefix = 'Theme:' }: The
           fontWeight: 500,
         }}
       >
-        <button
+        <Button
           type="button"
           onClick={() => toggleTheme('light')}
+          variant="ghost"
+          size="sm"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -72,11 +75,13 @@ export function ThemeSwitcher({ showLabel = false, labelPrefix = 'Theme:' }: The
         >
           <Sun style={{ width: 14, height: 14, color: '#F59E0B' }} />
           <span>Light</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={() => toggleTheme('dark')}
+          variant="ghost"
+          size="sm"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -95,7 +100,7 @@ export function ThemeSwitcher({ showLabel = false, labelPrefix = 'Theme:' }: The
         >
           <Moon style={{ width: 14, height: 14, color: '#818CF8' }} />
           <span>Dark</span>
-        </button>
+        </Button>
       </div>
     </div>
   );
