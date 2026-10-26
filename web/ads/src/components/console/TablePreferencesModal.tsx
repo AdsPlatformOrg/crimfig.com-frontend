@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Check, SlidersHorizontal } from 'lucide-react';
+import { X, SlidersHorizontal } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export interface ColumnConfig {
   key: string;
@@ -76,20 +77,15 @@ export function TablePreferencesModal({ isOpen, onClose, columns, onSave }: Tabl
               Customize Table Columns
             </h3>
           </div>
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-              display: 'flex',
-              padding: '4px',
-            }}
+            variant="ghost"
+            size="icon"
+            aria-label="Close table column preferences"
           >
             <X style={{ width: 18, height: 18 }} />
-          </button>
+          </Button>
         </div>
 
         {/* Column Checkboxes */}
@@ -137,39 +133,21 @@ export function TablePreferencesModal({ isOpen, onClose, columns, onSave }: Tabl
             gap: '12px',
           }}
         >
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-page)',
-              color: 'var(--text-secondary)',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            variant="outline"
+            size="sm"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleSave}
-            style={{
-              padding: '8px 18px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-crimson)',
-            }}
+            size="sm"
           >
             Save Preferences
-          </button>
+          </Button>
         </div>
       </div>
     </div>

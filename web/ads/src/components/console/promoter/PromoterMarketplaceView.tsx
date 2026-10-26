@@ -6,6 +6,7 @@ import { apiData } from '../../../lib/api-data';
 import { EmptyState } from '../../EmptyState';
 import { CardSkeleton } from '../../LoadingStates';
 import { FeedCardItem } from '../../templates/FeedCardItem';
+import { Button } from '../../ui/button';
 
 interface CampaignItem {
   id: string;
@@ -77,23 +78,16 @@ export function PromoterMarketplaceView() {
 
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {categories.map((cat) => (
-            <button
+            <Button
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 600,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: selectedCategory === cat ? 'var(--color-crimson)' : 'var(--badge-bg)',
-                color: selectedCategory === cat ? '#FFFFFF' : 'var(--text-secondary)',
-              }}
+              aria-pressed={selectedCategory === cat}
+              variant={selectedCategory === cat ? 'default' : 'secondary'}
+              size="sm"
             >
               {cat}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -145,24 +139,15 @@ export function PromoterMarketplaceView() {
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>72h Clearance Hold</span>
                     </div>
 
-                    <button
+                    <Button
                       type="button"
                       disabled={pendingWrites.has(camp.id) || appliedIds.has(camp.id)}
                       onClick={() => handleApply(camp.id)}
-                      style={{
-                        padding: '8px 18px',
-                        backgroundColor: appliedIds.has(camp.id) ? 'var(--color-success)' : 'var(--color-crimson)',
-                        color: '#FFFFFF',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        borderRadius: '8px',
-                        border: 'none',
-                        cursor: appliedIds.has(camp.id) ? 'default' : 'pointer',
-                        boxShadow: appliedIds.has(camp.id) ? 'none' : 'var(--shadow-crimson)',
-                      }}
+                      variant={appliedIds.has(camp.id) ? 'secondary' : 'default'}
+                      size="sm"
                     >
                       {appliedIds.has(camp.id) ? '✓ Placement Active' : pendingWrites.has(camp.id) ? 'Activating...' : 'Apply for Ad Placement'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               }

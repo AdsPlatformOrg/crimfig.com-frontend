@@ -5,6 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -46,7 +49,7 @@ function VerifyEmailContent() {
 
   return (
     <div className="auth-centered-container">
-      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px', textAlign: 'center' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px', textAlign: 'center' }}>
       <AuthBrandHeader
         title="Email Verification"
       />
@@ -57,16 +60,16 @@ function VerifyEmailContent() {
         </p>
       ) : (
         <div style={{ marginTop: '20px' }}>
-          <div className={success ? 'alert-success' : 'alert-error'} style={{ marginBottom: '24px', textAlign: 'left', lineHeight: '1.5' }}>
+          <Alert variant={success ? 'success' : 'destructive'} style={{ marginBottom: '24px', textAlign: 'left', lineHeight: '1.5' }}>
             <span>{message}</span>
-          </div>
+          </Alert>
 
-          <Link href="/login" className="btn-primary">
-            Continue to Sign In
-          </Link>
+          <Button asChild className="cf-auth-full-button">
+            <Link href="/login">Continue to Sign In</Link>
+          </Button>
         </div>
       )}
-    </div>
+      </Card>
   </div>
   );
 }

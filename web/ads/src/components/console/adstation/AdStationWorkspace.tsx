@@ -17,6 +17,8 @@ import {
   Check,
 } from 'lucide-react';
 import { sessionFetch } from '../../../lib/session';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
 
 interface AdstationSlot {
   id: string;
@@ -226,8 +228,11 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
 
         {/* Tab Controls */}
         <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/60 p-1 rounded-lg">
-          <button
+          <Button
             onClick={() => setActiveTab('slots')}
+            aria-pressed={activeTab === 'slots'}
+            variant={activeTab === 'slots' ? 'default' : 'ghost'}
+            size="sm"
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
               activeTab === 'slots'
                 ? 'bg-white dark:bg-[#171B2A] text-gray-900 dark:text-white shadow-sm'
@@ -235,9 +240,12 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
             }`}
           >
             Ad Slots
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab('direct_deals')}
+            aria-pressed={activeTab === 'direct_deals'}
+            variant={activeTab === 'direct_deals' ? 'default' : 'ghost'}
+            size="sm"
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
               activeTab === 'direct_deals'
                 ? 'bg-white dark:bg-[#171B2A] text-gray-900 dark:text-white shadow-sm'
@@ -245,9 +253,12 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
             }`}
           >
             Direct Deals (0% CF Cut)
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab('preferences')}
+            aria-pressed={activeTab === 'preferences'}
+            variant={activeTab === 'preferences' ? 'default' : 'ghost'}
+            size="sm"
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
               activeTab === 'preferences'
                 ? 'bg-white dark:bg-[#171B2A] text-gray-900 dark:text-white shadow-sm'
@@ -255,7 +266,7 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
             }`}
           >
             Delivery Ratio
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -268,9 +279,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
           }`}
         >
           <span>{notification.message}</span>
-          <button onClick={() => setNotification(null)} className="text-gray-400 hover:text-gray-600">
+          <Button onClick={() => setNotification(null)} variant="ghost" size="icon" aria-label="Dismiss notification">
             ×
-          </button>
+          </Button>
         </div>
       )}
 
@@ -279,12 +290,12 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
         <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Configured Website Slots</h3>
-            <button
+            <Button
               onClick={() => setShowCreateSlot(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#D4143A] text-white hover:bg-[#A80F32] transition"
             >
               <Plus className="w-3.5 h-3.5" /> Create Ad Slot
-            </button>
+            </Button>
           </div>
 
           {slots.length === 0 ? (
@@ -329,8 +340,11 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
 
                   <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
                     <span className="font-mono text-[11px] truncate mr-2">{slot.slotTagId}</span>
-                    <button
+                    <Button
                       onClick={() => handleCopy(slot.slotTagId)}
+                      aria-label={`Copy tag ID for ${slot.name}`}
+                      variant="ghost"
+                      size="icon"
                       className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-900"
                     >
                       {copiedTag === slot.slotTagId ? (
@@ -338,16 +352,16 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
                       ) : (
                         <Copy className="w-3.5 h-3.5" />
                       )}
-                    </button>
+                    </Button>
                   </div>
 
                   {slot.isConsiderationSlot && !slot.isConsiderationVerified && (
-                    <button
+                    <Button
                       onClick={() => handleVerifyConsideration(slot.id)}
                       className="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center justify-center gap-1"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Verify Consideration Placement
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
@@ -366,12 +380,12 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
                 You retain 100% of revenue directly from your clients. CrimFig takes 0% cut.
               </p>
             </div>
-            <button
+            <Button
               onClick={() => setShowCreateDeal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#D4143A] text-white hover:bg-[#A80F32] transition"
             >
               <Plus className="w-3.5 h-3.5" /> New Direct Deal
-            </button>
+            </Button>
           </div>
 
           {directCampaigns.length === 0 ? (
@@ -451,9 +465,12 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
                 desc: 'Exclusively prioritizes direct client fulfillment before network ads.',
               },
             ].map((option) => (
-              <button
+              <Button
                 key={option.id}
                 onClick={() => handleSetPreference(option.id as any)}
+                aria-pressed={deliveryPreference === option.id}
+                variant={deliveryPreference === option.id ? 'default' : 'outline'}
+                size="sm"
                 className={`p-4 rounded-xl border text-left transition ${
                   deliveryPreference === option.id
                     ? 'border-[#D4143A] bg-red-50/30 dark:bg-red-950/20 text-[#D4143A]'
@@ -462,7 +479,7 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
               >
                 <div className="font-bold text-xs uppercase tracking-wider">{option.label}</div>
                 <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-snug">{option.desc}</div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -475,8 +492,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Create New Ad Slot</h3>
             <form onSubmit={handleCreateSlot} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Slot Name</label>
-                <input
+                <label htmlFor="adstation-slot-name" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Slot Name</label>
+                <Input
+                  id="adstation-slot-name"
                   type="text"
                   required
                   placeholder="e.g. Header Leaderboard, Sidebar Sticky"
@@ -518,19 +536,22 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowCreateSlot(false)}
+                  variant="outline"
+                  size="sm"
                   className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  size="sm"
                   className="px-4 py-1.5 text-xs rounded-lg bg-[#D4143A] text-white font-semibold hover:bg-[#A80F32]"
                 >
                   Create Slot
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -544,8 +565,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Register Direct Deal</h3>
             <form onSubmit={handleCreateDirectDeal} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Client / Sponsor Name</label>
-                <input
+                <label htmlFor="adstation-deal-client" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Client / Sponsor Name</label>
+                <Input
+                  id="adstation-deal-client"
                   type="text"
                   required
                   placeholder="e.g. Acme Corporation"
@@ -556,8 +578,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Campaign Title</label>
-                <input
+                <label htmlFor="adstation-deal-title" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Campaign Title</label>
+                <Input
+                  id="adstation-deal-title"
                   type="text"
                   required
                   placeholder="e.g. Summer Q3 Sponsorship"
@@ -568,8 +591,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Destination URL</label>
-                <input
+                <label htmlFor="adstation-deal-url" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Destination URL</label>
+                <Input
+                  id="adstation-deal-url"
                   type="url"
                   required
                   placeholder="https://client-landing-page.com"
@@ -580,8 +604,9 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Target Impressions</label>
-                <input
+                <label htmlFor="adstation-deal-impressions" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Target Impressions</label>
+                <Input
+                  id="adstation-deal-impressions"
                   type="number"
                   min="100"
                   step="100"
@@ -592,19 +617,22 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowCreateDeal(false)}
+                  variant="outline"
+                  size="sm"
                   className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  size="sm"
                   className="px-4 py-1.5 text-xs rounded-lg bg-[#D4143A] text-white font-semibold hover:bg-[#A80F32]"
                 >
                   Save Direct Deal
-                </button>
+                </Button>
               </div>
             </form>
           </div>

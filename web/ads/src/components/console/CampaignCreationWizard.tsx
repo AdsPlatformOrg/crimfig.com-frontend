@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 import {
   Sparkles,
   Layers,
@@ -254,7 +257,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           style={{
@@ -269,7 +272,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
           }}
         >
           Cancel &amp; Return
-        </button>
+        </Button>
       </div>
 
       {/* Stepper Progress Bar */}
@@ -378,10 +381,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              <label htmlFor="campaign-title" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 Campaign Title <span style={{ color: 'var(--color-crimson)' }}>*</span>
               </label>
-              <input
+              <Input
+                id="campaign-title"
                 type="text"
                 required
                 value={title}
@@ -403,24 +407,15 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              <label htmlFor="campaign-description" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 Description (Optional)
               </label>
-              <textarea
+              <Textarea
+                id="campaign-description"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Notes or campaign objectives for your records..."
-                style={{
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-surface)',
-                  fontSize: '14px',
-                  color: 'var(--text-primary)',
-                  outline: 'none',
-                  resize: 'vertical',
-                }}
               />
             </div>
 
@@ -498,7 +493,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                 </p>
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setCreatives([
@@ -526,17 +521,18 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                 }}
               >
                 + Add Another Creative Format
-              </button>
+              </Button>
             </div>
 
             {/* Creative Tabs */}
             {creatives.length > 1 && (
               <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
                 {creatives.map((c, idx) => (
-                  <button
+                  <Button
                     key={idx}
                     type="button"
                     onClick={() => setActiveCreativeIdx(idx)}
+                    aria-pressed={activeCreativeIdx === idx}
                     style={{
                       padding: '6px 14px',
                       borderRadius: '8px',
@@ -549,7 +545,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                     }}
                   >
                     Ad #{idx + 1} ({c.adFormat.toUpperCase()})
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -585,10 +581,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <label htmlFor="campaign-creative-headline" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     Headline <span style={{ color: 'var(--color-crimson)' }}>*</span>
                   </label>
-                  <input
+                  <Input
+                    id="campaign-creative-headline"
                     type="text"
                     required
                     value={activeCreative.headline}
@@ -610,10 +607,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <label htmlFor="campaign-creative-body" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     Body / Sub-headline
                   </label>
-                  <textarea
+                  <Textarea
+                    id="campaign-creative-body"
                     rows={2}
                     value={activeCreative.bodyText || ''}
                     onChange={(e) => {
@@ -622,24 +620,16 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                       setCreatives(updated);
                     }}
                     placeholder="Describe your value proposition clearly and respectfully..."
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      fontSize: '13px',
-                      color: 'var(--text-primary)',
-                      resize: 'none',
-                    }}
                   />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <label htmlFor="campaign-creative-cta" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       Call to Action (CTA)
                     </label>
-                    <input
+                    <Input
+                      id="campaign-creative-cta"
                       type="text"
                       value={activeCreative.ctaText}
                       onChange={(e) => {
@@ -660,10 +650,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <label htmlFor="campaign-creative-destination" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       Destination URL <span style={{ color: 'var(--color-crimson)' }}>*</span>
                     </label>
-                    <input
+                    <Input
+                      id="campaign-creative-destination"
                       type="url"
                       required
                       value={activeCreative.destinationUrl}
@@ -820,9 +811,10 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                   ].map((geo) => {
                     const isSelected = targetCountries.includes(geo.code);
                     return (
-                      <button
+                      <Button
                         key={geo.code}
                         type="button"
+                        aria-pressed={isSelected}
                         onClick={() => {
                           if (isSelected) setTargetCountries(targetCountries.filter((c) => c !== geo.code));
                           else setTargetCountries([...targetCountries, geo.code]);
@@ -840,7 +832,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                         }}
                       >
                         {isSelected && '✓ '} {geo.name}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -857,9 +849,10 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                   ].map((dev) => {
                     const isSelected = targetDevices.includes(dev.id);
                     return (
-                      <button
+                      <Button
                         key={dev.id}
                         type="button"
+                        aria-pressed={isSelected}
                         onClick={() => {
                           if (isSelected) setTargetDevices(targetDevices.filter((d) => d !== dev.id));
                           else setTargetDevices([...targetDevices, dev.id]);
@@ -877,7 +870,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                         }}
                       >
                         {isSelected && '✓ '} {dev.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -972,10 +965,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
             {/* Budget & Bid Inputs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                <label htmlFor="campaign-budget-usd" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Total Campaign Budget ($ USD)
                 </label>
-                <input
+                <Input
+                  id="campaign-budget-usd"
                   type="number"
                   min={5}
                   step={1}
@@ -995,10 +989,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                <label htmlFor="campaign-daily-budget-usd" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Daily Spending Target ($ USD)
                 </label>
-                <input
+                <Input
+                  id="campaign-daily-budget-usd"
                   type="number"
                   min={1}
                   step={1}
@@ -1019,10 +1014,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
 
               {pricingModel === 'cpm' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <label htmlFor="campaign-cpm-bid-cents" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     CPM Bid (Cents per 1,000 views)
                   </label>
-                  <input
+                  <Input
+                    id="campaign-cpm-bid-cents"
                     type="number"
                     min={50}
                     step={5}
@@ -1044,10 +1040,11 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <label htmlFor="campaign-cpc-bid-cents" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     CPC Bid (Cents per click)
                   </label>
-                  <input
+                  <Input
+                    id="campaign-cpc-bid-cents"
                     type="number"
                     min={10}
                     step={1}
@@ -1155,7 +1152,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
         {/* Wizard Footer Controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
           {currentStep > 1 ? (
-            <button
+            <Button
               type="button"
               onClick={handleBack}
               disabled={isSubmitting}
@@ -1174,13 +1171,13 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
               }}
             >
               <ArrowLeft style={{ width: 16, height: 16 }} /> Back
-            </button>
+            </Button>
           ) : (
             <div />
           )}
 
           {currentStep < 5 ? (
-            <button
+            <Button
               type="button"
               onClick={handleNext}
               style={{
@@ -1199,9 +1196,9 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
               }}
             >
               Continue <ArrowRight style={{ width: 16, height: 16 }} />
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={handleLaunchCampaign}
               disabled={isSubmitting}
@@ -1229,7 +1226,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
                   <Sparkles style={{ width: 16, height: 16 }} /> Submit Campaign for Review
                 </>
               )}
-            </button>
+            </Button>
           )}
         </div>
       </div>

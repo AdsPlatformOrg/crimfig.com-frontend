@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Button } from './ui/button';
 import {
   BarChart3,
   Layers,
@@ -75,6 +76,7 @@ export function DashboardSidebar({
       {/* Mobile Drawer Backdrop */}
       {isMobileOpen && (
         <div
+          aria-hidden="true"
           onClick={onCloseMobile}
           style={{
             position: 'fixed',
@@ -88,6 +90,10 @@ export function DashboardSidebar({
 
       {/* Sidebar Container */}
       <aside
+        id={`${app}-dashboard-sidebar`}
+        className="cf-dashboard-sidebar"
+        data-mobile-open={isMobileOpen}
+        aria-label={`${app} navigation`}
         style={{
           width: isCollapsed ? '72px' : '260px',
           minWidth: isCollapsed ? '72px' : '260px',
@@ -112,19 +118,27 @@ export function DashboardSidebar({
           {/* Mobile Close Button */}
           {isMobileOpen && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-              <button
+              <Button
                 type="button"
                 onClick={onCloseMobile}
+                aria-label="Close navigation menu"
+                variant="ghost"
+                size="icon"
                 style={{
                   background: 'none',
                   border: 'none',
                   color: 'var(--text-muted)',
                   cursor: 'pointer',
                   padding: '4px',
+                  width: '44px',
+                  height: '44px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <X style={{ width: 20, height: 20 }} />
-              </button>
+              </Button>
             </div>
           )}
 
@@ -152,9 +166,11 @@ export function DashboardSidebar({
                   const isActive = activeId === item.id;
 
                   return (
-                    <button
+                    <Button
                       key={item.id}
                       type="button"
+                      variant="ghost"
+                      aria-current={isActive ? 'page' : undefined}
                       onClick={() => {
                         onSelect(item.id);
                         if (item.action) item.action();
@@ -163,6 +179,7 @@ export function DashboardSidebar({
                       title={isCollapsed ? item.label : undefined}
                       style={{
                         display: 'flex',
+                        minHeight: '44px',
                         alignItems: 'center',
                         justifyContent: isCollapsed ? 'center' : 'space-between',
                         padding: isCollapsed ? '10px 0' : '9px 12px',
@@ -214,7 +231,7 @@ export function DashboardSidebar({
                           {item.badge}
                         </span>
                       )}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -261,9 +278,13 @@ export function DashboardSidebar({
           )}
 
           {onToggleCollapse && (
-            <button
+            <Button
               type="button"
               onClick={onToggleCollapse}
+              variant="ghost"
+              size="sm"
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-expanded={!isCollapsed}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -282,7 +303,7 @@ export function DashboardSidebar({
             >
               {isCollapsed ? <ChevronRight style={{ width: 16, height: 16 }} /> : <ChevronLeft style={{ width: 16, height: 16 }} />}
               {!isCollapsed && <span>Collapse Sidebar</span>}
-            </button>
+            </Button>
           )}
         </div>
       </aside>

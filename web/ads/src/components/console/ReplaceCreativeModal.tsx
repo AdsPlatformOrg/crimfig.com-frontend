@@ -5,6 +5,8 @@ import { sessionFetch } from '../../lib/session';
 
 import React, { useState } from 'react';
 import { X, AlertCircle, RefreshCw, Upload, CheckCircle2 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 
 interface CreativeToReplace {
   id: string;
@@ -134,7 +136,7 @@ export function ReplaceCreativeModal({
               Replace Rejected Creative Asset
             </h3>
           </div>
-          <button
+          <Button
             type="button"
             aria-label="Close replacement dialog"
             onClick={onClose}
@@ -148,7 +150,7 @@ export function ReplaceCreativeModal({
             }}
           >
             <X style={{ width: 18, height: 18 }} />
-          </button>
+          </Button>
         </div>
 
         {/* Content & Form */}
@@ -183,10 +185,11 @@ export function ReplaceCreativeModal({
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
               {(['card', 'banner', 'video', 'interstitial'] as const).map((fmt) => (
-                <button
+                <Button
                   key={fmt}
                   type="button"
                   onClick={() => setAdFormat(fmt)}
+                  aria-pressed={adFormat === fmt}
                   style={{
                     padding: '8px 8px',
                     borderRadius: '8px',
@@ -200,7 +203,7 @@ export function ReplaceCreativeModal({
                   }}
                 >
                   {fmt}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -212,10 +215,11 @@ export function ReplaceCreativeModal({
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {(['image', 'gif', 'video'] as const).map((fmt) => (
-                <button
+                <Button
                   key={fmt}
                   type="button"
                   onClick={() => setMediaFormat(fmt)}
+                  aria-pressed={mediaFormat === fmt}
                   style={{
                     padding: '8px 12px',
                     borderRadius: '8px',
@@ -229,7 +233,7 @@ export function ReplaceCreativeModal({
                   }}
                 >
                   {fmt}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -239,7 +243,7 @@ export function ReplaceCreativeModal({
             <label htmlFor={`${fieldId}-media`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               {mediaFormat === 'video' ? 'MP4 Video URL' : 'Image / GIF Asset URL'}
             </label>
-            <input id={`${fieldId}-media`}
+            <Input id={`${fieldId}-media`}
               type="text"
               inputMode="url"
               required
@@ -266,7 +270,7 @@ export function ReplaceCreativeModal({
             <label htmlFor={`${fieldId}-headline`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Headline (Max 100 characters)
             </label>
-            <input id={`${fieldId}-headline`}
+            <Input id={`${fieldId}-headline`}
               type="text"
               required
               maxLength={100}
@@ -290,7 +294,7 @@ export function ReplaceCreativeModal({
             <label htmlFor={`${fieldId}-destination`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Click Destination URL
             </label>
-            <input id={`${fieldId}-destination`}
+            <Input id={`${fieldId}-destination`}
               type="url"
               required
               value={destinationUrl}
@@ -313,7 +317,7 @@ export function ReplaceCreativeModal({
             <label htmlFor={`${fieldId}-cta`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Call-to-Action (CTA) Button Text
             </label>
-            <input id={`${fieldId}-cta`}
+            <Input id={`${fieldId}-cta`}
               type="text"
               value={ctaText}
               onChange={(e) => setCtaText(e.target.value)}
@@ -340,7 +344,7 @@ export function ReplaceCreativeModal({
               gap: '12px',
             }}
           >
-            <button
+            <Button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
@@ -356,8 +360,8 @@ export function ReplaceCreativeModal({
               }}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
               style={{
@@ -377,7 +381,7 @@ export function ReplaceCreativeModal({
             >
               <RefreshCw style={{ width: 14, height: 14 }} />
               <span>{isSubmitting ? 'Submitting...' : 'Submit Replacement Asset'}</span>
-            </button>
+            </Button>
           </div>
         </form>
       </div>

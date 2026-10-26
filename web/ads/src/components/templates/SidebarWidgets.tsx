@@ -10,6 +10,7 @@ import {
   Sparkles, 
   HelpCircle 
 } from 'lucide-react';
+import { Button } from '../ui/button';
 import './template-layout.css';
 
 export interface FollowItem {
@@ -81,27 +82,16 @@ export const WhoToFollowWidget: React.FC<{
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={() => item.onFollow?.(item.id)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 10px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: 'var(--color-crimson)',
-                backgroundColor: 'rgba(212, 20, 58, 0.08)',
-                border: 'none',
-                borderRadius: '9999px',
-                cursor: 'pointer',
-                flexShrink: 0,
-              }}
+              disabled={!item.onFollow}
+              variant="secondary"
+              size="sm"
             >
               <Plus size={12} />
               <span>Connect</span>
-            </button>
+            </Button>
           </div>
         ))}
       </div>
@@ -189,28 +179,15 @@ export const QuickHelpWidget: React.FC<{
       <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
         Connect with our publisher success desk to optimize ad yield or calibrate campaign bids.
       </p>
-      <button
+      {onContactSupport && <Button
         type="button"
         onClick={onContactSupport}
-        style={{
-          marginTop: '6px',
-          alignSelf: 'flex-start',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '6px 12px',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          color: '#FFFFFF',
-          backgroundColor: 'var(--color-crimson)',
-          border: 'none',
-          borderRadius: 'var(--radius-md)',
-          cursor: 'pointer',
-        }}
+        style={{ marginTop: '6px', alignSelf: 'flex-start' }}
+        size="sm"
       >
         <HelpCircle size={14} />
         <span>Open Support Desk</span>
-      </button>
+      </Button>}
     </div>
   );
 };

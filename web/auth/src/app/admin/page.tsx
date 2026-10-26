@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { AuthAdminGuard } from '../../components/AuthAdminGuard';
-import { ShieldCheck, UserCheck, ShieldAlert, ArrowLeft, Users, Lock } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ArrowLeft, Users } from 'lucide-react';
+import { Badge, Button, Card } from '../../components/ui';
 
 export default function AuthAdminPage() {
   return (
@@ -51,25 +52,15 @@ export default function AuthAdminPage() {
               </p>
             </div>
           </div>
-          <Link
-            href="/dashboard"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-elevated)',
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
+          <Button
+            asChild
+            variant="outline"
           >
-            <ArrowLeft size={14} />
-            <span>Exit Admin</span>
-          </Link>
+            <Link href="/dashboard">
+              <ArrowLeft size={14} />
+              <span>Exit Admin</span>
+            </Link>
+          </Button>
         </div>
 
         {/* Operational Cards */}
@@ -81,7 +72,7 @@ export default function AuthAdminPage() {
           }}
         >
           {/* Card 1: User Directory */}
-          <div
+          <Card
             style={{
               padding: '24px',
               backgroundColor: 'var(--bg-elevated)',
@@ -102,25 +93,14 @@ export default function AuthAdminPage() {
               Search platform accounts, inspect verification states (Email, Phone, KYC), and manage account locks.
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '12px' }}>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  color: 'var(--color-crimson)',
-                  backgroundColor: 'rgba(212, 20, 58, 0.08)',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                }}
-              >
+              <Badge variant="secondary" style={{ textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-crimson)' }}>
                 Directory Service: Healthy
-              </span>
+              </Badge>
             </div>
-          </div>
+          </Card>
 
           {/* Card 2: Security Audit Logs */}
-          <div
+          <Card
             style={{
               padding: '24px',
               backgroundColor: 'var(--bg-elevated)',
@@ -141,22 +121,11 @@ export default function AuthAdminPage() {
               Review failed login attempts, anomalous IP rate-limiting triggers, and credential rotation timestamps.
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '12px' }}>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  color: 'var(--color-crimson)',
-                  backgroundColor: 'rgba(212, 20, 58, 0.08)',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                }}
-              >
+              <Badge variant="secondary" style={{ textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-crimson)' }}>
                 Audit Stream: Online
-              </span>
+              </Badge>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </AuthAdminGuard>

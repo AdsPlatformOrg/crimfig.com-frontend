@@ -17,6 +17,8 @@ import { loadWebsites, registerWebsite, verifyWebsite } from '../../../lib/campa
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton, CardSkeleton } from '../../LoadingStates';
 import { CRIMFIG_PLACEMENTS, type CrimFigPlacement, generateCrimFigEmbedCode } from '../../CrimFigAdSlot';
+import { Button } from '../../ui/button';
+import { Input } from '../../ui/input';
 
 interface PromoterWebsite {
   id: string;
@@ -146,7 +148,7 @@ export function PromoterWebsitesView() {
             Verify website domain ownership and configure CrimFig ad placement codes.
           </p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => setIsAddWebsiteOpen(true)}
           style={{
@@ -165,7 +167,7 @@ export function PromoterWebsitesView() {
           }}
         >
           <Plus style={{ width: 16, height: 16 }} /> Add Website
-        </button>
+        </Button>
       </div>
 
       {isLoading ? (
@@ -263,14 +265,15 @@ export function PromoterWebsitesView() {
                     >
                       <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Host:</span>
                       <code style={{ fontFamily: 'monospace', color: 'var(--text-primary)' }}>@ (or {site.domain})</code>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleCopy('@', `host-${site.id}`)}
+                        aria-label={`Copy Host for ${site.domain}`}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px' }}
                         title="Copy Host"
                       >
                         {copiedToken === `host-${site.id}` ? <Check style={{ width: 12, height: 12, color: 'var(--color-success)' }} /> : <Copy style={{ width: 12, height: 12 }} />}
-                      </button>
+                      </Button>
                     </div>
                     <div
                       style={{
@@ -289,14 +292,15 @@ export function PromoterWebsitesView() {
                       <code style={{ fontFamily: 'monospace', color: 'var(--color-crimson)', wordBreak: 'break-all' }}>
                         crimfig-site-verification={site.verificationToken}
                       </code>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleCopy(`crimfig-site-verification=${site.verificationToken}`, `val-${site.id}`)}
+                        aria-label={`Copy TXT Value for ${site.domain}`}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px' }}
                         title="Copy TXT Value"
                       >
                         {copiedToken === `val-${site.id}` ? <Check style={{ width: 12, height: 12, color: 'var(--color-success)' }} /> : <Copy style={{ width: 12, height: 12 }} />}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -314,7 +318,7 @@ export function PromoterWebsitesView() {
                 }}
               >
                 {!site.isVerified ? (
-                  <button
+                  <Button
                     type="button"
                     disabled={pendingWrites.has(site.id)}
                     onClick={() => handleVerifyWebsite(site.id)}
@@ -335,9 +339,9 @@ export function PromoterWebsitesView() {
                   >
                     <ShieldCheck style={{ width: 14, height: 14 }} />{' '}
                     {pendingWrites.has(site.id) ? 'Checking DNS...' : 'Verify DNS Record Now'}
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setSelectedPlacementSite(site);
@@ -358,7 +362,7 @@ export function PromoterWebsitesView() {
                     }}
                   >
                     <Code2 style={{ width: 14, height: 14 }} /> Manage Ad Spaces &amp; Get Code
-                  </button>
+                  </Button>
                 )}
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{site.activePlacementCount || 0} active ads</span>
               </div>
@@ -396,36 +400,28 @@ export function PromoterWebsitesView() {
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 Register Website Property
               </h3>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsAddWebsiteOpen(false)}
+                aria-label="Close website registration"
                 style={{ background: 'none', border: 'none', fontSize: '20px', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
                 ×
-              </button>
+              </Button>
             </div>
 
             <form onSubmit={handleAddWebsite} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                <label htmlFor="promoter-website-domain" style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
                   Domain Name (Host)
                 </label>
-                <input
+                <Input
+                  id="promoter-website-domain"
                   type="text"
                   required
                   placeholder="e.g. yourpublication.com"
                   value={newWebDomain}
                   onChange={(e) => setNewWebDomain(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: 'var(--bg-page)',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)',
-                    boxSizing: 'border-box',
-                  }}
                 />
               </div>
 
@@ -453,7 +449,7 @@ export function PromoterWebsitesView() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-                <button
+                <Button
                   type="button"
                   onClick={() => setIsAddWebsiteOpen(false)}
                   style={{
@@ -467,8 +463,8 @@ export function PromoterWebsitesView() {
                   }}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isSubmitting}
                   style={{
@@ -483,7 +479,7 @@ export function PromoterWebsitesView() {
                   }}
                 >
                   {isSubmitting ? 'Registering...' : 'Register Website'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -529,13 +525,14 @@ export function PromoterWebsitesView() {
                   Generate lightweight HTML snippets to embed ads on your publication.
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsAdSpacesModalOpen(false)}
+                aria-label="Close ad spaces"
                 style={{ background: 'none', border: 'none', fontSize: '20px', color: 'var(--text-muted)', cursor: 'pointer' }}
               >
                 ×
-              </button>
+              </Button>
             </div>
 
             {/* Inventory Mode Selector */}
@@ -544,9 +541,10 @@ export function PromoterWebsitesView() {
                 Inventory Mode
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '8px' }}>
-                <button
+                <Button
                   type="button"
                   onClick={() => setAdSpaceMode('publisher_network')}
+                  aria-pressed={adSpaceMode === 'publisher_network'}
                   style={{
                     padding: '12px',
                     borderRadius: '8px',
@@ -560,11 +558,12 @@ export function PromoterWebsitesView() {
                   <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     Earn 55% verified revenue share from CrimFig advertiser network.
                   </div>
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => setAdSpaceMode('owned_site_direct')}
+                  aria-pressed={adSpaceMode === 'owned_site_direct'}
                   style={{
                     padding: '12px',
                     borderRadius: '8px',
@@ -578,7 +577,7 @@ export function PromoterWebsitesView() {
                   <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     Retain 100% of revenue from your direct clients.
                   </div>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -618,7 +617,7 @@ export function PromoterWebsitesView() {
                 <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   HTML Installation Snippet
                 </label>
-                <button
+                <Button
                   type="button"
                   onClick={() => handleCopy(generatedCode, 'ad_space_code')}
                   style={{
@@ -637,7 +636,7 @@ export function PromoterWebsitesView() {
                 >
                   {copiedToken === 'ad_space_code' ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
                   {copiedToken === 'ad_space_code' ? 'Copied' : 'Copy'}
-                </button>
+                </Button>
               </div>
               <div style={{ borderRadius: '8px', backgroundColor: 'var(--bg-page)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
                 <pre
@@ -658,7 +657,7 @@ export function PromoterWebsitesView() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsAdSpacesModalOpen(false)}
                 style={{
@@ -673,7 +672,7 @@ export function PromoterWebsitesView() {
                 }}
               >
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>

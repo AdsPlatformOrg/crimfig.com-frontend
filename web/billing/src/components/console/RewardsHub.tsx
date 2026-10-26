@@ -20,6 +20,10 @@ import {
   ShieldCheck,
   RefreshCw,
 } from 'lucide-react';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 import {
   fetchRewardsData,
   fetchReferralsData,
@@ -139,26 +143,17 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
 
   if (error || !rewards) {
     return (
-      <div style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center' }}>
+      <Card style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center' }}>
         <AlertCircle style={{ width: 32, height: 32, color: 'var(--color-crimson)' }} />
-        <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{error || 'Rewards system temporarily unavailable'}</div>
-        <button
+        <Alert variant="destructive"><AlertDescription>{error || 'Rewards system temporarily unavailable'}</AlertDescription></Alert>
+        <Button
           type="button"
           onClick={loadData}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            backgroundColor: 'var(--color-crimson)',
-            color: '#FFFFFF',
-            fontSize: '13px',
-            fontWeight: 600,
-            border: 'none',
-            cursor: 'pointer',
-          }}
+          loading={isLoading}
         >
           Retry
-        </button>
-      </div>
+        </Button>
+      </Card>
     );
   }
 
@@ -195,40 +190,28 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={loadData}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 14px',
-            borderRadius: '8px',
-            backgroundColor: 'var(--badge-bg)',
-            border: '1px solid var(--border-subtle)',
-            color: 'var(--text-primary)',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
+          variant="outline"
         >
           <RefreshCw style={{ width: 14, height: 14 }} />
           <span>Refresh</span>
-        </button>
+        </Button>
       </div>
 
       {/* Rewards Status Alert (if paused/suspended) */}
       {rewards.isSuspended && (
-        <div style={{ padding: '14px 18px', borderRadius: '10px', backgroundColor: 'rgba(212,20,58,0.08)', border: '1px solid var(--color-crimson)', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-crimson)', fontSize: '13px', fontWeight: 600 }}>
+        <Alert variant="warning">
           <Lock style={{ width: 18, height: 18 }} />
-          <span>Account rewards activity is under review. Point accrual and redemptions are temporarily paused.</span>
-        </div>
+          <AlertDescription>Account rewards activity is under review. Point accrual and redemptions are temporarily paused.</AlertDescription>
+        </Alert>
       )}
 
       {/* Primary Metric Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
         {/* Available Points */}
-        <div
+        <Card
           className="theme-card"
           style={{
             padding: '24px',
@@ -256,10 +239,10 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 'auto' }}>
             100% solvent. Backed 1:1 by real unallocated cash in the CrimFig Rewards Fund.
           </div>
-        </div>
+        </Card>
 
         {/* Pending Points (72h hold) */}
-        <div
+        <Card
           className="theme-card"
           style={{
             padding: '24px',
@@ -287,10 +270,10 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 'auto' }}>
             Cash reserved 1:1 in fund. Promoted automatically upon fraud/verification clearance.
           </div>
-        </div>
+        </Card>
 
         {/* Lifetime Earned & Redeemed */}
-        <div
+        <Card
           className="theme-card"
           style={{
             padding: '24px',
@@ -324,13 +307,13 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 'auto' }}>
             Points expire after 365 days of inactivity. Prestige badges are permanent.
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Redemption & Referral Action Section */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
         {/* Redeem Card */}
-        <div
+        <Card
           className="theme-card"
           style={{
             padding: '24px',
@@ -354,24 +337,23 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
           </p>
 
           {redeemSuccess && (
-            <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Alert variant="success">
               <CheckCircle2 style={{ width: 16, height: 16 }} />
-              <span>{redeemSuccess}</span>
-            </div>
+              <AlertDescription>{redeemSuccess}</AlertDescription>
+            </Alert>
           )}
 
           {redeemError && (
-            <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: 'rgba(212,20,58,0.08)', color: 'var(--color-crimson)', fontSize: '12px', fontWeight: 600 }}>
-              {redeemError}
-            </div>
+            <Alert variant="destructive"><AlertDescription>{redeemError}</AlertDescription></Alert>
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <label htmlFor="billing-rewards-redemption-amount" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
               Redemption Amount (100-pt increments)
             </label>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <input
+              <Input
+                id="billing-rewards-redemption-amount"
                 type="number"
                 step="100"
                 min="1000"
@@ -379,16 +361,7 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
                 value={redeemPointsAmount}
                 onChange={(e) => setRedeemPointsAmount(parseInt(e.target.value, 10) || 1000)}
                 disabled={rewards.availablePoints < 1000 || isRedeeming}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-page)',
-                  color: 'var(--text-primary)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                }}
+                style={{ flex: 1, fontWeight: 600 }}
               />
               <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', minWidth: '70px' }}>
                 = ${(redeemPointsAmount / 100).toFixed(2)} USD
@@ -396,35 +369,20 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
             disabled={rewards.availablePoints < 1000 || isRedeeming || rewards.isSuspended}
+            loading={isRedeeming}
             onClick={handleRedeem}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: rewards.availablePoints >= 1000 ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: rewards.availablePoints >= 1000 ? '#FFFFFF' : 'var(--text-muted)',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: rewards.availablePoints >= 1000 ? 'pointer' : 'not-allowed',
-              boxShadow: rewards.availablePoints >= 1000 ? 'var(--shadow-crimson)' : 'none',
-              transition: 'all 0.15s ease',
-            }}
           >
             {isRedeeming ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} /> : <Sparkles style={{ width: 16, height: 16 }} />}
             <span>{isRedeeming ? 'Redeeming...' : 'Confirm Redemption to Wallet'}</span>
-          </button>
-        </div>
+          </Button>
+        </Card>
 
         {/* Referrals & Share Card */}
         {referrals && (
-          <div
+          <Card
             className="theme-card"
             style={{
               padding: '24px',
@@ -463,74 +421,38 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
               >
                 {referrals.code}
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => handleCopyCode(referrals.code)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--badge-bg)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
+                variant="outline"
               >
                 {copiedCode ? <Check style={{ width: 14, height: 14, color: 'var(--color-success)' }} /> : <Copy style={{ width: 14, height: 14 }} />}
                 <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-              </button>
+              </Button>
             </div>
 
             {/* Share buttons */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
+              <Button
                 type="button"
                 disabled={isCreatingShare}
+                loading={isCreatingShare}
                 onClick={() => handleCreateShare('whatsapp')}
-                style={{
-                  flex: 1,
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--badge-bg)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                }}
+                variant="outline"
+                style={{ flex: 1 }}
               >
                 <span>WhatsApp</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={isCreatingShare}
+                loading={isCreatingShare}
                 onClick={() => handleCreateShare('x')}
-                style={{
-                  flex: 1,
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--badge-bg)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                }}
+                variant="outline"
+                style={{ flex: 1 }}
               >
                 <span>X / Twitter</span>
-              </button>
+              </Button>
             </div>
 
             {/* Referral Stats Counters */}
@@ -548,12 +470,12 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Qualified</div>
               </div>
             </div>
-          </div>
+          </Card>
         )}
       </div>
 
       {/* Prestige Badges Showcase */}
-      <div
+      <Card
         className="theme-card"
         style={{
           padding: '24px',
@@ -608,10 +530,10 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
             ))}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Rewards Ledger History */}
-      <div
+      <Card
         className="theme-card"
         style={{
           padding: '24px',
@@ -687,7 +609,7 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

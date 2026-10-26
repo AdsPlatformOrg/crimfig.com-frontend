@@ -1,41 +1,41 @@
 'use client';
 
-import React from 'react';
-import { ArrowRight, Sparkles, Wallet, ShieldCheck, Gift } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ArrowRight, Gift, Menu, Wallet, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { Button } from '../ui/button';
 
 interface LandingNavbarProps {
   onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
 }
 
+const links = [
+  { href: '#features', label: 'Features' },
+  { href: '#rewards', label: 'Rewards & Cashback', icon: Gift },
+  { href: '#calculator', label: 'FX Calculator' },
+  { href: '#security', label: 'Security & Rails' },
+];
+
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const launchConsole = () => {
+    setMobileMenuOpen(false);
+    onLaunchConsole('overview');
+  };
+
   return (
     <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backgroundColor: 'var(--bg-page)',
-        borderBottom: '1px solid var(--border-subtle)',
-        backdropFilter: 'blur(12px)',
-        transition: 'all 0.2s ease',
+      className="cf-site-header"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          menuButtonRef.current?.focus();
+        }
       }}
     >
-      <div
-        style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '12px 24px',
-          minHeight: '72px',
-          boxSizing: 'border-box',
-          flexWrap: 'wrap',
-          gap: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Brand identity */}
+      <div className="cf-site-header-inner">
         <CrimFigLogo
           variant="brand"
           size={42}
@@ -44,108 +44,57 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
           subtext="Wallet Funding, Campaign Escrow & History"
         />
 
-        {/* Navigation Anchor Links */}
-        <nav
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '28px',
-            fontSize: '14px',
-            fontWeight: 500,
-          }}
-          className="landing-nav-links"
-        >
-          <a
-            href="#features"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-          >
-            Features
-          </a>
-          <a
-            href="#rewards"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-          >
-            <Gift style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
-            <span>Rewards &amp; Cashback</span>
-          </a>
-          <a
-            href="#calculator"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-          >
-            FX Calculator
-          </a>
-          <a
-            href="#security"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
-          >
-            Security &amp; Rails
-          </a>
+        <nav className="cf-site-nav" aria-label="Main navigation">
+          {links.map(({ href, label, icon: Icon }) => (
+            <a key={href} href={href} className="cf-site-nav-link">
+              {Icon && <Icon size={15} aria-hidden="true" />}
+              {label}
+            </a>
+          ))}
         </nav>
 
-        {/* CTA Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            type="button"
-            onClick={() => onLaunchConsole('overview')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              borderRadius: '10px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-crimson)',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
-          >
-            <Wallet style={{ width: 15, height: 15 }} />
+        <div className="cf-site-actions">
+          <Button onClick={launchConsole} size="sm">
+            <Wallet size={16} aria-hidden="true" />
             <span>Launch Console</span>
-            <ArrowRight style={{ width: 14, height: 14 }} />
-          </button>
+            <ArrowRight size={16} aria-hidden="true" />
+          </Button>
+          <Button
+            ref={menuButtonRef}
+            className="cf-mobile-menu-toggle"
+            variant="outline"
+            size="icon"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="billing-mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </Button>
         </div>
       </div>
 
-      <style jsx>{`
-        @media (min-width: 860px) {
-          .landing-nav-links {
-            display: flex !important;
-          }
-        }
-      `}</style>
+      <nav
+        id="billing-mobile-navigation"
+        className="cf-mobile-nav-panel"
+        aria-label="Mobile navigation"
+        hidden={!mobileMenuOpen}
+      >
+          {links.map(({ href, label, icon: Icon }) => (
+            <a
+              key={href}
+              href={href}
+              className="cf-site-nav-link"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {Icon && <Icon size={16} aria-hidden="true" />}
+              {label}
+            </a>
+          ))}
+          <Button onClick={launchConsole} className="cf-mobile-nav-cta">
+            Launch Console <ArrowRight size={16} aria-hidden="true" />
+          </Button>
+      </nav>
     </header>
   );
 }

@@ -5,6 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { loginDestination } from '@/lib/login-return';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 function MfaChallengeContent() {
   const searchParams = useSearchParams();
@@ -47,24 +51,25 @@ function MfaChallengeContent() {
 
   return (
     <div className="auth-centered-container">
-      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <AuthBrandHeader
         title="Two-Factor Verification"
         subtitle="Enter the 6-digit authenticator code or 8-character backup code"
       />
 
       {error && (
-        <div className="alert-error" style={{ marginBottom: '20px' }}>
+        <Alert variant="destructive" style={{ marginBottom: '20px' }}>
           <span>{error}</span>
-        </div>
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.5px' }}>
+          <label htmlFor="mfa-code" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.5px' }}>
             AUTHENTICATOR / BACKUP CODE
           </label>
-          <input
+          <Input
+            id="mfa-code"
             type="text"
             className="input-field"
             placeholder="123456"
@@ -83,11 +88,11 @@ function MfaChallengeContent() {
           />
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
+        <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
           {loading ? 'Verifying...' : 'Verify & Continue'}
-        </button>
+        </Button>
       </form>
-    </div>
+      </Card>
   </div>
   );
 }

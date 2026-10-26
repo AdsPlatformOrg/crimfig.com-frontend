@@ -1,6 +1,7 @@
 'use client';
 import { MediaPreview } from '../MediaPreview';
 import { sessionFetch } from '../../lib/session';
+import { Button } from '../ui/button';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, AlertCircle, RefreshCw, Eye, ExternalLink, Filter } from 'lucide-react';
@@ -255,7 +256,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {error && <p role="alert">{error}</p>}
-      {actionMessage && <div role="status" style={{ padding: 16, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', overflowWrap: 'anywhere' }}>{actionMessage} <button type="button" onClick={() => setActionMessage(null)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>Dismiss</button></div>}
+      {actionMessage && <div role="status" style={{ padding: 16, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', overflowWrap: 'anywhere' }}>{actionMessage} <Button type="button" onClick={() => setActionMessage(null)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>Dismiss</Button></div>}
       {/* Header bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
         <div>
@@ -268,9 +269,10 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', maxWidth: '100%' }}>
-          <button
+          <Button
             type="button"
             onClick={() => setActiveTab('creatives')}
+            aria-pressed={activeTab === 'creatives'}
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
@@ -283,10 +285,11 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             }}
           >
             Creative Assets ({error ? '—' : queue?.creatives.length ?? 0})
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('campaigns')}
+            aria-pressed={activeTab === 'campaigns'}
             style={{
               padding: '8px 16px',
               borderRadius: '8px',
@@ -299,12 +302,13 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             }}
           >
             Campaigns ({error ? '—' : queue?.campaigns.length ?? 0})
-          </button>
+          </Button>
           {activeTab === 'campaigns' && (
             <div style={{ display: 'inline-flex', flexWrap: 'wrap', padding: '2px', backgroundColor: 'var(--badge-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setReviewStage('reviewer')}
+                aria-pressed={reviewStage === 'reviewer'}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -317,10 +321,11 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                 }}
               >
                 Tier-1: Reviewer
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setReviewStage('manager')}
+                aria-pressed={reviewStage === 'manager'}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -333,11 +338,12 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                 }}
               >
                 Tier-2: Manager Approval
-              </button>
+              </Button>
             </div>
           )}
-          <button
+          <Button
             type="button"
+            aria-label="Refresh moderation queue"
             onClick={fetchQueue}
             style={{
               padding: '8px 12px',
@@ -349,7 +355,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             }}
           >
             <RefreshCw style={{ width: 14, height: 14 }} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -424,7 +430,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     </select>
 
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
+                      <Button
                         type="button"
                         disabled={isSubmitting[crt.id]}
                         onClick={() => handleCreativeDecision(crt.id, 'approved')}
@@ -446,8 +452,8 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                       >
                         <CheckCircle2 style={{ width: 14, height: 14 }} />
                         Approve
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         disabled={isSubmitting[crt.id]}
                         onClick={() => handleCreativeDecision(crt.id, 'rejected')}
@@ -469,7 +475,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                       >
                         <XCircle style={{ width: 14, height: 14 }} />
                         Reject
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -511,7 +517,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
+                  <Button
                     type="button"
                     disabled={isSubmitting[camp.id]}
                     onClick={() => handleCampaignDecision(camp.id, 'approved')}
@@ -527,8 +533,8 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     }}
                   >
                     {reviewStage === 'reviewer' ? 'Approve & Pass to Manager' : 'Approve Campaign'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     disabled={isSubmitting[camp.id]}
                     onClick={() => handleCampaignDecision(camp.id, 'rejected')}
@@ -544,8 +550,8 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     }}
                   >
                     Reject
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     title="Super Admin Emergency Override: Requires mandatory justification audit entry"
                     disabled={isSubmitting[camp.id]}
@@ -562,7 +568,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     }}
                   >
                     Emergency Override
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

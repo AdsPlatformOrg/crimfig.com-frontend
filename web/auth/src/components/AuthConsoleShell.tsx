@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { Menu, ShieldAlert, Key, Smartphone, Users, Lock, LogOut } from 'lucide-react';
+import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface AuthConsoleShellProps {
   children: React.ReactNode;
@@ -17,6 +18,18 @@ interface AuthConsoleShellProps {
 export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff = false }: AuthConsoleShellProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        document.getElementById('auth-mobile-menu-toggle')?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen]);
 
   const authNavGroups: NavGroup[] = [
     {
@@ -36,13 +49,13 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
     },
     ...(isStaff
       ? [
-          {
-            title: 'Administration',
-            items: [
-              { id: 'admin', label: 'Staff Identity Console', href: '/admin', icon: ShieldAlert },
-            ],
-          },
-        ]
+        {
+          title: 'Administration',
+          items: [
+            { id: 'admin', label: 'Staff Identity Console', href: '/admin', icon: ShieldAlert },
+          ],
+        },
+      ]
       : []),
   ];
 
@@ -81,22 +94,18 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{
-                display: 'none',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-primary)',
-                padding: '4px',
-              }}
+            <Button
+              id="auth-mobile-menu-toggle"
+              variant="outline"
+              size="icon"
+              onClick={() => setMobileMenuOpen((open) => !open)}
               className="auth-mobile-menu-toggle"
-              aria-label="Toggle Navigation"
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="auth-console-sidebar"
             >
-              <Menu size={22} />
-            </button>
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
             <CrimFigLogo variant="brand" size={36} app="Identity" appBadge="Zero-Trust" href="/" />
           </div>
 
@@ -136,6 +145,8 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
       >
         {/* Desktop Sidebar */}
         <aside
+          id="auth-console-sidebar"
+          data-open={mobileMenuOpen}
           style={{
             width: '260px',
             flexShrink: 0,
@@ -148,19 +159,22 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
             groups={authNavGroups}
             activeId={activePath.replace('/', '') || 'dashboard'}
             onSelect={(id) => {
+              setMobileMenuOpen(false);
               if (id === 'dashboard') router.push('/dashboard');
               else router.push(`/${id}`);
             }}
             app="auth"
+            isMobileOpen={mobileMenuOpen}
+            onCloseMobile={() => setMobileMenuOpen(false)}
           />
         </aside>
 
         {/* Content View */}
         <main
+          className="auth-console-main"
           style={{
             flex: 1,
             minWidth: 0,
-            padding: '32px 24px',
           }}
         >
           {children}

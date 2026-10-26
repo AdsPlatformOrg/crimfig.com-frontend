@@ -4,6 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { AuthConsoleShell } from '../../components/AuthConsoleShell';
 import { Smartphone, Monitor, ShieldAlert, LogOut, CheckCircle2 } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 
 export default function SessionsPage() {
   return (
@@ -22,7 +25,7 @@ export default function SessionsPage() {
         </div>
 
         {/* Current Active Session */}
-        <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(22, 163, 74, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
@@ -31,9 +34,9 @@ export default function SessionsPage() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>Current Web Browser</h3>
-                  <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(22, 163, 74, 0.12)', color: '#16A34A', padding: '2px 8px', borderRadius: '10px' }}>
+                  <Badge variant="secondary">
                     This Device
-                  </span>
+                  </Badge>
                 </div>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Authenticated • Active Now</span>
               </div>
@@ -42,10 +45,10 @@ export default function SessionsPage() {
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
             Protected by rotating cryptographically signed JWT access tokens and secure HTTP-only refresh cookies.
           </p>
-        </div>
+        </Card>
 
         {/* Remote Logout Danger Zone */}
-        <div style={{ padding: '24px', backgroundColor: 'var(--bg-elevated)', border: '1px solid rgba(220, 38, 38, 0.2)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Card variant="outline" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <ShieldAlert size={20} color="var(--color-crimson)" />
             <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Remote Session Invalidation</h2>
@@ -54,26 +57,14 @@ export default function SessionsPage() {
             Lost a laptop or phone? Sign out of all other active sessions across all devices to protect your campaigns and billing balance.
           </p>
           <div>
-            <Link
-              href="/login"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '13px',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              <LogOut size={14} />
-              <span>Sign Out All Other Sessions</span>
-            </Link>
+            <Button asChild variant="destructive" size="sm">
+              <Link href="/login">
+                <LogOut size={14} />
+                <span>Sign Out All Other Sessions</span>
+              </Link>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     </AuthConsoleShell>
   );

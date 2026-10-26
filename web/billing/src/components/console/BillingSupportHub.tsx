@@ -13,6 +13,12 @@ import {
   Wallet,
   Clock,
 } from 'lucide-react';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 
 interface BillingTicket {
   id: string;
@@ -116,71 +122,44 @@ export function BillingSupportHub() {
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
+          <Button
             type="button"
             onClick={() => setActiveTab('tickets')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'tickets' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'tickets' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            variant={activeTab === 'tickets' ? 'default' : 'outline'}
+            aria-pressed={activeTab === 'tickets'}
           >
             My Inquiries ({tickets.length})
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('new_ticket')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'new_ticket' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'new_ticket' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            variant={activeTab === 'new_ticket' ? 'default' : 'outline'}
+            aria-pressed={activeTab === 'new_ticket'}
           >
             <Plus style={{ width: 14, height: 14 }} />
             <span>New Inquiry</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('faq')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'faq' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'faq' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            variant={activeTab === 'faq' ? 'default' : 'outline'}
+            aria-pressed={activeTab === 'faq'}
           >
             Billing FAQ
-          </button>
+          </Button>
         </div>
       </div>
 
       {submitSuccess && (
-        <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Alert variant="success" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <CheckCircle2 style={{ width: 16, height: 16 }} />
-          <span>Billing inquiry submitted. A finance specialist will investigate and respond directly in this ticket thread.</span>
-        </div>
+          <AlertDescription>Billing inquiry submitted. A finance specialist will investigate and respond directly in this ticket thread.</AlertDescription>
+        </Alert>
       )}
 
       {/* TICKETS LIST */}
       {activeTab === 'tickets' && (
-        <div className="theme-card" style={{ padding: '24px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
+        <Card className="theme-card" style={{ padding: '24px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
             Submitted Financial Inquiries
           </h3>
@@ -221,19 +200,9 @@ export function BillingSupportHub() {
                       <span style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-muted)' }}>
                         {t.ticketNumber}
                       </span>
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          backgroundColor: t.status === 'resolved' ? 'var(--color-success-bg)' : 'var(--badge-bg)',
-                          color: t.status === 'resolved' ? 'var(--color-success)' : 'var(--text-secondary)',
-                          textTransform: 'uppercase',
-                        }}
-                      >
+                      <Badge variant={t.status === 'resolved' ? 'default' : 'secondary'}>
                         {t.status.replace(/_/g, ' ')}
-                      </span>
+                      </Badge>
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                       {t.subject}
@@ -251,29 +220,23 @@ export function BillingSupportHub() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* CREATE TICKET */}
       {activeTab === 'new_ticket' && (
-        <form onSubmit={handleCreateTicket} className="theme-card" style={{ padding: '28px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleCreateTicket} className="cf-card cf-card--default theme-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             Open a Financial or Escrow Inquiry
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Category</label>
+            <label htmlFor="billing-support-category" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Category</label>
             <select
+              id="billing-support-category"
+              className="cf-input"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-page)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-              }}
             >
               <option value="payouts">Bank Account Withdrawal &amp; Payout Exception</option>
               <option value="funding">Card Funding &amp; Paystack Reconciliation</option>
@@ -283,72 +246,44 @@ export function BillingSupportHub() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Subject</label>
-            <input
+            <label htmlFor="billing-support-subject" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Subject</label>
+            <Input
+              id="billing-support-subject"
               type="text"
               placeholder="e.g. Withdrawal transfer reference confirmation..."
               value={newSubject}
               onChange={(e) => setNewSubject(e.target.value)}
               required
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-page)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-              }}
             />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Details</label>
-            <textarea
+            <label htmlFor="billing-support-details" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Details</label>
+            <Textarea
+              id="billing-support-details"
               rows={5}
               placeholder="Include transaction references, withdrawal request IDs, or bank verification details..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               required
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-page)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-                fontFamily: 'inherit',
-              }}
             />
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            style={{
-              padding: '12px 20px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '8px',
-            }}
+            loading={isSubmitting}
+            style={{ marginTop: '8px' }}
           >
             <Send style={{ width: 14, height: 14 }} />
             <span>{isSubmitting ? 'Submitting...' : 'Send Inquiry'}</span>
-          </button>
+          </Button>
         </form>
       )}
 
       {/* FAQ */}
       {activeTab === 'faq' && (
-        <div className="theme-card" style={{ padding: '24px', borderRadius: '16px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
+        <Card className="theme-card" style={{ padding: '24px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
             Financial &amp; Escrow Knowledge Base
           </h3>
@@ -373,7 +308,7 @@ export function BillingSupportHub() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

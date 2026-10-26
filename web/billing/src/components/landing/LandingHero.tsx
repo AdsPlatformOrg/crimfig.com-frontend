@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   RefreshCw
 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 
 interface LandingHeroProps {
   onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
@@ -39,7 +41,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
           maxWidth: '1280px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: '1fr',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           gap: '48px',
           alignItems: 'center',
         }}
@@ -116,31 +118,15 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               paddingTop: '8px',
             }}
           >
-            <button
+            <Button
               type="button"
               onClick={() => onLaunchConsole('overview')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '14px 28px',
-                borderRadius: '12px',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '15px',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-crimson)',
-                transition: 'transform 0.15s ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+              size="lg"
             >
               <Wallet style={{ width: 18, height: 18 }} />
               <span>Launch Billing Console</span>
               <ArrowRight style={{ width: 16, height: 16 }} />
-            </button>
+            </Button>
 
             <a
               href="#rewards"
@@ -202,7 +188,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
 
         {/* Right Column: Interactive Financial Showcase Card */}
         <div style={{ width: '100%' }}>
-          <div
+          <Card
             className="theme-card"
             style={{
               borderRadius: '24px',
@@ -360,61 +346,35 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button
+              <Button
                 type="button"
                 onClick={() => onLaunchConsole('overview')}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow-crimson)',
-                }}
+                style={{ flex: 1 }}
+                size="sm"
               >
                 <ArrowDownLeft style={{ width: 15, height: 15 }} />
                 <span>Deposit Funds</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => onLaunchConsole('overview')}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--bg-page)',
-                  color: 'var(--text-primary)',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  border: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                }}
+                variant="outline"
+                style={{ flex: 1 }}
+                size="sm"
               >
                 <ArrowUpRight style={{ width: 15, height: 15 }} />
                 <span>Check Withdrawal Availability</span>
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 
       <style jsx>{`
         @media (min-width: 960px) {
           .hero-grid {
-            grid-template-columns: 1.15fr 0.85fr !important;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
           }
         }
       `}</style>

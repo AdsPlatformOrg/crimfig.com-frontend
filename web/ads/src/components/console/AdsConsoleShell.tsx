@@ -41,6 +41,18 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!isMobileNavOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileNavOpen(false);
+        document.getElementById('ads-mobile-menu-toggle')?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMobileNavOpen]);
+
+  useEffect(() => {
     let active = true;
     async function checkStaff() {
       try {
@@ -172,24 +184,19 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           {/* Brand Identity & Back to Landing */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', maxWidth: '100%' }}>
             {/* Mobile Menu Toggle Button */}
-            <button
+            <Button
+              id="ads-mobile-menu-toggle"
               type="button"
+              variant="outline"
+              size="icon"
               onClick={() => setIsMobileNavOpen(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '6px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--badge-bg)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-              }}
-              title="Open Navigation Menu"
+              className="cf-console-mobile-menu"
+              aria-label="Open navigation menu"
+              aria-expanded={isMobileNavOpen}
+              aria-controls="ads-dashboard-sidebar"
             >
-              <Menu style={{ width: 18, height: 18 }} />
-            </button>
+              <Menu size={18} aria-hidden="true" />
+            </Button>
 
             <Link
               href="/"
@@ -249,40 +256,6 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
             </Link>
           </div>
 
-          {/* Center Search Input */}
-          <div style={{ flex: '1 1 240px', maxWidth: '420px', minWidth: '180px', position: 'relative' }}>
-            <input
-              type="search"
-              placeholder={
-                role === 'admin'
-                  ? 'Search moderation queue, dispute UUIDs, or audit logs...'
-                  : role === 'promoter'
-                  ? 'Search verified domains, ad slots, or direct deals...'
-                  : 'Search campaigns, creatives, or keywords...'
-              }
-              style={{
-                width: '100%',
-                padding: '7px 14px 7px 34px',
-                fontSize: '13px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-              onChange={(e) => {
-                // Global search dispatch or query param
-              }}
-            />
-            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </span>
-          </div>
-
           {/* Mode Switcher: Advertiser Studio vs Promoter Hub (Admin Console conditionally shown) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
             <div
@@ -300,64 +273,37 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
                 fontWeight: 600,
               }}
             >
-              <button
+              <Button
                 type="button"
                 onClick={() => router.push('/dashboard')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: role === 'advertiser' ? 'var(--color-fig-dark)' : 'transparent',
-                  color: role === 'advertiser' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
+                variant={role === 'advertiser' ? 'secondary' : 'ghost'}
+                size="sm"
+                aria-pressed={role === 'advertiser'}
               >
                 <BarChart3 style={{ width: 14, height: 14 }} />
                 <span>Advertiser Studio</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => router.push('/promoter')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: role === 'promoter' ? 'var(--color-crimson)' : 'transparent',
-                  color: role === 'promoter' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
+                variant={role === 'promoter' ? 'default' : 'ghost'}
+                size="sm"
+                aria-pressed={role === 'promoter'}
               >
                 <UserCheck style={{ width: 14, height: 14 }} />
                 <span>Promoter Hub</span>
-              </button>
+              </Button>
               {(isStaffUser || role === 'admin') && (
-                <button
+                <Button
                   type="button"
                   onClick={() => router.push('/admin/moderation')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    backgroundColor: role === 'admin' ? 'var(--color-fig-dark)' : 'transparent',
-                    color: role === 'admin' ? '#FFFFFF' : 'var(--text-secondary)',
-                  }}
+                  variant={role === 'admin' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  aria-pressed={role === 'admin'}
                 >
                   <ShieldCheck style={{ width: 14, height: 14 }} />
                   <span>Admin Console</span>
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -365,57 +311,35 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           {/* Right Controls: Contextual Primary CTA, Wallet Trigger & Sign Out */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
             {role === 'advertiser' ? (
-              <button
+              <Button
                 type="button"
                 onClick={() => router.push('/campaigns/new')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  background: 'var(--gradient-crimson)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow-crimson)',
-                }}
+                size="sm"
               >
                 <Plus style={{ width: 14, height: 14 }} />
                 <span>New Campaign</span>
-              </button>
+              </Button>
             ) : role === 'promoter' ? (
-              <button
+              <Button
                 type="button"
                 onClick={() => router.push('/promoter/websites?action=new')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--color-fig-dark)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
+                variant="secondary"
+                size="sm"
               >
                 <Plus style={{ width: 14, height: 14 }} />
                 <span>Add Property</span>
-              </button>
+              </Button>
             ) : null}
 
             <SignOutButton />
 
-            <button
+            <Button
               type="button"
               onClick={() => {
                 router.push('/billing');
               }}
+              variant="outline"
+              size="sm"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -433,7 +357,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
             >
               <DollarSign style={{ width: 14, height: 14, color: 'var(--color-success)' }} />
               <span>Financial Ledger</span>
-            </button>
+            </Button>
           </div>
         </div>
       </header>

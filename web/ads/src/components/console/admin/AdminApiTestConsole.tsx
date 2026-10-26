@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
+import { Button } from '../../ui/button';
 
 interface ApiEndpointTest {
   id: string;
@@ -314,48 +315,24 @@ export function AdminApiTestConsole() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
+          <Button
             type="button"
             onClick={() => setShowSettingsModal(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            variant="outline"
+            size="sm"
           >
             <SlidersHorizontal size={15} />
             <span>Unit Test Settings</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={runAllSafeTests}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-crimson)',
-            }}
+            size="sm"
           >
             <Play size={15} />
             <span>Run All Safe Tests</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -385,24 +362,16 @@ export function AdminApiTestConsole() {
       {/* Category Tabs */}
       <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px', flexWrap: 'wrap' }}>
         {(['all', 'ads', 'adstation', 'billing', 'auth'] as const).map((cat) => (
-          <button
+          <Button
             key={cat}
             type="button"
             onClick={() => setSelectedCategory(cat)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '8px',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: selectedCategory === cat ? 'var(--color-crimson)' : 'transparent',
-              color: selectedCategory === cat ? '#FFFFFF' : 'var(--text-secondary)',
-              transition: 'all 0.15s ease',
-            }}
+            aria-pressed={selectedCategory === cat}
+            variant={selectedCategory === cat ? 'default' : 'ghost'}
+            size="sm"
           >
             {cat === 'all' ? 'All Endpoints' : cat === 'ads' ? 'Ads Platform' : cat === 'adstation' ? 'AdStation & Delivery' : cat === 'billing' ? 'Billing & Escrow' : 'Auth & Security'}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -501,40 +470,25 @@ export function AdminApiTestConsole() {
                     <td style={{ padding: '14px 16px', textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         {test.responsePreview && (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => setExpandedResponseId(isExpanded ? null : test.id)}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              backgroundColor: 'transparent',
-                              border: '1px solid var(--border-subtle)',
-                              color: 'var(--text-secondary)',
-                              fontSize: '11px',
-                              cursor: 'pointer',
-                            }}
+                            variant="outline"
+                            size="sm"
+                            aria-expanded={isExpanded}
                           >
                             {isExpanded ? 'Hide Payload' : 'View Payload'}
-                          </button>
+                          </Button>
                         )}
 
-                        <button
+                        <Button
                           type="button"
                           disabled={isLocked || test.status === 'running'}
                           onClick={() => runTest(test.id)}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            backgroundColor: isLocked ? 'var(--bg-surface)' : 'var(--color-crimson)',
-                            color: isLocked ? 'var(--text-muted)' : '#FFFFFF',
-                            border: 'none',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: isLocked ? 'not-allowed' : 'pointer',
-                          }}
+                          size="sm"
                         >
                           Run
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -621,22 +575,13 @@ export function AdminApiTestConsole() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowSettingsModal(false)}
-                style={{
-                  padding: '8px 18px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--color-crimson)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
+                size="sm"
               >
                 Done
-              </button>
+              </Button>
             </div>
           </div>
         </div>

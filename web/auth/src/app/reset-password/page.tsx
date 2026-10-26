@@ -5,6 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -53,34 +57,35 @@ function ResetPasswordContent() {
 
   return (
     <div className="auth-centered-container">
-      <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <AuthBrandHeader
         title="Create New Password"
         subtitle="Set a secure password for your CrimFig account"
       />
 
       {error && (
-        <div className="alert-error" style={{ marginBottom: '20px' }}>
+        <Alert variant="destructive" style={{ marginBottom: '20px' }}>
           <span>{error}</span>
-        </div>
+        </Alert>
       )}
 
       {success ? (
         <div>
-          <div className="alert-success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
+          <Alert variant="success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
             <span>Your password has been reset successfully. You can now log in with your new credentials.</span>
-          </div>
-          <Link href="/login" className="btn-primary">
-            Sign In Now
-          </Link>
+          </Alert>
+          <Button asChild className="cf-auth-full-button">
+            <Link href="/login">Sign In Now</Link>
+          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            <label htmlFor="new-password" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
               NEW PASSWORD
             </label>
-            <input
+            <Input
+              id="new-password"
               type="password"
               className="input-field"
               placeholder="Min 8 characters"
@@ -92,10 +97,11 @@ function ResetPasswordContent() {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
+            <label htmlFor="confirm-new-password" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
               CONFIRM NEW PASSWORD
             </label>
-            <input
+            <Input
+              id="confirm-new-password"
               type="password"
               className="input-field"
               placeholder="Re-enter new password"
@@ -106,12 +112,12 @@ function ResetPasswordContent() {
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
+          <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
             {loading ? 'Resetting Password...' : 'Reset Password'}
-          </button>
+          </Button>
         </form>
       )}
-    </div>
+      </Card>
   </div>
   );
 }

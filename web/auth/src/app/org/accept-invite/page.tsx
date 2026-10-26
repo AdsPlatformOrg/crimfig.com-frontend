@@ -5,6 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 function AcceptInviteContent() {
   const searchParams = useSearchParams();
@@ -48,44 +51,42 @@ function AcceptInviteContent() {
 
   return (
     <div className="auth-centered-container">
-      <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', textAlign: 'center' }}>
+      <Card className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px', textAlign: 'center' }}>
       <AuthBrandHeader
         title="Organisation Invitation"
         subtitle="You have been invited to join an organisation on CrimFig"
       />
 
       {error && (
-        <div className="alert-error" style={{ marginBottom: '20px', textAlign: 'left' }}>
+        <Alert variant="destructive" style={{ marginBottom: '20px', textAlign: 'left' }}>
           <span>{error}</span>
-        </div>
+        </Alert>
       )}
 
       {success ? (
         <div>
-          <div className="alert-success" style={{ marginBottom: '24px', textAlign: 'left', lineHeight: '1.5' }}>
+          <Alert variant="success" style={{ marginBottom: '24px', textAlign: 'left', lineHeight: '1.5' }}>
             <span>{message}</span>
-          </div>
-          <Link href="/dashboard" className="btn-primary">
-            Go to Dashboard
-          </Link>
+          </Alert>
+          <Button asChild className="cf-auth-full-button">
+            <Link href="/dashboard">Go to Dashboard</Link>
+          </Button>
         </div>
       ) : (
         <div>
-          <button
-            type="button"
+          <Button
             onClick={handleAccept}
-            className="btn-primary"
             disabled={loading || !token}
-            style={{ marginBottom: '16px' }}
+            style={{ width: '100%', marginBottom: '16px' }}
           >
             {loading ? 'Joining...' : 'Accept Invitation & Join'}
-          </button>
-          <Link href="/login" className="btn-secondary">
-            Sign In with Different Account
-          </Link>
+          </Button>
+          <Button asChild variant="secondary" className="cf-auth-full-button">
+            <Link href="/login">Sign In with Different Account</Link>
+          </Button>
         </div>
       )}
-    </div>
+      </Card>
   </div>
   );
 }

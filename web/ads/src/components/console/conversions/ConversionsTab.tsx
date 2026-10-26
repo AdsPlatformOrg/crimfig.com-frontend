@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Button } from '../../ui/button';
+import { Textarea } from '../../ui/textarea';
+import { Input } from '../../ui/input';
 import {
   AdsConversionItem,
   AdvertiserApiKeyItem,
@@ -143,7 +146,7 @@ window.cfq.push(['track', 'purchase', {
 
   if (loadError) return <div role="alert" style={{ padding: 24, color: 'var(--text-secondary)' }}>
     <p>{loadError}</p>
-    <button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</button>
+    <Button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</Button>
   </div>;
 
   return (
@@ -161,7 +164,7 @@ window.cfq.push(['track', 'purchase', {
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button
+          <Button
             onClick={() => {
               setGeneratedKeyResult(null);
               setNewKeyName('');
@@ -183,7 +186,7 @@ window.cfq.push(['track', 'purchase', {
             }}
           >
             <span>+</span> Generate S2S API Key
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -246,9 +249,10 @@ window.cfq.push(['track', 'purchase', {
           { key: 'postback', label: 'Server-to-Server (S2S)' },
           { key: 'apikeys', label: 'Advertiser API Keys' },
         ].map(t => (
-          <button
+          <Button
             key={t.key}
             onClick={() => setSubTab(t.key as any)}
+            aria-pressed={subTab === t.key}
             style={{
               padding: '10px 18px',
               fontSize: '13px',
@@ -263,7 +267,7 @@ window.cfq.push(['track', 'purchase', {
             }}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -359,7 +363,7 @@ window.cfq.push(['track', 'purchase', {
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                         {conv.status === 'attributed' && isHoldbackActive && (
-                          <button
+                          <Button
                             onClick={() => setReverseTarget(conv)}
                             style={{
                               padding: '5px 10px',
@@ -373,7 +377,7 @@ window.cfq.push(['track', 'purchase', {
                             }}
                           >
                             Request Reversal
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -400,7 +404,7 @@ window.cfq.push(['track', 'purchase', {
               <pre style={{ margin: 0, color: '#E2E8F0', fontSize: '12px', fontFamily: 'monospace' }}>
                 {pixelSnippet}
               </pre>
-              <button
+              <Button
                 onClick={() => handleCopy(pixelSnippet, 'pixel_snippet')}
                 style={{
                   position: 'absolute',
@@ -417,7 +421,7 @@ window.cfq.push(['track', 'purchase', {
                 }}
               >
                 {copiedKey === 'pixel_snippet' ? '✓ Copied' : 'Copy Snippet'}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -433,7 +437,7 @@ window.cfq.push(['track', 'purchase', {
               <pre style={{ margin: 0, color: '#E2E8F0', fontSize: '12px', fontFamily: 'monospace' }}>
                 {trackEventSnippet}
               </pre>
-              <button
+              <Button
                 onClick={() => handleCopy(trackEventSnippet, 'track_snippet')}
                 style={{
                   position: 'absolute',
@@ -450,7 +454,7 @@ window.cfq.push(['track', 'purchase', {
                 }}
               >
                 {copiedKey === 'track_snippet' ? '✓ Copied' : 'Copy'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -471,7 +475,7 @@ window.cfq.push(['track', 'purchase', {
               <pre style={{ margin: 0, color: '#E2E8F0', fontSize: '12px', fontFamily: 'monospace' }}>
                 {curlSnippet}
               </pre>
-              <button
+              <Button
                 onClick={() => handleCopy(curlSnippet, 'curl_snippet')}
                 style={{
                   position: 'absolute',
@@ -488,7 +492,7 @@ window.cfq.push(['track', 'purchase', {
                 }}
               >
                 {copiedKey === 'curl_snippet' ? '✓ Copied' : 'Copy cURL'}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -521,7 +525,7 @@ window.cfq.push(['track', 'purchase', {
             <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
               Advertiser API Keys ({apiKeys.length})
             </span>
-            <button
+            <Button
               onClick={() => {
                 setGeneratedKeyResult(null);
                 setNewKeyName('');
@@ -539,7 +543,7 @@ window.cfq.push(['track', 'purchase', {
               }}
             >
               + Create Key
-            </button>
+            </Button>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
@@ -575,7 +579,7 @@ window.cfq.push(['track', 'purchase', {
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                         {!isRevoked && (
-                          <button
+                          <Button
                             onClick={() => handleRevokeKey(key.id)}
                             style={{
                               padding: '5px 10px',
@@ -588,7 +592,7 @@ window.cfq.push(['track', 'purchase', {
                             }}
                           >
                             Revoke
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -630,25 +634,16 @@ window.cfq.push(['track', 'purchase', {
                 </p>
 
                 <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  <label htmlFor="advertiser-api-key-name" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                     Key Name
                   </label>
-                  <input
+                  <Input
+                    id="advertiser-api-key-name"
                     type="text"
                     required
                     placeholder="e.g. Shopify Production Store"
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '13px',
-                      color: 'var(--text-primary)',
-                      background: 'var(--input-bg, #FFFFFF)',
-                      outline: 'none',
-                    }}
                   />
                 </div>
 
@@ -675,7 +670,7 @@ window.cfq.push(['track', 'purchase', {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setIsKeyModalOpen(false)}
                     style={{
@@ -689,8 +684,8 @@ window.cfq.push(['track', 'purchase', {
                     }}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
                     disabled={isGeneratingKey}
                     style={{
@@ -705,7 +700,7 @@ window.cfq.push(['track', 'purchase', {
                     }}
                   >
                     {isGeneratingKey ? 'Generating...' : 'Generate Key'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
@@ -724,7 +719,7 @@ window.cfq.push(['track', 'purchase', {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                  <button
+                  <Button
                     onClick={() => generatedKeyResult.rawSecretKey && handleCopy(generatedKeyResult.rawSecretKey, 'created_key')}
                     style={{
                       padding: '9px 18px',
@@ -738,8 +733,8 @@ window.cfq.push(['track', 'purchase', {
                     }}
                   >
                     {copiedKey === 'created_key' ? '✓ Copied to Clipboard' : 'Copy Key'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => {
                       setIsKeyModalOpen(false);
                       setGeneratedKeyResult(null);
@@ -755,7 +750,7 @@ window.cfq.push(['track', 'purchase', {
                     }}
                   >
                     Done
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -791,29 +786,19 @@ window.cfq.push(['track', 'purchase', {
             </p>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              <label htmlFor="conversion-reversal-reason" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                 Reason for Reversal
               </label>
-              <textarea
+              <Textarea
+                id="conversion-reversal-reason"
                 rows={3}
                 value={reverseReason}
                 onChange={(e) => setReverseReason(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '13px',
-                  color: 'var(--text-primary)',
-                  background: 'var(--input-bg, #FFFFFF)',
-                  outline: 'none',
-                  resize: 'none',
-                }}
               />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setReverseTarget(null)}
                 style={{
@@ -827,8 +812,8 @@ window.cfq.push(['track', 'purchase', {
                 }}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={isReversing}
                 onClick={handleReverseConversion}
@@ -844,7 +829,7 @@ window.cfq.push(['track', 'purchase', {
                 }}
               >
                 {isReversing ? 'Processing...' : 'Confirm Reversal'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

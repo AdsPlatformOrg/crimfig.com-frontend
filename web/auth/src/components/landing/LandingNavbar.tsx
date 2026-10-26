@@ -1,35 +1,33 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, KeyRound, Sparkles } from 'lucide-react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { Button } from '../ui/button';
+
+const links = [
+  { href: '#features', label: 'Capabilities' },
+  { href: '#security', label: 'Security & 2FA' },
+  { href: '#security', label: 'Team Workspaces' },
+  { href: '#faq', label: 'FAQ' },
+];
 
 export function LandingNavbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
   return (
     <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backgroundColor: 'var(--bg-page)',
-        borderBottom: '1px solid var(--border-subtle)',
-        backdropFilter: 'blur(12px)',
-        transition: 'all 0.2s ease',
+      className="cf-site-header"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          menuButtonRef.current?.focus();
+        }
       }}
     >
-      <div
-        style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 24px',
-          height: '72px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Brand identity */}
+      <div className="cf-site-header-inner">
         <CrimFigLogo
           variant="brand"
           size={42}
@@ -39,91 +37,63 @@ export function LandingNavbar() {
           href="/"
         />
 
-        {/* Navigation Anchor Links */}
-        <nav
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '28px',
-            fontSize: '14px',
-            fontWeight: 500,
-          }}
-          className="auth-nav-desktop"
-        >
-          <a
-            href="#features"
-            style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            Capabilities
-          </a>
-          <a
-            href="#security"
-            style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            Security & 2FA
-          </a>
-          <a
-            href="#security"
-            style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            Team Workspaces
-          </a>
-          <a
-            href="#faq"
-            style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            FAQ
-          </a>
+        <nav className="cf-site-nav" aria-label="Main navigation">
+          {links.map((link) => (
+            <a key={`${link.href}-${link.label}`} href={link.href} className="cf-site-nav-link">
+              {link.label}
+            </a>
+          ))}
         </nav>
 
-        {/* Action Controls & Sign In */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <Link
-            href="/login"
-            style={{
-              padding: '10px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--text-primary)',
-              textDecoration: 'none',
-              borderRadius: '10px',
-              border: '1px solid var(--border-subtle)',
-              transition: 'background-color 0.15s ease',
-            }}
+        <div className="cf-site-actions">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/login">Sign In</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/signup">
+              Create Account <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </Button>
+          <Button
+            ref={menuButtonRef}
+            className="cf-mobile-menu-toggle"
+            variant="outline"
+            size="icon"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="auth-mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
           >
-            Sign In
-          </Link>
-
-          <Link
-            href="/signup"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              borderRadius: '10px',
-              background: 'var(--gradient-crimson)',
-              color: '#FFFFFF',
-              textDecoration: 'none',
-              fontSize: '13px',
-              fontWeight: 700,
-              boxShadow: 'var(--shadow-crimson)',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-            }}
-          >
-            <span>Create Account</span>
-            <ArrowRight style={{ width: 15, height: 15 }} />
-          </Link>
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </Button>
         </div>
       </div>
+
+      <nav
+        id="auth-mobile-navigation"
+        className="cf-mobile-nav-panel"
+        aria-label="Mobile navigation"
+        hidden={!mobileMenuOpen}
+      >
+          {links.map((link) => (
+            <a
+              key={`${link.href}-${link.label}`}
+              href={link.href}
+              className="cf-site-nav-link"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {link.label}
+            </a>
+          ))}
+          <Button asChild variant="outline" className="cf-mobile-nav-cta">
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+          </Button>
+          <Button asChild className="cf-mobile-nav-cta">
+            <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+              Create Account <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </Button>
+      </nav>
     </header>
   );
 }

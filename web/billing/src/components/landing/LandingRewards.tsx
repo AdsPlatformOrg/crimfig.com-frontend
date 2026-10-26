@@ -14,6 +14,8 @@ import {
   Wallet,
   TrendingUp
 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 
 interface LandingRewardsProps {
   onExploreRewards: () => void;
@@ -109,7 +111,7 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
           {rewardChannels.map((chan, idx) => {
             const Icon = chan.icon;
             return (
-              <div
+              <Card
                 key={idx}
                 className="theme-card"
                 style={{
@@ -154,13 +156,13 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
                     {chan.description}
                   </p>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
 
         {/* Interactive Points to Cash Converter Box */}
-        <div
+        <Card
           className="theme-card converter-grid"
           style={{
             borderRadius: '20px',
@@ -169,7 +171,7 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
             padding: '36px',
             boxShadow: 'var(--shadow-md)',
             display: 'grid',
-            gridTemplateColumns: '1fr',
+            gridTemplateColumns: 'minmax(0, 1fr)',
             gap: '32px',
             alignItems: 'center',
           }}
@@ -238,40 +240,23 @@ export function LandingRewards({ onExploreRewards }: LandingRewardsProps) {
               Illustration only. Final program rates, eligibility and availability are not established here.
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={onExploreRewards}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '14px',
-                fontWeight: 600,
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-crimson)',
-                transition: 'transform 0.15s ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+              size="lg"
             >
               <Wallet style={{ width: 16, height: 16 }} />
               <span>View Rewards Availability</span>
               <ArrowRight style={{ width: 14, height: 14 }} />
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
 
       <style jsx>{`
         @media (min-width: 900px) {
           .converter-grid {
-            grid-template-columns: 1.2fr 0.8fr !important;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) !important;
           }
         }
       `}</style>

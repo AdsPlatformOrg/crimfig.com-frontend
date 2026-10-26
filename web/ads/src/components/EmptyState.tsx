@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { Button } from './ui/button';
+import { Card } from './ui/card';
 
 interface EmptyStateProps {
   icon: React.ComponentType<{ style?: React.CSSProperties; className?: string }>;
@@ -18,7 +20,8 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <div
+    <Card
+      variant="outline"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -69,28 +72,13 @@ export function EmptyState({
         {description}
       </p>
       {actionLabel && onAction && (
-        <button
+        <Button
           type="button"
           onClick={onAction}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            backgroundColor: 'var(--color-crimson)',
-            color: '#FFFFFF',
-            fontSize: '13px',
-            fontWeight: 600,
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-crimson)',
-            transition: 'opacity 0.15s ease',
-          }}
         >
           {actionLabel}
-        </button>
+        </Button>
       )}
-    </div>
+    </Card>
   );
 }

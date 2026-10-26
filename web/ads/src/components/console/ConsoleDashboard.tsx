@@ -133,7 +133,7 @@ export function ConsoleDashboard({
 
   if (isLoading) return <div role="status" className="theme-card" style={{ padding: 24 }}>Loading account analytics…</div>;
   if (error || !summary) return <div role="alert" className="theme-card" style={{ padding: 24 }}>
-    <p>{error || 'Account analytics unavailable.'}</p><button onClick={() => setAttempt(value => value + 1)}>Retry analytics</button>
+    <p>{error || 'Account analytics unavailable.'}</p><Button type="button" onClick={() => setAttempt(value => value + 1)} variant="outline" size="sm">Retry analytics</Button>
   </div>;
 
 
@@ -181,24 +181,16 @@ export function ConsoleDashboard({
             }}
           >
             {(['7d', '30d', '90d'] as const).map((p) => (
-              <button
+              <Button
                 key={p}
                 type="button"
                 onClick={() => setPeriod(p)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: period === p ? 'var(--color-crimson)' : 'transparent',
-                  color: period === p ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
+                variant={period === p ? 'default' : 'ghost'}
+                size="sm"
+                aria-pressed={period === p}
               >
                 {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : p === '90d' ? '3 Months' : 'Custom'}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -235,26 +227,13 @@ export function ConsoleDashboard({
             </div>
           )}
 
-          <button
+          <Button
             type="button"
             onClick={onOpenCreateCampaign}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-crimson)',
-            }}
+            size="sm"
           >
             <span>+ Create Ad</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -304,25 +283,22 @@ export function ConsoleDashboard({
               </div>
 
               {alert.actionLabel && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     onNavigateToCampaigns(alert.type === 'error' ? 'rejected' : 'active');
                   }}
+                  variant="outline"
+                  size="sm"
                   style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
                     backgroundColor: alert.type === 'error' ? 'var(--color-error)' : 'var(--color-warning)',
                     color: '#FFFFFF',
-                    border: 'none',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
+                    borderColor: alert.type === 'error' ? 'var(--color-error)' : 'var(--color-warning)',
                     whiteSpace: 'nowrap',
                   }}
                 >
                   {alert.actionLabel}
-                </button>
+                </Button>
               )}
             </div>
           ))}

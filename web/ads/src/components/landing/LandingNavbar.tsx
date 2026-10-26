@@ -1,38 +1,41 @@
 'use client';
 
-import React from 'react';
-import { ArrowRight, Sparkles, Layers, DollarSign, ShieldCheck } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
+import { Button } from '../ui/button';
 
 interface LandingNavbarProps {
   onLaunchConsole: (defaultRole?: 'advertiser' | 'promoter') => void;
 }
 
+const links = [
+  { href: '#what-we-do', label: 'What We Do' },
+  { href: '#partners', label: 'Publishers & Promoters' },
+  { href: '#calculator', label: 'Earnings Calculator' },
+  { href: '#technology', label: 'Technology' },
+];
+
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const launchConsole = () => {
+    setMobileMenuOpen(false);
+    onLaunchConsole('advertiser');
+  };
+
   return (
     <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backgroundColor: 'var(--bg-page)',
-        borderBottom: '1px solid var(--border-subtle)',
-        backdropFilter: 'blur(12px)',
-        transition: 'all 0.2s ease',
+      className="cf-site-header"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          menuButtonRef.current?.focus();
+        }
       }}
     >
-      <div
-        style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 24px',
-          height: '72px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Brand identity */}
+      <div className="cf-site-header-inner">
         <CrimFigLogo
           variant="brand"
           size={42}
@@ -41,95 +44,54 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
           subtext="Performance Advertising & 3-Tier Publishing"
         />
 
-        {/* Navigation Anchor Links */}
-        <nav
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '28px',
-            fontSize: '14px',
-            fontWeight: 500,
-          }}
-          className="landing-nav-links"
-        >
-          <a
-            href="#what-we-do"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            What We Do
-          </a>
-          <a
-            href="#partners"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            Publishers & Promoters
-          </a>
-          <a
-            href="#calculator"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            Earnings Calculator
-          </a>
-          <a
-            href="#technology"
-            style={{
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--color-crimson)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)')}
-          >
-            Technology
-          </a>
+        <nav className="cf-site-nav" aria-label="Main navigation">
+          {links.map((link) => (
+            <a key={link.href} href={link.href} className="cf-site-nav-link">
+              {link.label}
+            </a>
+          ))}
         </nav>
 
-        {/* Action Controls & Launch Console */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <button
-            type="button"
-            onClick={() => onLaunchConsole('advertiser')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              borderRadius: '10px',
-              background: 'var(--gradient-crimson)',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-crimson)',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
-          >
+        <div className="cf-site-actions">
+          <Button onClick={launchConsole} size="sm">
             <span>Launch Console</span>
-            <ArrowRight style={{ width: 15, height: 15 }} />
-          </button>
+            <ArrowRight size={16} aria-hidden="true" />
+          </Button>
+          <Button
+            ref={menuButtonRef}
+            className="cf-mobile-menu-toggle"
+            variant="outline"
+            size="icon"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="ads-mobile-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </Button>
         </div>
       </div>
+
+      <nav
+        id="ads-mobile-navigation"
+        className="cf-mobile-nav-panel"
+        aria-label="Mobile navigation"
+        hidden={!mobileMenuOpen}
+      >
+          {links.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="cf-site-nav-link"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {link.label}
+            </a>
+          ))}
+          <Button onClick={launchConsole} className="cf-mobile-nav-cta">
+            Launch Console <ArrowRight size={16} aria-hidden="true" />
+          </Button>
+      </nav>
     </header>
   );
 }

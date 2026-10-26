@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { DollarSign, Sparkles, TrendingUp, ArrowRight, Calculator } from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface LandingCalculatorProps {
   onStartEarning: () => void;
@@ -71,6 +72,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
 
         {/* Calculator Main Box */}
         <div
+          className="ads-calculator-main"
           style={{
             borderRadius: '24px',
             backgroundColor: 'var(--bg-elevated)',
@@ -91,6 +93,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
                 Your Primary Channel
               </label>
               <div
+                className="ads-channel-toggle"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(3, 1fr)',
@@ -106,24 +109,17 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
                   { id: 'app' as const, label: 'Mobile App' },
                   { id: 'creator' as const, label: 'Social / Reels' },
                 ].map((item) => (
-                  <button
+                  <Button
                     key={item.id}
                     type="button"
+                    className="ads-channel-option"
                     onClick={() => setChannel(item.id)}
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      backgroundColor: channel === item.id ? 'var(--color-crimson)' : 'transparent',
-                      color: channel === item.id ? '#FFFFFF' : 'var(--text-secondary)',
-                    }}
+                    variant={channel === item.id ? 'default' : 'ghost'}
+                    size="sm"
+                    aria-pressed={channel === item.id}
                   >
                     {item.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -236,32 +232,16 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={onStartEarning}
-              style={{
-                width: '100%',
-                padding: '14px 20px',
-                borderRadius: '10px',
-                backgroundColor: '#FFFFFF',
-                color: 'var(--color-crimson)',
-                border: 'none',
-                fontSize: '14px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: 'var(--shadow-md)',
-                transition: 'transform 0.15s ease',
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'translateY(0)')}
+              variant="secondary"
+              size="lg"
+              style={{ width: '100%' }}
             >
               <span>View Promoter Console</span>
               <ArrowRight style={{ width: 16, height: 16 }} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

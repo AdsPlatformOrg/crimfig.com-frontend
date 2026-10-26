@@ -1,17 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { 
-  Heart, 
-  MessageSquare, 
-  Eye, 
-  Share2, 
-  MoreVertical, 
-  Bookmark, 
-  Flag, 
-  Code 
-} from 'lucide-react';
+import { Heart, MessageSquare, Eye, Share2, MoreVertical } from 'lucide-react';
+import { Button } from '../ui/button';
 import './template-layout.css';
 
 export interface FeedCardItemProps {
@@ -50,6 +41,7 @@ export const FeedCardItem: React.FC<FeedCardItemProps> = ({
   onLike,
   onReply,
   onShare,
+  options = [],
 }) => {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [liked, setLiked] = React.useState(false);
@@ -121,28 +113,22 @@ export const FeedCardItem: React.FC<FeedCardItemProps> = ({
         </div>
 
         {/* Options Dropdown */}
-        <div style={{ position: 'relative' }}>
-          <button
+        {options.length > 0 && <div style={{ position: 'relative' }}>
+          <Button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              padding: '6px',
-              borderRadius: '9999px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-label="Options"
+            variant="ghost"
+            size="icon"
+            aria-label="More post actions"
+            aria-expanded={menuOpen}
+            aria-controls={`post-actions-${id}`}
           >
             <MoreVertical size={16} />
-          </button>
+          </Button>
 
           {menuOpen && (
             <div
+              id={`post-actions-${id}`}
               style={{
                 position: 'absolute',
                 right: 0,
@@ -156,70 +142,23 @@ export const FeedCardItem: React.FC<FeedCardItemProps> = ({
                 zIndex: 20,
               }}
             >
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  fontSize: '0.8125rem',
-                  color: 'var(--text-secondary)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
-              >
-                <Bookmark size={14} />
-                <span>Save to favorites</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  fontSize: '0.8125rem',
-                  color: 'var(--text-secondary)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
-              >
-                <Code size={14} />
-                <span>Embed placement</span>
-              </button>
-              <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '4px 0' }} />
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  fontSize: '0.8125rem',
-                  color: 'var(--color-error)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
-              >
-                <Flag size={14} />
-                <span>Report issue</span>
-              </button>
+              {options.map((option) => (
+                <Button
+                  key={option.label}
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    option.onClick(id);
+                    setMenuOpen(false);
+                  }}
+                  style={{ width: '100%', justifyContent: 'flex-start', borderRadius: 0 }}
+                >
+                  {option.label}
+                </Button>
+              ))}
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
       {/* Card Title & Content */}
@@ -260,24 +199,30 @@ export const FeedCardItem: React.FC<FeedCardItemProps> = ({
       {/* Card Action Bar */}
       <div className="cf-template-card-actions-bar">
         <div className="cf-template-stats-group">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             className="cf-template-stat-item"
             onClick={handleLike}
+            aria-label={`${liked ? 'Unlike' : 'Like'} ${title}`}
+            aria-pressed={liked}
             style={{ color: liked ? 'var(--color-crimson)' : undefined }}
           >
             <Heart size={16} fill={liked ? 'var(--color-crimson)' : 'none'} />
             <span>{likesCount}</span>
-          </button>
+          </Button>
 
-          <button
+          {onReply && <Button
             type="button"
+            variant="ghost"
+            size="sm"
             className="cf-template-stat-item"
-            onClick={() => onReply?.(id)}
+            onClick={() => onReply(id)}
           >
             <MessageSquare size={16} />
             <span>{metrics.replies ?? 0}</span>
-          </button>
+          </Button>}
 
           <span className="cf-template-stat-item" style={{ cursor: 'default' }}>
             <Eye size={16} />
@@ -285,14 +230,16 @@ export const FeedCardItem: React.FC<FeedCardItemProps> = ({
           </span>
         </div>
 
-        <button
+        {onShare && <Button
           type="button"
+          variant="ghost"
+          size="sm"
           className="cf-template-stat-item"
-          onClick={() => onShare?.(id)}
+          onClick={() => onShare(id)}
         >
           <Share2 size={16} />
           <span>Share</span>
-        </button>
+        </Button>}
       </div>
     </article>
   );

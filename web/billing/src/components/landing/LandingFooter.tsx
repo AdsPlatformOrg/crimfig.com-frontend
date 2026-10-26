@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Button } from '../ui/button';
 import { Wallet, ShieldCheck, ArrowRight, ExternalLink } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { ThemeSwitcher } from '../ThemeSwitcher';
@@ -56,22 +57,15 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             <a href="#rewards" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards &amp; Cashback</a>
             <a href="#calculator" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>FX Rate Calculator</a>
             <a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Commercial Bank Rails</a>
-            <button
+            <Button
               type="button"
               onClick={() => onLaunchConsole('overview')}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                textAlign: 'left',
-                color: 'var(--color-crimson)',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: '13px',
-              }}
+              variant="link"
+              size="sm"
+              style={{ justifyContent: 'flex-start', padding: 0 }}
             >
               Open Console &rarr;
-            </button>
+            </Button>
           </div>
 
           {/* Column 2: Ecosystem Apps */}
@@ -132,20 +126,14 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <button
+            <Button
               type="button"
               onClick={() => onLaunchConsole('rewards')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-crimson)',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontSize: '12px',
-              }}
+              variant="link"
+              size="sm"
             >
               Explore Rewards Program &rarr;
-            </button>
+            </Button>
 
             <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>

@@ -2,10 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cancelUndispatchedWithdrawal, confirmWithdrawal, quoteWithdrawal, recoverWithdrawal, withdrawalRequest, type WithdrawalQuote, type WithdrawalStatus } from '../../lib/withdrawal-api';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Input } from '../ui/input';
 
 interface Bank { id: string; bankName: string; accountNumber: string; accountName: string }
 const ngn = (kobo: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(kobo / 100);
-const control: React.CSSProperties = { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)' };
 
 export function WithdrawalForm({ banks, availableUsd, onRefresh }: { banks: Bank[]; availableUsd: number | null; onRefresh: () => Promise<void> }) {
   const [amount, setAmount] = useState('25'), [bankId, setBankId] = useState('');
@@ -57,34 +60,36 @@ export function WithdrawalForm({ banks, availableUsd, onRefresh }: { banks: Bank
     if (mounted.current) { setResult(next); await onRefresh(); }
   });
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-    {error && <p role="alert" style={{ color: 'var(--color-crimson)' }}>{error}</p>}
+    {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
     {requestId || invalidRecovery ? <>
-      <p role="status">{result ? `Withdrawal status: ${result.status}.` : 'A withdrawal request needs a status check. No new payout will be sent by checking.'}</p>
+      <Alert variant="info">
+        <AlertDescription>{result ? `Withdrawal status: ${result.status}.` : 'A withdrawal request needs a status check. No new payout will be sent by checking.'}</AlertDescription>
+      </Alert>
       {result?.refund && <p>Returned to your wallet: <strong>${(result.refund.refundUsdCents / 100).toFixed(2)}</strong>. Confirmed non-refundable charges: ${(result.refund.retainedUsdCents / 100).toFixed(2)} ({ngn(result.refund.retainedKobo)} at your original exchange rate).</p>}
       {result?.confirmation === 'operator_approval_required' && <p>Provider approval is required. Your funds remain reserved.</p>}
       {result?.confirmation === 'unconfirmed' && <p>Provider confirmation is unavailable. Your request is retained for reconciliation.</p>}
       {result?.confirmation === 'not_dispatched' && result.status === 'pending' && <>
         <p>Your funds are reserved, but the transfer has not been sent. You can cancel this reservation and review a new payout.</p>
-        <button type="button" style={control} disabled={busy} onClick={cancel}>Cancel unsent withdrawal and release funds</button>
+        <Button type="button" variant="outline" disabled={busy} onClick={cancel}>Cancel unsent withdrawal and release funds</Button>
       </>}
       {requestId && <p style={{ overflowWrap: 'anywhere', fontSize: 12 }}>Request: {requestId}</p>}
-      <button type="button" style={control} disabled={busy || invalidRecovery} onClick={recover}>{busy ? 'Checking…' : 'Check withdrawal status'}</button>
-      {terminal && <button type="button" style={control} disabled={busy} onClick={() => {
+      <Button type="button" disabled={busy || invalidRecovery} loading={busy} onClick={recover}>{busy ? 'Checking…' : 'Check withdrawal status'}</Button>
+      {terminal && <Button type="button" variant="outline" disabled={busy} onClick={() => {
         const url = new URL(window.location.href); url.searchParams.delete('withdrawal_request');
         window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
         setRequestId(null); setResult(null); setQuote(null); setError(null);
-      }}>Start another withdrawal</button>}
+      }}>Start another withdrawal</Button>}
     </> : <>
       <label htmlFor="billing-withdraw-amount">Withdrawal amount (USD)</label>
-      <input id="billing-withdraw-amount" style={control} type="number" step="0.01" min="5" value={amount} disabled={busy} onChange={e => { setAmount(e.target.value); setQuote(null); }} />
+      <Input id="billing-withdraw-amount" type="number" step="0.01" min="5" value={amount} disabled={busy} onChange={e => { setAmount(e.target.value); setQuote(null); }} />
       <p style={{ fontSize: 12 }}>Available: {availableUsd === null ? 'Unavailable' : `$${availableUsd.toFixed(2)}`}</p>
       <label htmlFor="billing-withdraw-bank">Destination bank account</label>
-      <select id="billing-withdraw-bank" style={control} value={bankId} disabled={busy} onChange={e => { setBankId(e.target.value); setQuote(null); }}>
+      <select id="billing-withdraw-bank" className="cf-input" value={bankId} disabled={busy} onChange={e => { setBankId(e.target.value); setQuote(null); }}>
         <option value="">Select a bank account</option>
         {banks.map(bank => <option key={bank.id} value={bank.id}>{bank.bankName} — {bank.accountNumber} ({bank.accountName})</option>)}
       </select>
       {!banks.length && <p>Connect a bank account in the Bank Accounts tab first.</p>}
-      {quote && <section aria-label="Payout quote" style={{ padding: 16, border: '1px solid var(--border-subtle)', borderRadius: 8 }}>
+      {quote && <Card role="region" aria-label="Payout quote" variant="outline" style={{ padding: 16 }}>
         <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 8 }}>
           <dt>Wallet debit</dt><dd style={{ margin: 0, textAlign: 'right', overflowWrap: 'anywhere' }}>${(quote.amountUsdCents / 100).toFixed(2)}</dd>
           <dt>USD/NGN rate</dt><dd style={{ margin: 0, textAlign: 'right', overflowWrap: 'anywhere' }}>{quote.rate.toLocaleString()}</dd>
@@ -95,10 +100,10 @@ export function WithdrawalForm({ banks, availableUsd, onRefresh }: { banks: Bank
         </dl>
         <p style={{ fontSize: 12 }}>Charges are deducted from your payout. Quote expires at {new Date(quote.expiresAt).toLocaleTimeString()}.</p>
         <p style={{ fontSize: 12 }}>If the transfer fails or is reversed, confirmed non-refundable charges are deducted from your refund using this exchange rate, rounded to the nearest USD cent.</p>
-      </section>}
-      <button type="button" style={{ ...control, background: 'var(--color-crimson)', color: '#fff', fontWeight: 600 }} disabled={busy || !banks.length || availableUsd === null} onClick={quote ? confirm : review}>
+      </Card>}
+      <Button type="button" loading={busy} disabled={busy || !banks.length || availableUsd === null} onClick={quote ? confirm : review}>
         {busy ? 'Please wait…' : quote ? `Confirm payout of ${ngn(quote.netKobo)}` : 'Review fees and net payout'}
-      </button>
+      </Button>
     </>}
   </div>;
 }

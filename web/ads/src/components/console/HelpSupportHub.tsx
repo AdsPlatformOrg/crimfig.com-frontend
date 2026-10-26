@@ -15,6 +15,9 @@ import {
   Shield,
   LifeBuoy,
 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 
 interface Ticket {
   id: string;
@@ -122,58 +125,34 @@ export function HelpSupportHub() {
 
         {/* Tab switch buttons */}
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
+          <Button
             type="button"
             onClick={() => setActiveTab('tickets')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'tickets' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'tickets' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            aria-pressed={activeTab === 'tickets'}
+            variant={activeTab === 'tickets' ? 'default' : 'outline'}
+            size="sm"
           >
             My Tickets ({tickets.length})
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('new_ticket')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'new_ticket' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'new_ticket' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            aria-pressed={activeTab === 'new_ticket'}
+            variant={activeTab === 'new_ticket' ? 'default' : 'outline'}
+            size="sm"
           >
             <Plus style={{ width: 14, height: 14 }} />
             <span>New Ticket</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => setActiveTab('faq')}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: activeTab === 'faq' ? 'var(--color-crimson)' : 'var(--badge-bg)',
-              color: activeTab === 'faq' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            aria-pressed={activeTab === 'faq'}
+            variant={activeTab === 'faq' ? 'default' : 'outline'}
+            size="sm"
           >
             Knowledge Base
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -298,66 +277,38 @@ export function HelpSupportHub() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Subject</label>
-            <input
+            <label htmlFor="support-ticket-subject" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Subject</label>
+            <Input
+              id="support-ticket-subject"
               type="text"
               placeholder="Brief summary of inquiry..."
               value={newSubject}
               onChange={(e) => setNewSubject(e.target.value)}
               required
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-page)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-              }}
             />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Detailed Description</label>
-            <textarea
+            <label htmlFor="support-ticket-message" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Detailed Description</label>
+            <Textarea
+              id="support-ticket-message"
               rows={5}
               placeholder="Include relevant Campaign IDs, Domain Names, or Transaction references..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               required
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-page)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-                fontFamily: 'inherit',
-              }}
             />
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            style={{
-              padding: '12px 20px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '8px',
-            }}
+            style={{ marginTop: '8px' }}
+            size="lg"
           >
             <Send style={{ width: 14, height: 14 }} />
             <span>{isSubmitting ? 'Submitting...' : 'Submit Ticket'}</span>
-          </button>
+          </Button>
         </form>
       )}
 
