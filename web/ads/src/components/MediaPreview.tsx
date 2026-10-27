@@ -31,7 +31,20 @@ export function MediaPreview({ source, mode = 'owner' }: { source: string; mode?
   if (error) return <p role="status" style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{error}</p>;
   if (!preview || preview.source !== source) return <p role="status">Loading preview…</p>;
   return preview.video
-    ? <video src={preview.url} controls preload="metadata" style={{ maxWidth: '100%', maxHeight: 240 }} />
+    ? (
+      <video
+        src={preview.url}
+        controls
+        controlsList="nodownload noplaybackrate"
+        preload="metadata"
+        playsInline
+        aria-label="Creative video preview"
+        {...({ disablePictureInPicture: '', disableRemotePlayback: '' } as any)}
+        style={{ maxWidth: '100%', maxHeight: 240, background: '#0b1020' }}
+      >
+        Your browser cannot play this video.
+      </video>
+    )
     // next/image cannot optimize authenticated in-memory blob URLs.
     // eslint-disable-next-line @next/next/no-img-element
     : <img src={preview.url} alt="Creative media preview" style={{ maxWidth: '100%', maxHeight: 240, objectFit: 'contain' }} />;

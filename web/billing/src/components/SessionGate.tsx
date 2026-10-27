@@ -126,20 +126,19 @@ export function SessionGate({ children }: { children: ReactNode }) {
               ? 'Checking your secure session to make sure everything is in place for you…'
               : status === 'anonymous'
               ? 'Sign in with your CrimFig account to manage escrow, payments, and settlements.'
-              : 'We had trouble reaching the session service. Please retry in a moment.'}
+              : 'We couldn’t verify your session. Sign in to continue, or retry the connection.'}
           </p>
         </div>
 
         {!waiting && (
-          <div style={{ marginTop: '8px', width: '100%' }}>
-            {status === 'anonymous' ? (
-              <a
-                style={{ ...actionStyle, width: '100%', boxSizing: 'border-box', justifyContent: 'center', fontWeight: 600, fontSize: '14px', borderRadius: '10px' }}
-                href={loginUrl()}
-              >
-                Sign In to Continue
-              </a>
-            ) : (
+          <div style={{ marginTop: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <a
+              style={{ ...actionStyle, width: '100%', boxSizing: 'border-box', justifyContent: 'center', fontWeight: 600, fontSize: '14px', borderRadius: '10px' }}
+              href={loginUrl()}
+            >
+              Sign In to Continue
+            </a>
+            {status === 'temporary-error' && (
               <Button
                 type="button"
                 style={{ width: '100%' }}

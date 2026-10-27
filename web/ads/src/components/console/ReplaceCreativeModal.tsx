@@ -3,10 +3,11 @@ import { useDialog } from '../../lib/use-dialog';
 import { MediaPreview } from '../MediaPreview';
 import { sessionFetch } from '../../lib/session';
 
-import React, { useState } from 'react';
-import { X, AlertCircle, RefreshCw, Upload, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, AlertCircle, RefreshCw, CheckCircle2, Type, Image as ImageIcon, Video, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { loadCreationCapabilities, type AdType } from '../../lib/campaigns-api';
 
 interface CreativeToReplace {
   id: string;
@@ -17,8 +18,10 @@ interface CreativeToReplace {
   destinationUrl: string;
   imageUrl?: string;
   videoUrl?: string;
+  adType?: AdType;
   adFormat?: 'banner' | 'card' | 'video' | 'interstitial';
   mediaFormat?: 'image' | 'gif' | 'video';
+  mediaAssetId?: string;
   rejectionReason?: string;
 }
 
@@ -39,15 +42,49 @@ export function ReplaceCreativeModal({
   const [bodyText, setBodyText] = useState(creative?.bodyText || '');
   const [ctaText, setCtaText] = useState(creative?.ctaText || 'Learn More');
   const [destinationUrl, setDestinationUrl] = useState(creative?.destinationUrl || '');
-  const [adFormat, setAdFormat] = useState<'banner' | 'card' | 'video' | 'interstitial'>(creative?.adFormat || 'card');
-  const [mediaFormat, setMediaFormat] = useState<'image' | 'gif' | 'video'>(creative?.mediaFormat || 'image');
-  const [imageUrl, setImageUrl] = useState(creative?.imageUrl || '');
-  const [videoUrl, setVideoUrl] = useState(creative?.videoUrl || '');
+  const [adType, setAdType] = useState<AdType>(
+    creative?.adType || (creative?.videoUrl ? 'video' : creative?.imageUrl ? 'image' : 'text'),
+  );
+  const [mediaAssetId, setMediaAssetId] = useState<string | undefined>(creative?.mediaAssetId);
+  const [mediaUrl, setMediaUrl] = useState(creative?.videoUrl || creative?.imageUrl || '');
+  const [videoEnabled, setVideoEnabled] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fieldId = React.useId();
   const panel = useDialog(isOpen && Boolean(creative), onClose);
+
+  useEffect(() => {
+    let active = true;
+    void loadCreationCapabilities().then((caps) => { if (active) setVideoEnabled(caps.videoAuthoringEnabled); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  async function uploadReplacement(file: File | undefined) {
+    if (!file) return;
+    const maxBytes = adType === 'video' ? 20 * 1024 * 1024 : 750 * 1024;
+    if (file.size > maxBytes) {
+      setError(`This file exceeds the ${adType === 'video' ? '20 MB video' : '750 KB image'} limit.`);
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await sessionFetch('/api/v1/uploads/direct', { method: 'POST', body });
+      if (!response.ok) throw new Error('The upload could not be confirmed.');
+      const json = await response.json();
+      if (!json?.data?.assetId) throw new Error('The upload response was invalid.');
+      setMediaAssetId(json.data.assetId);
+      setMediaUrl(json.data.cdnUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'The upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  }
 
   if (!isOpen || !creative) return null;
 
@@ -57,15 +94,22 @@ export function ReplaceCreativeModal({
     setError(null);
 
     try {
+      if (adType !== 'text' && !mediaAssetId && !mediaUrl) {
+        throw new Error(`Upload a replacement ${adType} asset before submitting.`);
+      }
       const payload: any = {
         headline,
         bodyText,
         ctaText,
         destinationUrl,
-        adFormat,
-        mediaFormat,
-        imageUrl: mediaFormat === 'video' ? undefined : imageUrl,
-        videoUrl: mediaFormat === 'video' ? videoUrl : undefined,
+        adType,
+        ...(adType === 'text'
+          ? { imageUrl: undefined, videoUrl: undefined }
+          : mediaAssetId
+            ? { mediaAssetId }
+            : adType === 'video'
+              ? { videoUrl: mediaUrl }
+              : { imageUrl: mediaUrl }),
       };
 
       // Call API
@@ -178,92 +222,73 @@ export function ReplaceCreativeModal({
             </div>
           </div>
 
-          {/* Ad Format Picker */}
+          {/* Ad type */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Ad Display Format
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-              {(['card', 'banner', 'video', 'interstitial'] as const).map((fmt) => (
-                <Button
-                  key={fmt}
-                  type="button"
-                  onClick={() => setAdFormat(fmt)}
-                  aria-pressed={adFormat === fmt}
-                  style={{
-                    padding: '8px 8px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-subtle)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    backgroundColor: adFormat === fmt ? 'var(--color-crimson)' : 'var(--badge-bg)',
-                    color: adFormat === fmt ? '#FFFFFF' : 'var(--text-secondary)',
-                  }}
-                >
-                  {fmt}
-                </Button>
-              ))}
+            <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Ad content type
+            </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }} role="group" aria-label="Ad content type">
+              {([
+                { type: 'text' as const, label: 'Text', icon: Type },
+                { type: 'image' as const, label: 'Image', icon: ImageIcon },
+                { type: 'video' as const, label: 'Video', icon: Video },
+              ]).map((option) => {
+                const Icon = option.icon;
+                const disabled = option.type === 'video' && !videoEnabled;
+                const active = adType === option.type;
+                return (
+                  <Button
+                    key={option.type}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => {
+                      setAdType(option.type);
+                      if (option.type !== adType) { setMediaAssetId(undefined); setMediaUrl(''); }
+                    }}
+                    aria-pressed={active}
+                    title={disabled ? 'Video authoring is not available yet.' : undefined}
+                    style={{
+                      padding: '9px 8px',
+                      borderRadius: '8px',
+                      border: `1px solid ${active ? 'var(--color-crimson)' : 'var(--border-subtle)'}`,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                      opacity: disabled ? 0.65 : 1,
+                      backgroundColor: active ? 'var(--badge-bg)' : 'var(--bg-page)',
+                      color: active ? 'var(--color-crimson)' : 'var(--text-secondary)',
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px',
+                    }}
+                  >
+                    <Icon size={13} aria-hidden="true" /> {option.label}{disabled ? ' · Soon' : ''}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Media Format Picker */}
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Media Asset Type
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              {(['image', 'gif', 'video'] as const).map((fmt) => (
-                <Button
-                  key={fmt}
-                  type="button"
-                  onClick={() => setMediaFormat(fmt)}
-                  aria-pressed={mediaFormat === fmt}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-subtle)',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    backgroundColor: mediaFormat === fmt ? 'var(--color-crimson)' : 'var(--badge-bg)',
-                    color: mediaFormat === fmt ? '#FFFFFF' : 'var(--text-secondary)',
-                  }}
-                >
-                  {fmt}
-                </Button>
-              ))}
+          {adType !== 'text' && (
+            <div>
+              <label htmlFor={`${fieldId}-media`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                {adType === 'video' ? 'Replacement video (MP4/WebM, max 20 MB)' : 'Replacement image (JPG/PNG/WebP, max 750 KB)'}
+              </label>
+              <input
+                id={`${fieldId}-media`}
+                type="file"
+                accept={adType === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/avif'}
+                onChange={(event) => void uploadReplacement(event.target.files?.[0])}
+                disabled={uploading || isSubmitting}
+                style={{ width: '100%', fontSize: '12px', color: 'var(--text-secondary)' }}
+              />
+              {uploading && <p role="status" style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}><Loader2 size={12} aria-hidden="true" /> Uploading…</p>}
+              {mediaUrl && <div style={{ marginTop: '8px' }}><MediaPreview source={mediaUrl} /></div>}
+              {mediaAssetId && !uploading && (
+                <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={12} aria-hidden="true" /> Replacement asset ready.
+                </p>
+              )}
             </div>
-          </div>
-
-          {/* Media URL Input */}
-          <div>
-            <label htmlFor={`${fieldId}-media`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              {mediaFormat === 'video' ? 'MP4 Video URL' : 'Image / GIF Asset URL'}
-            </label>
-            <Input id={`${fieldId}-media`}
-              type="text"
-              inputMode="url"
-              required
-              value={mediaFormat === 'video' ? videoUrl : imageUrl}
-              onChange={(e) => (mediaFormat === 'video' ? setVideoUrl(e.target.value) : setImageUrl(e.target.value))}
-              placeholder={mediaFormat === 'video' ? 'https://cdn.crimfig.com/creatives/ad.mp4' : 'https://cdn.crimfig.com/creatives/banner.png'}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-page)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          {(mediaFormat === 'video' ? videoUrl : imageUrl) && <MediaPreview source={mediaFormat === 'video' ? videoUrl : imageUrl} />}
+          )}
 
           {/* Headline */}
           <div>

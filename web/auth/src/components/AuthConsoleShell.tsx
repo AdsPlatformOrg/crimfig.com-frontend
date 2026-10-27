@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut } from 'lucide-react';
+import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound } from 'lucide-react';
 import { Button } from './ui/button';
+import { consentSession } from '../lib/consent';
 
 interface AuthConsoleShellProps {
   children: React.ReactNode;
@@ -18,6 +19,19 @@ interface AuthConsoleShellProps {
 export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff = false }: AuthConsoleShellProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatar, setAvatar] = useState<{ url: string; alt: string } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const load = () => {
+      void consentSession().getProfile()
+        .then((profile) => { if (active) setAvatar({ url: profile.avatar.url, alt: profile.avatar.alt }); })
+        .catch(() => { /* The default avatar remains visible. */ });
+    };
+    load();
+    window.addEventListener('crimfig-profile-updated', load);
+    return () => { active = false; window.removeEventListener('crimfig-profile-updated', load); };
+  }, []);
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -36,6 +50,7 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
       title: 'Identity & Security',
       items: [
         { id: 'dashboard', label: 'Security Overview', href: '/dashboard', icon: Lock },
+        { id: 'profile', label: 'Profile & Avatar', href: '/profile', icon: UserRound },
         { id: 'security', label: 'Credentials & 2FA', href: '/security', icon: Key },
         { id: 'sessions', label: 'Active Sessions', href: '/sessions', icon: Smartphone },
         { id: 'apps', label: 'Connected Apps', href: '/apps', icon: Key },
@@ -91,6 +106,7 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '16px',
+            flexWrap: 'wrap',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -109,9 +125,25 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
             <CrimFigLogo variant="brand" size={36} app="Identity" appBadge="Zero-Trust" href="/" />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="auth-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Link
+              href="/profile"
+              aria-label="Open profile and avatar settings"
+              style={{ display: 'inline-flex', width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
+            >
+              {/* The avatar URL is same-origin in Auth and is not a Next image domain. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={avatar?.url || '/avatars/chibi/chibi-indigo.webp'}
+                alt={avatar?.alt || 'Default chibi ninja avatar'}
+                width={36}
+                height={36}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </Link>
             <Link
               href="/login"
+              className="auth-switch-account"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -126,7 +158,7 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
               }}
             >
               <LogOut size={14} />
-              <span>Switch Account</span>
+              <span className="auth-switch-account-label">Switch Account</span>
             </Link>
           </div>
         </div>
