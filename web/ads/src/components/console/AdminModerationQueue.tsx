@@ -19,9 +19,9 @@ interface PendingCampaign {
 interface PendingCreative {
   id: string;
   campaignId: string;
-  headline: string;
-  bodyText: string;
-  ctaText: string;
+  headline?: string | null;
+  bodyText?: string | null;
+  ctaText?: string | null;
   imageUrl?: string;
   videoUrl?: string;
   destinationUrl: string;

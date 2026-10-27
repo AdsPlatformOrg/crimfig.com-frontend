@@ -31,7 +31,7 @@ import {
 
 interface CampaignCreativeItem {
   id?: string;
-  headline: string;
+  headline?: string | null;
   destinationUrl: string;
   adFormat: 'banner' | 'card' | 'video' | 'interstitial';
   mediaFormat?: 'image' | 'gif' | 'video';
@@ -60,7 +60,7 @@ interface Campaign {
   clicks: number;
   hovers?: number;
   touches?: number;
-  headline: string;
+  headline?: string | null;
   destinationUrl: string;
   imageUrl?: string;
   videoUrl?: string;

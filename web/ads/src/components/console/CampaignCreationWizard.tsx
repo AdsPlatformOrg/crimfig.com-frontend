@@ -115,7 +115,7 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
         for (let index = 0; index < stack.ads.length; index += 1) {
           const ad = stack.ads[index];
           const label = `${stack.name}, ad ${index + 1}`;
-          if (!ad.headline.trim()) { setError(`${label}: enter a headline.`); return false; }
+          if (ad.adType === 'text' && !ad.headline.trim()) { setError(`${label}: enter a headline for the text ad.`); return false; }
           if (ad.headline.trim().length > 100) { setError(`${label}: headline must be 100 characters or fewer.`); return false; }
           if (!ad.destinationUrl.trim()) { setError(`${label}: enter a destination URL.`); return false; }
           try {
@@ -186,9 +186,9 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
           targetHours: stack.targetHours,
           ads: stack.ads.map((ad) => ({
             adType: ad.adType,
-            headline: ad.headline.trim(),
+            headline: ad.headline.trim() || undefined,
             bodyText: ad.bodyText.trim() || undefined,
-            ctaText: ad.ctaText.trim() || 'Learn More',
+            ctaText: ad.ctaText.trim() || undefined,
             destinationUrl: ad.destinationUrl.trim(),
             adFormat: 'card',
             mediaAssetId: ad.mediaAssetId,

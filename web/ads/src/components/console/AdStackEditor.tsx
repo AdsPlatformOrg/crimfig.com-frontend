@@ -72,6 +72,7 @@ const TYPE_OPTIONS: Array<{ type: AdDraftType; label: string; icon: typeof Type 
 export function AdStackEditor({ stack, index, capabilities, canRemove, onChange, onRemove }: AdStackEditorProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [uploadingAd, setUploadingAd] = useState('');
+  const [creativeAdvanced, setCreativeAdvanced] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
   const [hoursText, setHoursText] = useState(stack.targetHours.join(', '));
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -103,8 +104,16 @@ export function AdStackEditor({ stack, index, capabilities, canRemove, onChange,
 
   function setType(ad: AdDraft, type: AdDraftType) {
     if (type === 'video' && !videoEnabled) return;
+    const nextCta = type === ad.adType
+      ? ad.ctaText
+      : type === 'text'
+        ? ad.ctaText || 'Learn More'
+        : ad.adType === 'text'
+          ? ''
+          : ad.ctaText;
     updateAd(ad.key, {
       adType: type,
+      ctaText: nextCta,
       ...(type !== ad.adType ? { mediaAssetId: undefined, mediaUrl: undefined } : {}),
     });
   }
@@ -216,54 +225,99 @@ export function AdStackEditor({ stack, index, capabilities, canRemove, onChange,
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div>
-                  <label htmlFor={`headline-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
-                    Headline <span style={{ color: 'var(--color-crimson)' }}>*</span>
-                  </label>
-                  <Input id={`headline-${ad.key}`} value={ad.headline} maxLength={100} onChange={(event) => updateAd(ad.key, { headline: event.target.value })} placeholder="A clear, honest headline" />
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{ad.headline.length}/100</span>
-                </div>
-                <div>
-                  <label htmlFor={`body-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Body / sub-headline</label>
-                  <Textarea id={`body-${ad.key}`} rows={2} value={ad.bodyText} maxLength={2000} onChange={(event) => updateAd(ad.key, { bodyText: event.target.value })} placeholder="Optional supporting copy" />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '10px' }}>
-                  <div>
-                    <label htmlFor={`cta-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Call to action</label>
-                    <Input id={`cta-${ad.key}`} value={ad.ctaText} maxLength={50} onChange={(event) => updateAd(ad.key, { ctaText: event.target.value })} />
-                  </div>
-                  <div>
-                    <label htmlFor={`destination-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
-                      Destination URL <span style={{ color: 'var(--color-crimson)' }}>*</span>
-                    </label>
-                    <Input id={`destination-${ad.key}`} type="url" value={ad.destinationUrl} onChange={(event) => updateAd(ad.key, { destinationUrl: event.target.value })} placeholder="https://example.com/landing" />
-                  </div>
-                </div>
-
-                {ad.adType !== 'text' && (
-                  <div style={{ border: '1px dashed var(--border-subtle)', borderRadius: '10px', padding: '12px', background: 'var(--bg-surface)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>
-                        {ad.adType === 'video' ? 'Video asset (MP4/WebM, max 20 MB)' : 'Image asset (JPG/PNG/WebP, max 750 KB)'}
-                      </span>
-                      {uploadingAd === ad.key && <Loader2 size={14} aria-hidden="true" />}
+                {ad.adType === 'text' ? (
+                  <>
+                    <div>
+                      <label htmlFor={`headline-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Headline <span style={{ color: 'var(--color-crimson)' }}>*</span>
+                      </label>
+                      <Input id={`headline-${ad.key}`} value={ad.headline} maxLength={100} onChange={(event) => updateAd(ad.key, { headline: event.target.value })} placeholder="A clear, honest headline" />
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{ad.headline.length}/100</span>
                     </div>
-                    <input
-                      ref={(node) => { fileInputs.current[ad.key] = node; }}
-                      type="file"
-                      accept={ad.adType === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/avif'}
-                      onChange={(event) => void upload(ad, event.target.files?.[0])}
-                      disabled={uploadingAd === ad.key}
-                      aria-label={ad.adType === 'video' ? 'Upload video asset' : 'Upload image asset'}
-                      style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '100%' }}
-                    />
-                    {ad.mediaUrl && (
-                      <div style={{ marginTop: '10px' }}>
-                        <MediaPreview source={ad.mediaUrl} />
-                        <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--color-success)' }}>Media ready for review.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '10px' }}>
+                      <div>
+                        <label htmlFor={`cta-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Call to action</label>
+                        <Input id={`cta-${ad.key}`} value={ad.ctaText} maxLength={50} onChange={(event) => updateAd(ad.key, { ctaText: event.target.value })} placeholder="Learn More" />
                       </div>
-                    )}
-                  </div>
+                      <div>
+                        <label htmlFor={`destination-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                          Destination URL <span style={{ color: 'var(--color-crimson)' }}>*</span>
+                        </label>
+                        <Input id={`destination-${ad.key}`} type="url" value={ad.destinationUrl} onChange={(event) => updateAd(ad.key, { destinationUrl: event.target.value })} placeholder="https://example.com/landing" />
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor={`body-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Body / sub-headline</label>
+                      <Textarea id={`body-${ad.key}`} rows={2} value={ad.bodyText} maxLength={2000} onChange={(event) => updateAd(ad.key, { bodyText: event.target.value })} placeholder="Optional supporting copy" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ border: '1px dashed var(--border-subtle)', borderRadius: '10px', padding: '12px', background: 'var(--bg-surface)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                          {ad.adType === 'video' ? 'Video file' : 'Image file'} <span style={{ color: 'var(--color-crimson)' }}>*</span>
+                        </span>
+                        {uploadingAd === ad.key && <Loader2 size={14} aria-hidden="true" />}
+                      </div>
+                      <p style={{ margin: '0 0 8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {ad.adType === 'video' ? 'MP4 or WebM · Maximum 20 MB' : 'JPG, PNG or WebP · Maximum 750 KB'}
+                      </p>
+                      <input
+                        ref={(node) => { fileInputs.current[ad.key] = node; }}
+                        type="file"
+                        accept={ad.adType === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/avif'}
+                        onChange={(event) => void upload(ad, event.target.files?.[0])}
+                        disabled={uploadingAd === ad.key}
+                        aria-label={ad.adType === 'video' ? 'Upload video file' : 'Upload image file'}
+                        style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '100%' }}
+                      />
+                      {ad.mediaUrl && (
+                        <div style={{ marginTop: '10px' }}>
+                          <MediaPreview source={ad.mediaUrl} />
+                          <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'var(--color-success)' }}>Media ready for review.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor={`destination-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
+                        Destination URL <span style={{ color: 'var(--color-crimson)' }}>*</span>
+                      </label>
+                      <Input id={`destination-${ad.key}`} type="url" value={ad.destinationUrl} onChange={(event) => updateAd(ad.key, { destinationUrl: event.target.value })} placeholder="https://example.com/product" />
+                    </div>
+
+                    <div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-expanded={Boolean(creativeAdvanced[ad.key])}
+                        onClick={() => setCreativeAdvanced((open) => ({ ...open, [ad.key]: !open[ad.key] }))}
+                        style={{ paddingInline: 0 }}
+                      >
+                        {creativeAdvanced[ad.key] ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+                        Advanced creative settings (optional)
+                      </Button>
+                      {creativeAdvanced[ad.key] && (
+                        <div style={{ display: 'grid', gap: '10px', marginTop: '10px' }}>
+                          <div>
+                            <label htmlFor={`headline-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Headline</label>
+                            <Input id={`headline-${ad.key}`} value={ad.headline} maxLength={100} onChange={(event) => updateAd(ad.key, { headline: event.target.value })} placeholder="Optional context or accessibility headline" />
+                            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{ad.headline.length}/100</span>
+                          </div>
+                          <div>
+                            <label htmlFor={`body-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Supporting copy</label>
+                            <Textarea id={`body-${ad.key}`} rows={2} value={ad.bodyText} maxLength={2000} onChange={(event) => updateAd(ad.key, { bodyText: event.target.value })} placeholder="Optional supporting copy" />
+                          </div>
+                          <div>
+                            <label htmlFor={`cta-${ad.key}`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Call to action</label>
+                            <Input id={`cta-${ad.key}`} value={ad.ctaText} maxLength={50} onChange={(event) => updateAd(ad.key, { ctaText: event.target.value })} placeholder="Leave blank to use the image's own call to action" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -279,11 +333,13 @@ export function AdStackEditor({ stack, index, capabilities, canRemove, onChange,
                       {ad.adType === 'text' ? 'Text-only ad' : 'Upload media to preview'}
                     </div>
                   )}
-                  <div style={{ padding: '12px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-crimson)', textTransform: 'uppercase', marginBottom: '4px' }}>Promoted</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{ad.headline || 'Your headline appears here'}</div>
-                    <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{ad.bodyText || 'Optional supporting copy.'}</p>
-                    <span style={{ display: 'inline-block', padding: '5px 10px', borderRadius: '6px', background: 'var(--color-crimson)', color: '#fff', fontSize: '11px', fontWeight: 700 }}>{ad.ctaText || 'Learn More'}</span>
+                  <div style={{ padding: (ad.headline || ad.bodyText || ad.ctaText) ? '12px' : '0' }}>
+                    {ad.adType === 'text' && (
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-crimson)', textTransform: 'uppercase', marginBottom: '4px' }}>Promoted</div>
+                    )}
+                    {ad.headline && <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{ad.headline}</div>}
+                    {ad.bodyText && <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{ad.bodyText}</p>}
+                    {ad.ctaText && <span style={{ display: 'inline-block', padding: '5px 10px', borderRadius: '6px', background: 'var(--color-crimson)', color: '#fff', fontSize: '11px', fontWeight: 700 }}>{ad.ctaText}</span>}
                   </div>
                 </div>
                 <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Card / feed unit. Placement format is chosen by the publisher surface.</span>

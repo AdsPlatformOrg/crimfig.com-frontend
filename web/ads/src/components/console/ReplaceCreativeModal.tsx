@@ -12,9 +12,9 @@ import { loadCreationCapabilities, type AdType } from '../../lib/campaigns-api';
 interface CreativeToReplace {
   id: string;
   campaignId: string;
-  headline: string;
-  bodyText?: string;
-  ctaText?: string;
+  headline?: string | null;
+  bodyText?: string | null;
+  ctaText?: string | null;
   destinationUrl: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -40,7 +40,7 @@ export function ReplaceCreativeModal({
 }: ReplaceCreativeModalProps) {
   const [headline, setHeadline] = useState(creative?.headline || '');
   const [bodyText, setBodyText] = useState(creative?.bodyText || '');
-  const [ctaText, setCtaText] = useState(creative?.ctaText || 'Learn More');
+  const [ctaText, setCtaText] = useState(creative?.ctaText || '');
   const [destinationUrl, setDestinationUrl] = useState(creative?.destinationUrl || '');
   const [adType, setAdType] = useState<AdType>(
     creative?.adType || (creative?.videoUrl ? 'video' : creative?.imageUrl ? 'image' : 'text'),
@@ -97,10 +97,13 @@ export function ReplaceCreativeModal({
       if (adType !== 'text' && !mediaAssetId && !mediaUrl) {
         throw new Error(`Upload a replacement ${adType} asset before submitting.`);
       }
+      if (adType === 'text' && !headline.trim()) {
+        throw new Error('Text ads need a headline.');
+      }
       const payload: any = {
-        headline,
-        bodyText,
-        ctaText,
+        headline: headline.trim() || undefined,
+        bodyText: bodyText.trim() || undefined,
+        ctaText: ctaText.trim() || undefined,
         destinationUrl,
         adType,
         ...(adType === 'text'
@@ -293,11 +296,11 @@ export function ReplaceCreativeModal({
           {/* Headline */}
           <div>
             <label htmlFor={`${fieldId}-headline`} style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Headline (Max 100 characters)
+              Headline {adType === 'text' ? '(required for text ads)' : '(optional)'} · Max 100 characters
             </label>
             <Input id={`${fieldId}-headline`}
               type="text"
-              required
+              required={adType === 'text'}
               maxLength={100}
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}

@@ -4,9 +4,9 @@ export type AdType = 'text' | 'image' | 'video';
 
 export interface CreativeDraftInput {
   adType: AdType;
-  headline: string;
+  headline?: string;
   bodyText?: string;
-  ctaText: string;
+  ctaText?: string;
   destinationUrl: string;
   adFormat: 'banner' | 'card' | 'video' | 'interstitial';
   mediaAssetId?: string;
@@ -99,7 +99,8 @@ export async function createCampaignWorkflow(input: CampaignDefaultsInput, stack
     if (!stack.name.trim()) throw new Error('Each ad stack needs a name.');
     if (!stack.ads.length) throw new Error(`${stack.name} needs at least one ad.`);
     for (const ad of stack.ads) {
-      if (!ad.headline.trim() || !ad.destinationUrl.trim()) throw new Error(`${stack.name} has an incomplete ad.`);
+      if (!ad.destinationUrl.trim()) throw new Error(`${stack.name} has an ad without a destination URL.`);
+      if (ad.adType === 'text' && !ad.headline?.trim()) throw new Error(`${stack.name} has a text ad without a headline.`);
       if (ad.adType === 'image' && !ad.mediaAssetId) throw new Error(`${stack.name} has an image ad without an uploaded image.`);
       if (ad.adType === 'video' && !ad.mediaAssetId) throw new Error(`${stack.name} has a video ad without an uploaded video.`);
     }
@@ -153,9 +154,9 @@ export async function createCampaignWorkflow(input: CampaignDefaultsInput, stack
         const payload: Record<string, unknown> = {
           adStackId: stackId,
           adType: ad.adType,
-          headline: ad.headline.trim(),
+          headline: ad.headline?.trim() || undefined,
           bodyText: ad.bodyText?.trim() || undefined,
-          ctaText: ad.ctaText.trim() || 'Learn More',
+          ctaText: ad.ctaText?.trim() || undefined,
           destinationUrl: ad.destinationUrl.trim(),
           adFormat: ad.adFormat,
         };
