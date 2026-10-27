@@ -283,3 +283,7 @@ JED requested a new plan for later redesign of the Create Ad Campaign modal into
 ## ACT-20261027-016 â€” Chibi ninja avatar presets and cross-app identity
 
 Added 12 CC0-1.0 chibi ninja avatar presets from the verified OpenGameArt pack by ashuuya, with source/license/manifest documentation. Implemented Auth profile avatar columns/migration, `/me` avatar resolution, preset catalog and selection/reset API, Auth `/profile` picker with attribution modal, shared session profile caching, and header avatars in Auth, Ads, and Billing. Auth/Ads/Billing typechecks and production builds pass; Auth backend suite 426 passed. Browser verified desktop and 375px profile, selection/save/reset, modal links, and Ads/Billing headers. Custom photo upload, dark-theme browser acceptance, header dropdown, production migration and deployment remain.
+
+## ACT-20261027-017 â€” Dev/production synchronization
+
+Committed and pushed PLAN-0035/PLAN-0037 work. Frontend `a6171c3` on dev, production merge `408704c`; backend companion `ac85e54` / `076fc07`. Both repos clean and synced to origin. No `.env` committed. Production deployment outcome not verified.
