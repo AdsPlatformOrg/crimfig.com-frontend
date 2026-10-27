@@ -382,3 +382,17 @@ a:hover {
   .cf-site-header-inner { padding-inline: 12px; }
   .cf-mobile-nav-panel:not([hidden]) { padding-inline: 16px; }
 }
+
+@media (max-width: 520px) {
+  .auth-header-controls {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px !important;
+  }
+  .auth-switch-account {
+    padding: 6px 10px !important;
+  }
+  .auth-switch-account-label {
+    display: none;
+  }
+}

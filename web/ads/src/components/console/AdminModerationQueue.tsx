@@ -27,6 +27,8 @@ interface PendingCreative {
   destinationUrl: string;
   mediaFormat: string;
   adFormat?: string;
+  adType?: string;
+  adStackId?: string;
   reviewStatus: string;
   createdAt: string;
 }
@@ -389,7 +391,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
                   <div style={{ maxWidth: '640px' }}>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Format: {crt.mediaFormat} · ID: {crt.id.slice(0, 8)}...
+                      Type: {crt.adType || crt.mediaFormat} · ID: {crt.id.slice(0, 8)}...
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
                       {crt.headline}

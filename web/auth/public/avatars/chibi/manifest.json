@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "collection": "CrimFig Chibi Ninja Avatars",
+  "defaultId": "chibi-indigo",
+  "source": {
+    "title": "2D Chibi Ninja - 8 Actions",
+    "author": "ashuuya",
+    "sourceUrl": "https://opengameart.org/content/2d-chibi-ninja-8-actions",
+    "license": "CC0 1.0 Universal (Public Domain Dedication)",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "attributionRequired": false,
+    "attributionNotice": "Feel free to use anywhere you want, be it personal or commercial projects. No credits required, but would be nice.",
+    "archive": "ashuuya_chibi-ninja-2d.zip",
+    "archiveSha256": "97db9c3f79ae255950a317e4eb8f47aa972367ad2968dbbae3bcb44f8674c38a",
+    "verifiedAt": "2026-10-27",
+    "modifications": "Cropped the head and shoulders from the original idle/walk sprites, centered each crop in a square transparent canvas, upscaled with nearest-neighbor sampling, and recolored the blue cloth to the listed palette. No third-party characters, franchise marks, or logos were added."
+  },
+  "technical": {
+    "format": "WebP",
+    "dimensions": "512x512",
+    "background": "transparent",
+    "sourceFrameSize": "64x64 (idle/walk frames)",
+    "encoding": "lossless"
+  },
+  "assets": [
+    { "id": "chibi-indigo", "file": "chibi-indigo.webp", "label": "Indigo", "alt": "Chibi ninja avatar with an indigo hood and mask", "sourceFrame": "idle-01", "paletteHue": 220 },
+    { "id": "chibi-crimson", "file": "chibi-crimson.webp", "label": "Crimson", "alt": "Chibi ninja avatar with a crimson hood and mask", "sourceFrame": "idle-01", "paletteHue": 350 },
+    { "id": "chibi-jade", "file": "chibi-jade.webp", "label": "Jade", "alt": "Chibi ninja avatar with a jade hood and mask", "sourceFrame": "idle-02", "paletteHue": 150 },
+    { "id": "chibi-amber", "file": "chibi-amber.webp", "label": "Amber", "alt": "Chibi ninja avatar with an amber hood and mask", "sourceFrame": "idle-02", "paletteHue": 35 },
+    { "id": "chibi-violet", "file": "chibi-violet.webp", "label": "Violet", "alt": "Chibi ninja avatar with a violet hood and mask", "sourceFrame": "walk-01", "paletteHue": 275 },
+    { "id": "chibi-teal", "file": "chibi-teal.webp", "label": "Teal", "alt": "Chibi ninja avatar with a teal hood and mask", "sourceFrame": "walk-01", "paletteHue": 185 },
+    { "id": "chibi-rose", "file": "chibi-rose.webp", "label": "Rose", "alt": "Chibi ninja avatar with a rose hood and mask", "sourceFrame": "walk-02", "paletteHue": 330 },
+    { "id": "chibi-cobalt", "file": "chibi-cobalt.webp", "label": "Cobalt", "alt": "Chibi ninja avatar with a cobalt hood and mask", "sourceFrame": "walk-02", "paletteHue": 210 },
+    { "id": "chibi-olive", "file": "chibi-olive.webp", "label": "Olive", "alt": "Chibi ninja avatar with an olive hood and mask", "sourceFrame": "walk-03", "paletteHue": 80 },
+    { "id": "chibi-plum", "file": "chibi-plum.webp", "label": "Plum", "alt": "Chibi ninja avatar with a plum hood and mask", "sourceFrame": "walk-03", "paletteHue": 300 },
+    { "id": "chibi-slate", "file": "chibi-slate.webp", "label": "Slate", "alt": "Chibi ninja avatar with a slate hood and mask", "sourceFrame": "walk-04", "paletteHue": 210 },
+    { "id": "chibi-ember", "file": "chibi-ember.webp", "label": "Ember", "alt": "Chibi ninja avatar with an ember hood and mask", "sourceFrame": "walk-04", "paletteHue": 15 }
+  ]
+}

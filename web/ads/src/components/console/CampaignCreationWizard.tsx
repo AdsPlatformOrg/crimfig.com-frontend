@@ -1,1235 +1,496 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Globe,
+  Layers,
+  Loader2,
+  Plus,
+  ShieldCheck,
+  Sliders,
+  Sparkles,
+  Target,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import {
-  Sparkles,
-  Layers,
-  Target,
-  DollarSign,
-  CheckCircle2,
-  ArrowRight,
-  ArrowLeft,
-  UploadCloud,
-  Check,
-  AlertCircle,
-  HelpCircle,
-  Eye,
-  Info,
-  Globe,
-  Sliders,
-  ShieldCheck,
-  ChevronRight,
-  Loader2,
-  RefreshCw,
-} from 'lucide-react';
-import { createCampaignWorkflow, CampaignWorkflowError } from '../../lib/campaigns-api';
-import { sessionFetch } from '../../lib/session';
-
-interface CreativeDraft {
-  headline: string;
-  bodyText?: string;
-  ctaText: string;
-  destinationUrl: string;
-  imageUrl?: string;
-  videoUrl?: string;
-  adFormat: 'banner' | 'card' | 'video' | 'interstitial';
-  mediaFormat: 'image' | 'video' | 'gif';
-}
+  CampaignWorkflowError,
+  createCampaignWorkflow,
+  loadCreationCapabilities,
+  type CreationCapabilities,
+} from '../../lib/campaigns-api';
+import { getLocation } from '../../lib/locations-api';
+import { AdStackEditor, createStackDraft, type StackDraft } from './AdStackEditor';
+import { LocationTargeting } from './LocationTargeting';
 
 interface CampaignWizardProps {
   onCancel: () => void;
   onSuccess: (campaignId: string) => void;
 }
 
+const CATEGORIES = ['Technology', 'Retail', 'Finance', 'Health', 'Education', 'Travel', 'Entertainment', 'Other'];
+
 export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardProps) {
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [capabilities, setCapabilities] = useState<CreationCapabilities | null>(null);
+  const [capabilityError, setCapabilityError] = useState('');
 
-  // Step 1: Campaign Details
+  // Step 1
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Technology');
-  const [channels, setChannels] = useState<string[]>(['websites', 'individuals']);
 
-  // Step 2: Ad Creatives
-  const [creatives, setCreatives] = useState<CreativeDraft[]>([
-    {
-      headline: '',
-      bodyText: '',
-      ctaText: 'Learn More',
-      destinationUrl: '',
-      adFormat: 'card',
-      mediaFormat: 'image',
-    },
-  ]);
-  const [activeCreativeIdx, setActiveCreativeIdx] = useState(0);
-  const [uploadingMedia, setUploadingMedia] = useState(false);
+  // Step 2
+  const [stacks, setStacks] = useState<StackDraft[]>([createStackDraft(1)]);
 
-  // Step 3: Audience & Placement Targeting
-  const [targetCountries, setTargetCountries] = useState<string[]>(['NG', 'GH', 'KE', 'ZA', 'US', 'GB']);
-  const [targetDevices, setTargetDevices] = useState<string[]>(['mobile', 'desktop']);
-  const [frequencyCap, setFrequencyCap] = useState<number>(5);
+  // Step 3
+  const [geoMode, setGeoMode] = useState<'global' | 'targeted'>('global');
+  const [locations, setLocations] = useState<string[]>([]);
+  const [devices, setDevices] = useState<string[]>(['desktop', 'mobile']);
+  const [hours, setHours] = useState<number[]>([]);
+  const [hoursText, setHoursText] = useState('');
+  const [frequencyCap, setFrequencyCap] = useState(5);
 
-  // Step 4: Budget & Pricing Model
+  // Step 4
   const [pricingModel, setPricingModel] = useState<'cpm' | 'cpc'>('cpm');
-  const [budgetUsd, setBudgetUsd] = useState<number>(25);
-  const [dailyBudgetUsd, setDailyBudgetUsd] = useState<number>(5);
-  const [cpmBidCents, setCpmBidCents] = useState<number>(50); // $0.50 floor
-  const [cpcBidCents, setCpcBidCents] = useState<number>(10); // $0.10 floor
+  const [budgetUsd, setBudgetUsd] = useState(25);
+  const [dailyBudgetUsd, setDailyBudgetUsd] = useState(5);
+  const [cpmBidCents, setCpmBidCents] = useState(50);
+  const [cpcBidCents, setCpcBidCents] = useState(10);
 
-  const activeCreative = creatives[activeCreativeIdx] || creatives[0];
+  const [locationNames, setLocationNames] = useState<Record<string, string>>({});
 
-  const validateStep = (step: number): boolean => {
+  useEffect(() => {
+    let active = true;
+    void loadCreationCapabilities()
+      .then((data) => { if (active) setCapabilities(data); })
+      .catch((err) => { if (active) setCapabilityError(err instanceof Error ? err.message : 'Creative capabilities are unavailable.'); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    const allIds = [...new Set([...locations, ...stacks.flatMap((stack) => stack.locations)])];
+    const missing = allIds.filter((id) => !locationNames[id]);
+    if (missing.length === 0) return;
+    let active = true;
+    void Promise.all(missing.map((id) => getLocation(id).catch(() => null))).then((places) => {
+      if (!active) return;
+      setLocationNames((current) => {
+        const next = { ...current };
+        for (const place of places) if (place) next[place.id] = place.name;
+        return next;
+      });
+    });
+    return () => { active = false; };
+  }, [locations, stacks, locationNames]);
+
+  const allLocations = useMemo(() => {
+    const ids = new Set<string>();
+    for (const id of locations) ids.add(id);
+    for (const stack of stacks) {
+      if (stack.geoMode === 'targeted') for (const id of stack.locations) ids.add(id);
+    }
+    return [...ids];
+  }, [locations, stacks]);
+
+  function validateStep(step: number): boolean {
     setError(null);
     if (step === 1) {
-      if (!title.trim()) {
-        setError('Please enter a descriptive campaign title to help you identify your ad.');
-        return false;
-      }
+      if (!title.trim()) { setError('Enter a campaign title so you can identify this campaign.'); return false; }
+      if (title.trim().length > 255) { setError('Campaign title must be 255 characters or fewer.'); return false; }
       return true;
     }
     if (step === 2) {
-      const valid = creatives.every((c) => c.headline.trim() && c.destinationUrl.trim());
-      if (!valid) {
-        setError('Each ad creative requires a headline and a valid click destination URL.');
-        return false;
+      if (stacks.length === 0) { setError('Add at least one ad stack.'); return false; }
+      for (const stack of stacks) {
+        if (!stack.name.trim()) { setError('Every ad stack needs a name.'); return false; }
+        if (stack.ads.length === 0) { setError(`${stack.name} needs at least one ad.`); return false; }
+        for (let index = 0; index < stack.ads.length; index += 1) {
+          const ad = stack.ads[index];
+          const label = `${stack.name}, ad ${index + 1}`;
+          if (!ad.headline.trim()) { setError(`${label}: enter a headline.`); return false; }
+          if (ad.headline.trim().length > 100) { setError(`${label}: headline must be 100 characters or fewer.`); return false; }
+          if (!ad.destinationUrl.trim()) { setError(`${label}: enter a destination URL.`); return false; }
+          try {
+            const url = new URL(ad.destinationUrl.trim());
+            if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error();
+          } catch {
+            setError(`${label}: enter a valid http(s) destination URL.`);
+            return false;
+          }
+          if (ad.adType !== 'text' && !ad.mediaAssetId) { setError(`${label}: upload a ${ad.adType} asset.`); return false; }
+          if (ad.adType === 'video' && !capabilities?.videoAuthoringEnabled) { setError(`${label}: video authoring is not available yet.`); return false; }
+        }
+        if (stack.geoMode === 'targeted' && stack.locations.length === 0) { setError(`${stack.name}: choose at least one location, or inherit/global.`); return false; }
       }
       return true;
     }
     if (step === 3) {
-      if (targetDevices.length === 0) {
-        setError('Please select at least one device category.');
-        return false;
-      }
+      if (devices.length === 0) { setError('Choose at least one device category.'); return false; }
+      if (geoMode === 'targeted' && locations.length === 0) { setError('Choose at least one campaign location, or select Global.'); return false; }
       return true;
     }
     if (step === 4) {
-      if (budgetUsd < 5) {
-        setError('Minimum campaign budget is $5.00 USD to ensure fair reach.');
-        return false;
-      }
-      if (pricingModel === 'cpm' && cpmBidCents < 50) {
-        setError('Minimum CPM bid is $0.50 (50¢) per 1,000 viewable impressions.');
-        return false;
-      }
-      if (pricingModel === 'cpc' && cpcBidCents < 10) {
-        setError('Minimum CPC bid is $0.10 (10¢) per click.');
-        return false;
-      }
+      if (!Number.isFinite(budgetUsd) || budgetUsd < 5) { setError('Minimum campaign budget is $5.00 USD.'); return false; }
+      if (Number.isFinite(dailyBudgetUsd) && dailyBudgetUsd > budgetUsd) { setError('Daily budget cannot exceed the total campaign budget.'); return false; }
+      if (pricingModel === 'cpm' && cpmBidCents < 50) { setError('Minimum CPM bid is $0.50 per 1,000 viewable impressions.'); return false; }
+      if (pricingModel === 'cpc' && cpcBidCents < 10) { setError('Minimum CPC bid is $0.10 per click.'); return false; }
       return true;
     }
     return true;
-  };
+  }
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 5));
-    }
-  };
+  function next() {
+    if (validateStep(currentStep)) setCurrentStep((step) => Math.min(step + 1, 5));
+  }
 
-  const handleBack = () => {
+  function back() {
     setError(null);
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
+    setCurrentStep((step) => Math.max(step - 1, 1));
+  }
 
-  const handleLaunchCampaign = async () => {
-    if (!validateStep(4)) return;
+  async function submit() {
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4)) return;
     setIsSubmitting(true);
     setError(null);
-
     try {
       const campaignId = await createCampaignWorkflow(
         {
           title: title.trim(),
+          description: description.trim() || undefined,
+          category,
           budgetUsd,
-          format: creatives[0].adFormat,
+          dailyBudgetUsd,
+          costPerImpressionCents: cpmBidCents,
+          costPerClickCents: cpcBidCents,
           pricingModel,
+          format: 'card',
+          targetDevices: devices,
+          targetHours: hours,
+          frequencyCapPerDay: frequencyCap,
+          geoMode,
+          locations: geoMode === 'targeted' ? locations : undefined,
         },
-        creatives.map((c) => ({
-          headline: c.headline.trim(),
-          bodyText: c.bodyText?.trim() || undefined,
-          ctaText: c.ctaText.trim() || 'Learn More',
-          destinationUrl: c.destinationUrl.trim(),
-          imageUrl: c.imageUrl,
-          videoUrl: c.videoUrl,
-          adFormat: c.adFormat,
-          mediaFormat: c.mediaFormat,
-        }))
+        stacks.map((stack) => ({
+          name: stack.name.trim(),
+          geoMode: stack.geoMode,
+          locations: stack.locations,
+          targetDevices: stack.targetDevices,
+          targetHours: stack.targetHours,
+          ads: stack.ads.map((ad) => ({
+            adType: ad.adType,
+            headline: ad.headline.trim(),
+            bodyText: ad.bodyText.trim() || undefined,
+            ctaText: ad.ctaText.trim() || 'Learn More',
+            destinationUrl: ad.destinationUrl.trim(),
+            adFormat: 'card',
+            mediaAssetId: ad.mediaAssetId,
+          })),
+        })),
       );
-
       onSuccess(campaignId);
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof CampaignWorkflowError) {
-        setError(`We saved your campaign details, but review submission needs to be refreshed. Campaign ID: ${err.campaignId}`);
+        setError(`Your campaign was saved, but review submission needs reconciliation. Campaign ID: ${err.campaignId}. Refresh your campaign list before retrying.`);
       } else {
-        setError(err.message || 'Campaign creation could not be confirmed. Your funds were not deducted. Please try again.');
+        setError(err instanceof Error ? err.message : 'Campaign creation could not be confirmed. Please retry.');
       }
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
-  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, isVideo: boolean) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function updateStack(nextStack: StackDraft) {
+    setStacks((current) => current.map((stack) => (stack.key === nextStack.key ? nextStack : stack)));
+  }
 
-    const maxBytes = isVideo ? 20 * 1024 * 1024 : 750 * 1024;
-    if (file.size > maxBytes) {
-      setError(`Media size exceeds limits: ${isVideo ? '20MB for video' : '750KB for images'}. Please optimize locally.`);
-      return;
-    }
+  function addStack() {
+    setStacks((current) => [...current, createStackDraft(current.length + 1)]);
+  }
 
-    setUploadingMedia(true);
-    setError(null);
-    const formData = new FormData();
-    formData.append('file', file);
+  function removeStack(key: string) {
+    setStacks((current) => (current.length <= 1 ? current : current.filter((stack) => stack.key !== key)));
+  }
 
-    try {
-      const res = await sessionFetch('/api/v1/uploads/direct', {
-        method: 'POST',
-        body: formData,
-      });
+  function applyHours(value: string) {
+    setHoursText(value);
+    const parsed = value.split(',').map((part) => part.trim()).filter(Boolean).map(Number);
+    setHours([...new Set(parsed.filter((hour) => Number.isInteger(hour) && hour >= 0 && hour <= 23))].sort((a, b) => a - b));
+  }
 
-      if (res.ok) {
-        const json = await res.json();
-        const updated = [...creatives];
-        if (isVideo) {
-          updated[activeCreativeIdx].videoUrl = json.data.cdnUrl;
-          updated[activeCreativeIdx].mediaFormat = 'video';
-        } else {
-          updated[activeCreativeIdx].imageUrl = json.data.cdnUrl;
-          updated[activeCreativeIdx].mediaFormat = 'image';
-        }
-        setCreatives(updated);
-      } else {
-        setError('Media upload encountered an obstacle. Please try again.');
-      }
-    } catch {
-      setError('Connection dropped during file upload. Please check your network.');
-    } finally {
-      setUploadingMedia(false);
-    }
-  };
+  const stackCount = stacks.length;
+  const adCount = stacks.reduce((total, stack) => total + stack.ads.length, 0);
+  const effectiveCount = stacks.filter((stack) => stack.geoMode !== 'inherit' || stack.targetDevices.length > 0 || stack.targetHours.length > 0).length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
-      {/* Top Banner & Empathetic Guidance */}
-      <div
-        style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, rgba(212,20,58,0.06) 0%, rgba(23,27,42,0.04) 100%)',
-          border: '1px solid var(--border-subtle)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '16px',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                color: 'var(--color-crimson)',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                backgroundColor: 'var(--badge-bg)',
-                padding: '2px 8px',
-                borderRadius: '6px',
-              }}
-            >
-              PLAN-0013 · Guided Creation
-            </span>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Empathetic Advertiser Studio</span>
-          </div>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            Create Your Campaign
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0', maxWidth: '640px' }}>
-            Reach authentic, verified audiences across ethical publishers and creators. Zero hidden fees, zero bot impressions, and full creative control.
-          </p>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+      <header style={{ padding: '22px', borderRadius: '16px', border: '1px solid var(--border-subtle)', background: 'linear-gradient(135deg, rgba(212,20,58,0.06) 0%, rgba(23,27,42,0.04) 100%)' }}>
+        <p style={{ margin: '0 0 4px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-crimson)' }}>Create campaign</p>
+        <h2 style={{ margin: '0 0 6px', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>Build your ad stacks</h2>
+        <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          Group Text, Image, and Video ads into named stacks. Campaign budget and bid stay campaign-level; stacks organize content and optional non-financial overrides.
+        </p>
+      </header>
 
-        <Button
-          type="button"
-          onClick={onCancel}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-surface)',
-            color: 'var(--text-secondary)',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Cancel &amp; Return
-        </Button>
-      </div>
-
-      {/* Stepper Progress Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px', position: 'relative' }}>
+      <nav aria-label="Campaign creation steps" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
         {[
-          { num: 1, label: 'Campaign Details', icon: Layers },
-          { num: 2, label: 'Ad Creatives', icon: Eye },
-          { num: 3, label: 'Targeting & Audience', icon: Target },
-          { num: 4, label: 'Budget & Pricing', icon: DollarSign },
-          { num: 5, label: 'Review & Submit', icon: CheckCircle2 },
-        ].map((s) => {
-          const Icon = s.icon;
-          const isDone = currentStep > s.num;
-          const isActive = currentStep === s.num;
-
+          { step: 1, label: 'Details' },
+          { step: 2, label: 'Ad stacks' },
+          { step: 3, label: 'Targeting' },
+          { step: 4, label: 'Budget' },
+          { step: 5, label: 'Review' },
+        ].map((item) => {
+          const active = currentStep === item.step;
+          const done = currentStep > item.step;
           return (
-            <div
-              key={s.num}
-              onClick={() => {
-                if (s.num < currentStep) setCurrentStep(s.num);
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: s.num < currentStep ? 'pointer' : 'default',
-                opacity: s.num > currentStep ? 0.5 : 1,
-              }}
-            >
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: isDone ? 'var(--color-success)' : isActive ? 'var(--color-crimson)' : 'var(--bg-elevated)',
-                  color: isDone || isActive ? '#FFFFFF' : 'var(--text-muted)',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  boxShadow: isActive ? 'var(--shadow-crimson)' : 'none',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {isDone ? <Check style={{ width: 16, height: 16 }} /> : s.num}
-              </div>
-              <span
-                style={{
-                  fontSize: '13px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  display: 'none',
-                }}
-                className="step-label"
-              >
-                {s.label}
-              </span>
+            <div key={item.step} aria-current={active ? 'step' : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '999px', border: `1px solid ${active ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: active ? 'var(--badge-bg)' : 'transparent', color: active ? 'var(--color-crimson)' : 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>
+              {done ? <CheckCircle2 size={12} aria-hidden="true" /> : <span aria-hidden="true">{item.step}</span>} {item.label}
             </div>
           );
         })}
-      </div>
+      </nav>
 
-      {/* Error Alert with Reassuring Guidance */}
+      {capabilityError && <p role="status" style={{ margin: 0, padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-secondary)', fontSize: '12px' }}>{capabilityError} Video remains unavailable until the server capability is recovered.</p>}
+
+      {currentStep === 1 && (
+        <section aria-labelledby="step-1-heading" style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px', border: '1px solid var(--border-subtle)', borderRadius: '14px', background: 'var(--bg-surface)' }}>
+          <div>
+            <h3 id="step-1-heading" style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Campaign details</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>Name the campaign and describe what you are promoting.</p>
+          </div>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+            Campaign title <span style={{ color: 'var(--color-crimson)' }}>*</span>
+            <Input value={title} maxLength={255} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Spring product launch" />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+            Description
+            <Textarea value={description} rows={3} maxLength={5000} onChange={(event) => setDescription(event.target.value)} placeholder="What should reviewers and publishers understand?" />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+            Category
+            <select value={category} onChange={(event) => setCategory(event.target.value)} style={{ minHeight: '44px', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', font: 'inherit', fontSize: '13px' }}>
+              {CATEGORIES.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+        </section>
+      )}
+
+      {currentStep === 2 && (
+        <section aria-labelledby="step-2-heading" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div>
+              <h3 id="step-2-heading" style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Ad stacks &amp; creatives</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>Each stack needs at least one complete ad. Text, Image, and Video may coexist in one stack.</p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addStack}>
+              <Plus size={14} aria-hidden="true" /> Add ad stack
+            </Button>
+          </div>
+          {stacks.map((stack, index) => (
+            <AdStackEditor
+              key={stack.key}
+              stack={stack}
+              index={index}
+              capabilities={capabilities}
+              canRemove={stacks.length > 1 && index > 0}
+              onChange={updateStack}
+              onRemove={() => removeStack(stack.key)}
+            />
+          ))}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <span><Layers size={12} aria-hidden="true" /> {stackCount} stack{stackCount === 1 ? '' : 's'}</span>
+            <span>·</span>
+            <span>{adCount} ad{adCount === 1 ? '' : 's'}</span>
+            <span>·</span>
+            <span>{effectiveCount} with stack overrides</span>
+          </div>
+        </section>
+      )}
+
+      {currentStep === 3 && (
+        <section aria-labelledby="step-3-heading" style={{ display: 'flex', flexDirection: 'column', gap: '18px', padding: '20px', border: '1px solid var(--border-subtle)', borderRadius: '14px', background: 'var(--bg-surface)' }}>
+          <div>
+            <h3 id="step-3-heading" style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Audience &amp; targeting</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>These campaign defaults apply to every stack. Unknown visitor geography never widens a targeted campaign.</p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }} role="group" aria-label="Campaign geography mode">
+            <button type="button" aria-pressed={geoMode === 'global'} onClick={() => { setGeoMode('global'); setLocations([]); }} style={{ minHeight: '40px', padding: '8px 14px', borderRadius: '9px', border: `1px solid ${geoMode === 'global' ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: geoMode === 'global' ? 'var(--badge-bg)' : 'var(--bg-elevated)', color: geoMode === 'global' ? 'var(--color-crimson)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}>
+              <Globe size={14} aria-hidden="true" /> Global
+            </button>
+            <button type="button" aria-pressed={geoMode === 'targeted'} onClick={() => setGeoMode('targeted')} style={{ minHeight: '40px', padding: '8px 14px', borderRadius: '9px', border: `1px solid ${geoMode === 'targeted' ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: geoMode === 'targeted' ? 'var(--badge-bg)' : 'var(--bg-elevated)', color: geoMode === 'targeted' ? 'var(--color-crimson)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}>
+              <Target size={14} aria-hidden="true" /> Target locations
+            </button>
+          </div>
+
+          {geoMode === 'targeted' && (
+            <LocationTargeting value={locations} onChange={setLocations} />
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+            <fieldset style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '12px', margin: 0 }}>
+              <legend style={{ padding: '0 4px', fontSize: '12px', fontWeight: 600 }}>Device categories</legend>
+              {['desktop', 'mobile'].map((device) => (
+                <label key={device} style={{ display: 'flex', alignItems: 'center', gap: '8px', minHeight: '36px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  <input type="checkbox" checked={devices.includes(device)} onChange={(event) => setDevices(event.target.checked ? [...devices, device] : devices.filter((item) => item !== device))} />
+                  {device === 'desktop' ? 'Desktop & laptop' : 'Mobile'}
+                </label>
+              ))}
+            </fieldset>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+              Daypart hours (0–23)
+              <Input value={hoursText} onChange={(event) => applyHours(event.target.value)} placeholder="All day" inputMode="numeric" />
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Comma-separated. Leave empty for all hours.</span>
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', fontWeight: 600 }}>
+              Daily frequency cap: {frequencyCap}
+              <input type="range" min={1} max={20} value={frequencyCap} onChange={(event) => setFrequencyCap(Number(event.target.value))} style={{ width: '100%', accentColor: 'var(--color-crimson)' }} />
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Maximum impressions per person per day.</span>
+            </label>
+          </div>
+        </section>
+      )}
+
+      {currentStep === 4 && (
+        <section aria-labelledby="step-4-heading" style={{ display: 'flex', flexDirection: 'column', gap: '18px', padding: '20px', border: '1px solid var(--border-subtle)', borderRadius: '14px', background: 'var(--bg-surface)' }}>
+          <div>
+            <h3 id="step-4-heading" style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Budget &amp; pricing</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>Budget and bid apply to every stack. Funds stay in escrow until verified delivery.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {(['cpm', 'cpc'] as const).map((model) => (
+              <button key={model} type="button" aria-pressed={pricingModel === model} onClick={() => setPricingModel(model)} style={{ textAlign: 'left', padding: '14px', borderRadius: '10px', border: `2px solid ${pricingModel === model ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: pricingModel === model ? 'var(--badge-bg)' : 'var(--bg-elevated)', cursor: 'pointer' }}>
+                <span style={{ display: 'block', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{model.toUpperCase()}</span>
+                <span style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>{model === 'cpm' ? 'Per 1,000 viewable impressions' : 'Per verified click'}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+              Total budget (USD)
+              <Input type="number" min={5} step={1} value={budgetUsd} onChange={(event) => setBudgetUsd(Number(event.target.value))} />
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Minimum $5.00</span>
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+              Daily target (USD)
+              <Input type="number" min={1} step={1} value={dailyBudgetUsd} onChange={(event) => setDailyBudgetUsd(Number(event.target.value))} />
+            </label>
+            {pricingModel === 'cpm' ? (
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+                CPM bid (cents)
+                <Input type="number" min={50} step={5} value={cpmBidCents} onChange={(event) => setCpmBidCents(Number(event.target.value))} />
+                <span style={{ fontSize: '10px', color: 'var(--color-crimson)' }}>${(cpmBidCents / 100).toFixed(2)} per 1,000 views</span>
+              </label>
+            ) : (
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600 }}>
+                CPC bid (cents)
+                <Input type="number" min={10} step={1} value={cpcBidCents} onChange={(event) => setCpcBidCents(Number(event.target.value))} />
+                <span style={{ fontSize: '10px', color: 'var(--color-crimson)' }}>${(cpcBidCents / 100).toFixed(2)} per click</span>
+              </label>
+            )}
+          </div>
+          <div style={{ padding: '12px 14px', borderRadius: '10px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', fontSize: '12px', color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-primary)' }}>Conservative delivery estimate:</strong>{' '}
+            {pricingModel === 'cpm' ? `${Math.floor((budgetUsd / Math.max(1, cpmBidCents / 100)) * 1000).toLocaleString()} viewable impressions` : `${Math.floor(budgetUsd / Math.max(1, cpcBidCents / 100)).toLocaleString()} clicks`}
+          </div>
+        </section>
+      )}
+
+      {currentStep === 5 && (
+        <section aria-labelledby="step-5-heading" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <h3 id="step-5-heading" style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Review &amp; submit</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>Review each stack and its effective settings before submission.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+            <SummaryCard label="Campaign" value={title || 'Untitled'} lines={[`Category: ${category}`, `Budget: $${budgetUsd.toFixed(2)} USD`, `Model: ${pricingModel.toUpperCase()}`]} />
+            <SummaryCard label="Creative" value={`${stacks.length} stack${stacks.length === 1 ? '' : 's'} · ${adCount} ad${adCount === 1 ? '' : 's'}`} lines={[`Types: ${[...new Set(stacks.flatMap((stack) => stack.ads.map((ad) => ad.adType)))].join(', ')}`, `Video: ${capabilities?.videoAuthoringEnabled ? 'enabled' : 'coming soon'}`]} />
+            <SummaryCard
+              label="Campaign targeting"
+              value={geoMode === 'global' ? 'Global' : `${locations.length} location${locations.length === 1 ? '' : 's'}`}
+              lines={[
+                geoMode === 'targeted' ? locations.map((id) => locationNames[id] || id).join(', ') : 'No geographic restriction',
+                `Devices: ${devices.join(', ') || 'none'}`,
+                `Hours: ${hours.length ? hours.join(', ') : 'all day'}`,
+              ]}
+            />
+          </div>
+
+          {stacks.map((stack, index) => (
+            <article key={stack.key} style={{ border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '14px', background: 'var(--bg-surface)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700 }}>{stack.name || `Ad Stack #${index + 1}`}</h4>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{stack.geoMode === 'inherit' ? 'Inherits campaign settings' : `Override: ${stack.geoMode}`}</span>
+              </div>
+              <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {stack.ads.map((ad, adIndex) => (
+                  <li key={ad.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    <span style={{ padding: '2px 7px', borderRadius: '999px', background: 'var(--badge-bg)', color: 'var(--text-primary)', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>{ad.adType}</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{ad.headline || `Ad ${adIndex + 1}`}</span>
+                  </li>
+                ))}
+              </ul>
+              <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                {stack.geoMode === 'targeted' ? `Locations: ${stack.locations.map((id) => locationNames[id] || id).join(', ')}` : 'Geography: inherited'}
+                {stack.targetDevices.length > 0 ? ` · Devices: ${stack.targetDevices.join(', ')}` : ''}
+                {stack.targetHours.length > 0 ? ` · Hours: ${stack.targetHours.join(', ')}` : ''}
+              </div>
+            </article>
+          ))}
+
+          <div style={{ padding: '12px 14px', borderRadius: '10px', background: 'rgba(212,20,58,0.06)', border: '1px solid rgba(212,20,58,0.2)', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+            <ShieldCheck size={16} aria-hidden="true" style={{ marginTop: '1px', color: 'var(--color-crimson)' }} />
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              Submission sends every stack to dual-reviewer moderation. It does not activate the campaign or imply approval. Your escrow remains refundable until verified delivery.
+            </p>
+          </div>
+        </section>
+      )}
+
       {error && (
-        <div
-          role="alert"
-          style={{
-            padding: '14px 18px',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
-            color: 'var(--color-error)',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-          }}
-        >
-          <AlertCircle style={{ width: 18, height: 18, flexShrink: 0 }} />
+        <div role="alert" style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(180,35,24,0.25)', background: 'rgba(180,35,24,0.06)', color: 'var(--text-primary)', fontSize: '13px' }}>
+          <AlertCircle size={16} aria-hidden="true" style={{ color: 'var(--color-error, #B42318)', flexShrink: 0 }} />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Step Content Card */}
-      <div
-        className="theme-card"
-        style={{
-          padding: '32px',
-          borderRadius: '16px',
-          backgroundColor: 'var(--bg-page)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        {/* STEP 1: CAMPAIGN DETAILS */}
-        {currentStep === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                Step 1: Campaign Details
-              </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                Give your campaign a memorable name and choose the topic or industry that best aligns with your message.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="campaign-title" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                Campaign Title <span style={{ color: 'var(--color-crimson)' }}>*</span>
-              </label>
-              <Input
-                id="campaign-title"
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Summer Product Launch 2026"
-                style={{
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-surface)',
-                  fontSize: '14px',
-                  color: 'var(--text-primary)',
-                  outline: 'none',
-                }}
-              />
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                This is for your internal identification in reporting and analytics.
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="campaign-description" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                Description (Optional)
-              </label>
-              <Textarea
-                id="campaign-description"
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Notes or campaign objectives for your records..."
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Industry Category
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  style={{
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: 'var(--bg-surface)',
-                    fontSize: '14px',
-                    color: 'var(--text-primary)',
-                    outline: 'none',
-                  }}
-                >
-                  <option value="Technology">Technology &amp; Software</option>
-                  <option value="Finance">Finance &amp; Fintech</option>
-                  <option value="Ecommerce">E-Commerce &amp; Retail</option>
-                  <option value="Education">Education &amp; Learning</option>
-                  <option value="Entertainment">Entertainment &amp; Media</option>
-                  <option value="Health">Health &amp; Wellness</option>
-                  <option value="General">General Interest</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Distribution Channels
-                </label>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', height: '48px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={channels.includes('websites')}
-                      onChange={(e) => {
-                        if (e.target.checked) setChannels([...channels, 'websites']);
-                        else setChannels(channels.filter((c) => c !== 'websites'));
-                      }}
-                    />
-                    Websites &amp; Blogs
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={channels.includes('individuals')}
-                      onChange={(e) => {
-                        if (e.target.checked) setChannels([...channels, 'individuals']);
-                        else setChannels(channels.filter((c) => c !== 'individuals'));
-                      }}
-                    />
-                    Verified Promoters
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 2: AD CREATIVES & LIVE PREVIEWS */}
-        {currentStep === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                  Step 2: Ad Creatives &amp; Previews
-                </h3>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                  Craft the message and visual presentation viewers will experience. You can configure multiple ad sizes.
-                </p>
-              </div>
-
-              <Button
-                type="button"
-                onClick={() => {
-                  setCreatives([
-                    ...creatives,
-                    {
-                      headline: '',
-                      bodyText: '',
-                      ctaText: 'Learn More',
-                      destinationUrl: creatives[0]?.destinationUrl || '',
-                      adFormat: (['banner', 'card', 'interstitial', 'video'] as const)[creatives.length % 4],
-                      mediaFormat: 'image',
-                    },
-                  ]);
-                  setActiveCreativeIdx(creatives.length);
-                }}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--badge-bg)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--color-crimson)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                + Add Another Creative Format
-              </Button>
-            </div>
-
-            {/* Creative Tabs */}
-            {creatives.length > 1 && (
-              <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px' }}>
-                {creatives.map((c, idx) => (
-                  <Button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveCreativeIdx(idx)}
-                    aria-pressed={activeCreativeIdx === idx}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: activeCreativeIdx === idx ? 'var(--color-crimson)' : 'var(--bg-surface)',
-                      color: activeCreativeIdx === idx ? '#FFFFFF' : 'var(--text-secondary)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Ad #{idx + 1} ({c.adFormat.toUpperCase()})
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '28px' }}>
-              {/* Form Controls */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Display Format
-                  </label>
-                  <select
-                    value={activeCreative.adFormat}
-                    onChange={(e: any) => {
-                      const updated = [...creatives];
-                      updated[activeCreativeIdx].adFormat = e.target.value;
-                      setCreatives(updated);
-                    }}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      fontSize: '13px',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    <option value="card">Card / Feed Unit (300x250 standard)</option>
-                    <option value="banner">Leaderboard Banner (728x90)</option>
-                    <option value="video">In-Feed Video Unit</option>
-                    <option value="interstitial">Full Screen / Interstitial</option>
-                  </select>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label htmlFor="campaign-creative-headline" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Headline <span style={{ color: 'var(--color-crimson)' }}>*</span>
-                  </label>
-                  <Input
-                    id="campaign-creative-headline"
-                    type="text"
-                    required
-                    value={activeCreative.headline}
-                    onChange={(e) => {
-                      const updated = [...creatives];
-                      updated[activeCreativeIdx].headline = e.target.value;
-                      setCreatives(updated);
-                    }}
-                    placeholder="e.g. Build Fast with Modern Tools"
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      fontSize: '13px',
-                      color: 'var(--text-primary)',
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label htmlFor="campaign-creative-body" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Body / Sub-headline
-                  </label>
-                  <Textarea
-                    id="campaign-creative-body"
-                    rows={2}
-                    value={activeCreative.bodyText || ''}
-                    onChange={(e) => {
-                      const updated = [...creatives];
-                      updated[activeCreativeIdx].bodyText = e.target.value;
-                      setCreatives(updated);
-                    }}
-                    placeholder="Describe your value proposition clearly and respectfully..."
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label htmlFor="campaign-creative-cta" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      Call to Action (CTA)
-                    </label>
-                    <Input
-                      id="campaign-creative-cta"
-                      type="text"
-                      value={activeCreative.ctaText}
-                      onChange={(e) => {
-                        const updated = [...creatives];
-                        updated[activeCreativeIdx].ctaText = e.target.value;
-                        setCreatives(updated);
-                      }}
-                      placeholder="e.g. Learn More"
-                      style={{
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-subtle)',
-                        backgroundColor: 'var(--bg-surface)',
-                        fontSize: '13px',
-                        color: 'var(--text-primary)',
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label htmlFor="campaign-creative-destination" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      Destination URL <span style={{ color: 'var(--color-crimson)' }}>*</span>
-                    </label>
-                    <Input
-                      id="campaign-creative-destination"
-                      type="url"
-                      required
-                      value={activeCreative.destinationUrl}
-                      onChange={(e) => {
-                        const updated = [...creatives];
-                        updated[activeCreativeIdx].destinationUrl = e.target.value;
-                        setCreatives(updated);
-                      }}
-                      placeholder="https://yoursite.com/landing"
-                      style={{
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-subtle)',
-                        backgroundColor: 'var(--bg-surface)',
-                        fontSize: '13px',
-                        color: 'var(--text-primary)',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Media Upload Area */}
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: '10px',
-                    border: '1px dashed var(--border-subtle)',
-                    backgroundColor: 'var(--bg-surface)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {activeCreative.adFormat === 'video' ? 'Video Asset (MP4/WebM ≤ 20MB)' : 'Image Asset (JPG/PNG/WebP ≤ 750KB)'}
-                    </span>
-                    {uploadingMedia && <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite', color: 'var(--color-crimson)' }} />}
-                  </div>
-                  <input
-                    type="file"
-                    accept={activeCreative.adFormat === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/avif'}
-                    onChange={(e) => handleMediaUpload(e, activeCreative.adFormat === 'video')}
-                    style={{ fontSize: '12px', color: 'var(--text-secondary)' }}
-                  />
-                  {(activeCreative.imageUrl || activeCreative.videoUrl) && (
-                    <div style={{ fontSize: '11px', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <CheckCircle2 style={{ width: 12, height: 12 }} /> Media asset ready: {(activeCreative.imageUrl || activeCreative.videoUrl)?.substring(0, 45)}...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Live Preview Column */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
-                  Interactive Viewer Preview ({activeCreative.adFormat.toUpperCase()})
-                </span>
-
-                <div
-                  style={{
-                    padding: '20px',
-                    borderRadius: '12px',
-                    backgroundColor: 'var(--bg-elevated)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    minHeight: '260px',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {/* Card Simulation */}
-                  <div
-                    style={{
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      backgroundColor: 'var(--bg-page)',
-                      border: '1px solid var(--border-subtle)',
-                      boxShadow: 'var(--shadow-sm)',
-                    }}
-                  >
-                    {activeCreative.imageUrl ? (
-                      <img
-                        src={activeCreative.imageUrl}
-                        alt="Ad preview"
-                        style={{ width: '100%', height: '140px', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div style={{ width: '100%', height: '120px', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
-                        Visual Asset Placeholder
-                      </div>
-                    )}
-                    <div style={{ padding: '14px' }}>
-                      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-crimson)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        Promoted
-                      </div>
-                      <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                        {activeCreative.headline || 'Your compelling headline appears here'}
-                      </h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.4 }}>
-                        {activeCreative.bodyText || 'Clear, honest description of the product or service you are sharing with viewers.'}
-                      </p>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                          {activeCreative.destinationUrl ? new URL(activeCreative.destinationUrl.startsWith('http') ? activeCreative.destinationUrl : `https://${activeCreative.destinationUrl}`).hostname : 'yoursite.com'}
-                        </span>
-                        <span
-                          style={{
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            backgroundColor: 'var(--color-crimson)',
-                            color: '#FFFFFF',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          {activeCreative.ctaText || 'Learn More'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: TARGETING & AUDIENCE */}
-        {currentStep === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                Step 3: Audience &amp; Placement Guardrails
-              </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                Define where your ad can appear. Zero surveillance cookies; we match strictly on publisher contextual signals and geography.
-              </p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Target Geographies
-                </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {[
-                    { code: 'NG', name: 'Nigeria' },
-                    { code: 'GH', name: 'Ghana' },
-                    { code: 'KE', name: 'Kenya' },
-                    { code: 'ZA', name: 'South Africa' },
-                    { code: 'US', name: 'United States' },
-                    { code: 'GB', name: 'United Kingdom' },
-                  ].map((geo) => {
-                    const isSelected = targetCountries.includes(geo.code);
-                    return (
-                      <Button
-                        key={geo.code}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() => {
-                          if (isSelected) setTargetCountries(targetCountries.filter((c) => c !== geo.code));
-                          else setTargetCountries([...targetCountries, geo.code]);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: '1px solid',
-                          borderColor: isSelected ? 'var(--color-crimson)' : 'var(--border-subtle)',
-                          backgroundColor: isSelected ? 'var(--badge-bg)' : 'var(--bg-surface)',
-                          color: isSelected ? 'var(--color-crimson)' : 'var(--text-secondary)',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {isSelected && '✓ '} {geo.name}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Device Categories
-                </label>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  {[
-                    { id: 'mobile', label: 'Mobile Viewports' },
-                    { id: 'desktop', label: 'Desktop & Laptops' },
-                  ].map((dev) => {
-                    const isSelected = targetDevices.includes(dev.id);
-                    return (
-                      <Button
-                        key={dev.id}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() => {
-                          if (isSelected) setTargetDevices(targetDevices.filter((d) => d !== dev.id));
-                          else setTargetDevices([...targetDevices, dev.id]);
-                        }}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: '8px',
-                          border: '1px solid',
-                          borderColor: isSelected ? 'var(--color-crimson)' : 'var(--border-subtle)',
-                          backgroundColor: isSelected ? 'var(--badge-bg)' : 'var(--bg-surface)',
-                          color: isSelected ? 'var(--color-crimson)' : 'var(--text-secondary)',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {isSelected && '✓ '} {dev.label}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Daily Human Frequency Cap
-                </label>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-crimson)' }}>
-                  {frequencyCap} impressions per person / day
-                </span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={20}
-                value={frequencyCap}
-                onChange={(e) => setFrequencyCap(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--color-crimson)' }}
-              />
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
-                Prevents ad fatigue and respects viewer attention by ensuring no individual sees your ad more than {frequencyCap} times in a 24-hour cycle.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: BUDGET & PRICING */}
-        {currentStep === 4 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                Step 4: Transparent Budget &amp; Economics
-              </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                Every dollar is accounted for. Funds are placed into escrow and billed only upon verified MRC viewable impressions or genuine clicks.
-              </p>
-            </div>
-
-            {/* Pricing Model Selector */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div
-                onClick={() => setPricingModel('cpm')}
-                style={{
-                  padding: '18px',
-                  borderRadius: '12px',
-                  border: '2px solid',
-                  borderColor: pricingModel === 'cpm' ? 'var(--color-crimson)' : 'var(--border-subtle)',
-                  backgroundColor: pricingModel === 'cpm' ? 'var(--badge-bg)' : 'var(--bg-surface)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>CPM (Per 1,000 Views)</span>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-crimson)' }}>Floor: $0.50</span>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-                  Billed only when at least 50% of your ad is in the active viewport for $\ge$ 1 continuous second.
-                </p>
-              </div>
-
-              <div
-                onClick={() => setPricingModel('cpc')}
-                style={{
-                  padding: '18px',
-                  borderRadius: '12px',
-                  border: '2px solid',
-                  borderColor: pricingModel === 'cpc' ? 'var(--color-crimson)' : 'var(--border-subtle)',
-                  backgroundColor: pricingModel === 'cpc' ? 'var(--badge-bg)' : 'var(--bg-surface)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>CPC (Per Click)</span>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-crimson)' }}>Floor: $0.10</span>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
-                  Billed strictly when an interested human visitor clicks through to your landing page.
-                </p>
-              </div>
-            </div>
-
-            {/* Budget & Bid Inputs */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="campaign-budget-usd" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Total Campaign Budget ($ USD)
-                </label>
-                <Input
-                  id="campaign-budget-usd"
-                  type="number"
-                  min={5}
-                  step={1}
-                  value={budgetUsd}
-                  onChange={(e) => setBudgetUsd(Number(e.target.value))}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: 'var(--bg-surface)',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    color: 'var(--text-primary)',
-                  }}
-                />
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Minimum $5.00 USD</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="campaign-daily-budget-usd" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Daily Spending Target ($ USD)
-                </label>
-                <Input
-                  id="campaign-daily-budget-usd"
-                  type="number"
-                  min={1}
-                  step={1}
-                  value={dailyBudgetUsd}
-                  onChange={(e) => setDailyBudgetUsd(Number(e.target.value))}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: 'var(--bg-surface)',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    color: 'var(--text-primary)',
-                  }}
-                />
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Paces delivery across hours</span>
-              </div>
-
-              {pricingModel === 'cpm' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label htmlFor="campaign-cpm-bid-cents" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    CPM Bid (Cents per 1,000 views)
-                  </label>
-                  <Input
-                    id="campaign-cpm-bid-cents"
-                    type="number"
-                    min={50}
-                    step={5}
-                    value={cpmBidCents}
-                    onChange={(e) => setCpmBidCents(Number(e.target.value))}
-                    style={{
-                      padding: '12px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      color: 'var(--text-primary)',
-                    }}
-                  />
-                  <span style={{ fontSize: '11px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-                    Equals ${(cpmBidCents / 100).toFixed(2)} USD per 1,000 views
-                  </span>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label htmlFor="campaign-cpc-bid-cents" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    CPC Bid (Cents per click)
-                  </label>
-                  <Input
-                    id="campaign-cpc-bid-cents"
-                    type="number"
-                    min={10}
-                    step={1}
-                    value={cpcBidCents}
-                    onChange={(e) => setCpcBidCents(Number(e.target.value))}
-                    style={{
-                      padding: '12px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      fontSize: '15px',
-                      fontWeight: 700,
-                      color: 'var(--text-primary)',
-                    }}
-                  />
-                  <span style={{ fontSize: '11px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-                    Equals ${(cpcBidCents / 100).toFixed(2)} USD per verified click
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Projected Reach Card */}
-            <div
-              style={{
-                padding: '16px 20px',
-                borderRadius: '12px',
-                backgroundColor: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-success)', textTransform: 'uppercase' }}>
-                  Conservative Estimated Delivery
-                </span>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-                  {pricingModel === 'cpm'
-                    ? `~${Math.floor((budgetUsd / (cpmBidCents / 100)) * 1000).toLocaleString()} Verified Viewable Impressions`
-                    : `~${Math.floor(budgetUsd / (cpcBidCents / 100)).toLocaleString()} Direct Click Visits`}
-                </div>
-              </div>
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                Protected by 72-Hour Anti-Fraud Hold
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5: REVIEW & SUBMIT */}
-        {currentStep === 5 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
-                Step 5: Review &amp; Submit for Moderation
-              </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                Please review your campaign details. Once submitted, our dual-reviewer team audits your creative within 2-4 business hours.
-              </p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-              <div style={{ padding: '18px', borderRadius: '12px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Campaign</span>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{title}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Category: {category}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Channels: {channels.join(', ')}</div>
-              </div>
-
-              <div style={{ padding: '18px', borderRadius: '12px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Financial Terms</span>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>${budgetUsd.toFixed(2)} USD Escrow</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Model: {pricingModel.toUpperCase()}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  Rate: {pricingModel === 'cpm' ? `$${(cpmBidCents / 100).toFixed(2)} / 1,000 views` : `$${(cpcBidCents / 100).toFixed(2)} / click`}
-                </div>
-              </div>
-
-              <div style={{ padding: '18px', borderRadius: '12px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Creatives</span>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{creatives.length} Format(s)</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Primary: {creatives[0]?.headline}</div>
-                <div style={{ fontSize: '12px', color: 'var(--color-crimson)', wordBreak: 'break-all' }}>
-                  {creatives[0]?.destinationUrl}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(212,20,58,0.06)', border: '1px solid rgba(212,20,58,0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <ShieldCheck style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
-                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>Our Ethical Commitment to You</span>
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                Your budget remains in secure escrow and is deducted only upon verified human delivery. If you ever choose to cancel, all remaining unconsumed funds return to your wallet immediately without penalty.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Wizard Footer Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
+      <footer style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           {currentStep > 1 ? (
-            <Button
-              type="button"
-              onClick={handleBack}
-              disabled={isSubmitting}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                borderRadius: '10px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <ArrowLeft style={{ width: 16, height: 16 }} /> Back
+            <Button type="button" variant="outline" onClick={back} disabled={isSubmitting}>
+              <ArrowLeft size={14} aria-hidden="true" /> Back
             </Button>
           ) : (
-            <div />
-          )}
-
-          {currentStep < 5 ? (
-            <Button
-              type="button"
-              onClick={handleNext}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 24px',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-crimson)',
-              }}
-            >
-              Continue <ArrowRight style={{ width: 16, height: 16 }} />
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={handleLaunchCampaign}
-              disabled={isSubmitting}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 28px',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                boxShadow: 'var(--shadow-crimson)',
-              }}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> Submitting for Review...
-                </>
-              ) : (
-                <>
-                  <Sparkles style={{ width: 16, height: 16 }} /> Submit Campaign for Review
-                </>
-              )}
-            </Button>
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>Cancel</Button>
           )}
         </div>
-      </div>
+        {currentStep < 5 ? (
+          <Button type="button" onClick={next}>
+            Continue <ArrowRight size={14} aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button type="button" onClick={() => void submit()} disabled={isSubmitting}>
+            {isSubmitting ? <><Loader2 size={14} aria-hidden="true" /> Submitting…</> : <><Sparkles size={14} aria-hidden="true" /> Submit for review</>}
+          </Button>
+        )}
+      </footer>
+    </div>
+  );
+}
+
+function SummaryCard({ label, value, lines }: { label: string; value: string; lines: string[] }) {
+  return (
+    <div style={{ padding: '14px', border: '1px solid var(--border-subtle)', borderRadius: '10px', background: 'var(--bg-surface)' }}>
+      <span style={{ display: 'block', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>{label}</span>
+      <strong style={{ display: 'block', margin: '4px 0 6px', fontSize: '14px', color: 'var(--text-primary)' }}>{value}</strong>
+      {lines.map((line) => <span key={line} style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{line}</span>)}
     </div>
   );
 }

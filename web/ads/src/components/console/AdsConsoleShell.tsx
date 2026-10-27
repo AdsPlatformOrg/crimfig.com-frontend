@@ -26,6 +26,7 @@ import { ThemeSwitcher } from '../ThemeSwitcher';
 import { SignOutButton } from '../SessionGate';
 import { DashboardSidebar, type NavGroup } from '../DashboardSidebar';
 import { apiData } from '../../lib/api-data';
+import { dashboardSession } from '../../lib/session';
 import { Button, Badge } from '../ui';
 
 export interface AdsConsoleShellProps {
@@ -39,6 +40,20 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
+  const [avatar, setAvatar] = useState<{ url: string; alt: string } | null>(null);
+  const authBase = process.env.NEXT_PUBLIC_AUTH_WEB_URL || (process.env.NODE_ENV === 'production' ? 'https://auth.crimfig.com' : 'http://localhost:3000');
+
+  useEffect(() => {
+    let active = true;
+    const load = () => {
+      void dashboardSession().getProfile()
+        .then((profile) => { if (active) setAvatar({ url: profile.avatar.url, alt: profile.avatar.alt }); })
+        .catch(() => { /* Default avatar remains visible. */ });
+    };
+    load();
+    window.addEventListener('crimfig-profile-updated', load);
+    return () => { active = false; window.removeEventListener('crimfig-profile-updated', load); };
+  }, []);
 
   useEffect(() => {
     if (!isMobileNavOpen) return;
@@ -330,6 +345,22 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
                 <span>Add Property</span>
               </Button>
             ) : null}
+
+            <Link
+              href={`${authBase}/profile`}
+              aria-label="Open profile and avatar settings"
+              style={{ display: 'inline-flex', width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
+            >
+              {/* Avatar is served by Auth; not a bundled Next image. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={avatar?.url || `${authBase}/avatars/chibi/chibi-indigo.webp`}
+                alt={avatar?.alt || 'Default chibi ninja avatar'}
+                width={36}
+                height={36}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </Link>
 
             <SignOutButton />
 

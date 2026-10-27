@@ -9,6 +9,19 @@ export interface SessionSnapshot {
   expiresAt: number | null;
 }
 
+export interface UserProfile {
+  userId: string;
+  email: string;
+  avatar: {
+    kind: 'default' | 'preset';
+    presetId: string;
+    label: string;
+    alt: string;
+    url: string;
+    version: number;
+  };
+}
+
 export class SessionError extends Error {
   constructor(public readonly kind: 'anonymous' | 'temporary' | 'cancelled', message: string) {
     super(message);
@@ -69,6 +82,9 @@ export function createSessionClient(options: SessionOptions) {
   const timeoutMs = options.requestTimeoutMs ?? 10_000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new TypeError('Invalid request timeout');
   let token: string | null = null;
+  let profileCache: Promise<UserProfile> | null = null;
+  const invalidateProfile = () => { profileCache = null; };
+  if (typeof window !== 'undefined') window.addEventListener('crimfig-profile-updated', invalidateProfile);
   let snapshot: SessionSnapshot = { status: 'idle', expiresAt: null, signOut: null };
   let signOut: SignOutState = null;
   let logoutFlight: Promise<void> | null = null;
@@ -92,6 +108,7 @@ export function createSessionClient(options: SessionOptions) {
   function clearSession() {
     generation++;
     token = null;
+    profileCache = null;
     publish('anonymous');
   }
 
@@ -160,6 +177,36 @@ export function createSessionClient(options: SessionOptions) {
     if (signOut) throw new SessionError('anonymous', 'Signed out; sign in again to continue');
     if (token && snapshot.expiresAt !== null && snapshot.expiresAt > now() + 5_000) return token;
     return refresh();
+  }
+
+  async function getProfile(): Promise<UserProfile> {
+    if (profileCache) return profileCache;
+    profileCache = (async () => {
+      const bearer = await accessToken();
+      const response = await fetcher(`${authOrigin}/api/v1/auth/me`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${bearer}` },
+        credentials: 'omit',
+        redirect: 'error',
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (!response.ok) throw new SessionError('temporary', 'Profile service unavailable');
+      const data = await response.json() as Partial<UserProfile> | null;
+      const avatar = data?.avatar;
+      if (!data || typeof data.userId !== 'string' || typeof data.email !== 'string' ||
+          !avatar || !['default', 'preset'].includes(avatar.kind) ||
+          typeof avatar.presetId !== 'string' || typeof avatar.alt !== 'string' ||
+          typeof avatar.url !== 'string' || !Number.isSafeInteger(avatar.version)) {
+        throw new SessionError('temporary', 'Invalid profile response');
+      }
+      return data as UserProfile;
+    })();
+    try {
+      return await profileCache;
+    } catch (error) {
+      profileCache = null;
+      throw error;
+    }
   }
 
   async function request(input: string | URL, init: RequestInit = {}): Promise<Response> {
@@ -245,11 +292,13 @@ export function createSessionClient(options: SessionOptions) {
       return { ...snapshot };
     },
     request,
+    getProfile,
     logout,
     clearSession,
     dispose() {
       channel?.removeEventListener('message', onSignOutMessage);
       channel?.close();
+      if (typeof window !== 'undefined') window.removeEventListener('crimfig-profile-updated', invalidateProfile);
       signOut = 'remote';
       clearSession();
       listeners.clear();
