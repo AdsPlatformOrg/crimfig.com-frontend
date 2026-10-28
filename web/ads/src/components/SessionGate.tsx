@@ -1,156 +1,73 @@
 'use client';
 
-import { useEffect, useState, type ReactNode, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { SessionSnapshot } from '@crimfig/session';
-import { dashboardSession, loginUrl } from '../lib/session';
+import { dashboardSession as sessionClient, loginUrl } from '../lib/session';
 import { Button } from './ui/button';
 
+const initialSnapshot: SessionSnapshot = Object.freeze({ status: 'idle', expiresAt: null, signOut: null });
+const getServerSnapshot = () => initialSnapshot;
+const getSnapshot = () => typeof window === 'undefined' ? initialSnapshot : sessionClient().getSnapshot();
+const subscribe = (listener: () => void) => sessionClient().subscribe(listener);
+
 export function useSessionSnapshot() {
-  const [snapshot, setSnapshot] = useState<SessionSnapshot>({ status: 'idle', expiresAt: null, signOut: null });
-  useEffect(() => {
-    const client = dashboardSession();
-    setSnapshot(client.getSnapshot());
-    return client.subscribe(setSnapshot);
-  }, []);
-  return snapshot;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 export function useSessionStatus() { return useSessionSnapshot().status; }
-
 export function SignOutButton() {
-  return <Button type="button" variant="outline" size="sm" onClick={() => { void dashboardSession().logout().catch(() => { /* SessionGate displays revocation failure. */ }); }}>Sign out</Button>;
+  return <Button type="button" variant="outline" size="sm" onClick={() => { void sessionClient().logout().catch(() => {}); }}>Sign out</Button>;
 }
 
-const actionStyle: CSSProperties = { display: 'inline-flex', background: 'var(--color-crimson)', color: 'var(--color-white)', padding: '12px 20px', borderRadius: 8, border: 0, cursor: 'pointer', font: 'inherit', textDecoration: 'none' };
-
-import { CrimFigLogo } from './CrimFigLogo';
+function WorkspaceSkeleton() {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => { const id = window.setTimeout(() => setSlow(true), 200); return () => window.clearTimeout(id); }, []);
+  return <div aria-busy="true" aria-label="Loading workspace" style={{ minHeight: '100dvh', background: 'var(--bg-page)', color: 'var(--text-secondary)' }}>
+    <div aria-hidden="true" style={{ height: 72, borderBottom: '1px solid var(--border-subtle)', padding: '20px 24px' }}>
+      <div style={{ height: 28, width: 144, maxWidth: '60%', borderRadius: 6, background: 'var(--bg-surface)' }} />
+    </div>
+    <div aria-hidden="true" style={{ maxWidth: 1000, margin: '32px auto', padding: 24, display: 'grid', gap: 20 }}>
+      {[60, 100, 100].map((width, index) => <div key={index} style={{ height: index ? 112 : 28, width: `${width}%`, borderRadius: 10, background: 'var(--bg-surface)' }} />)}
+    </div>
+    <p role="status" style={{ textAlign: 'center', minHeight: 24 }}>{slow ? 'Loading workspace…' : ''}</p>
+  </div>;
+}
 
 export function SessionGate({ children }: { children: ReactNode }) {
-  const { status, signOut } = useSessionSnapshot();
+  const { status, signOut, renewal, identityVersion } = useSessionSnapshot();
+  const hasAuthenticated = useRef(false);
+  const retainedContent = useRef<HTMLDivElement>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
+  if (status === 'authenticated' && !signOut) hasAuthenticated.current = true;
+  if (status === 'anonymous' || signOut) hasAuthenticated.current = false;
+  const retry = useCallback(() => { void sessionClient().bootstrap().catch(() => {}); }, []);
+  useEffect(() => { if (sessionClient().getSnapshot().status === 'idle') retry(); }, [retry]);
+  const authorized = status === 'authenticated' && !signOut;
+  const retainDraft = hasAuthenticated.current && !signOut && status !== 'anonymous';
   useEffect(() => {
-    const client = dashboardSession();
-    if (client.getSnapshot().status === 'idle') void client.bootstrap().catch(() => { /* A sign-out can cancel bootstrap. */ });
-  }, [status]);
-  if (status === 'authenticated' && !signOut) return children;
-  const waiting = status === 'idle' || status === 'loading' || signOut === 'pending';
-
-  return (
-    <main
-      className="auth-centered-container"
-      style={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        padding: '24px',
-        background: 'var(--bg-page)',
-        color: 'var(--text-primary)',
-        fontFamily: "'Poppins', Arial, Helvetica, sans-serif",
-      }}
-    >
-      <section
-        className="glass-card"
-        aria-live="polite"
-        style={{
-          padding: '36px 32px',
-          maxWidth: '460px',
-          width: '100%',
-          boxSizing: 'border-box',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '16px',
-          boxShadow: 'var(--shadow-md)',
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px',
-        }}
-      >
-        {/* Animated CrimFig Brand Icon Spinner */}
-        <div style={{ position: 'relative', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {waiting && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: '-4px',
-                borderRadius: '50%',
-                border: '2px solid transparent',
-                borderTopColor: 'var(--color-crimson)',
-                borderRightColor: 'var(--color-crimson-light)',
-                animation: 'spin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite',
-              }}
-            />
-          )}
-          <CrimFigLogo variant="icon" size={38} priority />
-        </div>
-
-        <div>
-          <h1
-            style={{
-              fontSize: '20px',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              margin: '0 0 8px 0',
-              letterSpacing: '-0.3px',
-              lineHeight: 1.3,
-            }}
-          >
-            {signOut === 'pending'
-              ? 'Securing your sign-out…'
-              : signOut === 'failed'
-              ? 'Sign-out could not be confirmed'
-              : signOut
-              ? 'You have been signed out'
-              : waiting
-              ? 'Preparing your workspace'
-              : status === 'anonymous'
-              ? 'Welcome to CrimFig Ads'
-              : 'Unable to verify session'}
-          </h1>
-
-          <p
-            style={{
-              fontSize: '13.5px',
-              color: 'var(--text-secondary)',
-              margin: 0,
-              lineHeight: 1.5,
-              opacity: 0.9,
-            }}
-          >
-            {signOut === 'failed'
-              ? 'This dashboard is locked for your protection, but your server session may still be active. Please sign in again to continue safely.'
-              : signOut === 'remote'
-              ? 'Your account was signed out from another tab or window. Sign in whenever you are ready.'
-              : signOut === 'complete'
-              ? 'Thank you for your time. Your session has safely concluded.'
-              : waiting
-              ? 'Checking your secure session to make sure everything is in place for you…'
-              : status === 'anonymous'
-              ? 'Sign in with your CrimFig account to manage campaigns, creatives, and publisher inventory.'
-              : 'We couldn’t verify your session. Sign in to continue, or retry the connection.'}
-          </p>
-        </div>
-
-        {!waiting && (
-          <div style={{ marginTop: '8px', width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <a
-              style={{ ...actionStyle, width: '100%', boxSizing: 'border-box', justifyContent: 'center', fontWeight: 600, fontSize: '14px', borderRadius: '10px' }}
-              href={loginUrl()}
-            >
-              Sign In to Continue
-            </a>
-            {status === 'temporary-error' && (
-              <Button
-                type="button"
-                style={{ width: '100%' }}
-                size="lg"
-                onClick={() => void dashboardSession().bootstrap().catch(() => {})}
-              >
-                Retry Connection
-              </Button>
-            )}
-          </div>
-        )}
+    if (!retainDraft) lastFocused.current = null;
+    if (authorized && lastFocused.current?.isConnected && retainedContent.current?.contains(lastFocused.current)) {
+      lastFocused.current.focus({ preventScroll: true });
+    }
+  }, [authorized, retainDraft, identityVersion]);
+  return <>
+    {/* Never unmount a live form during renewal. Locked content is hidden and unfocusable. */}
+    {(authorized || retainDraft) && <div key={identityVersion ?? 0} ref={retainedContent} hidden={!authorized} onFocusCapture={(event) => { lastFocused.current = event.target as HTMLElement; }}>{children}</div>}
+    {authorized && renewal === 'connection-error' && <div role="status" style={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 60, padding: 12, border: '1px solid var(--border-subtle)', borderRadius: 8, background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
+      Connection interrupted. Your current session is still valid. <Button type="button" variant="outline" onClick={retry}>Retry connection</Button>
+    </div>}
+    {!authorized && (status === 'idle' || status === 'loading') && !signOut && <WorkspaceSkeleton />}
+    {!authorized && status !== 'idle' && status !== 'loading' && !signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+      <section style={{ maxWidth: 460, width: '100%' }} aria-live="polite">
+        <h1>{status === 'temporary-error' ? 'Connection interrupted' : 'Sign in to continue'}</h1>
+        <p>{status === 'temporary-error' ? 'Your workspace is locked until we can verify your session. Your open form stays in this tab while you reconnect.' : 'Sign in with your CrimFig account to continue to this page.'}</p>
+        {status === 'temporary-error' && <Button type="button" onClick={retry}>Retry connection</Button>}
+        <p><a href={loginUrl()}>Sign in to continue</a></p>
       </section>
-    </main>
-  );
+    </main>}
+    {signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
+      <section aria-live="polite"><h1>{signOut === 'pending' ? 'Signing out…' : signOut === 'failed' ? 'Sign-out could not be confirmed' : 'You have been signed out'}</h1>
+      <p>{signOut === 'failed' ? 'This workspace is locked, but your server session may still be active. Sign in again to continue safely.' : signOut === 'remote' ? 'Your account was signed out in another tab.' : 'Your private workspace is locked.'}</p>
+      {signOut !== 'pending' && <a href={loginUrl()}>Sign in to continue</a>}</section>
+    </main>}
+  </>;
 }

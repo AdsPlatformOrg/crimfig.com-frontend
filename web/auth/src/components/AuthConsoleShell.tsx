@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -18,6 +18,8 @@ interface AuthConsoleShellProps {
 
 export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff = false }: AuthConsoleShellProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => { setMobileMenuOpen(false); }, [pathname]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatar, setAvatar] = useState<{ url: string; alt: string } | null>(null);
 

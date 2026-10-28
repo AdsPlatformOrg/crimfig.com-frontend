@@ -7,6 +7,9 @@ export interface SessionSnapshot {
   signOut: SignOutState;
   status: SessionStatus;
   expiresAt: number | null;
+  renewal?: 'idle' | 'refreshing' | 'connection-error';
+  /** Changes when private UI must be recreated for a different account. */
+  identityVersion?: number;
 }
 
 export interface UserProfile {
@@ -48,6 +51,8 @@ export interface SessionOptions {
   fetch?: typeof globalThis.fetch;
   now?: () => number;
   requestTimeoutMs?: number;
+  /** Injectable timer for deterministic expiry tests; returns a cancellation function. */
+  schedule?: (work: () => void, delayMs: number) => () => void;
   /** Optional coordinator. Same-origin Web Locks do not coordinate subdomains. */
   coordinateRefresh?: <T>(work: () => Promise<T>) => Promise<T>;
 }
@@ -82,10 +87,20 @@ export function createSessionClient(options: SessionOptions) {
   const timeoutMs = options.requestTimeoutMs ?? 10_000;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new TypeError('Invalid request timeout');
   let token: string | null = null;
+  let subject: string | null = null;
+  let identityVersion = 0;
+  let nextWakeAttempt = 0;
   let profileCache: Promise<UserProfile> | null = null;
   const invalidateProfile = () => { profileCache = null; };
   if (typeof window !== 'undefined') window.addEventListener('crimfig-profile-updated', invalidateProfile);
-  let snapshot: SessionSnapshot = { status: 'idle', expiresAt: null, signOut: null };
+  let snapshot: SessionSnapshot = Object.freeze({ status: 'idle', expiresAt: null, signOut: null });
+  let cancelRenewal: (() => void) | undefined;
+  let cancelExpiry: (() => void) | undefined;
+  const schedule = options.schedule ?? ((work: () => void, delay: number) => {
+    if (typeof window === 'undefined') return () => {};
+    const id = window.setTimeout(work, delay);
+    return () => window.clearTimeout(id);
+  });
   let signOut: SignOutState = null;
   let logoutFlight: Promise<void> | null = null;
   let channel = options.signOutChannel;
@@ -97,17 +112,40 @@ export function createSessionClient(options: SessionOptions) {
   let refreshFlight: Promise<string> | null = null;
   const listeners = new Set<(snapshot: SessionSnapshot) => void>();
 
-  function publish(status: SessionStatus, expiresAt: number | null = null) {
-    snapshot = { status, expiresAt, signOut };
+  function publish(status: SessionStatus, expiresAt: number | null = null, renewal: SessionSnapshot['renewal'] = 'idle') {
+    snapshot = Object.freeze({ status, expiresAt, signOut, renewal, identityVersion });
     for (const listener of listeners) {
       // A UI subscriber must not break session transitions for other consumers.
       try { listener({ ...snapshot }); } catch { /* Consumers own their UI errors. */ }
     }
   }
 
+  function stopTimers() {
+    cancelRenewal?.(); cancelExpiry?.();
+    cancelRenewal = cancelExpiry = undefined;
+  }
+
+  function armTimers() {
+    stopTimers();
+    const deadline = snapshot.expiresAt;
+    if (deadline === null || signOut) return;
+    const remaining = deadline - now();
+    // Never keep private UI visible after expiry, even if refresh is still pending.
+    cancelExpiry = schedule(() => {
+      if (snapshot.expiresAt === deadline && now() >= deadline && !signOut) {
+        token = null; profileCache = null;
+        publish('temporary-error', null, 'connection-error');
+      }
+    }, Math.max(0, remaining));
+    cancelRenewal = schedule(() => {
+      if (!signOut) void refresh().catch(() => { /* Snapshot supplies bounded recovery UI. */ });
+    }, Math.max(1_000, remaining - Math.min(30_000, remaining / 5)));
+  }
+
   function clearSession() {
     generation++;
-    token = null;
+    stopTimers();
+    token = null; subject = null; identityVersion++;
     profileCache = null;
     publish('anonymous');
   }
@@ -118,7 +156,9 @@ export function createSessionClient(options: SessionOptions) {
     const started = generation;
     const work = async () => {
       if (started !== generation) throw new SessionError('cancelled', 'Session changed');
-      publish('loading');
+      const previousExpiry = snapshot.expiresAt;
+      const stillValid = Boolean(token && previousExpiry !== null && previousExpiry > now());
+      publish(stillValid ? 'authenticated' : 'loading', stillValid ? previousExpiry : null, 'refreshing');
       try {
         const response = await fetcher(`${authOrigin}/api/v1/auth/refresh`, {
           method: 'POST',
@@ -130,8 +170,7 @@ export function createSessionClient(options: SessionOptions) {
         });
         if (started !== generation) throw new SessionError('cancelled', 'Session changed');
         if (response.status === 401) {
-          token = null;
-          publish('anonymous');
+          clearSession();
           throw new SessionError('anonymous', 'No valid session');
         }
         if (!response.ok) throw new SessionError('temporary', 'Session service unavailable');
@@ -145,14 +184,29 @@ export function createSessionClient(options: SessionOptions) {
           throw new SessionError('temporary', 'Invalid session response');
         }
         // Ignore refreshToken in the JSON response; only the HttpOnly cookie is used.
+        // This comparison is only a UI-cache isolation hint; the server validates credentials.
+        let nextSubject: string | null = null;
+        try {
+          const payload = JSON.parse(atob(pair.accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+          nextSubject = typeof payload.sub === 'string' ? payload.sub : null;
+        } catch { /* Opaque credentials have no client-readable identity. */ }
+        if (subject !== null && nextSubject !== subject) {
+          generation++; identityVersion++; profileCache = null;
+        }
+        subject = nextSubject;
         token = pair.accessToken;
         publish('authenticated', now() + pair.expiresIn * 1000);
+        armTimers();
         return token;
       } catch (error) {
-        if (started !== generation) throw new SessionError('cancelled', 'Session changed');
         if (error instanceof SessionError && error.kind === 'anonymous') throw error;
-        token = null;
-        publish('temporary-error');
+        if (started !== generation) throw new SessionError('cancelled', 'Session changed');
+        if (token && previousExpiry !== null && previousExpiry > now()) {
+          publish('authenticated', previousExpiry, 'connection-error');
+        } else {
+          token = null; profileCache = null;
+          publish('temporary-error', null, 'connection-error');
+        }
         throw error instanceof SessionError ? error : new SessionError('temporary', 'Cannot reach session service');
       }
     };
@@ -180,8 +234,10 @@ export function createSessionClient(options: SessionOptions) {
   }
 
   async function getProfile(): Promise<UserProfile> {
+    await accessToken();
     if (profileCache) return profileCache;
     profileCache = (async () => {
+      const started = generation;
       const bearer = await accessToken();
       const response = await fetcher(`${authOrigin}/api/v1/auth/me`, {
         method: 'GET',
@@ -190,8 +246,10 @@ export function createSessionClient(options: SessionOptions) {
         redirect: 'error',
         signal: AbortSignal.timeout(timeoutMs),
       });
+      if (started !== generation || signOut) throw new SessionError('cancelled', 'Session changed');
       if (!response.ok) throw new SessionError('temporary', 'Profile service unavailable');
       const data = await response.json() as Partial<UserProfile> | null;
+      if (started !== generation || signOut) throw new SessionError('cancelled', 'Session changed');
       const avatar = data?.avatar;
       if (!data || typeof data.userId !== 'string' || typeof data.email !== 'string' ||
           !avatar || !['default', 'preset'].includes(avatar.kind) ||
@@ -201,10 +259,11 @@ export function createSessionClient(options: SessionOptions) {
       }
       return data as UserProfile;
     })();
+    const pending = profileCache;
     try {
-      return await profileCache;
+      return await pending;
     } catch (error) {
-      profileCache = null;
+      if (profileCache === pending) profileCache = null;
       throw error;
     }
   }
@@ -235,11 +294,12 @@ export function createSessionClient(options: SessionOptions) {
     if (response.status !== 401) return response;
     // Mutations are never automatically replayed, including payment requests.
     if (method !== 'GET' && method !== 'HEAD') {
-      if (token === firstToken) { token = null; publish('idle'); }
+      if (token === firstToken) { stopTimers(); token = null; profileCache = null; publish('temporary-error', null, 'connection-error'); }
       return response;
     }
     await response.body?.cancel();
     // Another concurrent request may already have replaced the rejected token.
+    if (token === firstToken) { stopTimers(); token = null; profileCache = null; publish('loading', null, 'refreshing'); }
     const nextToken = token && token !== firstToken ? await accessToken() : await refresh();
     if (started !== generation) throw new SessionError('cancelled', 'Session changed');
     const retried = await send(nextToken);
@@ -278,14 +338,33 @@ export function createSessionClient(options: SessionOptions) {
     return flight;
   }
 
+  // A suspended tab must check its clock before showing protected content again.
+  const onWake = () => {
+    if (signOut || (typeof document !== 'undefined' && document.visibilityState === 'hidden')) return;
+    if (snapshot.expiresAt !== null && snapshot.expiresAt <= now()) {
+      token = null; profileCache = null;
+      publish('temporary-error', null, 'connection-error');
+    }
+    if (now() < nextWakeAttempt) return;
+    nextWakeAttempt = now() + 5_000;
+    if (snapshot.status === 'authenticated' || snapshot.status === 'temporary-error') {
+      void accessToken().catch(() => {});
+    }
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('focus', onWake);
+    window.addEventListener('online', onWake);
+    document.addEventListener('visibilitychange', onWake);
+  }
+
   return {
-    getSnapshot: (): SessionSnapshot => ({ ...snapshot }),
+    getSnapshot: (): SessionSnapshot => snapshot,
     subscribe(listener: (snapshot: SessionSnapshot) => void) {
       listeners.add(listener);
       return () => { listeners.delete(listener); };
     },
     bootstrap: async (): Promise<SessionSnapshot> => {
-      try { await accessToken(); }
+      try { if (snapshot.renewal === 'connection-error') await refresh(); else await accessToken(); }
       catch (error) {
         if (!(error instanceof SessionError) || error.kind === 'cancelled') throw error;
       }
@@ -298,7 +377,11 @@ export function createSessionClient(options: SessionOptions) {
     dispose() {
       channel?.removeEventListener('message', onSignOutMessage);
       channel?.close();
-      if (typeof window !== 'undefined') window.removeEventListener('crimfig-profile-updated', invalidateProfile);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('crimfig-profile-updated', invalidateProfile);
+        window.removeEventListener('focus', onWake); window.removeEventListener('online', onWake);
+        document.removeEventListener('visibilitychange', onWake);
+      }
       signOut = 'remote';
       clearSession();
       listeners.clear();

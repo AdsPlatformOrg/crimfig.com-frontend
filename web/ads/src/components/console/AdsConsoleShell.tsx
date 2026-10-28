@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   BarChart3,
   UserCheck,
@@ -37,6 +37,8 @@ export interface AdsConsoleShellProps {
 
 export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShellProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => { setIsMobileNavOpen(false); }, [pathname]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);

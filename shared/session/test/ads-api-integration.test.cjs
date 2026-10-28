@@ -85,15 +85,15 @@ test('Ads account campaigns and public catalog use different endpoints without d
 
 test('campaign creation attaches actual creatives and submits review once in order', async () => {
   const calls = [];
-  const api = modules(async (url, init) => { calls.push([url, init]); return success({ id: url.endsWith('campaigns') ? 'saved-id' : 'creative-id' }); })('campaigns-api');
-  assert.equal(await api.createCampaignWorkflow({ title: 'Saved', budgetUsd: 5, format: 'card', pricingModel: 'cpc' }, [{ headline: 'Creative', destinationUrl: 'https://example.test' }]), 'saved-id');
-  assert.deepEqual(calls.map(call => call[0]), ['/api/v1/campaigns','/api/v1/campaigns/saved-id/creatives','/api/v1/campaigns/saved-id/submit-review']);
+  const api = modules(async (url, init) => { calls.push([url, init]); return success({ id: url.endsWith('campaigns') ? 'saved-id' : 'creative-id', ...(url.endsWith('campaigns') ? {defaultStackId:'stack-id'} : {}) }); })('campaigns-api');
+  assert.equal(await api.createCampaignWorkflow({ title: 'Saved', budgetUsd: 5, format: 'card', pricingModel: 'cpc', costPerClickCents:10, geoMode:'global' }, [{name:'Stack',geoMode:'inherit',locations:[],targetDevices:[],targetHours:[],ads:[{adType:'text',headline:'Creative',destinationUrl:'https://example.test'}]}]), 'saved-id');
+  assert.deepEqual(calls.map(call => call[0]), ['/api/v1/campaigns','/api/v1/campaigns/saved-id/ad-stacks/stack-id','/api/v1/campaigns/saved-id/creatives','/api/v1/campaigns/saved-id/submit-review']);
 });
 
 test('partial campaign writes surface the saved ID without continuing or replaying', async () => {
   const calls = [];
-  const api = modules(async url => { calls.push(url); if (calls.length === 1) return success({ id: 'saved-id' }); throw new Error('lost response'); })('campaigns-api');
-  await assert.rejects(api.createCampaignWorkflow({ title: 'Saved', budgetUsd: 5, format: 'card', pricingModel: 'cpc' }, [{ headline: 'Creative' }, { headline: 'Another' }]), err => err.campaignId === 'saved-id' && err.message.includes('reconcile'));
+  const api = modules(async url => { calls.push(url); if (calls.length === 1) return success({ id: 'saved-id', defaultStackId:'stack-id' }); throw new Error('lost response'); })('campaigns-api');
+  await assert.rejects(api.createCampaignWorkflow({ title: 'Saved', budgetUsd: 5, format: 'card', pricingModel: 'cpc', costPerClickCents:10, geoMode:'global' }, [{name:'Stack',geoMode:'inherit',locations:[],targetDevices:[],targetHours:[],ads:[{adType:'text',headline:'Creative',destinationUrl:'https://example.test'},{adType:'text',headline:'Another',destinationUrl:'https://example.test'}]}]), err => err.campaignId === 'saved-id' && err.message.includes('reconcile'));
   assert.equal(calls.length, 2);
 });
 

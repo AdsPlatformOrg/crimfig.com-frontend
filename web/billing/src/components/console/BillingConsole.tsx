@@ -120,6 +120,7 @@ const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_B
 export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: BillingConsoleProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards' | 'support'>(initialTab);
+  useEffect(() => { setActiveTab(initialTab); setIsMobileNavOpen(false); }, [initialTab]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [avatar, setAvatar] = useState<{ url: string; alt: string } | null>(null);
@@ -642,9 +643,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px', flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '28px', minWidth: 0 }}>
         
         {loadError && <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>}
-        {(walletStatus === 'unavailable' || ledgerError) && <Alert variant="destructive">
-          <AlertDescription>{walletStatus === 'unavailable' ? 'Wallet balance could not be loaded. ' : ''}{ledgerError}</AlertDescription>
-          <Button type="button" variant="outline" size="sm" onClick={() => void refreshAccountData()}>Refresh account data</Button>
+        {(walletStatus === 'unavailable' || ledgerError) && <Alert variant="destructive" style={{ flexWrap: 'wrap' }}>
+          <AlertDescription style={{ minWidth: 0, flex: '1 1 200px' }}>{walletStatus === 'unavailable' ? 'Wallet balance could not be loaded. ' : ''}{ledgerError}</AlertDescription>
+          <Button type="button" variant="outline" size="sm" style={{ flexShrink: 0 }} onClick={() => void refreshAccountData()}>Refresh account data</Button>
         </Alert>}
         {requestRecovery.phase !== 'none' && fundingCheck.phase !== 'confirmed' && <Alert variant="info" style={{ overflowWrap: 'anywhere' }}>
           <div>
@@ -682,6 +683,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               size="sm"
               variant={activeTab === tab.id ? 'default' : 'ghost'}
               aria-pressed={activeTab === tab.id}
+              style={{ flexShrink: 0 }}
             >
               <tab.icon style={{ width: 16, height: 16 }} />
               {tab.label}
@@ -708,7 +710,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                   boxShadow: 'var(--shadow-sm)'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Available Funds
                   </div>
@@ -870,7 +872,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         {/* TAB 2: SAVED CARDS */}
         {activeTab === 'cards' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Tokenized Cards</h2>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Saved payment authorizations from provider checkout. Saved-card charging is currently unavailable.</p>
@@ -908,7 +910,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                       gap: '12px'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                       <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)' }}>
                         {c.provider}
                       </span>
@@ -1005,7 +1007,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         {/* TAB 4: BANK ACCOUNTS */}
         {activeTab === 'bank_accounts' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Verified Payout Bank Accounts</h2>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Saved account details are verified by the payment provider. Payout availability is shown separately.</p>
@@ -1042,7 +1044,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                       gap: '8px'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{b.bankName}</span>
                       {b.isDefault && (
                         <Badge variant="secondary">
@@ -1079,7 +1081,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         {/* TAB 6: TRANSACTIONS */}
         {activeTab === 'transactions' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Transaction Ledger</h2>
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Immutable ledger records of funding, payouts, subscription charges, and reward redemptions.</p>
