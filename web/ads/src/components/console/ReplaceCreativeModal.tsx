@@ -32,6 +32,7 @@ interface CreativeToReplace {
   adFormat?: "banner" | "card" | "video" | "interstitial";
   mediaFormat?: "image" | "gif" | "video";
   mediaAssetId?: string;
+  imageSpecs?: {width:number;height:number;bytes:number;mimeType?:string};
   rejectionReason?: string;
 }
 
@@ -412,6 +413,7 @@ export function ReplaceCreativeModal({
               {adType === "image" ? (
                 <ImagePreparation
                   initialLayout={preparedFormat}
+                  currentUrl={mediaUrl} currentSpecs={creative.imageSpecs}
                   onBusyChange={setUploading}
                   onUploaded={(asset) => {
                     setMediaAssetId(asset.assetId);

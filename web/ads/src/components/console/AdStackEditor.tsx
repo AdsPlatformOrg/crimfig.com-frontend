@@ -35,7 +35,7 @@ export interface AdDraft {
   mediaAssetId?: string;
   mediaUrl?: string;
   adFormat?: "card" | "banner";
-  imageInfo?: { width: number; height: number; bytes: number };
+  imageInfo?: { width: number; height: number; bytes: number; mimeType?:string };
 }
 
 export interface StackDraft {
@@ -503,6 +503,7 @@ export function AdStackEditor({
                     {ad.adType === "image" ? (
                       <ImagePreparation
                         initialLayout={ad.adFormat || "card"}
+                        currentUrl={ad.mediaUrl} currentSpecs={ad.imageInfo}
                         onBusyChange={onBusyChange}
                         onUploaded={(asset) =>
                           updateAd(ad.key, {
@@ -512,7 +513,7 @@ export function AdStackEditor({
                             imageInfo: {
                               width: asset.width,
                               height: asset.height,
-                              bytes: asset.bytes,
+                              bytes: asset.bytes, mimeType:asset.mimeType,
                             },
                           })
                         }

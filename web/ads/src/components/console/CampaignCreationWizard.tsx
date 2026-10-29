@@ -183,7 +183,7 @@ export function CampaignCreationWizard({
                       imageInfo: {
                         width: asset.width,
                         height: asset.height,
-                        bytes: asset.bytes,
+                        bytes: asset.bytes, mimeType:asset.mimeType,
                       },
                     };
                   } catch {

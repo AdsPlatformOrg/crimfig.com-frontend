@@ -1,32 +1,38 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import ReactCrop, { type PercentCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import { ImagePlus, RotateCw, RotateCcw, X } from "lucide-react";
 import { Button } from "../ui/button";
+import { MediaPreview } from "../MediaPreview";
+import { useDialog } from "../../lib/use-dialog";
 import { sessionFetch } from "../../lib/session";
+import { sourceCrop, centeredSelection } from "../../lib/crop-coordinates";
 import {
-  cropBox,
   encodeWithinBudget,
   inspectSource,
   IMAGE_QUALITY,
-  IMAGE_PROFILES,
   PREVIEW_EDGE,
   type ImageProfile,
   type PreparedRendition,
+  type Crop,
 } from "../../lib/image-preparation";
 
 const RATIOS = [
   ["Original", 0],
-  ["Square · 1:1", 1],
-  ["Landscape · 1.91:1", 1.91],
-  ["Portrait · 4:5", 0.8],
-  ["Widescreen · 16:9", 16 / 9],
-  ["Medium rectangle · 300×250", 6 / 5],
-  ["Half page · 300×600", 0.5],
-  ["Leaderboard · 728×90", 728 / 90],
-  ["Mobile banner · 320×50", 6.4],
-  ["Large mobile · 320×100", 3.2],
-  ["Skyscraper · 160×600", 160 / 600],
-  ["Billboard · 970×250", 3.88],
-  ["Custom", -1],
+  ["Square - 1:1", 1],
+  ["Landscape - 1.91:1", 1.91],
+  ["Portrait - 4:5", 0.8],
+  ["Widescreen - 16:9", 16 / 9],
+  ["Medium rectangle - 300x250", 6 / 5],
+  ["Half page - 300x600", 0.5],
+  ["Leaderboard - 728x90", 728 / 90],
+  ["Mobile banner - 320x50", 6.4],
+  ["Large mobile - 320x100", 3.2],
+  ["Skyscraper - 160x600", 160 / 600],
+  ["Billboard - 970x250", 3.88],
+  ["Custom W:H", -1],
 ] as const;
 let releaseActiveSource: (() => void) | undefined;
 export interface PreparedImageAsset {
@@ -35,54 +41,83 @@ export interface PreparedImageAsset {
   width: number;
   height: number;
   bytes: number;
+  mimeType?: string;
+  sha256?: string;
   preparation: any;
   adFormat: "card" | "banner";
+}
+interface SourceInfo {
+  name: string;
+  size: number;
+  width: number;
+  height: number;
 }
 export function ImagePreparation({
   onUploaded,
   onBusyChange,
   initialLayout = "card",
+  currentUrl,
+  currentSpecs,
 }: {
   onUploaded: (asset: PreparedImageAsset) => void;
   onBusyChange?: (busy: boolean) => void;
   initialLayout?: "card" | "banner";
+  currentUrl?: string;
+  currentSpecs?: {
+    width: number;
+    height: number;
+    bytes: number;
+    mimeType?: string;
+  };
 }) {
   const id = useId(),
     input = useRef<HTMLInputElement>(null),
-    preview = useRef<HTMLCanvasElement>(null),
-    original = useRef<HTMLCanvasElement>(null);
+    stage = useRef<HTMLCanvasElement>(null);
   const bitmap = useRef<ImageBitmap | null>(null),
-    sourceCanvas = useRef<HTMLCanvasElement | null>(null),
-    abort = useRef<AbortController | null>(null),
+    surface = useRef<HTMLCanvasElement | null>(null),
+    controller = useRef<AbortController | null>(null),
     worker = useRef<Worker | null>(null),
     generation = useRef(0),
-    busy = useRef(false);
-  const [source, setSource] = useState<{
-    name: string;
-    size: number;
-    width: number;
-    height: number;
-  } | null>(null);
+    busy = useRef(false),
+    releaseRef = useRef<(() => void) | null>(null);
+  const [open, setOpen] = useState(false),
+    [source, setSource] = useState<SourceInfo | null>(null),
+    [saved, setSaved] = useState<PreparedImageAsset | null>(null),
+    [dragging, setDragging] = useState(false);
   const [ratioChoice, setRatioChoice] = useState(1.91),
     [customW, setCustomW] = useState(1),
     [customH, setCustomH] = useState(1),
     [rotation, setRotation] = useState(0),
-    [zoom, setZoom] = useState(1),
-    [panX, setPanX] = useState(50),
-    [panY, setPanY] = useState(50);
-  const [profile, setProfile] = useState<ImageProfile>("standard"),
-    [layout, setLayout] = useState<"card" | "banner">(initialLayout),
-    [state, setState] = useState("Select an image"),
+    [profile, setProfile] = useState<ImageProfile>("standard"),
+    [layout, setLayout] = useState<"card" | "banner">(initialLayout);
+  const [selection, setSelection] = useState<PercentCrop>({
+      unit: "%",
+      x: 5,
+      y: 5,
+      width: 90,
+      height: 90,
+    }),
+    [status, setStatus] = useState(""),
     [error, setError] = useState(""),
     [progress, setProgress] = useState(0),
-    [outputs, setOutputs] = useState<PreparedRendition[]>([]),
-    [outputUrl, setOutputUrl] = useState("");
-  const pointer = useRef<{
-    x: number;
-    y: number;
-    panX: number;
-    panY: number;
+    [working, setWorking] = useState(false);
+  const geometry = useRef<{
+    bitmap: ImageBitmap;
+    rotation: number;
+    ratio: number;
   } | null>(null);
+  const lastConfirmed = useRef<{
+    bitmap: ImageBitmap;
+    selection: PercentCrop;
+    rotation: number;
+    ratio: number;
+    ratioChoice: number;
+    customW: number;
+    customH: number;
+    profile: ImageProfile;
+    layout: "card" | "banner";
+  } | null>(null);
+  const panel = useDialog(open, cancel);
   const ratio =
     ratioChoice === -1
       ? customW / customH
@@ -97,99 +132,108 @@ export function ImagePreparation({
     ratio <= 50 &&
     customW > 0 &&
     customH > 0;
-  const cancel = () => {
+  function setBusy(value: boolean) {
+    busy.current = value;
+    setWorking(value);
+    onBusyChange?.(value);
+  }
+  function cancel() {
     generation.current++;
-    abort.current?.abort();
+    controller.current?.abort();
     worker.current?.terminate();
     worker.current = null;
-    busy.current = false;
-    onBusyChange?.(false);
-    setState(source ? "Ready to crop" : "Select an image");
-  };
+    setBusy(false);
+    setOpen(false);
+    setError("");
+    setStatus("");
+    const old = lastConfirmed.current;
+    if (old && old.bitmap === bitmap.current) {
+      geometry.current = {
+        bitmap: old.bitmap,
+        rotation: old.rotation,
+        ratio: old.ratio,
+      };
+      setRotation(old.rotation);
+      setRatioChoice(old.ratioChoice);
+      setCustomW(old.customW);
+      setCustomH(old.customH);
+      setProfile(old.profile);
+      setLayout(old.layout);
+      setSelection(old.selection);
+    } else {
+      bitmap.current?.close();
+      bitmap.current = null;
+      surface.current = null;
+      setSource(null);
+    }
+  }
   useEffect(
     () => () => {
       generation.current++;
-      abort.current?.abort();
+      controller.current?.abort();
       worker.current?.terminate();
       bitmap.current?.close();
+      if (releaseActiveSource === releaseRef.current)
+        releaseActiveSource = undefined;
     },
     [],
   );
+  // Rotate only when the source/orientation changes, never for crop dragging or resizing.
   useEffect(() => {
-    if (!outputs[0]) {
-      setOutputUrl("");
-      return;
-    }
-    const url = URL.createObjectURL(outputs[0].blob);
-    setOutputUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [outputs]);
-  useEffect(() => {
-    setOutputs([]);
-    if (!bitmap.current || !source || !validRatio) return;
+    if (!open || !bitmap.current || !stage.current) return;
     const b = bitmap.current,
       c = document.createElement("canvas");
     c.width = rotation % 180 ? b.height : b.width;
     c.height = rotation % 180 ? b.width : b.height;
     const ctx = c.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      setError("This device cannot create an image workspace.");
+      return;
+    }
     ctx.translate(c.width / 2, c.height / 2);
     ctx.rotate((rotation * Math.PI) / 180);
     ctx.drawImage(b, -b.width / 2, -b.height / 2);
-    sourceCanvas.current = c;
-    const crop = cropBox(c.width, c.height, ratio, zoom, panX, panY);
-    for (const [target, rect] of [
-      [original.current, { x: 0, y: 0, width: c.width, height: c.height }],
-      [preview.current, crop],
-    ] as const) {
-      if (!target) continue;
-      const scale = Math.min(1, 600 / rect.width, 360 / rect.height);
-      target.width = Math.max(1, Math.round(rect.width * scale));
-      target.height = Math.max(1, Math.round(rect.height * scale));
-      target
-        .getContext("2d")
-        ?.drawImage(
-          c,
-          rect.x,
-          rect.y,
-          rect.width,
-          rect.height,
-          0,
-          0,
-          target.width,
-          target.height,
-        );
+    surface.current = c;
+    const changed =
+      geometry.current?.bitmap !== b ||
+      geometry.current?.rotation !== rotation ||
+      geometry.current?.ratio !== ratio;
+    if (changed && validRatio) {
+      setSelection(centeredSelection(c.width, c.height, ratio));
+      geometry.current = { bitmap: b, rotation, ratio };
     }
-  }, [source, ratio, rotation, zoom, panX, panY, profile, layout, validRatio]);
+    const target = stage.current;
+    target.width = c.width;
+    target.height = c.height;
+    target.getContext("2d")?.drawImage(c, 0, 0);
+  }, [source, rotation, open, ratio, validRatio]);
+
   async function select(file?: File) {
-    if (!file) return;
+    if (!file || busy.current) return;
     releaseActiveSource?.();
-    cancel();
     const run = ++generation.current;
+    setOpen(true);
     setError("");
-    setState("Inspecting source…");
-    onBusyChange?.(true);
-    busy.current = true;
+    setStatus("Preparing image workspace...");
+    setBusy(true);
     const release = () => {
       generation.current++;
-      abort.current?.abort();
+      controller.current?.abort();
       worker.current?.terminate();
       bitmap.current?.close();
       bitmap.current = null;
-      sourceCanvas.current = null;
+      surface.current = null;
+      lastConfirmed.current = null;
       setSource(null);
-      setOutputs([]);
-      busy.current = false;
-      onBusyChange?.(false);
+      setOpen(false);
+      setBusy(false);
     };
+    releaseRef.current = release;
     releaseActiveSource = release;
     try {
-      const info = await inspectSource(file);
-      const scale = Math.min(
-        1,
-        PREVIEW_EDGE / Math.max(info.width, info.height),
-      );
-      const decode = createImageBitmap(file, {
+      const info = await inspectSource(file),
+        scale = Math.min(1, PREVIEW_EDGE / Math.max(info.width, info.height));
+      const decoded = createImageBitmap(file, {
         imageOrientation: "from-image",
         resizeWidth: Math.max(1, Math.round(info.width * scale)),
         resizeHeight: Math.max(1, Math.round(info.height * scale)),
@@ -200,15 +244,15 @@ export function ImagePreparation({
         const timer = setTimeout(() => {
           timedOut = true;
           reject(
-            Error("This device could not decode the source within 30 seconds."),
+            Error("Image decoding exceeded this device's 30-second budget."),
           );
         }, 30000);
-        decode.then(
+        decoded.then(
           (b) => {
             clearTimeout(timer);
             if (timedOut || run !== generation.current) {
               b.close();
-              reject(Error("Cancelled"));
+              reject(new DOMException("Cancelled", "AbortError"));
             } else resolve(b);
           },
           (e) => {
@@ -221,7 +265,6 @@ export function ImagePreparation({
         image.close();
         return;
       }
-      bitmap.current?.close();
       bitmap.current = image;
       setSource({
         name: file.name,
@@ -230,40 +273,39 @@ export function ImagePreparation({
         height: info.height,
       });
       setRotation(0);
-      setZoom(1);
-      setPanX(50);
-      setPanY(50);
-      setState("Ready to crop");
+      setStatus(
+        "Drag the selection or resize its corners. Arrow keys adjust the focused selection.",
+      );
     } catch (e) {
       if (run === generation.current) {
         setError((e as Error).message);
-        setState("Select an image");
+        setOpen(false);
       }
     } finally {
-      if (run === generation.current) {
-        busy.current = false;
-        onBusyChange?.(false);
-      }
+      if (run === generation.current) setBusy(false);
       if (input.current) input.current.value = "";
     }
   }
   async function encode(
     c: HTMLCanvasElement,
+    crop: Crop,
     p: ImageProfile,
     maxWidth: number,
     signal: AbortSignal,
   ): Promise<PreparedRendition> {
-    const crop = cropBox(c.width, c.height, ratio, zoom, panX, panY);
     if (typeof Worker === "undefined" || typeof OffscreenCanvas === "undefined")
       return encodeWithinBudget(c, crop, p, maxWidth, signal, setProgress);
-    const b = await createImageBitmap(c);
-    signal.throwIfAborted();
+    const clone = await createImageBitmap(c);
+    if (signal.aborted) {
+      clone.close();
+      signal.throwIfAborted();
+    }
     return new Promise((resolve, reject) => {
       let w: Worker;
       try {
         w = new Worker(new URL("../../lib/image-worker.ts", import.meta.url));
       } catch {
-        b.close();
+        clone.close();
         void encodeWithinBudget(c, crop, p, maxWidth, signal, setProgress).then(
           resolve,
           reject,
@@ -275,7 +317,7 @@ export function ImagePreparation({
         clearTimeout(timer);
         signal.removeEventListener("abort", stop);
         w.terminate();
-        worker.current = null;
+        if (worker.current === w) worker.current = null;
       };
       const stop = () => {
         finish();
@@ -284,16 +326,16 @@ export function ImagePreparation({
       const timer = setTimeout(() => {
         finish();
         reject(
-          Error(
-            "Image preparation exceeded this device’s 60-second processing budget.",
-          ),
+          Error("Image processing exceeded this device's 60-second budget."),
         );
       }, 60000);
       signal.addEventListener("abort", stop, { once: true });
       w.onerror = () => {
         finish();
         reject(
-          Error("Browser image processing failed. Your source is retained."),
+          Error(
+            "Image processing failed. Your source remains available to retry.",
+          ),
         );
       };
       w.onmessage = (e) => {
@@ -306,60 +348,41 @@ export function ImagePreparation({
           resolve(e.data.result);
         }
       };
-      w.postMessage({ bitmap: b, crop, profile: p, maxWidth }, [b]);
+      w.postMessage({ bitmap: clone, crop, profile: p, maxWidth }, [clone]);
     });
   }
-  async function prepare() {
-    if (busy.current || !sourceCanvas.current || !validRatio) return;
-    busy.current = true;
-    onBusyChange?.(true);
-    abort.current = new AbortController();
-    const signal = abort.current.signal;
+  async function confirmImage() {
+    if (busy.current || !surface.current || !source || !validRatio) return;
+    const run = ++generation.current;
+    controller.current = new AbortController();
+    const signal = controller.current.signal;
+    setBusy(true);
     setError("");
-    setState("Preparing image…");
     setProgress(0);
+    setStatus("Preparing your crop...");
     try {
-      const primary = await encode(
-        sourceCanvas.current,
-        profile,
-        PREVIEW_EDGE,
-        signal,
-      );
-      const renditions = [primary];
+      const canvas = surface.current,
+        crop = sourceCrop(selection, canvas.width, canvas.height),
+        actualRatio = crop.width / crop.height;
+      const outputs = [
+        await encode(canvas, crop, profile, PREVIEW_EDGE, signal),
+      ];
       if (profile !== "compact")
-        renditions.push(
+        outputs.push(
           await encode(
-            sourceCanvas.current,
+            canvas,
+            crop,
             "compact",
-            Math.min(primary.width, 640),
+            Math.min(outputs[0].width, 640),
             signal,
           ),
         );
       signal.throwIfAborted();
-      setOutputs(renditions);
+      setStatus("Uploading prepared image...");
       setProgress(100);
-      setState("Ready to upload");
-    } catch (e) {
-      if ((e as Error).name !== "AbortError") {
-        setError((e as Error).message);
-        setState("Ready to crop");
-      }
-    } finally {
-      busy.current = false;
-      onBusyChange?.(false);
-    }
-  }
-  async function upload() {
-    if (busy.current || !outputs.length || !sourceCanvas.current) return;
-    busy.current = true;
-    onBusyChange?.(true);
-    setState("Uploading prepared image…");
-    setError("");
-    abort.current = new AbortController();
-    try {
       const body = new FormData();
       for (const [i, o] of outputs.entries()) {
-        const extension =
+        const ext =
           o.blob.type === "image/png"
             ? "png"
             : o.blob.type === "image/jpeg"
@@ -367,340 +390,401 @@ export function ImagePreparation({
               : "webp";
         body.append(
           "files",
-          new File([o.blob], `prepared-${i}.${extension}`, {
-            type: o.blob.type,
-          }),
+          new File([o.blob], `prepared-${i}.${ext}`, { type: o.blob.type }),
         );
       }
       body.append(
         "manifest",
         JSON.stringify({
           version: 1,
+          pipelineVersion: 2,
           quality: IMAGE_QUALITY,
           profile,
           layout,
-          ratio,
-          crop: cropBox(
-            sourceCanvas.current.width,
-            sourceCanvas.current.height,
-            ratio,
-            zoom,
-            panX,
-            panY,
-          ),
+          ratio: actualRatio,
+          crop,
+          descriptor: {
+            preset:
+              RATIOS.find(([, v]) => v === ratioChoice)?.[0] || "Custom W:H",
+            ...(ratioChoice === -1
+              ? { customRatio: { width: customW, height: customH } }
+              : {}),
+            rotation,
+            coordinateSpace: {
+              width: canvas.width,
+              height: canvas.height,
+              units: "pixels",
+              orientation: "exif_applied_then_rotation",
+            },
+            source: {
+              width: source.width,
+              height: source.height,
+              bytes: source.size,
+              reportedBy: "client",
+            },
+          },
         }),
       );
       const res = await sessionFetch("/api/v1/uploads/prepared", {
         method: "POST",
         body,
-        signal: abort.current.signal,
+        signal,
       });
       const json = await res.json();
-      if (!res.ok || !json.data?.assetId)
+      signal.throwIfAborted();
+      if (run !== generation.current) return;
+      if (
+        !res.ok ||
+        !json.data?.assetId ||
+        !json.data?.width ||
+        !json.data?.preparation
+      )
         throw Error(
           typeof json.message === "string"
             ? json.message
-            : "Image upload could not be confirmed. The prepared image is retained.",
+            : "The upload and saved image specs could not be confirmed.",
         );
-      onUploaded({ ...json.data, adFormat: layout });
-      setState("Uploaded");
+      const asset = { ...json.data, adFormat: layout } as PreparedImageAsset;
+      setSaved(asset);
+      onUploaded(asset);
+      if (bitmap.current)
+        lastConfirmed.current = {
+          bitmap: bitmap.current,
+          selection,
+          rotation,
+          ratio,
+          ratioChoice,
+          customW,
+          customH,
+          profile,
+          layout,
+        };
+      setOpen(false);
+      setStatus("Uploaded and ready to attach to your ad.");
     } catch (e) {
-      if ((e as Error).name !== "AbortError") {
+      if (run === generation.current && (e as Error).name !== "AbortError") {
         setError((e as Error).message);
-        setState("Ready to upload");
+        setStatus("Your previous image is unchanged. You can retry.");
       }
     } finally {
-      busy.current = false;
-      onBusyChange?.(false);
+      if (run === generation.current) setBusy(false);
     }
   }
-  return (
-    <section className="cf-image-preparation" aria-label="Prepare image">
-      <div
-        className="cf-image-drop"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          if (e.dataTransfer.files.length !== 1) {
-            setError("Choose one image at a time.");
-            return;
-          }
-          void select(e.dataTransfer.files[0]);
-        }}
-      >
-        <strong>Drop an image here</strong>
-        <p>
-          Prepare it here before uploading. JPEG, PNG or static WebP · up to 100
-          MB, 24 megapixels, 16,384px per edge. Device limits still apply.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={busy.current}
-          onClick={() => input.current?.click()}
-        >
-          Browse image
-        </Button>
-        <input
-          ref={input}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          hidden
-          aria-label="Choose source image"
-          onChange={(e) => void select(e.target.files?.[0])}
-        />
-      </div>
-      {source && (
-        <>
-          <p>
-            {source.name} · {(source.size / 1000000).toFixed(2)} MB ·{" "}
-            {source.width}×{source.height}px
-          </p>
-          <p>
-            Only prepared outputs leave this browser. Lossy encoder quality
-            stays at 0.97; output dimensions reduce automatically.
-          </p>
-          <fieldset disabled={busy.current}>
-            <legend>Crop and delivery options</legend>
-            <div className="cf-image-options">
-              <label>
-                Crop ratio
-                <select
-                  value={ratioChoice}
-                  onChange={(e) => setRatioChoice(Number(e.target.value))}
+  const url = saved?.cdnUrl || currentUrl,
+    specs = saved || currentSpecs;
+  const dialog =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            className="cf-crop-overlay"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (e.target === e.currentTarget) cancel();
+            }}
+          >
+            <div
+              ref={panel}
+              className="cf-crop-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={`${id}-title`}
+              aria-describedby={`${id}-hint`}
+              tabIndex={-1}
+            >
+              <header className="cf-crop-header">
+                <div>
+                  <h2 id={`${id}-title`}>Crop image</h2>
+                  <p id={`${id}-hint`}>
+                    Move the selection. Drag its corners to resize.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Close image cropper"
+                  onClick={cancel}
                 >
-                  {RATIOS.map(([label, value]) => (
-                    <option value={value} key={label}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {ratioChoice === -1 && (
-                <>
-                  <label>
-                    Custom width
-                    <input
-                      type="number"
-                      min="0.01"
-                      max="1000"
-                      step="any"
-                      value={customW}
-                      onChange={(e) => setCustomW(Number(e.target.value))}
-                    />
-                  </label>
-                  <label>
-                    Custom height
-                    <input
-                      type="number"
-                      min="0.01"
-                      max="1000"
-                      step="any"
-                      value={customH}
-                      onChange={(e) => setCustomH(Number(e.target.value))}
-                    />
-                  </label>
-                </>
-              )}
-              <label>
-                Image size budget
-                <select
-                  value={profile}
-                  onChange={(e) => setProfile(e.target.value as ImageProfile)}
-                >
-                  <option value="compact">
-                    Compact · target 40 KB / cap 50 KB
-                  </option>
-                  <option value="standard">
-                    Standard · target 100 KB / cap 150 KB
-                  </option>
-                  <option value="larger">
-                    Larger feed · target 150 KB / cap 200 KB
-                  </option>
-                </select>
-              </label>
-              <label>
-                Ad layout
-                <select
-                  value={layout}
-                  onChange={(e) =>
-                    setLayout(e.target.value as "card" | "banner")
+                  <X size={20} />
+                </Button>
+              </header>
+              <div className="cf-crop-body">
+                {source && (
+                  <>
+                    <div className="cf-crop-toolbar">
+                      <label>
+                        Aspect ratio
+                        <select
+                          value={ratioChoice}
+                          onChange={(e) =>
+                            setRatioChoice(Number(e.target.value))
+                          }
+                          disabled={working}
+                        >
+                          {RATIOS.map(([name, value]) => (
+                            <option key={name} value={value}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {ratioChoice === -1 && (
+                        <>
+                          <label>
+                            Custom width
+                            <input
+                              type="number"
+                              min=".01"
+                              step="any"
+                              value={customW}
+                              onChange={(e) =>
+                                setCustomW(Number(e.target.value))
+                              }
+                              disabled={working}
+                            />
+                          </label>
+                          <label>
+                            Custom height
+                            <input
+                              type="number"
+                              min=".01"
+                              step="any"
+                              value={customH}
+                              onChange={(e) =>
+                                setCustomH(Number(e.target.value))
+                              }
+                              disabled={working}
+                            />
+                          </label>
+                        </>
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={working}
+                        onClick={() => setRotation((r) => (r + 90) % 360)}
+                      >
+                        <RotateCw size={16} />
+                        Rotate
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={working}
+                        onClick={() => {
+                          setRotation(0);
+                          if (surface.current && validRatio)
+                            setSelection(
+                              centeredSelection(
+                                surface.current.width,
+                                surface.current.height,
+                                ratio,
+                              ),
+                            );
+                        }}
+                      >
+                        <RotateCcw size={16} />
+                        Reset
+                      </Button>
+                    </div>
+                    {!validRatio && (
+                      <p role="alert">
+                        Enter a positive width and height with a ratio no
+                        greater than 50:1.
+                      </p>
+                    )}
+                    <div className="cf-crop-workspace">
+                      <ReactCrop
+                        crop={selection}
+                        onChange={(_, percent) => setSelection(percent)}
+                        aspect={validRatio ? ratio : 1}
+                        disabled={working || !validRatio}
+                        keepSelection
+                        ruleOfThirds
+                        minWidth={16}
+                        minHeight={16}
+                      >
+                        <canvas
+                          ref={stage}
+                          aria-label="Source image with adjustable crop selection"
+                        />
+                      </ReactCrop>
+                    </div>
+                    <details className="cf-crop-options">
+                      <summary>Output options and image details</summary>
+                      <div className="cf-crop-toolbar">
+                        <label>
+                          Image size budget
+                          <select
+                            value={profile}
+                            onChange={(e) =>
+                              setProfile(e.target.value as ImageProfile)
+                            }
+                            disabled={working}
+                          >
+                            <option value="compact">Compact - cap 50 KB</option>
+                            <option value="standard">
+                              Standard - cap 150 KB
+                            </option>
+                            <option value="larger">
+                              Larger feed - cap 200 KB
+                            </option>
+                          </select>
+                        </label>
+                        <label>
+                          Ad layout
+                          <select
+                            value={layout}
+                            onChange={(e) =>
+                              setLayout(e.target.value as "card" | "banner")
+                            }
+                            disabled={working}
+                          >
+                            <option value="card">Card / feed</option>
+                            <option value="banner">Banner</option>
+                          </select>
+                        </label>
+                      </div>
+                      <p>
+                        {source.width}x{source.height}px source -{" "}
+                        {(source.size / 1000000).toFixed(2)} MB. Encoder quality
+                        stays at 0.97; dimensions reduce automatically. The
+                        source stays in this browser.
+                      </p>
+                      <p>
+                        Placement eligibility also depends on layout, output
+                        dimensions and the publisher's byte cap.
+                      </p>
+                    </details>
+                  </>
+                )}
+                <p role="status">
+                  {status}
+                  {working && progress ? ` ${progress}%` : ""}
+                </p>
+                {error && (
+                  <p role="alert" className="cf-crop-error">
+                    {error}
+                  </p>
+                )}
+              </div>
+              <footer className="cf-crop-footer">
+                <Button type="button" variant="outline" onClick={cancel}>
+                  {working ? "Cancel processing" : "Cancel"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void confirmImage()}
+                  disabled={
+                    working ||
+                    !source ||
+                    !validRatio ||
+                    selection.width <= 0 ||
+                    selection.height <= 0
                   }
                 >
-                  <option value="card">Card / feed placement</option>
-                  <option value="banner">Banner placement</option>
-                </select>
-              </label>
+                  {working ? "Preparing image..." : "Use image"}
+                </Button>
+              </footer>
             </div>
-            <p>
-              A crop ratio does not select a placement. Each placement also
-              checks layout, dimensions and its own byte cap.
-            </p>
-            <div className="cf-image-previews">
-              <div>
-                <span>Source preview</span>
-                <canvas ref={original} />
-              </div>
-              <div>
-                <span>Chosen crop</span>
-                <canvas
-                  ref={preview}
-                  tabIndex={0}
-                  aria-label="Crop preview. Use arrow keys to pan, or drag to reposition."
-                  onKeyDown={(e) => {
-                    const delta = e.shiftKey ? 10 : 2;
-                    if (e.key.startsWith("Arrow")) {
-                      e.preventDefault();
-                      if (e.key === "ArrowLeft")
-                        setPanX((x) => Math.max(0, x - delta));
-                      if (e.key === "ArrowRight")
-                        setPanX((x) => Math.min(100, x + delta));
-                      if (e.key === "ArrowUp")
-                        setPanY((y) => Math.max(0, y - delta));
-                      if (e.key === "ArrowDown")
-                        setPanY((y) => Math.min(100, y + delta));
-                    }
-                  }}
-                  onPointerDown={(e) => {
-                    e.currentTarget.setPointerCapture(e.pointerId);
-                    pointer.current = {
-                      x: e.clientX,
-                      y: e.clientY,
-                      panX,
-                      panY,
-                    };
-                  }}
-                  onPointerMove={(e) => {
-                    const p = pointer.current;
-                    if (p) {
-                      setPanX(
-                        Math.max(
-                          0,
-                          Math.min(100, p.panX - (e.clientX - p.x) / 3),
-                        ),
-                      );
-                      setPanY(
-                        Math.max(
-                          0,
-                          Math.min(100, p.panY - (e.clientY - p.y) / 3),
-                        ),
-                      );
-                    }
-                  }}
-                  onPointerUp={() => {
-                    pointer.current = null;
-                  }}
-                  onPointerCancel={() => {
-                    pointer.current = null;
-                  }}
-                />
-              </div>
-            </div>
-            <div className="cf-image-options">
-              {(
-                [
-                  ["Zoom", zoom, setZoom, 1, 4, 0.05],
-                  ["Horizontal position", panX, setPanX, 0, 100, 1],
-                  ["Vertical position", panY, setPanY, 0, 100, 1],
-                ] as const
-              ).map(([label, value, set, min, max, step]) => (
-                <label key={label}>
-                  {label}
-                  <input
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={value}
-                    onChange={(e) => set(Number(e.target.value))}
-                  />
-                </label>
-              ))}
-            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+  return (
+    <div className="cf-image-picker">
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        hidden
+        aria-label="Choose source image"
+        onChange={(e) => void select(e.target.files?.[0])}
+      />
+      {url ? (
+        <div className="cf-image-tile">
+          <MediaPreview source={url} />
+          <div className="cf-image-tile-caption">
+            <strong>Image ready</strong>
+            {specs && (
+              <span>
+                {specs.width}x{specs.height}px -{" "}
+                {(specs.bytes / 1000).toFixed(1)} KB
+                {specs.mimeType
+                  ? ` - ${specs.mimeType.replace("image/", "")}`
+                  : ""}
+              </span>
+            )}
+          </div>
+          <div className="cf-image-tile-actions">
+            {source && bitmap.current && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={working}
+                onClick={() => {
+                  setOpen(true);
+                  setError("");
+                }}
+              >
+                Edit crop
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
-              onClick={() => setRotation((n) => (n + 90) % 360)}
+              disabled={working}
+              onClick={() => input.current?.click()}
             >
-              Rotate 90°
-            </Button>{" "}
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setRotation(0);
-                setZoom(1);
-                setPanX(50);
-                setPanY(50);
-              }}
-            >
-              Reset crop
+              Replace image
             </Button>
-          </fieldset>
-          {!validRatio && (
-            <p role="alert">
-              Enter a positive custom width and height, with ratio no greater
-              than 50:1.
-            </p>
-          )}
-          <Button
-            type="button"
-            disabled={busy.current || !validRatio}
-            onClick={() => void prepare()}
-          >
-            Apply crop
-          </Button>
-        </>
-      )}
-      <p role="status" id={id}>
-        {state}
-        {busy.current && progress > 0 ? ` · ${progress}%` : ""}
-      </p>
-      {busy.current && (
-        <Button type="button" variant="outline" onClick={cancel}>
-          Cancel processing
-        </Button>
-      )}
-      {outputs.length > 0 && (
-        <>
-          <div className="cf-image-output">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={outputUrl} alt="Prepared ad preview" />
-            {outputs.map((o, i) => (
-              <p key={i}>
-                {i ? "Compact rendition" : "Selected rendition"}: {o.width}×
-                {o.height}px · {(o.blob.size / 1000).toFixed(1)} KB ·{" "}
-                {o.blob.type.replace("image/", "")} ·{" "}
-                {Math.round(
-                  (1 - o.blob.size / (source?.size || o.blob.size)) * 100,
-                )}
-                % smaller
-              </p>
-            ))}
-            <p>
-              {outputs.some(
-                (o) =>
-                  o.width >= (layout === "banner" ? 320 : 300) &&
-                  o.height >= (layout === "banner" ? 50 : 150),
-              )
-                ? "Dimension-compatible with the selected layout; publisher byte limits still apply."
-                : "Prepared successfully; dimensions are too small for the selected layout. This creative cannot fill those placements."}
-            </p>
           </div>
+          {!source && (
+            <p>To edit the crop, select the original source again.</p>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`cf-image-drop cf-image-drop-compact${dragging ? " is-dragging" : ""}`}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            if (e.dataTransfer.files.length !== 1) {
+              setError("Choose one image at a time.");
+              return;
+            }
+            void select(e.dataTransfer.files[0]);
+          }}
+        >
+          <ImagePlus size={28} aria-hidden="true" />
+          <strong>Drag and drop your image</strong>
+          <span>or choose a file to crop</span>
           <Button
             type="button"
-            disabled={busy.current || state === "Uploaded"}
-            onClick={() => void upload()}
+            variant="outline"
+            disabled={working}
+            onClick={() => input.current?.click()}
           >
-            Upload prepared image
+            Browse image
           </Button>
-        </>
+          <small>JPEG, PNG or static WebP - up to 100 MB</small>
+        </div>
       )}
-      {error && (
-        <p role="alert" className="cf-image-error">
+      <p className="cf-image-limit">
+        Up to 24 megapixels / 16,384px per edge. Device processing limits apply.
+      </p>
+      {!open && error && (
+        <p role="alert" className="cf-crop-error">
           {error}
         </p>
       )}
-    </section>
+      {dialog}
+    </div>
   );
 }
