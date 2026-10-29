@@ -1755,9 +1755,7 @@ export function CampaignCreationWizard({
                 lineHeight: 1.5,
               }}
             >
-              Submission sends every stack to dual-reviewer moderation. It does
-              not activate the campaign or imply approval. Your escrow remains
-              refundable until verified delivery.
+              Submit the campaign for review and approval.
             </p>
           </div>
         </section>
