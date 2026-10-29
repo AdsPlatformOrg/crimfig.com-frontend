@@ -1,3 +1,4 @@
+import { stripImageMetadata } from './image-metadata';
 export const IMAGE_QUALITY = 0.97;
 export const SOURCE_LIMIT = 100000000;
 export const SOURCE_PIXELS = 24000000;
@@ -182,7 +183,7 @@ export async function encodeWithinBudget(
       width,
       height,
     );
-    const blob =
+    const encoded =
       typeof OffscreenCanvas !== "undefined" &&
       canvas instanceof OffscreenCanvas
         ? await canvas.convertToBlob({
@@ -196,6 +197,7 @@ export async function encodeWithinBudget(
               IMAGE_QUALITY,
             ),
           );
+    const blob = await stripImageMetadata(encoded);
     canvas.width = 1;
     canvas.height = 1;
     signal?.throwIfAborted();

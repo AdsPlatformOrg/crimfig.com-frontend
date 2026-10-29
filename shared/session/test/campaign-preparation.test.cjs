@@ -16,6 +16,8 @@ function load(name, globals = {}) {
   }).outputText;
   vm.runInNewContext(code, {
     exports,
+    // These canvas doubles exercise the resize loop; real container stripping is tested separately.
+    require: () => ({ stripImageMetadata: async (blob) => blob }),
     Blob,
     File,
     Uint8Array,
