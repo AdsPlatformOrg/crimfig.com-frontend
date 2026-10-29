@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { withBrowserRefreshLock } from '@crimfig/session';
 import Link from 'next/link';
 import { loginDestination } from '@/lib/login-return';
 import { getApiUrl } from '@/lib/config';
@@ -22,11 +23,11 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const res = await fetch(getApiUrl('/api/v1/auth/login'), {
+      const res = await withBrowserRefreshLock(window.location.origin, () => fetch(getApiUrl('/api/v1/auth/login'), {
         method: 'POST', credentials: 'include', redirect: 'error', signal: AbortSignal.timeout(10000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-      });
+      }));
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');

@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import { withBrowserRefreshLock } from '@crimfig/session';
 import { useSearchParams } from 'next/navigation';
 import { loginDestination } from '@/lib/login-return';
 import { getApiUrl } from '@/lib/config';
@@ -28,14 +29,14 @@ function MfaChallengeContent() {
         throw new Error('MFA challenge session expired or invalid. Please sign in again.');
       }
 
-      const res = await fetch(getApiUrl('/api/v1/mfa/verify'), {
+      const res = await withBrowserRefreshLock(window.location.origin, () => fetch(getApiUrl('/api/v1/mfa/verify'), {
         method: 'POST', credentials: 'include', redirect: 'error', signal: AbortSignal.timeout(10000),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${mfaChallengeToken}`,
         },
         body: JSON.stringify({ code }),
-      });
+      }));
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Verification failed');

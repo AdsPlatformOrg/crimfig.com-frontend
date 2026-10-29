@@ -1,3 +1,4 @@
+import { withBrowserRefreshLock } from './refresh-coordination';
 export { installRefreshLockHost, withBrowserRefreshLock } from './refresh-coordination';
 /** Dashboard sessions only. Never use this client in public ad snippets. */
 export type SessionStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous' | 'temporary-error';
@@ -161,14 +162,18 @@ export function createSessionClient(options: SessionOptions) {
       const stillValid = Boolean(token && previousExpiry !== null && previousExpiry > now());
       publish(stillValid ? 'authenticated' : 'loading', stillValid ? previousExpiry : null, 'refreshing');
       try {
-        const response = await fetcher(`${authOrigin}/api/v1/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: '{}',
-          redirect: 'error',
-          signal: AbortSignal.timeout(timeoutMs),
-        });
+        const dispatch = () => {
+          if (started !== generation) throw new SessionError('cancelled', 'Session changed');
+          return fetcher(`${authOrigin}/api/v1/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+            redirect: 'error',
+            signal: AbortSignal.timeout(timeoutMs),
+          });
+        };
+        const response = options.coordinateRefresh ? await dispatch() : await withBrowserRefreshLock(authOrigin, dispatch);
         if (started !== generation) throw new SessionError('cancelled', 'Session changed');
         if (response.status === 401) {
           clearSession();
@@ -315,11 +320,11 @@ export function createSessionClient(options: SessionOptions) {
     const flight = Promise.resolve().then(async () => {
       try {
         if (!bearer) throw new SessionError('temporary', 'Server logout could not be confirmed; session cookie may remain');
-        const response = await fetcher(`${authOrigin}/api/v1/auth/logout`, {
+        const response = await withBrowserRefreshLock(authOrigin, () => fetcher(`${authOrigin}/api/v1/auth/logout`, {
           method: 'POST', credentials: 'include', redirect: 'error',
           headers: { Authorization: `Bearer ${bearer}` },
           signal: AbortSignal.timeout(timeoutMs),
-        });
+        }));
         if (!response.ok) throw new Error('Logout rejected');
         signOut = 'complete';
       } catch {
