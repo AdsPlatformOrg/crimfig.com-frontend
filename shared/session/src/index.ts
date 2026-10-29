@@ -1,3 +1,4 @@
+export { installRefreshLockHost, withBrowserRefreshLock } from './refresh-coordination';
 /** Dashboard sessions only. Never use this client in public ad snippets. */
 export type SessionStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous' | 'temporary-error';
 
