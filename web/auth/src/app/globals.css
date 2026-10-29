@@ -130,6 +130,10 @@ a:hover {
 /* ─── Card & Glass Styles ──────────────────────────────────────────────────── */
 
 .auth-centered-container {
+  /* These existing authentication cards use a dark surface in both app themes. */
+  --text-primary: #F8FAFC;
+  --text-secondary: #E2E8F0;
+  --text-muted: #CBD5E1;
   min-height: 100vh;
   width: 100%;
   display: flex;

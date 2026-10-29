@@ -51,8 +51,7 @@ export default function LoginPage() {
     <div className="auth-centered-container">
       <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
       <AuthBrandHeader
-        title="CrimFig Identity"
-        subtitle="Sign in to access your ecosystem apps"
+        title="Sign in to your CrimFig account"
       />
 
       {error && (
