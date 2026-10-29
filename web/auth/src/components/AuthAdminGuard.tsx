@@ -4,7 +4,7 @@ import React, { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, ArrowLeft, RefreshCw } from 'lucide-react';
-import { getApiUrl } from '../lib/config';
+import { consentSession } from '../lib/consent';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from './ui';
 
 interface StaffStatusResponse {
@@ -20,15 +20,16 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
 
     async function checkStaff() {
       try {
         setStatus('loading');
         setErrorMessage(null);
 
-        const res = await fetch(getApiUrl('/api/v1/auth/staff-status'), {
+        const res = await consentSession().request(new URL('/api/v1/auth/staff-status', window.location.origin), {
           headers: { 'Accept': 'application/json' },
-          credentials: 'include',
+          signal: controller.signal,
         });
 
         if (!active) return;
@@ -36,7 +37,8 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
         if (res.ok) {
           const body = await res.json();
           const data = body?.data;
-          if (data && data.isStaff) {
+          if (!active) return;
+          if (data?.isStaff === true && typeof data.userId === 'string' && Array.isArray(data.roles)) {
             setStatus('authorized');
             return;
           }
@@ -55,6 +57,7 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, []);
 

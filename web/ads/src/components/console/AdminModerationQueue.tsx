@@ -54,7 +54,24 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   const [decisionReason, setDecisionReason] = useState<{ [id: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState<{ [id: string]: boolean }>({});
 
+  const [roles, setRoles] = useState<string[]>([]);
+  const canReview = roles.includes('ads_reviewer');
+  const canManage = roles.includes('ads_manager');
+  const canOverride = roles.includes('super_admin');
+
   const [reviewStage, setReviewStage] = useState<'reviewer' | 'manager'>('reviewer');
+  const canDecideCampaign = reviewStage === 'reviewer' ? canReview : canManage;
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+    setRoles([]);
+    void sessionFetch(`${apiBase}/api/v1/ecosystem/staff-status`, { signal: controller.signal })
+      .then(async response => response.ok ? response.json() : null)
+      .then(body => { if (active && body?.data?.isStaff === true && Array.isArray(body.data.roles)) setRoles(body.data.roles.filter((role: unknown): role is string => typeof role === 'string')); })
+      .catch(() => { if (active) setRoles([]); });
+    return () => { active = false; controller.abort(); };
+  }, [apiBase]);
 
   const fetchQueue = useCallback(async () => {
     setIsLoading(true); setError(null); setIsForbidden(false);
@@ -77,6 +94,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   useEffect(() => { void fetchQueue(); }, [fetchQueue]);
 
   const handleCreativeDecision = async (id: string, decision: 'approved' | 'rejected') => {
+    if (!canReview) return;
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
       const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/creatives/${id}/decision`, {
@@ -109,6 +127,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   };
 
   const handleCampaignDecision = async (id: string, decision: 'approved' | 'rejected') => {
+    if (!canDecideCampaign) return;
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
       const endpoint =
@@ -147,6 +166,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   };
 
   const handleEmergencyOverride = async (id: string) => {
+    if (!canOverride) return;
     const reason = window.prompt(
       'SUPER ADMIN EMERGENCY OVERRIDE:\nEnter a mandatory, documented justification for overriding the dual-reviewer workflow (min 10 chars):'
     );
@@ -410,7 +430,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '220px' }}>
+                  {canReview && <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '220px' }}>
                     <select
                       value={decisionReason[crt.id] || ''}
                       onChange={(e) => setDecisionReason({ ...decisionReason, [crt.id]: e.target.value })}
@@ -479,7 +499,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                         Reject
                       </Button>
                     </div>
-                  </div>
+                  </div>}
                 </div>
               </div>
             ))}
@@ -519,7 +539,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button
+                  {canDecideCampaign && <Button
                     type="button"
                     disabled={isSubmitting[camp.id]}
                     onClick={() => handleCampaignDecision(camp.id, 'approved')}
@@ -535,8 +555,8 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     }}
                   >
                     {reviewStage === 'reviewer' ? 'Approve & Pass to Manager' : 'Approve Campaign'}
-                  </Button>
-                  <Button
+                  </Button>}
+                  {canDecideCampaign && <Button
                     type="button"
                     disabled={isSubmitting[camp.id]}
                     onClick={() => handleCampaignDecision(camp.id, 'rejected')}
@@ -552,8 +572,8 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     }}
                   >
                     Reject
-                  </Button>
-                  <Button
+                  </Button>}
+                  {canOverride && <Button
                     type="button"
                     title="Super Admin Emergency Override: Requires mandatory justification audit entry"
                     disabled={isSubmitting[camp.id]}
@@ -570,7 +590,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     }}
                   >
                     Emergency Override
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             ))}
