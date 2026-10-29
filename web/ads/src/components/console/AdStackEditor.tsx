@@ -35,7 +35,12 @@ export interface AdDraft {
   mediaAssetId?: string;
   mediaUrl?: string;
   adFormat?: "card" | "banner";
-  imageInfo?: { width: number; height: number; bytes: number; mimeType?:string };
+  imageInfo?: {
+    width: number;
+    height: number;
+    bytes: number;
+    mimeType?: string;
+  };
 }
 
 export interface StackDraft {
@@ -374,7 +379,10 @@ export function AdStackEditor({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gridTemplateColumns:
+                  ad.adType === "image"
+                    ? "minmax(0, 1fr)"
+                    : "repeat(auto-fit, minmax(240px, 1fr))",
                 gap: "12px",
               }}
             >
@@ -503,7 +511,8 @@ export function AdStackEditor({
                     {ad.adType === "image" ? (
                       <ImagePreparation
                         initialLayout={ad.adFormat || "card"}
-                        currentUrl={ad.mediaUrl} currentSpecs={ad.imageInfo}
+                        currentUrl={ad.mediaUrl}
+                        currentSpecs={ad.imageInfo}
                         onBusyChange={onBusyChange}
                         onUploaded={(asset) =>
                           updateAd(ad.key, {
@@ -513,7 +522,8 @@ export function AdStackEditor({
                             imageInfo: {
                               width: asset.width,
                               height: asset.height,
-                              bytes: asset.bytes, mimeType:asset.mimeType,
+                              bytes: asset.bytes,
+                              mimeType: asset.mimeType,
                             },
                           })
                         }
@@ -749,113 +759,121 @@ export function AdStackEditor({
                 )}
               </div>
 
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: "6px" }}
-              >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  Preview
-                </span>
+              {ad.adType !== "image" && (
                 <div
                   style={{
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "10px",
-                    overflow: "hidden",
-                    background: "var(--bg-page)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
                   }}
                 >
-                  {ad.adType === "video" && ad.mediaUrl ? (
-                    <MediaPreview source={ad.mediaUrl} />
-                  ) : ad.adType === "image" && ad.mediaUrl ? (
-                    <MediaPreview source={ad.mediaUrl} />
-                  ) : (
-                    <div
-                      style={{
-                        height: "100px",
-                        display: "grid",
-                        placeItems: "center",
-                        background: "var(--bg-surface)",
-                        color: "var(--text-muted)",
-                        fontSize: "12px",
-                      }}
-                    >
-                      {ad.adType === "text"
-                        ? "Text-only ad"
-                        : "Upload media to preview"}
-                    </div>
-                  )}
-                  <div
+                  <span
                     style={{
-                      padding:
-                        ad.headline || ad.bodyText || ad.ctaText ? "12px" : "0",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--text-muted)",
                     }}
                   >
-                    {ad.adType === "text" && (
+                    Preview
+                  </span>
+                  <div
+                    style={{
+                      border: "1px solid var(--border-subtle)",
+                      borderRadius: "10px",
+                      overflow: "hidden",
+                      background: "var(--bg-page)",
+                    }}
+                  >
+                    {ad.adType === "video" && ad.mediaUrl ? (
+                      <MediaPreview source={ad.mediaUrl} />
+                    ) : (
                       <div
                         style={{
-                          fontSize: "10px",
-                          fontWeight: 700,
-                          color: "var(--color-crimson)",
-                          textTransform: "uppercase",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Promoted
-                      </div>
-                    )}
-                    {ad.headline && (
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          color: "var(--text-primary)",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        {ad.headline}
-                      </div>
-                    )}
-                    {ad.bodyText && (
-                      <p
-                        style={{
-                          margin: "0 0 10px",
+                          height: "100px",
+                          display: "grid",
+                          placeItems: "center",
+                          background: "var(--bg-surface)",
+                          color: "var(--text-muted)",
                           fontSize: "12px",
-                          color: "var(--text-secondary)",
-                          lineHeight: 1.4,
                         }}
                       >
-                        {ad.bodyText}
-                      </p>
+                        {ad.adType === "text"
+                          ? "Text-only ad"
+                          : "Upload media to preview"}
+                      </div>
                     )}
-                    {ad.ctaText && (
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "5px 10px",
-                          borderRadius: "6px",
-                          background: "var(--color-crimson)",
-                          color: "#fff",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {ad.ctaText}
-                      </span>
-                    )}
+                    <div
+                      style={{
+                        padding:
+                          ad.headline || ad.bodyText || ad.ctaText
+                            ? "12px"
+                            : "0",
+                      }}
+                    >
+                      {ad.adType === "text" && (
+                        <div
+                          style={{
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            color: "var(--color-crimson)",
+                            textTransform: "uppercase",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Promoted
+                        </div>
+                      )}
+                      {ad.headline && (
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 700,
+                            color: "var(--text-primary)",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {ad.headline}
+                        </div>
+                      )}
+                      {ad.bodyText && (
+                        <p
+                          style={{
+                            margin: "0 0 10px",
+                            fontSize: "12px",
+                            color: "var(--text-secondary)",
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {ad.bodyText}
+                        </p>
+                      )}
+                      {ad.ctaText && (
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "5px 10px",
+                            borderRadius: "6px",
+                            background: "var(--color-crimson)",
+                            color: "#fff",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {ad.ctaText}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  <span
+                    style={{ fontSize: "10px", color: "var(--text-muted)" }}
+                  >
+                    Card / feed unit. Placement format is chosen by the
+                    publisher surface.
+                  </span>
                 </div>
-                <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
-                  Card / feed unit. Placement format is chosen by the publisher
-                  surface.
-                </span>
-              </div>
+              )}
             </div>
           </article>
         ))}
