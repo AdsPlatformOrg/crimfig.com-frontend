@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
+import { useSessionSnapshot } from '../SessionGate';
+import { publicHeaderActions } from '../../lib/public-header';
 
 const links = [
   { href: '#features', label: 'Capabilities' },
@@ -16,6 +18,7 @@ const links = [
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const actions = publicHeaderActions(useSessionSnapshot());
 
   return (
     <header
@@ -46,14 +49,9 @@ export function LandingNavbar() {
         </nav>
 
         <div className="cf-site-actions">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/login">Sign In</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/signup">
-              Create Account <ArrowRight size={16} aria-hidden="true" />
-            </Link>
-          </Button>
+          {actions.map(action => <Button key={action.href} asChild variant={action.primary ? 'default' : 'outline'} size="sm">
+            <Link href={action.href}>{action.label}{action.primary && <ArrowRight size={16} aria-hidden="true" />}</Link>
+          </Button>)}
           <Button
             ref={menuButtonRef}
             className="cf-mobile-menu-toggle"
@@ -85,14 +83,9 @@ export function LandingNavbar() {
               {link.label}
             </a>
           ))}
-          <Button asChild variant="outline" className="cf-mobile-nav-cta">
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
-          </Button>
-          <Button asChild className="cf-mobile-nav-cta">
-            <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-              Create Account <ArrowRight size={16} aria-hidden="true" />
-            </Link>
-          </Button>
+          {actions.map(action => <Button key={action.href} asChild variant={action.primary ? 'default' : 'outline'} className="cf-mobile-nav-cta">
+            <Link href={action.href} onClick={() => setMobileMenuOpen(false)}>{action.label}{action.primary && <ArrowRight size={16} aria-hidden="true" />}</Link>
+          </Button>)}
       </nav>
     </header>
   );

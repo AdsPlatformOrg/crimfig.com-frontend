@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
+import { PublicSessionDiscovery } from '../components/PublicSessionDiscovery';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -59,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={poppins.className} data-theme="light" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
-      <body>{children}</body>
+      <body><PublicSessionDiscovery />{children}</body>
     </html>
   );
 }
