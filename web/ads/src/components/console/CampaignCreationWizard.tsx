@@ -128,12 +128,14 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
           if (ad.adType !== 'text' && !ad.mediaAssetId) { setError(`${label}: upload a ${ad.adType} asset.`); return false; }
           if (ad.adType === 'video' && !capabilities?.videoAuthoringEnabled) { setError(`${label}: video authoring is not available yet.`); return false; }
         }
+        if (stack.geoMode === 'targeted' && !capabilities?.geoTargetingEnabled) { setError('Location targeting is not available yet. Use Global or inherited geography for each stack.'); return false; }
         if (stack.geoMode === 'targeted' && stack.locations.length === 0) { setError(`${stack.name}: choose at least one location, or inherit/global.`); return false; }
       }
       return true;
     }
     if (step === 3) {
       if (devices.length === 0) { setError('Choose at least one device category.'); return false; }
+      if (geoMode === 'targeted' && !capabilities?.geoTargetingEnabled) { setError('Location targeting is not available yet. Select Global.'); return false; }
       if (geoMode === 'targeted' && locations.length === 0) { setError('Choose at least one campaign location, or select Global.'); return false; }
       return true;
     }
@@ -325,11 +327,12 @@ export function CampaignCreationWizard({ onCancel, onSuccess }: CampaignWizardPr
             <button type="button" aria-pressed={geoMode === 'global'} onClick={() => { setGeoMode('global'); setLocations([]); }} style={{ minHeight: '40px', padding: '8px 14px', borderRadius: '9px', border: `1px solid ${geoMode === 'global' ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: geoMode === 'global' ? 'var(--badge-bg)' : 'var(--bg-elevated)', color: geoMode === 'global' ? 'var(--color-crimson)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}>
               <Globe size={14} aria-hidden="true" /> Global
             </button>
-            <button type="button" aria-pressed={geoMode === 'targeted'} onClick={() => setGeoMode('targeted')} style={{ minHeight: '40px', padding: '8px 14px', borderRadius: '9px', border: `1px solid ${geoMode === 'targeted' ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: geoMode === 'targeted' ? 'var(--badge-bg)' : 'var(--bg-elevated)', color: geoMode === 'targeted' ? 'var(--color-crimson)' : 'var(--text-secondary)', fontWeight: 600, cursor: 'pointer' }}>
+            <button type="button" disabled={!capabilities?.geoTargetingEnabled} aria-pressed={geoMode === 'targeted'} onClick={() => setGeoMode('targeted')} style={{ opacity: capabilities?.geoTargetingEnabled ? 1 : 0.55, minHeight: '40px', padding: '8px 14px', borderRadius: '9px', border: `1px solid ${geoMode === 'targeted' ? 'var(--color-crimson)' : 'var(--border-subtle)'}`, background: geoMode === 'targeted' ? 'var(--badge-bg)' : 'var(--bg-elevated)', color: geoMode === 'targeted' ? 'var(--color-crimson)' : 'var(--text-secondary)', fontWeight: 600, cursor: capabilities?.geoTargetingEnabled ? 'pointer' : 'not-allowed' }}>
               <Target size={14} aria-hidden="true" /> Target locations
             </button>
           </div>
 
+          {!capabilities?.geoTargetingEnabled && <p role="status" style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Global targeting is available. Specific locations will be enabled later.</p>}
           {geoMode === 'targeted' && (
             <LocationTargeting value={locations} onChange={setLocations} />
           )}

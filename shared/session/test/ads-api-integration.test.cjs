@@ -21,6 +21,13 @@ function modules(fetcher, app = 'ads') {
 }
 const success = data => new Response(JSON.stringify({ status: 'success', data }), { headers: { 'Content-Type': 'application/json' } });
 
+test('location authoring is available only with an explicit server capability', async () => {
+  for (const value of [undefined, false, 'true', true]) {
+    const load = modules(async () => success({ geoTargetingEnabled: value }));
+    assert.equal((await load('campaigns-api').loadCreationCapabilities()).geoTargetingEnabled, value === true);
+  }
+});
+
 test('Ads read helpers preserve real empty results without sample substitutions', async () => {
   const load = modules(async url => success(url.includes('settlements') ? { batches: [] } : []));
   for (const value of [await load('conversions-api').fetchConversions(), await load('conversions-api').fetchApiKeys(), await load('disputes-api').fetchDisputes(), await load('billing-api').fetchSettlementBatches()]) {

@@ -42,6 +42,7 @@ export interface CampaignDefaultsInput {
 }
 
 export interface CreationCapabilities {
+  geoTargetingEnabled: boolean;
   videoAuthoringEnabled: boolean;
   allowedVideoPlacements: string[];
   supportedAdTypes: AdType[];
@@ -69,6 +70,7 @@ export async function loadWebsites() { return arrayData(await apiData('/api/v1/p
 export async function loadCreationCapabilities(): Promise<CreationCapabilities> {
   const data = await apiData<CreationCapabilities>('/api/v1/campaigns/creation-capabilities');
   return {
+    geoTargetingEnabled: data?.geoTargetingEnabled === true,
     videoAuthoringEnabled: Boolean(data?.videoAuthoringEnabled),
     allowedVideoPlacements: Array.isArray(data?.allowedVideoPlacements) ? data.allowedVideoPlacements : [],
     supportedAdTypes: Array.isArray(data?.supportedAdTypes) ? data.supportedAdTypes : ['text', 'image'],

@@ -378,7 +378,7 @@ export function AdStackEditor({ stack, index, capabilities, canRemove, onChange,
               >
                 <option value="inherit">Inherit campaign geography</option>
                 <option value="global">Global for this stack</option>
-                <option value="targeted">Target this stack</option>
+                <option value="targeted" disabled={!capabilities?.geoTargetingEnabled}>Target this stack{!capabilities?.geoTargetingEnabled ? ' (not available yet)' : ''}</option>
               </select>
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
