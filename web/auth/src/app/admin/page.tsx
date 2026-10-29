@@ -12,6 +12,8 @@ export default function AuthAdminPage() {
       <div
         style={{
           maxWidth: '1200px',
+          width: '100%',
+          boxSizing: 'border-box',
           margin: '0 auto',
           padding: '32px 24px',
           fontFamily: "'Poppins', Arial, Helvetica, sans-serif",
@@ -21,6 +23,8 @@ export default function AuthAdminPage() {
         <div
           style={{
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: '16px',
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: '32px',
@@ -28,11 +32,12 @@ export default function AuthAdminPage() {
             paddingBottom: '20px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 260px', minWidth: 0 }}>
             <div
               style={{
                 width: '44px',
                 height: '44px',
+                flexShrink: 0,
                 borderRadius: '12px',
                 backgroundColor: 'rgba(212, 20, 58, 0.1)',
                 display: 'flex',
@@ -43,7 +48,7 @@ export default function AuthAdminPage() {
             >
               <ShieldCheck size={24} />
             </div>
-            <div>
+            <div style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
               <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 Identity &amp; Security Administration
               </h1>
@@ -67,7 +72,7 @@ export default function AuthAdminPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
             gap: '24px',
           }}
         >
