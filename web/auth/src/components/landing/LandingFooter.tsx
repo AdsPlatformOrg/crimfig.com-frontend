@@ -1,5 +1,6 @@
 'use client';
 
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, ArrowUpRight } from 'lucide-react';
@@ -61,13 +62,13 @@ export function LandingFooter() {
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <li>
-                <a href="https://ads.crimfig.com" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <a href={ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)} style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <span>CrimFig Ads</span>
                   <ArrowUpRight style={{ width: 12, height: 12 }} />
                 </a>
               </li>
               <li>
-                <a href="https://billing.crimfig.com" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <a href={ecosystemOrigin('billing', process.env.NEXT_PUBLIC_BILLING_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)} style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <span>CrimFig Billing & Rewards</span>
                   <ArrowUpRight style={{ width: 12, height: 12 }} />
                 </a>

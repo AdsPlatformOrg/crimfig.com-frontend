@@ -1,5 +1,6 @@
 'use client';
 
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { ExternalLink, ShieldCheck, Heart } from 'lucide-react';
@@ -78,7 +79,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                 </a>
               </li>
               <li>
-                <a href="https://billing.crimfig.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <a href={ecosystemOrigin('billing', process.env.NEXT_PUBLIC_BILLING_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)} target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   Billing & Escrow <ExternalLink style={{ width: 12, height: 12 }} />
                 </a>
               </li>
@@ -154,7 +155,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                 </a>
               </li>
               <li>
-                <a href="https://auth.crimfig.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <a href={ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)} target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   CrimFig Single Sign-On <ExternalLink style={{ width: 12, height: 12 }} />
                 </a>
               </li>

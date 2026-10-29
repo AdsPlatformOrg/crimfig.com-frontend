@@ -26,11 +26,24 @@ importers:
 
   shared/session: {}
 
+  shared/ui:
+    dependencies:
+      react:
+        specifier: ^19.0.0
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.1
+        version: 19.2.18
+
   web/ads:
     dependencies:
       '@crimfig/session':
         specifier: workspace:*
         version: link:../../shared/session
+      '@crimfig/ui':
+        specifier: workspace:*
+        version: link:../../shared/ui
       '@radix-ui/react-dialog':
         specifier: ^1.3.1
         version: 1.3.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -86,6 +99,9 @@ importers:
       '@crimfig/session':
         specifier: workspace:*
         version: link:../../shared/session
+      '@crimfig/ui':
+        specifier: workspace:*
+        version: link:../../shared/ui
       '@radix-ui/react-checkbox':
         specifier: ^1.4.1
         version: 1.4.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -135,6 +151,9 @@ importers:
       '@crimfig/session':
         specifier: workspace:*
         version: link:../../shared/session
+      '@crimfig/ui':
+        specifier: workspace:*
+        version: link:../../shared/ui
       '@radix-ui/react-checkbox':
         specifier: ^1.4.1
         version: 1.4.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

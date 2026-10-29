@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { AccountMenu } from '../../../../../shared/ui/account-menu';
+import { dashboardSession } from '../../lib/session';
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import { CrimFigLogo } from '../CrimFigLogo';
 import './template-layout.css';
 
@@ -133,7 +136,7 @@ export const ModernTemplateHeader: React.FC<HeaderProps> = ({
           <Link href="/" aria-label="CrimFig Home" className="cf-template-brand-link">
             <CrimFigLogo size={36} variant="brand" />
           </Link>
-          {appName && <span className="cf-template-app-name">{appName}</span>}
+
         </div>
 
         {hasNavigation && (
@@ -176,69 +179,7 @@ export const ModernTemplateHeader: React.FC<HeaderProps> = ({
             </Button>
           )}
 
-          {user && (
-            <div className="cf-template-user-menu">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                ref={userMenuButtonRef}
-                onClick={() => setUserMenuOpen((open) => !open)}
-                aria-expanded={userMenuOpen}
-                aria-controls="cf-template-user-menu"
-                aria-label={`Profile menu for ${user.name}`}
-              >
-                {user.avatarUrl ? (
-                  <Image
-                    src={user.avatarUrl}
-                    alt=""
-                    width={32}
-                    height={32}
-                    unoptimized
-                    className="cf-template-avatar-image"
-                  />
-                ) : (
-                  <span className="cf-template-avatar-fallback" aria-hidden="true">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <span className="cf-template-user-name">{user.name}</span>
-                <ChevronDown size={14} aria-hidden="true" />
-              </Button>
-
-              <div
-                id="cf-template-user-menu"
-                className="cf-template-user-menu-popover"
-                aria-label="User actions"
-                hidden={!userMenuOpen}
-              >
-                <div className="cf-template-user-summary">
-                  <div>{user.name}</div>
-                  <div>{user.email}</div>
-                </div>
-                <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
-                  <User size={16} aria-hidden="true" />
-                  <span>Profile</span>
-                </Link>
-                <Link href="/settings" onClick={() => setUserMenuOpen(false)}>
-                  <Settings size={16} aria-hidden="true" />
-                  <span>Settings</span>
-                </Link>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    window.location.href = 'https://auth.crimfig.com/logout';
-                  }}
-                >
-                  <LogOut size={16} aria-hidden="true" />
-                  <span>Sign out</span>
-                </Button>
-              </div>
-            </div>
-          )}
+          {user && <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${ecosystemOrigin('auth',process.env.NEXT_PUBLIC_AUTH_WEB_URL)}/profile`},{label:'Ads Settings',href:'/settings'}]} />}
 
           {(hasNavigation || hasPrimaryAction) && (
             <Button

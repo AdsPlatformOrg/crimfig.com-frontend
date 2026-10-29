@@ -1,3 +1,4 @@
+@import "../../../../shared/ui/header.css";
 /* ─────────────────────────────────────────────────────────────────────────────
  * CrimFig Design System — globals.css (White / Light Theme by Default)
  * Single source of truth for colors, typography, layout, shimmer & transitions
@@ -351,3 +352,5 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+@media (min-width:769px) and (max-width:1100px) { .cf-console-mobile-menu { display:inline-flex; } }

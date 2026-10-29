@@ -42,7 +42,8 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useDialog } from '../../lib/use-dialog';
-import { SignOutButton } from '../SessionGate';
+import { AccountMenu } from '../../../../../shared/ui/account-menu';
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { EmptyState } from '../EmptyState';
 import { TableSkeleton, CardSkeleton } from '../LoadingStates';
@@ -123,21 +124,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
   useEffect(() => { setActiveTab(initialTab); setIsMobileNavOpen(false); }, [initialTab]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [avatar, setAvatar] = useState<{ url: string; alt: string } | null>(null);
-  const authBase = process.env.NEXT_PUBLIC_AUTH_WEB_URL || (process.env.NODE_ENV === 'production' ? 'https://auth.crimfig.com' : 'http://localhost:3000');
-
-  useEffect(() => {
-    let active = true;
-    const load = () => {
-      void dashboardSession().getProfile()
-        .then((profile) => { if (active) setAvatar({ url: profile.avatar.url, alt: profile.avatar.alt }); })
-        .catch(() => { /* Default avatar remains visible. */ });
-    };
-    load();
-    window.addEventListener('crimfig-profile-updated', load);
-    return () => { active = false; window.removeEventListener('crimfig-profile-updated', load); };
-  }, []);
-
+  const authBase = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
+  const adsBase = ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, authBase);
   useEffect(() => {
     if (!isMobileNavOpen) return;
     const handleEscape = (event: KeyboardEvent) => {
@@ -496,119 +484,20 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         </Alert>
       )}
       
-      {/* Top Header */}
-      <header
-        style={{
-          borderBottom: '1px solid var(--border-subtle)',
-          backgroundColor: 'var(--bg-page)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          boxShadow: 'var(--shadow-sm)'
-        }}
-      >
-        <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '12px 24px', minHeight: '64px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' }}>
-            {/* Mobile Menu Hamburger */}
-            <Button
-              id="billing-mobile-menu-toggle"
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setIsMobileNavOpen(true)}
-              className="cf-console-mobile-menu"
-              aria-label="Open navigation menu"
-              aria-expanded={isMobileNavOpen}
-              aria-controls="billing-dashboard-sidebar"
-            >
-              <Menu size={18} aria-hidden="true" />
-            </Button>
-
-            <CrimFigLogo
-              variant="brand"
-              size={38}
-              app="Billing"
-              appBadge="Universal Escrow"
-              href="/"
-            />
+      <header style={{borderBottom:'1px solid var(--border-subtle)',background:'var(--bg-page)',position:'sticky',top:0,zIndex:40}}>
+        <div className="cf-console-row">
+          <div className="cf-console-brand">
+            <Button id="billing-mobile-menu-toggle" type="button" variant="outline" size="icon" className="cf-console-mobile-menu" aria-label="Open navigation menu" aria-expanded={isMobileNavOpen} aria-controls="billing-dashboard-sidebar" onClick={()=>setIsMobileNavOpen(true)}><Menu size={20} aria-hidden="true" /></Button>
+            <CrimFigLogo variant="brand" app="Billing" href="/" />
           </div>
-
-          {/* Segmented Workspace Switcher: Consumer/Business Wallet vs Merchant Payouts vs Rewards Hub */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '4px',
-                flexWrap: 'wrap',
-                maxWidth: '100%',
-                boxSizing: 'border-box',
-                borderRadius: '12px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
-            >
-              <Button
-                type="button"
-                onClick={() => router.push('/dashboard')}
-                size="sm"
-                variant={billingWorkspace === 'wallet' ? 'default' : 'ghost'}
-                aria-pressed={billingWorkspace === 'wallet'}
-              >
-                <Wallet style={{ width: 14, height: 14 }} />
-                <span>Wallet</span>
-              </Button>
-              <Button
-                type="button"
-                onClick={() => router.push('/payouts')}
-                size="sm"
-                variant={billingWorkspace === 'payouts' ? 'default' : 'ghost'}
-                aria-pressed={billingWorkspace === 'payouts'}
-              >
-                <Building2 style={{ width: 14, height: 14 }} />
-                <span>Payouts</span>
-              </Button>
-              <Button
-                type="button"
-                onClick={() => router.push('/rewards')}
-                size="sm"
-                variant={billingWorkspace === 'rewards' ? 'default' : 'ghost'}
-                aria-pressed={billingWorkspace === 'rewards'}
-              >
-                <Gift style={{ width: 14, height: 14 }} />
-                <span>Rewards</span>
-              </Button>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', maxWidth: '100%' }}>
-            <Button asChild variant="outline" size="sm">
-              <a href="https://ads.crimfig.com" target="_blank" rel="noreferrer">
-                <Layers style={{ width: 14, height: 14 }} />
-                <span>Ads Studio</span>
-                <ExternalLink style={{ width: 12, height: 12 }} />
-              </a>
-            </Button>
-
-            <a
-              href={`${authBase}/profile`}
-              aria-label="Open profile and avatar settings"
-              style={{ display: 'inline-flex', width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
-            >
-              {/* Avatar is served by Auth; not a bundled Next image. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatar?.url || `${authBase}/avatars/chibi/chibi-indigo.webp`}
-                alt={avatar?.alt || 'Default chibi ninja avatar'}
-                width={36}
-                height={36}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </a>
-
-            <SignOutButton />
+          <nav className="cf-workspace-nav" aria-label="Billing workspaces">
+            <a href="/dashboard" aria-current={billingWorkspace==='wallet'?'page':undefined}>Wallet</a>
+            <a href="/payouts" aria-current={billingWorkspace==='payouts'?'page':undefined}>Payouts</a>
+            <a href="/rewards" aria-current={billingWorkspace==='rewards'?'page':undefined}>Rewards</a>
+          </nav>
+          <div className="cf-console-actions">
+            <Button asChild variant="outline" size="sm" className="cf-console-context-action"><a href={adsBase}>Ads Studio</a></Button>
+            <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Account Security',href:`${authBase}/security`}]} />
           </div>
         </div>
       </header>
@@ -617,7 +506,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
         <DashboardSidebar
           app="billing"
-          groups={currentBillingNavGroups}
+          groups={[{title:'Workspaces',items:[{id:'workspace_wallet',label:'Wallet',icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:'Payouts',icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:'Rewards',icon:Gift,href:'/rewards'}]},...currentBillingNavGroups]}
           activeId={activeTab}
           onSelect={(id) => {
             if (id === 'overview') router.push('/dashboard');
@@ -634,7 +523,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           onCloseMobile={() => setIsMobileNavOpen(false)}
           switchAppLink={{
             label: 'Ads Studio',
-            href: 'https://ads.crimfig.com',
+            href: adsBase,
             icon: Layers,
           }}
         />

@@ -37,7 +37,7 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
     >
       <div className="cf-site-header-inner">
         <CrimFigLogo
-          variant="brand"
+          href="/" variant="brand"
           size={42}
           app="Ads"
           appBadge="Network"

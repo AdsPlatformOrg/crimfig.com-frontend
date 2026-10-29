@@ -23,7 +23,9 @@ import {
   Settings,
 } from 'lucide-react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
-import { SignOutButton } from '../SessionGate';
+import { AccountMenu } from '../../../../../shared/ui/account-menu';
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
+import { CrimFigLogo } from '../CrimFigLogo';
 import { DashboardSidebar, type NavGroup } from '../DashboardSidebar';
 import { apiData } from '../../lib/api-data';
 import { dashboardSession } from '../../lib/session';
@@ -42,21 +44,8 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
-  const [avatar, setAvatar] = useState<{ url: string; alt: string } | null>(null);
-  const authBase = process.env.NEXT_PUBLIC_AUTH_WEB_URL || (process.env.NODE_ENV === 'production' ? 'https://auth.crimfig.com' : 'http://localhost:3000');
-
-  useEffect(() => {
-    let active = true;
-    const load = () => {
-      void dashboardSession().getProfile()
-        .then((profile) => { if (active) setAvatar({ url: profile.avatar.url, alt: profile.avatar.alt }); })
-        .catch(() => { /* Default avatar remains visible. */ });
-    };
-    load();
-    window.addEventListener('crimfig-profile-updated', load);
-    return () => { active = false; window.removeEventListener('crimfig-profile-updated', load); };
-  }, []);
-
+  const authBase = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
+  const billingBase = ecosystemOrigin('billing', process.env.NEXT_PUBLIC_BILLING_WEB_URL, authBase);
   useEffect(() => {
     if (!isMobileNavOpen) return;
     const handleEscape = (event: KeyboardEvent) => {
@@ -172,225 +161,21 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)' }}>
-      {/* Top Console Navigation Bar */}
-      <header
-        style={{
-          borderBottom: '1px solid var(--border-subtle)',
-          backgroundColor: 'var(--bg-page)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1440px',
-            margin: '0 auto',
-            padding: '12px 24px',
-            minHeight: '70px',
-            width: '100%',
-            boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-            flexWrap: 'wrap',
-          }}
-        >
-          {/* Brand Identity & Back to Landing */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', maxWidth: '100%' }}>
-            {/* Mobile Menu Toggle Button */}
-            <Button
-              id="ads-mobile-menu-toggle"
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setIsMobileNavOpen(true)}
-              className="cf-console-mobile-menu"
-              aria-label="Open navigation menu"
-              aria-expanded={isMobileNavOpen}
-              aria-controls="ads-dashboard-sidebar"
-            >
-              <Menu size={18} aria-hidden="true" />
-            </Button>
-
-            <Link
-              href="/"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '12px',
-                textDecoration: 'none',
-                cursor: 'pointer',
-              }}
-              title="Return to CrimFig Ads Home"
-            >
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
-                  background: 'var(--gradient-crimson)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 900,
-                  fontSize: '18px',
-                  color: '#FFFFFF',
-                  boxShadow: 'var(--shadow-crimson)',
-                }}
-              >
-                CF
-              </div>
-              <div>
-                <div
-                  style={{
-                    fontWeight: 800,
-                    fontSize: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  CrimFig <span style={{ color: 'var(--color-crimson)' }}>Ads</span>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '9999px',
-                      backgroundColor: 'var(--badge-bg)',
-                      color: 'var(--text-secondary)',
-                      border: '1px solid var(--border-subtle)',
-                    }}
-                  >
-                    Console
-                  </span>
-                </div>
-              </div>
-            </Link>
+      <header style={{borderBottom:'1px solid var(--border-subtle)',background:'var(--bg-page)',position:'sticky',top:0,zIndex:40}}>
+        <div className="cf-console-row">
+          <div className="cf-console-brand">
+            <Button id="ads-mobile-menu-toggle" type="button" variant="outline" size="icon" className="cf-console-mobile-menu" aria-label="Open navigation menu" aria-expanded={isMobileNavOpen} aria-controls="ads-dashboard-sidebar" onClick={()=>setIsMobileNavOpen(true)}><Menu size={20} aria-hidden="true" /></Button>
+            <CrimFigLogo variant="brand" app="Ads" href="/" />
           </div>
-
-          {/* Mode Switcher: Advertiser Studio vs Promoter Hub (Admin Console conditionally shown) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '4px',
-                flexWrap: 'wrap',
-                maxWidth: '100%',
-                boxSizing: 'border-box',
-                borderRadius: '12px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
-            >
-              <Button
-                type="button"
-                onClick={() => router.push('/dashboard')}
-                variant={role === 'advertiser' ? 'secondary' : 'ghost'}
-                size="sm"
-                aria-pressed={role === 'advertiser'}
-              >
-                <BarChart3 style={{ width: 14, height: 14 }} />
-                <span>Advertiser Studio</span>
-              </Button>
-              <Button
-                type="button"
-                onClick={() => router.push('/promoter')}
-                variant={role === 'promoter' ? 'default' : 'ghost'}
-                size="sm"
-                aria-pressed={role === 'promoter'}
-              >
-                <UserCheck style={{ width: 14, height: 14 }} />
-                <span>Promoter Hub</span>
-              </Button>
-              {(isStaffUser || role === 'admin') && (
-                <Button
-                  type="button"
-                  onClick={() => router.push('/admin/moderation')}
-                  variant={role === 'admin' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  aria-pressed={role === 'admin'}
-                >
-                  <ShieldCheck style={{ width: 14, height: 14 }} />
-                  <span>Admin Console</span>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Right Controls: Contextual Primary CTA, Wallet Trigger & Sign Out */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', maxWidth: '100%' }}>
-            {role === 'advertiser' ? (
-              <Button
-                type="button"
-                onClick={() => router.push('/campaigns/new')}
-                size="sm"
-              >
-                <Plus style={{ width: 14, height: 14 }} />
-                <span>New Campaign</span>
-              </Button>
-            ) : role === 'promoter' ? (
-              <Button
-                type="button"
-                onClick={() => router.push('/promoter/websites?action=new')}
-                variant="secondary"
-                size="sm"
-              >
-                <Plus style={{ width: 14, height: 14 }} />
-                <span>Add Property</span>
-              </Button>
-            ) : null}
-
-            <Link
-              href={`${authBase}/profile`}
-              aria-label="Open profile and avatar settings"
-              style={{ display: 'inline-flex', width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
-            >
-              {/* Avatar is served by Auth; not a bundled Next image. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatar?.url || `${authBase}/avatars/chibi/chibi-indigo.webp`}
-                alt={avatar?.alt || 'Default chibi ninja avatar'}
-                width={36}
-                height={36}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </Link>
-
-            <SignOutButton />
-
-            <Button
-              type="button"
-              onClick={() => {
-                router.push('/billing');
-              }}
-              variant="outline"
-              size="sm"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--badge-bg)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'border-color 0.15s ease',
-              }}
-            >
-              <DollarSign style={{ width: 14, height: 14, color: 'var(--color-success)' }} />
-              <span>Financial Ledger</span>
-            </Button>
+          <nav className="cf-workspace-nav" aria-label="Ads workspaces">
+            <Link href="/dashboard" aria-current={role==='advertiser'?'page':undefined}>Advertiser Studio</Link>
+            <Link href="/promoter" aria-current={role==='promoter'?'page':undefined}>Promoter Hub</Link>
+            {(isStaffUser||role==='admin')&&<Link href="/admin/moderation" aria-current={role==='admin'?'page':undefined}>Admin Console</Link>}
+          </nav>
+          <div className="cf-console-actions">
+            {role==='advertiser' && pathname!=='/campaigns/new' && <Button asChild size="sm" className="cf-console-context-action"><Link href="/campaigns/new"><Plus size={16} aria-hidden="true" />New Campaign</Link></Button>}
+            {role==='promoter' && <Button asChild variant="secondary" size="sm" className="cf-console-context-action"><Link href="/promoter/websites?action=new"><Plus size={16} aria-hidden="true" />Add Property</Link></Button>}
+            <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:'/settings'},{label:'Account Security',href:`${authBase}/security`}]} />
           </div>
         </div>
       </header>
@@ -399,7 +184,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 71px)', position: 'relative' }}>
         <DashboardSidebar
           app="ads"
-          groups={currentNavGroups}
+          groups={[{title:'Workspaces',items:[{id:'workspace_advertiser',label:'Advertiser Studio',icon:BarChart3,href:'/dashboard'},{id:'workspace_promoter',label:'Promoter Hub',icon:UserCheck,href:'/promoter'},...((isStaffUser||role==='admin')?[{id:'workspace_admin',label:'Admin Console',icon:ShieldCheck,href:'/admin/moderation'}]:[])]},...currentNavGroups]}
           activeId={activeNavId}
           onSelect={(id) => {
             if (id === 'overview_dash') {
@@ -437,7 +222,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           onCloseMobile={() => setIsMobileNavOpen(false)}
           switchAppLink={{
             label: 'Billing & Wallet',
-            href: 'https://billing.crimfig.com',
+            href: billingBase,
             icon: CreditCard,
           }}
         />

@@ -1,5 +1,6 @@
 'use client';
 
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
 import { Button } from '../ui/button';
 import { Wallet, ShieldCheck, ArrowRight, ExternalLink } from 'lucide-react';
@@ -74,7 +75,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               Ecosystem
             </div>
             <a
-              href="https://ads.crimfig.com"
+              href={ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)}
               target="_blank"
               rel="noreferrer"
               style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -83,7 +84,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               <ExternalLink style={{ width: 12, height: 12 }} />
             </a>
             <a
-              href="https://auth.crimfig.com"
+              href={ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)}
               target="_blank"
               rel="noreferrer"
               style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
