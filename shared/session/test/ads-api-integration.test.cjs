@@ -598,3 +598,46 @@ test("conversion amounts distinguish zero, missing and unproven non-USD values",
     );
   }
 });
+
+test("websiteView and verifyWebsite preserve verificationErrorMessage, policyStatus, and failed verification status", async () => {
+  const api = modules(async (url) => {
+    if (url.includes("/verification/website/")) {
+      return success({
+        isVerified: false,
+        status: "failed",
+        errorMessage: "Exact crimfig-site-verification meta tag was not found.",
+        website: {
+          id: "site-jed",
+          domain: "jed.com.ng",
+          url: "https://jed.com.ng/",
+          verificationToken: "cf_verify_1234567890abcdef1234567890abcdef",
+          verificationMethod: "html_file_and_meta_tag",
+          verificationStatus: "failed",
+          verificationErrorMessage: "Exact crimfig-site-verification meta tag was not found.",
+          policyStatus: "unverified",
+        },
+      });
+    }
+    return success([
+      {
+        id: "site-jed-ok",
+        domain: "jed.com.ng",
+        url: "https://jed.com.ng/",
+        verificationToken: "cf_verify_1234567890abcdef1234567890abcdef",
+        verificationMethod: "html_file_and_meta_tag",
+        verificationStatus: "verified",
+        policyStatus: "testing",
+      },
+    ]);
+  })("campaigns-api");
+
+  const outcome = await api.verifyWebsite("site-jed");
+  assert.equal(outcome.isVerified, false);
+  assert.equal(outcome.error, "Exact crimfig-site-verification meta tag was not found.");
+  assert.equal(outcome.site.isVerified, false);
+  assert.equal(outcome.site.policyStatus, "unverified");
+
+  const [loaded] = await api.loadWebsites();
+  assert.equal(loaded.isVerified, true);
+  assert.equal(loaded.policyStatus, "testing");
+});

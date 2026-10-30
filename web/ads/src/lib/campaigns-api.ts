@@ -96,6 +96,9 @@ export function websiteView(site: any) {
   return {
     ...site,
     isVerified: site.verificationStatus === "verified",
+    verificationStatus: site.verificationStatus ?? (site.isVerified ? "verified" : "pending"),
+    verificationErrorMessage: site.verificationErrorMessage ?? null,
+    policyStatus: site.policyStatus ?? (site.verificationStatus === "verified" ? "testing" : "unverified"),
     lastPingAt: site.lastPingAt ?? "No delivery evidence loaded",
     activePlacementCount: site.activePlacementCount ?? 0,
   };
@@ -248,6 +251,7 @@ export async function verifyWebsite(id: string) {
     throw new Error("Verification could not be confirmed.");
   return {
     site: websiteView(result.website),
-    error: result.errorMessage as string | null,
+    isVerified: result.isVerified as boolean,
+    error: (result.errorMessage ?? result.website?.verificationErrorMessage ?? null) as string | null,
   };
 }

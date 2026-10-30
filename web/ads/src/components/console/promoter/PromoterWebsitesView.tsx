@@ -16,7 +16,12 @@ import { apiData } from '../../../lib/api-data';
 import { loadWebsites, registerWebsite, verifyWebsite } from '../../../lib/campaigns-api';
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton, CardSkeleton } from '../../LoadingStates';
-import { CRIMFIG_PLACEMENTS, type CrimFigPlacement, generateCrimFigEmbedCode } from '../../CrimFigAdSlot';
+import {
+  CRIMFIG_PLACEMENTS,
+  type CrimFigPlacement,
+  generateCrimFigEmbedCode,
+  generateCrimFigVerifyMetaTag,
+} from '../../CrimFigAdSlot';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 
@@ -26,6 +31,9 @@ interface PromoterWebsite {
   url: string;
   verificationToken: string;
   verificationMethod: 'html_file_and_meta_tag' | 'dns_txt';
+  verificationStatus?: string;
+  verificationErrorMessage?: string | null;
+  policyStatus?: string;
   isVerified: boolean;
   lastPingAt: string;
   activePlacementCount: number;
@@ -90,10 +98,13 @@ export function PromoterWebsitesView() {
     setPendingWrites((prev) => new Set(prev).add(websiteId));
     setActionError(null);
     try {
-      await verifyWebsite(websiteId);
+      const outcome = await verifyWebsite(websiteId);
+      if (!outcome.isVerified && outcome.error) {
+        setActionError(outcome.error);
+      }
       fetchWebsites();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'DNS verification check could not be completed.');
+      setActionError(err instanceof Error ? err.message : 'Domain verification check could not be completed.');
     } finally {
       setPendingWrites((prev) => {
         const next = new Set(prev);
@@ -225,9 +236,68 @@ export function PromoterWebsitesView() {
 
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
                   Status: {site.lastPingAt || 'Pending verification'}
+                  {site.isVerified && site.policyStatus ? ` • Supply Policy: ${site.policyStatus.toUpperCase()}` : ''}
                 </p>
 
-                {!site.isVerified && (
+                {!site.isVerified && site.verificationErrorMessage && (
+                  <p style={{ fontSize: '12px', color: 'var(--color-error)', marginTop: '6px', fontWeight: 600 }}>
+                    {site.verificationErrorMessage}
+                  </p>
+                )}
+
+                {!site.isVerified && site.verificationMethod === 'html_file_and_meta_tag' && (
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--badge-bg)',
+                      border: '1px solid var(--border-subtle)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          color: 'var(--color-crimson)',
+                          letterSpacing: '0.05em',
+                        }}
+                      >
+                        HTML Head Meta Tag Verification
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Place in &lt;head&gt;</span>
+                    </div>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto',
+                        gap: '8px',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        backgroundColor: 'var(--bg-page)',
+                        padding: '8px',
+                        borderRadius: '6px',
+                      }}
+                    >
+                      <code style={{ fontFamily: 'monospace', color: 'var(--color-crimson)', wordBreak: 'break-all' }}>
+                        {`<meta name="crimfig-site-verification" content="${site.verificationToken}" />`}
+                      </code>
+                      <Button
+                        type="button"
+                        onClick={() => handleCopy(generateCrimFigVerifyMetaTag(site.verificationToken), `meta-${site.id}`)}
+                        aria-label={`Copy HTML Meta Tag for ${site.domain}`}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px' }}
+                        title="Copy Meta Tag"
+                      >
+                        {copiedToken === `meta-${site.id}` ? <Check style={{ width: 12, height: 12, color: 'var(--color-success)' }} /> : <Copy style={{ width: 12, height: 12 }} />}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {!site.isVerified && site.verificationMethod !== 'html_file_and_meta_tag' && (
                   <div
                     style={{
                       marginTop: '12px',
@@ -338,7 +408,11 @@ export function PromoterWebsitesView() {
                     }}
                   >
                     <ShieldCheck style={{ width: 14, height: 14 }} />{' '}
-                    {pendingWrites.has(site.id) ? 'Checking DNS...' : 'Verify DNS Record Now'}
+                    {pendingWrites.has(site.id)
+                      ? 'Verifying...'
+                      : site.verificationMethod === 'html_file_and_meta_tag'
+                        ? 'Verify HTML Meta Tag Now'
+                        : 'Verify DNS Record Now'}
                   </Button>
                 ) : (
                   <Button
