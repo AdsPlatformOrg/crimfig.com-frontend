@@ -13,9 +13,19 @@ interface StaffStatusResponse {
   roles: string[];
 }
 
-export function AuthAdminGuard({ children }: { children: ReactNode }) {
+export interface AuthAdminGuardProps {
+  children: ReactNode | ((staff: StaffStatusResponse) => ReactNode);
+  requiredRole?: string;
+}
+
+export function AuthAdminGuard({ children, requiredRole }: AuthAdminGuardProps) {
   const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'authorized' | 'denied'>('loading');
+  const [staffData, setStaffData] = useState<StaffStatusResponse>({
+    userId: null,
+    isStaff: false,
+    roles: [],
+  });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,8 +49,16 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
           const data = body?.data;
           if (!active) return;
           if (data?.isStaff === true && typeof data.userId === 'string' && Array.isArray(data.roles)) {
-            setStatus('authorized');
-            return;
+            if (!requiredRole || data.roles.includes(requiredRole)) {
+              setStaffData({
+                userId: data.userId,
+                isStaff: true,
+                roles: data.roles,
+              });
+              setStatus('authorized');
+              return;
+            }
+            setErrorMessage(`Requires ${requiredRole} authorization.`);
           }
         }
         setStatus('denied');
@@ -59,10 +77,10 @@ export function AuthAdminGuard({ children }: { children: ReactNode }) {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [requiredRole]);
 
   if (status === 'authorized') {
-    return <>{children}</>;
+    return <>{typeof children === 'function' ? children(staffData) : children}</>;
   }
 
   if (status === 'loading') {

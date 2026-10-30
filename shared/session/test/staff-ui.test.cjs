@@ -111,3 +111,74 @@ test('ActionHelp opens on hover/focus/click and CampaignsManager disables unappr
   assert.ok(underReviewTab);
   assert.equal(text(underReviewTab).includes('1'), true);
 });
+
+test('PLAN-0045: AuthAdminGuard with requiredRole="super_admin" denies support_agent and auth_admin without leaking Error Monitor UI', async () => {
+  for (const [roles, shouldAllow] of [
+    [['support_agent'], false],
+    [['auth_admin', 'security_admin'], false],
+    [['super_admin'], true],
+  ]) {
+    const app = mount(
+      'auth/src/components/AuthAdminGuard.tsx',
+      {
+        '../lib/consent': {
+          consentSession: () => ({
+            request: async () =>
+              Response.json({
+                data: {
+                  userId: '11111111-1111-4111-8111-111111111111',
+                  isStaff: true,
+                  roles,
+                },
+              }),
+          }),
+        },
+      },
+      { requiredRole: 'super_admin', children: 'ERROR_MONITOR_SECRET_CONSOLE' },
+    );
+    app.render();
+    const out = text(await app.settle());
+    assert.equal(out.includes('ERROR_MONITOR_SECRET_CONSOLE'), shouldAllow);
+    if (!shouldAllow) {
+      assert.equal(out.includes('Access Denied'), true);
+      assert.equal(out.includes('Requires super_admin authorization.'), true);
+    }
+    app.unmount();
+  }
+});
+
+test('PLAN-0045: AuthAdminPage hides Error Monitor navigation for non-super_admin staff and shows it for super_admin', async () => {
+  for (const [roles, shouldShowNav] of [
+    [['support_agent'], false],
+    [['auth_admin'], false],
+    [['super_admin'], true],
+  ]) {
+    const guardMod = mount(
+      'auth/src/components/AuthAdminGuard.tsx',
+      {
+        '../lib/consent': {
+          consentSession: () => ({
+            request: async () =>
+              Response.json({
+                data: {
+                  userId: '11111111-1111-4111-8111-111111111111',
+                  isStaff: true,
+                  roles,
+                },
+              }),
+          }),
+        },
+      },
+      {
+        children: (staff) =>
+          Array.isArray(staff.roles) && staff.roles.includes('super_admin')
+            ? 'NAV_ERROR_MONITOR_VISIBLE'
+            : 'STANDARD_STAFF_ONLY',
+      },
+    );
+    guardMod.render();
+    const rendered = text(await guardMod.settle());
+    assert.equal(rendered.includes('NAV_ERROR_MONITOR_VISIBLE'), shouldShowNav);
+    guardMod.unmount();
+  }
+});

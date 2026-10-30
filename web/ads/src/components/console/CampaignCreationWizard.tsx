@@ -1,5 +1,6 @@
 "use client";
 import {ApiError} from '@crimfig/api-client';
+import Link from "next/link";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -1715,7 +1716,7 @@ export function CampaignCreationWizard({
           >
             Check campaign status
           </Button>
-          {savedCampaignId && <a href="/campaigns">Open saved campaigns</a>}
+          {savedCampaignId && <Link href="/campaigns">Open saved campaigns</Link>}
         </div>
       )}
 

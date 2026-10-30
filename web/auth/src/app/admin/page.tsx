@@ -3,12 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { AuthAdminGuard } from '../../components/AuthAdminGuard';
-import { ShieldCheck, ShieldAlert, ArrowLeft, Users } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ArrowLeft, Users, Activity } from 'lucide-react';
 import { Badge, Button, Card } from '../../components/ui';
 
 export default function AuthAdminPage() {
   return (
     <AuthAdminGuard>
+      {(staff) => {
+        const isSuperAdmin = Array.isArray(staff?.roles) && staff.roles.includes('super_admin');
+        return (
       <div
         style={{
           maxWidth: '1200px',
@@ -57,15 +60,25 @@ export default function AuthAdminPage() {
               </p>
             </div>
           </div>
-          <Button
-            asChild
-            variant="outline"
-          >
-            <Link href="/dashboard">
-              <ArrowLeft size={14} />
-              <span>Exit Admin</span>
-            </Link>
-          </Button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+            {isSuperAdmin && (
+              <Button asChild>
+                <Link href="/admin/error-monitor">
+                  <Activity size={14} />
+                  <span>Error Monitor</span>
+                </Link>
+              </Button>
+            )}
+            <Button
+              asChild
+              variant="outline"
+            >
+              <Link href="/dashboard">
+                <ArrowLeft size={14} />
+                <span>Exit Admin</span>
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Operational Cards */}
@@ -131,8 +144,43 @@ export default function AuthAdminPage() {
               </Badge>
             </div>
           </Card>
+
+          {/* Card 3: Platform Error Monitor (super_admin only) */}
+          {isSuperAdmin && (
+            <Card
+              style={{
+                padding: '24px',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Activity size={20} color="var(--color-crimson)" />
+                <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                  Platform Error Monitor
+                </h2>
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+                Inspect sanitized HTTP 4xx/5xx error groups across Auth, Ads, and Billing, trace correlated request IDs, and audit email alert suppression windows.
+              </p>
+              <div style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                <Badge variant="secondary" style={{ textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-crimson)' }}>
+                  Platform Admin Only
+                </Badge>
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/admin/error-monitor">Open Error Monitor</Link>
+                </Button>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
+        );
+      }}
     </AuthAdminGuard>
   );
 }
