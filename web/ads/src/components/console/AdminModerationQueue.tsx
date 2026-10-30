@@ -1,43 +1,14 @@
 'use client';
 import { MediaPreview } from '../MediaPreview';
 import { sessionFetch } from '../../lib/session';
+import { adsApi } from '../../lib/ads-api-client';
+import { ApiError } from '@crimfig/api-client';
 import { Button } from '../ui/button';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, AlertCircle, RefreshCw, Eye, ExternalLink, Filter } from 'lucide-react';
 
-interface PendingCampaign {
-  id: string;
-  advertiserId: string;
-  title: string;
-  status: string;
-  pricingModel: string;
-  budgetUsdCents: number;
-  createdAt: string;
-}
-
-interface PendingCreative {
-  id: string;
-  campaignId: string;
-  headline?: string | null;
-  bodyText?: string | null;
-  ctaText?: string | null;
-  imageUrl?: string;
-  videoUrl?: string;
-  destinationUrl: string;
-  mediaFormat: string;
-  adFormat?: string;
-  adType?: string;
-  adStackId?: string;
-  reviewStatus: string;
-  createdAt: string;
-}
-
-interface ModerationQueue {
-  campaigns: PendingCampaign[];
-  creatives: PendingCreative[];
-  totalPending: number;
-}
+type ModerationQueue = Awaited<ReturnType<ReturnType<typeof adsApi>['queue']>>;
 
 interface AdminModerationQueueProps {
   apiBase: string;
@@ -76,97 +47,59 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   const fetchQueue = useCallback(async () => {
     setIsLoading(true); setError(null); setIsForbidden(false);
     try {
-      const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/queue?stage=${reviewStage}`);
-      if (res.status === 403) {
-        setIsForbidden(true);
-        setQueue(null);
-        return;
-      }
-      if (!res.ok) throw new Error('Moderation queue unavailable.');
-      const json = await res.json();
-      if (!Array.isArray(json.data?.campaigns) || !Array.isArray(json.data?.creatives)) throw new Error('Invalid moderation queue response.');
-      setQueue(json.data);
+      const next = await adsApi().queue(reviewStage);
+      setQueue(next);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 403) setIsForbidden(true);
       setQueue(null); setError(err instanceof Error ? err.message : 'Moderation queue unavailable.');
     } finally { setIsLoading(false); }
   }, [apiBase, reviewStage]);
 
   useEffect(() => { void fetchQueue(); }, [fetchQueue]);
 
-  const handleCreativeDecision = async (id: string, decision: 'approved' | 'rejected') => {
+  const handleCreativeDecision = async (crt: { id: string; submissionId: string; contentRevision: number }, decision: 'approved' | 'rejected') => {
     if (!canReview) return;
+    const { id } = crt;
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
-      const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/creatives/${id}/decision`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          decision,
-          reasonCode: decision === 'rejected' ? (decisionReason[id] || 'POLICY_VIOLATION') : undefined,
-          note: decisionNote[id] || '',
-        }),
+      await adsApi().reviewCreative(id, {
+        expectedRevision: crt.contentRevision,
+        submissionId: crt.submissionId,
+        requestId: crypto.randomUUID(),
+        decision, reasonCode: decision === 'rejected' ? (decisionReason[id] || 'POLICY_VIOLATION') : undefined,
+        note: decisionNote[id] || '',
       });
-      if (res.ok) {
-        setQueue((prev) =>
-          prev
-            ? {
-                ...prev,
-                creatives: prev.creatives.filter((c) => c.id !== id),
-                totalPending: Math.max(0, prev.totalPending - 1),
-              }
-            : null,
-        );
-      } else {
-        setActionMessage('Action failed. Please verify admin permissions.');
-      }
-    } catch (e) {
-      setActionMessage('Network error communicating with moderation API.');
+      setQueue(prev => prev ? { ...prev, creatives: prev.creatives.filter(c => c.id !== id), totalPending: Math.max(0, prev.totalPending - 1) } : null);
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : 'Moderation request could not be confirmed.');
     } finally {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
   };
 
-  const handleCampaignDecision = async (id: string, decision: 'approved' | 'rejected') => {
+  const handleCampaignDecision = async (camp: { id: string; submissionId: string; contentRevision: number }, decision: 'approved' | 'rejected') => {
     if (!canDecideCampaign) return;
+    const { id } = camp;
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
-      const endpoint =
-        reviewStage === 'reviewer'
-          ? `${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/primary-review`
-          : `${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/manager-approval`;
-
-      const res = await sessionFetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          decision,
-          reasonCode: decision === 'rejected' ? (decisionReason[id] || 'BUDGET_OR_TARGETING_ISSUE') : undefined,
-          note: decisionNote[id] || '',
-        }),
+      await adsApi().reviewCampaign(id, reviewStage, {
+        expectedRevision: camp.contentRevision,
+        submissionId: camp.submissionId,
+        requestId: crypto.randomUUID(),
+        decision, reasonCode: decision === 'rejected' ? (decisionReason[id] || 'BUDGET_OR_TARGETING_ISSUE') : undefined,
+        note: decisionNote[id] || '',
       });
-      if (res.ok) {
-        setQueue((prev) =>
-          prev
-            ? {
-                ...prev,
-                campaigns: prev.campaigns.filter((c) => c.id !== id),
-                totalPending: Math.max(0, prev.totalPending - 1),
-              }
-            : null,
-        );
-      } else {
-        const errorJson = await res.json().catch(() => null);
-        setActionMessage(errorJson?.message || 'Action failed. Please verify admin permissions.');
-      }
-    } catch (e) {
-      setActionMessage('Network error communicating with moderation API.');
+      setQueue(prev => prev ? { ...prev, campaigns: prev.campaigns.filter(c => c.id !== id), totalPending: Math.max(0, prev.totalPending - 1) } : null);
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : 'Moderation request could not be confirmed.');
     } finally {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
   };
 
-  const handleEmergencyOverride = async (id: string) => {
+  const handleEmergencyOverride = async (camp: { id: string; submissionId: string; contentRevision: number }) => {
     if (!canOverride) return;
+    const { id } = camp;
     const reason = window.prompt(
       'SUPER ADMIN EMERGENCY OVERRIDE:\nEnter a mandatory, documented justification for overriding the dual-reviewer workflow (min 10 chars):'
     );
@@ -177,31 +110,15 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
 
     setIsSubmitting((prev) => ({ ...prev, [id]: true }));
     try {
-      const res = await sessionFetch(`${apiBase}/api/v1/admin/ads/moderation/campaigns/${id}/emergency-override`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          overrideReason: reason.trim(),
-          decision: 'approved',
-        }),
+      await adsApi().override(id, reason.trim(), 'approved', {
+        expectedRevision: camp.contentRevision,
+        submissionId: camp.submissionId,
+        requestId: crypto.randomUUID(),
       });
-      if (res.ok) {
-        setActionMessage('Campaign emergency override successful. Status set to Approved with audit trail.');
-        setQueue((prev) =>
-          prev
-            ? {
-                ...prev,
-                campaigns: prev.campaigns.filter((c) => c.id !== id),
-                totalPending: Math.max(0, prev.totalPending - 1),
-              }
-            : null,
-        );
-      } else {
-        const errorJson = await res.json().catch(() => null);
-        setActionMessage(errorJson?.message || 'Emergency override failed. Ensure you have super_admin privileges.');
-      }
-    } catch (e) {
-      setActionMessage('Network error communicating with moderation API.');
+      setActionMessage('Campaign emergency override successful. Status set to Approved with audit trail.');
+      setQueue(prev => prev ? { ...prev, campaigns: prev.campaigns.filter(c => c.id !== id), totalPending: Math.max(0, prev.totalPending - 1) } : null);
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : 'Moderation request could not be confirmed.');
     } finally {
       setIsSubmitting((prev) => ({ ...prev, [id]: false }));
     }
@@ -455,7 +372,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                       <Button
                         type="button"
                         disabled={isSubmitting[crt.id]}
-                        onClick={() => handleCreativeDecision(crt.id, 'approved')}
+                        onClick={() => handleCreativeDecision(crt, 'approved')}
                         style={{
                           flex: 1,
                           padding: '8px 12px',
@@ -478,7 +395,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                       <Button
                         type="button"
                         disabled={isSubmitting[crt.id]}
-                        onClick={() => handleCreativeDecision(crt.id, 'rejected')}
+                        onClick={() => handleCreativeDecision(crt, 'rejected')}
                         style={{
                           flex: 1,
                           padding: '8px 12px',
@@ -542,7 +459,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                   {canDecideCampaign && <Button
                     type="button"
                     disabled={isSubmitting[camp.id]}
-                    onClick={() => handleCampaignDecision(camp.id, 'approved')}
+                    onClick={() => handleCampaignDecision(camp, 'approved')}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '6px',
@@ -559,7 +476,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                   {canDecideCampaign && <Button
                     type="button"
                     disabled={isSubmitting[camp.id]}
-                    onClick={() => handleCampaignDecision(camp.id, 'rejected')}
+                    onClick={() => handleCampaignDecision(camp, 'rejected')}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '6px',
@@ -577,7 +494,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     type="button"
                     title="Super Admin Emergency Override: Requires mandatory justification audit entry"
                     disabled={isSubmitting[camp.id]}
-                    onClick={() => handleEmergencyOverride(camp.id)}
+                    onClick={() => handleEmergencyOverride(camp)}
                     style={{
                       padding: '8px 12px',
                       borderRadius: '6px',

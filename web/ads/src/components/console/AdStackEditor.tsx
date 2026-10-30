@@ -26,6 +26,7 @@ import type { CreationCapabilities } from "../../lib/campaigns-api";
 export type AdDraftType = "text" | "image" | "video";
 
 export interface AdDraft {
+  id?:string;
   key: string;
   adType: AdDraftType;
   headline: string;
@@ -44,6 +45,7 @@ export interface AdDraft {
 }
 
 export interface StackDraft {
+  id?:string;
   key: string;
   name: string;
   geoMode: "inherit" | "global" | "targeted";

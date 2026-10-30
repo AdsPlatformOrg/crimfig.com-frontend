@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@crimfig/api-client": "workspace:^",
     "@crimfig/session": "workspace:*",
     "@crimfig/ui": "workspace:*",
     "@radix-ui/react-dialog": "^1.3.1",

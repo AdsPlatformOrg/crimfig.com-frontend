@@ -2,7 +2,8 @@
 import { ImagePreparation } from "./ImagePreparation";
 import { useDialog } from "../../lib/use-dialog";
 import { MediaPreview } from "../MediaPreview";
-import { sessionFetch } from "../../lib/session";
+import { adsApi } from '../../lib/ads-api-client';
+import type { ReplaceCreativeInput } from '@crimfig/api-client/src/ads-operations';
 
 import React, { useEffect, useState } from "react";
 import {
@@ -22,6 +23,7 @@ import { loadCreationCapabilities, type AdType } from "../../lib/campaigns-api";
 interface CreativeToReplace {
   id: string;
   campaignId: string;
+  expectedRevision?: number;
   headline?: string | null;
   bodyText?: string | null;
   ctaText?: string | null;
@@ -100,18 +102,11 @@ export function ReplaceCreativeModal({
     setUploading(true);
     setError(null);
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const response = await sessionFetch("/api/v1/uploads/direct", {
-        method: "POST",
-        body,
-      });
-      if (!response.ok) throw new Error("The upload could not be confirmed.");
-      const json = await response.json();
-      if (!json?.data?.assetId)
+      const uploaded = await adsApi().uploadDirect(file);
+      if (!uploaded.assetId)
         throw new Error("The upload response was invalid.");
-      setMediaAssetId(json.data.assetId);
-      setMediaUrl(json.data.cdnUrl);
+      setMediaAssetId(uploaded.assetId);
+      setMediaUrl(uploaded.cdnUrl || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : "The upload failed.");
     } finally {
@@ -135,7 +130,9 @@ export function ReplaceCreativeModal({
       if (adType === "text" && !headline.trim()) {
         throw new Error("Text ads need a headline.");
       }
-      const payload: any = {
+      const payload: ReplaceCreativeInput = {
+        expectedRevision: creative.expectedRevision ?? 1,
+        requestId: crypto.randomUUID(),
         headline: headline.trim() || undefined,
         bodyText: bodyText.trim() || undefined,
         ctaText: ctaText.trim() || undefined,
@@ -151,29 +148,10 @@ export function ReplaceCreativeModal({
               : { imageUrl: mediaUrl }),
       };
 
-      // Call API
-      const API_BASE =
-        typeof window !== "undefined"
-          ? ""
-          : process.env.NEXT_PUBLIC_ADS_API_URL ||
-            "https://ads-api-production-d889.up.railway.app";
-      const res = await sessionFetch(
-        `${API_BASE}/api/v1/campaigns/creatives/${creative.id}/replace`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error("Failed to submit replacement asset.");
-      }
-
-      const data = await res.json();
-      if (!data.data?.id)
+      const updated = await adsApi().replaceCreative(creative.id, payload);
+      if (!updated.id)
         throw new Error("Replacement could not be confirmed.");
-      onReplaceSuccess(data.data);
+      onReplaceSuccess(updated);
       onClose();
     } catch (err: any) {
       setError(

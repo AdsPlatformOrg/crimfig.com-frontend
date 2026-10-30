@@ -1,9 +1,13 @@
+import { ApiError } from '@crimfig/api-client';
 import { allDay, inherited, type DailySchedule } from "./daily-schedule";
 import { apiData, arrayData, jsonBody } from "./api-data";
+import { adsApi } from './ads-api-client';
+import type { CampaignRecord, AddCreativeInput } from '@crimfig/api-client/src/ads-operations';
 
 export type AdType = "text" | "image" | "video";
 
 export interface CreativeDraftInput {
+  id?: string;
   adType: AdType;
   headline?: string;
   bodyText?: string;
@@ -16,6 +20,7 @@ export interface CreativeDraftInput {
 }
 
 export interface StackDraftInput {
+  id?: string;
   name: string;
   geoMode: "inherit" | "global" | "targeted";
   locations: string[];
@@ -29,9 +34,9 @@ export interface CampaignDefaultsInput {
   title: string;
   description?: string;
   category?: string;
-  channels?: string[];
+  channels?: ('websites' | 'individuals' | 'mobile_apps')[];
   budgetUsd: number;
-  dailyBudgetUsd?: number;
+  dailyBudgetUsd?: number | null;
   costPerImpressionCents?: number;
   costPerClickCents?: number;
   pricingModel: "cpm" | "cpc";
@@ -54,13 +59,13 @@ export interface CreationCapabilities {
   supportedAdTypes: AdType[];
 }
 
-export function campaignView(c: any) {
+export function campaignView<T extends Partial<CampaignRecord> & { id: string; title: string }>(c: T) {
   if (typeof c?.id !== "string" || typeof c.title !== "string")
     throw new Error("Invalid campaign response.");
   return {
     ...c,
     category: c.category ?? "General",
-    channels: c.channels ?? [],
+    channels: (() => { try { const value: unknown = c.channels ? JSON.parse(c.channels) : []; return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []; } catch { return []; } })(),
     budgetUsd: (c.budgetUsdCents ?? 0) / 100,
     spentUsd:
       ((c.budgetUsdCents ?? 0) -
@@ -75,8 +80,10 @@ export function campaignView(c: any) {
     clicks: c.clicksCount ?? 0,
     hovers: c.hoversCount ?? 0,
     touches: c.touchesCount ?? 0,
-    headline: c.headline ?? c.title,
-    destinationUrl: c.destinationUrl ?? "",
+    headline: typeof c.headline === 'string' ? c.headline : c.title,
+    destinationUrl: typeof c.destinationUrl === 'string' ? c.destinationUrl : '',
+    imageUrl: typeof c.imageUrl === 'string' ? c.imageUrl : undefined,
+    videoUrl: typeof c.videoUrl === 'string' ? c.videoUrl : undefined,
   };
 }
 export function websiteView(site: any) {
@@ -93,10 +100,12 @@ export function websiteView(site: any) {
     activePlacementCount: site.activePlacementCount ?? 0,
   };
 }
+export type CampaignListItem = ReturnType<typeof campaignView<CampaignRecord>>;
+export function loadCampaigns(own: true): Promise<CampaignListItem[]>;
+export function loadCampaigns(own: false): Promise<ReturnType<typeof campaignView>[]>;
 export async function loadCampaigns(own: boolean) {
-  return arrayData(
-    await apiData(own ? "/api/v1/campaigns" : "/api/v1/campaigns/catalog"),
-  ).map(campaignView);
+  return own ? (await adsApi().listCampaigns()).map(campaign => campaignView(campaign)) :
+    (await adsApi().catalog()).map(campaign => campaignView(campaign));
 }
 export async function loadWebsites() {
   return arrayData(await apiData("/api/v1/promoters/websites")).map(
@@ -105,9 +114,7 @@ export async function loadWebsites() {
 }
 
 export async function loadCreationCapabilities(): Promise<CreationCapabilities> {
-  const data = await apiData<CreationCapabilities>(
-    "/api/v1/campaigns/creation-capabilities",
-  );
+  const data = await adsApi().capabilities();
   return {
     geoTargetingEnabled: data?.geoTargetingEnabled === true,
     scheduleVersion: data?.scheduleVersion,
@@ -123,15 +130,16 @@ export async function loadCreationCapabilities(): Promise<CreationCapabilities> 
 }
 
 export async function loadCampaignDetails(campaignId: string) {
-  return apiData<any>(`/api/v1/campaigns/${encodeURIComponent(campaignId)}`);
+  return adsApi().details(campaignId);
 }
 
 export class CampaignWorkflowError extends Error {
   constructor(
     public readonly campaignId: string,
     message: string,
+    cause?:unknown,
   ) {
-    super(message);
+    super(message,{cause});
     this.name = "CampaignWorkflowError";
   }
 }
@@ -167,165 +175,45 @@ function assertDefaults(input: CampaignDefaultsInput) {
 }
 
 /** Each write is attempted once. A partial/ambiguous failure must be reconciled, never replayed as a new campaign. */
-export async function createCampaignWorkflow(
-  input: CampaignDefaultsInput,
-  stacks: StackDraftInput[],
-) {
+export async function createCampaignWorkflow(input:CampaignDefaultsInput,stacks:StackDraftInput[]) {
   assertDefaults(input);
-  if (!Array.isArray(stacks) || stacks.length === 0)
-    throw new Error("Add at least one ad stack.");
-  for (const stack of stacks) {
-    if (!stack.name.trim()) throw new Error("Each ad stack needs a name.");
-    if (!stack.ads.length)
-      throw new Error(`${stack.name} needs at least one ad.`);
-    for (const ad of stack.ads) {
-      if (!ad.destinationUrl.trim())
-        throw new Error(`${stack.name} has an ad without a destination URL.`);
-      if (ad.adType === "text" && !ad.headline?.trim())
-        throw new Error(`${stack.name} has a text ad without a headline.`);
-      if (ad.adType === "image" && !ad.mediaAssetId)
-        throw new Error(
-          `${stack.name} has an image ad without an uploaded image.`,
-        );
-      if (ad.adType === "video" && !ad.mediaAssetId)
-        throw new Error(
-          `${stack.name} has a video ad without an uploaded video.`,
-        );
-    }
-  }
+  const campaign=await saveCampaignEditor(input,stacks,undefined);
+  const submitted=await adsApi().submit(campaign.id,{expectedRevision:campaign.contentRevision!,requestId:crypto.randomUUID()});
+  if(submitted.moderationStatus!=='pending_primary_review') throw new CampaignWorkflowError(campaign.id,'Review submission needs reconciliation.');
+  return campaign.id;
+}
 
-  if (input.requestId) {
-    const existing = await apiData<any>(
-      `/api/v1/campaigns/creation-request/${encodeURIComponent(input.requestId)}`,
-    );
-    if (existing?.id)
-      throw new CampaignWorkflowError(
-        existing.id,
-        "An existing campaign was found for this draft. Reconcile it before creating another.",
-      );
+export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(StackDraftInput & {id?:string;ads:(CreativeDraftInput & {id?:string})[]})[], existing?:{id:string;contentRevision:number}, onCreated?:(id:string,revision:number,defaultStackId?:string)=>void, onOperation?:(id:string,control:{expectedRevision:number;requestId:string})=>void) {
+  let campaign=existing;
+  if(!campaign) {
+    const found=input.requestId?await adsApi().creation(input.requestId):null;
+    if(found) throw new CampaignWorkflowError(found.id,'This draft already has a saved campaign. Open it before saving again.');
+    const created=await adsApi().create({...input,dailyBudgetUsd:input.dailyBudgetUsd??undefined,title:input.title.trim()||'Untitled campaign'});
+    if(!created.contentRevision || !created.defaultStackId) throw new Error('The saved campaign version could not be confirmed.');
+    campaign={id:created.id,contentRevision:created.contentRevision};onCreated?.(campaign.id,campaign.contentRevision,created.defaultStackId);
+    // Preserve the server-created default stack identity.
+    stacks=stacks.map((stack,i)=>i===0?{...stack,id:created.defaultStackId}:stack);
   }
-  const created = await apiData<any>(
-    "/api/v1/campaigns",
-    jsonBody({
-      title: input.title,
-      description: input.description,
-      category: input.category,
-      channels: input.channels,
-      budgetUsd: input.budgetUsd,
-      dailyBudgetUsd: input.dailyBudgetUsd,
-      costPerImpressionCents: input.costPerImpressionCents,
-      costPerClickCents: input.costPerClickCents,
-      pricingModel: input.pricingModel,
-      format: input.format,
-      targetDevices: input.targetDevices,
-      ...(input.schedule
-        ? { schedule: input.schedule }
-        : {
-            ...(input.targetHours?.length
-              ? { targetHours: input.targetHours }
-              : { schedule: allDay() }),
-          }),
-      requestId: input.requestId,
-      frequencyCapPerDay: input.frequencyCapPerDay,
-      geoMode: input.geoMode,
-      locations: input.locations,
-    }),
-  );
-  if (typeof created?.id !== "string" || !created.id)
-    throw new Error(
-      "Campaign creation could not be confirmed. Refresh your campaign list before trying again.",
-    );
-
-  const campaignId = created.id;
   try {
-    let firstStackId: string | undefined = created.defaultStackId;
-    if (!firstStackId) {
-      const details = await loadCampaignDetails(campaignId);
-      firstStackId = details?.adStacks?.[0]?.id;
-    }
-    if (!firstStackId)
-      throw new Error("The campaign default stack could not be confirmed.");
-
-    for (let index = 0; index < stacks.length; index += 1) {
-      const stack = stacks[index];
-      let stackId =
-        index === 0
-          ? firstStackId
-          : (
-              await apiData<any>(
-                `/api/v1/campaigns/${encodeURIComponent(campaignId)}/ad-stacks`,
-                jsonBody({ name: stack.name.trim() }),
-              )
-            )?.id;
-      if (!stackId) throw new Error(`${stack.name} could not be confirmed.`);
-
-      await apiData(
-        `/api/v1/campaigns/${encodeURIComponent(campaignId)}/ad-stacks/${encodeURIComponent(stackId)}`,
-        {
-          ...jsonBody({
-            name: stack.name.trim(),
-            geoMode: stack.geoMode,
-            ...(stack.geoMode === "targeted"
-              ? { locations: stack.locations }
-              : {}),
-            ...(stack.targetDevices.length > 0
-              ? { targetDevices: stack.targetDevices }
-              : {}),
-            ...(stack.schedule
-              ? { schedule: stack.schedule }
-              : stack.targetHours.length > 0
-                ? { targetHours: stack.targetHours }
-                : { schedule: inherited() }),
-          }),
-          method: "PATCH",
-        },
-      );
-
-      for (const ad of stack.ads) {
-        const payload: Record<string, unknown> = {
-          adStackId: stackId,
-          adType: ad.adType,
-          headline: ad.headline?.trim() || undefined,
-          bodyText: ad.bodyText?.trim() || undefined,
-          ctaText: ad.ctaText?.trim() || undefined,
-          destinationUrl: ad.destinationUrl.trim(),
-          adFormat: ad.adFormat,
-        };
-        if (ad.mediaAssetId) payload.mediaAssetId = ad.mediaAssetId;
-        const saved = await apiData<any>(
-          `/api/v1/campaigns/${encodeURIComponent(campaignId)}/creatives`,
-          jsonBody(payload),
-        );
-        if (!saved?.id)
-          throw new Error("Creative attachment could not be confirmed.");
-      }
-    }
-    const submitted = await apiData<any>(
-      `/api/v1/campaigns/${encodeURIComponent(campaignId)}/submit-review`,
-      { method: "POST" },
-    );
-    if (
-      !submitted?.id ||
-      submitted.moderationStatus !== "pending_primary_review"
-    )
-      throw new Error("Moderation state could not be confirmed.");
-    return campaignId;
-  } catch {
-    throw new CampaignWorkflowError(
-      campaignId,
-      `Campaign ${campaignId} was created, but stack or creative attachment could not be confirmed. Refresh and reconcile this campaign before creating another one.`,
-    );
-  }
+    const control={expectedRevision:campaign.contentRevision,requestId:crypto.randomUUID()};
+    onOperation?.(campaign.id,control);
+    return await adsApi().save(campaign.id,{
+      ...control,
+      title:input.title.trim()||'Untitled campaign',description:input.description??'',category:input.category??'',channels:input.channels,
+      budgetUsd:input.budgetUsd,dailyBudgetUsd:input.dailyBudgetUsd,costPerImpressionCents:input.costPerImpressionCents,costPerClickCents:input.costPerClickCents,
+      pricingModel:input.pricingModel,format:input.format,targetDevices:input.targetDevices,schedule:input.schedule,frequencyCapPerDay:input.frequencyCapPerDay,
+      geoMode:input.geoMode,locations:input.locations,
+      stacks:stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,schedule:stack.schedule,
+        ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline??'',bodyText:ad.bodyText??'',ctaText:ad.ctaText??'',destinationUrl:ad.destinationUrl,adFormat:ad.adFormat,mediaAssetId:ad.mediaAssetId}))})),
+    });
+  } catch(error) { throw new CampaignWorkflowError(campaign.id,error instanceof Error?error.message:'Save outcome is unknown. Check the campaign before trying again.',error); }
 }
 
 export async function setCampaignStatus(
   id: string,
   status: "active" | "paused",
 ) {
-  return apiData<any>(`/api/v1/campaigns/${encodeURIComponent(id)}/status`, {
-    ...jsonBody({ status }),
-    method: "PUT",
-  });
+  return adsApi().status(id, status);
 }
 export async function registerWebsite(
   domain: string,

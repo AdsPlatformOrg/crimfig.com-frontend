@@ -1,4 +1,5 @@
 "use client";
+import {ApiError} from '@crimfig/api-client';
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -25,7 +26,7 @@ import { Textarea } from "../ui/textarea";
 
 import {
   CampaignWorkflowError,
-  createCampaignWorkflow,
+  saveCampaignEditor,
   loadCreationCapabilities,
   type CreationCapabilities,
 } from "../../lib/campaigns-api";
@@ -49,7 +50,7 @@ import { bidEstimate, readDraft, DRAFT_PREFIX } from "../../lib/campaign-draft";
 
 import { dashboardSession } from "../../lib/session";
 
-import { apiData } from "../../lib/api-data";
+import { adsApi } from '../../lib/ads-api-client';
 
 import {
   AdStackEditor,
@@ -59,7 +60,11 @@ import {
 
 import { LocationTargeting } from "./LocationTargeting";
 
+import {hydrateCampaign,editorRecoveryScope,type CampaignDetails} from '../../lib/campaign-editor';
+import {ActionHelp} from '../ActionHelp';
+
 interface CampaignWizardProps {
+  campaign?:CampaignDetails;
   onCancel: () => void;
 
   onSuccess: (campaignId: string) => void;
@@ -79,7 +84,11 @@ const CATEGORIES = [
 export function CampaignCreationWizard({
   onCancel,
   onSuccess,
+  campaign,
 }: CampaignWizardProps) {
+  const initial=useMemo(()=>campaign?hydrateCampaign(campaign):null,[campaign]);
+  const [savedRevision,setSavedRevision]=useState(campaign?.contentRevision??1);
+  const [pendingOperation,setPendingOperation]=useState<{phase:'save'|'submit';campaignId:string;expectedRevision:number;requestId:string}|null>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,33 +103,33 @@ export function CampaignCreationWizard({
 
   // Step 1
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initial?.title??"");
 
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(initial?.description??"");
 
-  const [category, setCategory] = useState("Technology");
+  const [category, setCategory] = useState(initial?.category??"Technology");
 
   // Step 2
 
-  const [stacks, setStacks] = useState<StackDraft[]>([createStackDraft(1)]);
+  const [stacks, setStacks] = useState<StackDraft[]>(initial?.stacks??[createStackDraft(1)]);
 
   // Step 3
 
-  const [geoMode, setGeoMode] = useState<"global" | "targeted">("global");
+  const [geoMode, setGeoMode] = useState<"global" | "targeted">(initial?.geoMode??"global");
 
-  const [locations, setLocations] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>(initial?.locations??[]);
 
-  const [devices, setDevices] = useState<string[]>(["desktop", "mobile"]);
+  const [devices, setDevices] = useState<string[]>(initial?.devices??["desktop", "mobile"]);
 
-  const [schedule, setSchedule] = useState<DailySchedule>(allDay());
+  const [schedule, setSchedule] = useState<DailySchedule>(initial?.schedule??allDay());
 
   const [draftOwner, setDraftOwner] = useState<string | null>(null);
 
-  const [draftNotice, setDraftNotice] = useState("Checking for a saved draft…");
+  const [draftNotice, setDraftNotice] = useState("Checking for a saved draftâ€¦");
 
   const [requestId, setRequestId] = useState("");
 
-  const [savedCampaignId, setSavedCampaignId] = useState("");
+  const [savedCampaignId, setSavedCampaignId] = useState(campaign?.id??"");
 
   const [submissionUncertain, setSubmissionUncertain] = useState(false);
 
@@ -131,19 +140,19 @@ export function CampaignCreationWizard({
   const submitBusy = useRef(false),
     form = useRef<HTMLDivElement>(null);
 
-  const [frequencyCap, setFrequencyCap] = useState(5);
+  const [frequencyCap, setFrequencyCap] = useState(initial?.frequencyCap??5);
 
   // Step 4
 
-  const [pricingModel, setPricingModel] = useState<"cpm" | "cpc">("cpm");
+  const [pricingModel, setPricingModel] = useState<"cpm" | "cpc">(initial?.pricingModel??"cpm");
 
-  const [budgetUsd, setBudgetUsd] = useState(25);
+  const [budgetUsd, setBudgetUsd] = useState(initial?.budgetUsd??25);
 
-  const [dailyBudgetUsd, setDailyBudgetUsd] = useState(5);
+  const [dailyBudgetUsd, setDailyBudgetUsd] = useState<number|null>(initial?initial.dailyBudgetUsd:5);
 
-  const [cpmBidCents, setCpmBidCents] = useState(50);
+  const [cpmBidCents, setCpmBidCents] = useState(initial?.cpmBidCents??50);
 
-  const [cpcBidCents, setCpcBidCents] = useState(10);
+  const [cpcBidCents, setCpcBidCents] = useState(initial?.cpcBidCents??10);
 
   const [locationNames, setLocationNames] = useState<Record<string, string>>(
     {},
@@ -156,7 +165,7 @@ export function CampaignCreationWizard({
       .then(async (profile) => {
         let draft;
         try {
-          draft = readDraft(localStorage, profile.userId);
+          draft = readDraft(localStorage, editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision));
         } catch {
           if (active)
             setDraftNotice(
@@ -174,9 +183,7 @@ export function CampaignCreationWizard({
                   if (!ad.mediaAssetId) return { ...ad, mediaUrl: undefined };
 
                   try {
-                    const asset = await apiData<any>(
-                      `/api/v1/uploads/assets/${encodeURIComponent(ad.mediaAssetId)}`,
-                    );
+                    const asset = await adsApi().readyAsset(ad.mediaAssetId);
                     return {
                       ...ad,
                       mediaUrl: asset.cdnUrl,
@@ -215,7 +222,9 @@ export function CampaignCreationWizard({
           setCpmBidCents(draft.cpmBidCents ?? 50);
           setCpcBidCents(draft.cpcBidCents ?? 10);
           setRequestId(draft.requestId || crypto.randomUUID());
-          setSavedCampaignId(draft.savedCampaignId || "");
+          setSavedCampaignId(draft.savedCampaignId || campaign?.id || '');
+          setSavedRevision(draft.savedRevision??campaign?.contentRevision??1);
+          setPendingOperation(draft.pendingOperation??null);
           setSubmissionUncertain(!!draft.submissionUncertain);
           setDraftNotice(
             "Draft restored for this account. Uploaded media was rechecked. Reselect a source image only if you want to crop it again.",
@@ -227,7 +236,7 @@ export function CampaignCreationWizard({
           );
         }
 
-        if (active) setDraftOwner(profile.userId);
+        if (active) setDraftOwner(editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision));
       })
       .catch(() => {
         if (active) {
@@ -270,6 +279,8 @@ export function CampaignCreationWizard({
             cpcBidCents,
             requestId,
             savedCampaignId,
+            savedRevision,
+            pendingOperation,
             submissionUncertain,
           }),
         );
@@ -299,6 +310,8 @@ export function CampaignCreationWizard({
     cpcBidCents,
     requestId,
     savedCampaignId,
+    savedRevision,
+    pendingOperation,
     submissionUncertain,
   ]);
 
@@ -374,25 +387,15 @@ export function CampaignCreationWizard({
   async function reconcile() {
     setError(null);
     try {
-      const result = await apiData<any>(
-        `/api/v1/campaigns/creation-request/${encodeURIComponent(requestId)}`,
-      );
-      if (result?.id) {
-        setSavedCampaignId(result.id);
-        setError(
-          `Saved campaign ${result.id}: ${result.moderationStatus}. Check this campaign before making further changes; no write was repeated.`,
-        );
-      } else {
-        setSubmissionUncertain(false);
-        setError(
-          "No campaign was found for this request. You can submit again with the same request ID.",
-        );
-      }
-    } catch {
-      setError(
-        "The service could not confirm the campaign status. Your draft and request ID are retained.",
-      );
-    }
+      const id=savedCampaignId || (await adsApi().creation(requestId))?.id;
+      if(!id) {setError('No saved campaign is confirmed yet. Your request ID and local draft are retained.');return;}
+      setSavedCampaignId(id);
+      if(pendingOperation) {
+        const result=await adsApi().mutation(id,pendingOperation.requestId);
+        if(result.mutation || result.submission?.state==='submitted') {onSuccess(id);return;}
+        setError(result.submission?`Submission status: ${result.submission.state}. Open the saved campaign to reconcile it before retrying.`:'The save has not been confirmed. Your local edits are retained; check again before retrying.');
+      } else setError('A saved campaign was found. Open it to review its current server revision before making another change.');
+    } catch(error) {setError(error instanceof Error?error.message:'Status could not be confirmed. Keep your draft.');}
   }
 
   useEffect(() => {
@@ -600,12 +603,12 @@ export function CampaignCreationWizard({
         return false;
       }
 
-      if (!Number.isFinite(dailyBudgetUsd) || dailyBudgetUsd < 1) {
+      if (dailyBudgetUsd!==null && (!Number.isFinite(dailyBudgetUsd) || dailyBudgetUsd < 1)) {
         setError("Daily budget must be at least $1.00.");
         return false;
       }
 
-      if (Number.isFinite(dailyBudgetUsd) && dailyBudgetUsd > budgetUsd) {
+      if (dailyBudgetUsd!==null && Number.isFinite(dailyBudgetUsd) && dailyBudgetUsd > budgetUsd) {
         setError("Daily budget cannot exceed the total campaign budget.");
         return false;
       }
@@ -643,126 +646,38 @@ export function CampaignCreationWizard({
     setCurrentStep((step) => Math.max(step - 1, 1));
   }
 
-  async function submit() {
-    if (
-      submitBusy.current ||
-      mediaBusy ||
-      submissionUncertain ||
-      savedCampaignId
-    )
-      return;
+  const dirtySignature=JSON.stringify({title,description,category,stacks,geoMode,locations,devices,schedule,frequencyCap,pricingModel,budgetUsd,dailyBudgetUsd,cpmBidCents,cpcBidCents});
+  const originalSignature=useRef(dirtySignature);
+  const dirty=originalSignature.current!==dirtySignature;
+  useEffect(()=>{const warn=(event:BeforeUnloadEvent)=>{if(dirty||submissionUncertain){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty,submissionUncertain]);
 
-    if (
-      !validateStep(1) ||
-      !validateStep(2) ||
-      !validateStep(3) ||
-      !validateStep(4)
-    )
-      return;
-
-    submitBusy.current = true;
-    setIsSubmitting(true);
-    setSubmissionUncertain(true);
-
-    if (draftOwner) {
-      try {
-        const prior = readDraft(localStorage, draftOwner);
-        if (prior)
-          localStorage.setItem(
-            DRAFT_PREFIX + draftOwner,
-            JSON.stringify({ ...prior, submissionUncertain: true, requestId }),
-          );
-      } catch {
-        /* In-memory guard remains. */
-      }
-    }
-
-    setError(null);
-
+  async function submit(sendForReview=true) {
+    if(submitBusy.current || mediaBusy || submissionUncertain || !requestId) return;
+    if(sendForReview && (!validateStep(1)||!validateStep(2)||!validateStep(3)||!validateStep(4))) return;
+    submitBusy.current=true;setIsSubmitting(true);setSubmissionUncertain(true);setError(null);
     try {
-      const campaignId = await createCampaignWorkflow(
-        {
-          title: title.trim(),
-
-          description: description.trim() || undefined,
-
-          category,
-
-          budgetUsd,
-
-          dailyBudgetUsd,
-
-          costPerImpressionCents: cpmBidCents,
-
-          costPerClickCents: cpcBidCents,
-
-          pricingModel,
-
-          format: "card",
-
-          targetDevices: devices,
-
-          schedule,
-          requestId,
-
-          frequencyCapPerDay: frequencyCap,
-
-          geoMode,
-
-          locations: geoMode === "targeted" ? locations : undefined,
-        },
-
-        stacks.map((stack) => ({
-          name: stack.name.trim(),
-
-          geoMode: stack.geoMode,
-
-          locations: stack.locations,
-
-          targetDevices: stack.targetDevices,
-
-          targetHours: stack.targetHours,
-          schedule: stack.schedule,
-
-          ads: stack.ads.map((ad) => ({
-            adType: ad.adType,
-
-            headline: ad.headline.trim() || undefined,
-
-            bodyText: ad.bodyText.trim() || undefined,
-
-            ctaText: ad.ctaText.trim() || undefined,
-
-            destinationUrl: ad.destinationUrl.trim(),
-
-            adFormat: ad.adFormat || "card",
-
-            mediaAssetId: ad.mediaAssetId,
-          })),
-        })),
-      );
-
-      if (draftOwner) localStorage.removeItem(DRAFT_PREFIX + draftOwner);
-      setDraftOwner(null);
-      onSuccess(campaignId);
-    } catch (err) {
-      if (err instanceof CampaignWorkflowError) {
-        setSavedCampaignId(err.campaignId);
-
-        setError(
-          `Your campaign was saved, but review submission needs reconciliation. Campaign ID: ${err.campaignId}. Refresh your campaign list before retrying.`,
-        );
-      } else {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Campaign creation could not be confirmed. Please retry.",
-        );
+      const saved=await saveCampaignEditor({title,description,category,budgetUsd,dailyBudgetUsd,costPerImpressionCents:cpmBidCents,costPerClickCents:cpcBidCents,pricingModel,format:campaign?.format??'card',targetDevices:devices,schedule,requestId,frequencyCapPerDay:frequencyCap,geoMode,locations:geoMode==='targeted'?locations:[]},
+        stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,targetHours:[],schedule:stack.schedule,
+          ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline,bodyText:ad.bodyText,ctaText:ad.ctaText,destinationUrl:ad.destinationUrl,adFormat:ad.adFormat??'card',mediaAssetId:ad.mediaAssetId}))})),
+        savedCampaignId?{id:savedCampaignId,contentRevision:savedRevision}:undefined,
+        (id,revision,defaultId)=>{setSavedCampaignId(id);setSavedRevision(revision);if(defaultId)setStacks(current=>current.map((stack,i)=>i===0?{...stack,id:defaultId}:stack));},
+        (id,control)=>{setPendingOperation({phase:'save',campaignId:id,...control});});
+      setSavedCampaignId(saved.id);setSavedRevision(saved.contentRevision);originalSignature.current=dirtySignature;
+      const confirmed=await adsApi().details(saved.id);setStacks(hydrateCampaign(confirmed).stacks);
+      if(sendForReview) {
+        const control={expectedRevision:saved.contentRevision,requestId:crypto.randomUUID()};
+        setPendingOperation({phase:'submit',campaignId:saved.id,...control});
+        await adsApi().submit(saved.id,control);
       }
-    } finally {
-      submitBusy.current = false;
-      setIsSubmitting(false);
-    }
+      if(draftOwner)localStorage.removeItem(DRAFT_PREFIX+draftOwner);
+      setDraftOwner(null);setSubmissionUncertain(false);onSuccess(saved.id);
+    } catch(error) {
+      if(error instanceof CampaignWorkflowError)setSavedCampaignId(error.campaignId);
+      const cause=error instanceof CampaignWorkflowError?error.cause:error;
+      if(cause instanceof ApiError && cause.outcome==='rejected' && cause.status!==409)setSubmissionUncertain(false);
+      // A failed/unknown multi-stage save keeps its identity and local form. Never create a replacement silently.
+      setError(error instanceof Error?error.message:'The outcome is unknown. Check the saved campaign before trying again.');
+    } finally {submitBusy.current=false;setIsSubmitting(false);}
   }
 
   function updateStack(nextStack: StackDraft) {
@@ -825,7 +740,7 @@ export function CampaignCreationWizard({
             color: "var(--color-crimson)",
           }}
         >
-          Create campaign
+          {campaign?"Edit campaign":"Create campaign"}
         </p>
 
         <h2
@@ -1113,13 +1028,13 @@ export function CampaignCreationWizard({
               {stackCount === 1 ? "" : "s"}
             </span>
 
-            <span>·</span>
+            <span>Â·</span>
 
             <span>
               {adCount} ad{adCount === 1 ? "" : "s"}
             </span>
 
-            <span>·</span>
+            <span>Â·</span>
 
             <span>{effectiveCount} with stack overrides</span>
           </div>
@@ -1442,7 +1357,7 @@ export function CampaignCreationWizard({
                 type="number"
                 min={1}
                 step={1}
-                value={dailyBudgetUsd}
+                value={dailyBudgetUsd??""}
                 onChange={(event) =>
                   setDailyBudgetUsd(Number(event.target.value))
                 }
@@ -1518,8 +1433,8 @@ export function CampaignCreationWizard({
               Bid-based estimate (not guaranteed):
             </strong>{" "}
             {pricingModel === "cpm"
-              ? `${bidEstimate(budgetUsd, cpmBidCents, "cpm")?.toLocaleString() ?? "—"} impressions`
-              : `${bidEstimate(budgetUsd, cpcBidCents, "cpc")?.toLocaleString() ?? "—"} clicks`}
+              ? `${bidEstimate(budgetUsd, cpmBidCents, "cpm")?.toLocaleString() ?? "â€”"} impressions`
+              : `${bidEstimate(budgetUsd, cpcBidCents, "cpc")?.toLocaleString() ?? "â€”"} clicks`}
           </div>
         </section>
       )}
@@ -1561,7 +1476,7 @@ export function CampaignCreationWizard({
               lines={[
                 `Category: ${category}`,
                 `Budget: $${budgetUsd.toFixed(2)} USD`,
-                `Daily target: $${dailyBudgetUsd.toFixed(2)} USD`,
+                dailyBudgetUsd != null ? `Daily target: $${dailyBudgetUsd.toFixed(2)} USD` : "Daily target: Not set",
                 `Model: ${pricingModel.toUpperCase()}`,
                 `Bid: $${((pricingModel === "cpm" ? cpmBidCents : cpcBidCents) / 100).toFixed(2)} per ${pricingModel === "cpm" ? "1,000 impressions" : "click"}`,
               ]}
@@ -1569,7 +1484,7 @@ export function CampaignCreationWizard({
 
             <SummaryCard
               label="Creative"
-              value={`${stacks.length} stack${stacks.length === 1 ? "" : "s"} · ${adCount} ad${adCount === 1 ? "" : "s"}`}
+              value={`${stacks.length} stack${stacks.length === 1 ? "" : "s"} Â· ${adCount} ad${adCount === 1 ? "" : "s"}`}
               lines={[
                 `Types: ${[...new Set(stacks.flatMap((stack) => stack.ads.map((ad) => ad.adType)))].join(", ")}`,
                 `Video: ${capabilities?.videoAuthoringEnabled ? "enabled" : "coming soon"}`,
@@ -1643,11 +1558,11 @@ export function CampaignCreationWizard({
               </div>
 
               <p style={{ fontSize: 13 }}>
-                {stack.schedule.mode === "inherit" ? "Inherited" : "Override"} ·{" "}
+                {stack.schedule.mode === "inherit" ? "Inherited" : "Override"} Â·{" "}
                 {scheduleText(
                   stack.schedule.mode === "inherit" ? schedule : stack.schedule,
                 )}{" "}
-                · {SCHEDULE_LABEL}
+                Â· {SCHEDULE_LABEL}
               </p>
 
               <ul
@@ -1679,7 +1594,7 @@ export function CampaignCreationWizard({
                       </p>
                       {ad.imageInfo && (
                         <p>
-                          {ad.imageInfo.width}×{ad.imageInfo.height}px ·{" "}
+                          {ad.imageInfo.width}Ã—{ad.imageInfo.height}px Â·{" "}
                           {(ad.imageInfo.bytes / 1000).toFixed(1)} KB
                         </p>
                       )}
@@ -1720,11 +1635,11 @@ export function CampaignCreationWizard({
                   : "Geography: inherited"}
 
                 {stack.targetDevices.length > 0
-                  ? ` · Devices: ${stack.targetDevices.join(", ")}`
+                  ? ` Â· Devices: ${stack.targetDevices.join(", ")}`
                   : ""}
 
                 {stack.schedule.mode !== "inherit"
-                  ? ` · Hours: ${stack.targetHours.join(", ")}`
+                  ? ` Â· Hours: ${stack.targetHours.join(", ")}`
                   : ""}
               </div>
             </article>
@@ -1804,6 +1719,11 @@ export function CampaignCreationWizard({
         </div>
       )}
 
+      <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+        <Button type="button" variant="outline" disabled={isSubmitting||mediaBusy||submissionUncertain||!requestId} onClick={()=>void submit(false)}>{isSubmitting?'Saving…':'Save Draft'}</Button>
+        {(mediaBusy||submissionUncertain||!requestId)&&<ActionHelp action="Save Draft" reason={mediaBusy?'Wait for the image preparation to finish.':submissionUncertain?'Check whether the save completed before trying again.':'Wait for your draft identity to be ready.'}/>}
+        {dirty&&<span style={{color:'var(--text-secondary)',fontSize:13}}>Unsaved changes are retained for this account on this device.</span>}
+      </div>
       <footer
         style={{
           display: "flex",
@@ -1828,7 +1748,7 @@ export function CampaignCreationWizard({
             <Button
               type="button"
               variant="ghost"
-              onClick={onCancel}
+              onClick={()=>{if(!dirty&&!submissionUncertain)onCancel();else setError("You have unsaved changes. Save Draft before leaving, or use your browser navigation to leave with the device recovery copy retained.");}}
               disabled={isSubmitting}
             >
               Cancel
@@ -1843,18 +1763,17 @@ export function CampaignCreationWizard({
         ) : (
           <Button
             type="button"
-            onClick={() => void submit()}
+            onClick={() => void submit(true)}
             disabled={
               isSubmitting ||
               mediaBusy ||
               submissionUncertain ||
-              !!savedCampaignId ||
               !requestId
             }
           >
             {isSubmitting ? (
               <>
-                <Loader2 size={14} aria-hidden="true" /> Submitting…
+                <Loader2 size={14} aria-hidden="true" /> Submittingâ€¦
               </>
             ) : (
               <>

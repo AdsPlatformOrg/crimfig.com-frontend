@@ -11,12 +11,12 @@ import {
   SlidersHorizontal,
   Table,
 } from 'lucide-react';
-import { apiData, arrayData } from '../../../lib/api-data';
-import { loadCampaigns, setCampaignStatus } from '../../../lib/campaigns-api';
+import { loadCampaigns, loadCampaignDetails, setCampaignStatus, type CampaignListItem } from '../../../lib/campaigns-api';
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
 import { TablePreferencesModal, type ColumnConfig } from '../TablePreferencesModal';
 import { ReplaceCreativeModal } from '../ReplaceCreativeModal';
+import { ActionHelp } from '../../ActionHelp';
 import {
   Card,
   Table as ShadTable,
@@ -29,44 +29,7 @@ import {
   Badge,
 } from '../../ui';
 
-interface CampaignCreativeItem {
-  id?: string;
-  headline?: string | null;
-  destinationUrl: string;
-  adFormat: 'banner' | 'card' | 'video' | 'interstitial';
-  mediaFormat?: 'image' | 'gif' | 'video';
-  imageUrl?: string;
-  videoUrl?: string;
-  reviewStatus?: string;
-  rejectionReason?: string;
-}
-
-interface Campaign {
-  id: string;
-  title: string;
-  category: string;
-  format: 'banner' | 'card' | 'video' | 'interstitial';
-  formats?: ('banner' | 'card' | 'video' | 'interstitial')[];
-  creatives?: CampaignCreativeItem[];
-  channels: ('websites' | 'individuals' | 'mobile_apps')[];
-  budgetUsd: number;
-  spentUsd: number;
-  cpcUsd: number;
-  cpmUsd: number;
-  status: 'active' | 'paused' | 'under_review' | 'draft' | 'rejected' | 'suspended' | 'trash';
-  moderationStatus?: 'draft' | 'pending_primary_review' | 'pending_manager_approval' | 'approved' | 'rejected';
-  metricsLoaded?: boolean;
-  impressions: number;
-  clicks: number;
-  hovers?: number;
-  touches?: number;
-  headline?: string | null;
-  destinationUrl: string;
-  imageUrl?: string;
-  videoUrl?: string;
-  rejectionReason?: string;
-}
-
+type Campaign = CampaignListItem;
 export function CampaignsManager() {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -91,7 +54,7 @@ export function CampaignsManager() {
   ]);
 
   // Inline Creative Replacement Modal
-  const [replacementCreative, setReplacementCreative] = useState<any | null>(null);
+  const [replacementCreative, setReplacementCreative] = useState<React.ComponentProps<typeof ReplaceCreativeModal>['creative']>(null);
 
   useEffect(() => {
     fetchCampaigns();
@@ -115,11 +78,13 @@ export function CampaignsManager() {
     if (!camp) return;
 
     const nextStatus = camp.status === 'active' ? 'paused' : 'active';
+    const canToggle = nextStatus === 'paused' ? (camp.capabilities?.canPause ?? true) : (camp.capabilities?.canActivate ?? false);
+    if (!canToggle) return;
     setPendingWrites((prev) => new Set(prev).add(campaignId));
     try {
-      await setCampaignStatus(campaignId, nextStatus);
+      const updated = await setCampaignStatus(campaignId, nextStatus);
       setCampaigns((prev) =>
-        prev.map((c) => (c.id === campaignId ? { ...c, status: nextStatus } : c)),
+        prev.map((c) => (c.id === campaignId ? { ...c, status: updated.status, moderationStatus: updated.moderationStatus ?? c.moderationStatus, capabilities: updated.capabilities ?? c.capabilities } : c)),
       );
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to update status.');
@@ -132,8 +97,12 @@ export function CampaignsManager() {
     }
   };
 
-  const displayList =
-    statusFilter === 'all' ? campaigns : campaigns.filter((c) => c.status === statusFilter);
+  const matchesFilter = (c: Campaign, filter: string) =>
+    filter === 'all' ? true : filter === 'under_review'
+      ? c.status === 'under_review' || c.moderationStatus === 'pending_primary_review' || c.moderationStatus === 'pending_manager_approval'
+      : c.status === filter;
+
+  const displayList = campaigns.filter((c) => matchesFilter(c, statusFilter));
 
   const visibleCols = columnsConfig.filter((c) => c.visible);
 
@@ -196,7 +165,7 @@ export function CampaignsManager() {
           { id: 'suspended', label: 'Suspended' },
           { id: 'trash', label: 'Trash' },
         ].map((tab) => {
-          const count = tab.id === 'all' ? campaigns.length : campaigns.filter((c) => c.status === tab.id).length;
+          const count = campaigns.filter((c) => matchesFilter(c, tab.id)).length;
           const isSelected = statusFilter === tab.id;
           return (
             <Button
@@ -261,7 +230,7 @@ export function CampaignsManager() {
                       if (col.key === 'campaign') {
                         return (
                           <TableCell key={col.key}>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{camp.title}</div>
+                            <Link href={`/campaigns/${camp.id}`} style={{ fontWeight: 700, color: 'var(--text-primary)', textDecoration: 'none' }}>{camp.title}</Link>
                             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{camp.headline}</div>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
                               {(camp.formats && camp.formats.length > 0 ? camp.formats : [camp.format]).map((fmt) => (
@@ -387,9 +356,19 @@ export function CampaignsManager() {
                         );
                       }
                       if (col.key === 'actions') {
+                        const canResume = camp.status === 'active'
+                          ? (camp.capabilities?.canPause ?? true)
+                          : (camp.capabilities?.canActivate ?? (camp.moderationStatus === 'approved' && !['suspended', 'trash', 'cancelled', 'completed'].includes(camp.status)));
+                        const resumeReason = camp.capabilities?.blocker || 'This campaign needs current approval before delivery can resume.';
                         return (
                           <TableCell key={col.key} style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                              <Link
+                                href={camp.capabilities?.canEdit ? `/campaigns/${camp.id}/edit` : `/campaigns/${camp.id}`}
+                                style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-crimson)', textDecoration: 'none', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}
+                              >
+                                {camp.capabilities?.canEdit ? 'Edit Draft' : 'Manage'}
+                              </Link>
                               {camp.status === 'rejected' && (
                                 <Button
                                   type="button"
@@ -397,10 +376,14 @@ export function CampaignsManager() {
                                   size="sm"
                                   onClick={async () => {
                                     try {
-                                      const details = await apiData<any>(`/api/v1/campaigns/${encodeURIComponent(camp.id)}`);
-                                      const creative = arrayData<any>(details.creatives).find((item: any) => item.reviewStatus === 'rejected');
+                                      const details = await loadCampaignDetails(camp.id);
+                                      const creative = details.creatives.find(item => item.reviewStatus === 'rejected');
                                       if (!creative) throw new Error('No rejected creative is available for replacement.');
-                                      setReplacementCreative({ ...creative, title: camp.title });
+                                      const specs = creative.imageSpecs;
+                                      setReplacementCreative({ ...creative, expectedRevision: details.contentRevision ?? 1, imageUrl: creative.imageUrl ?? undefined, videoUrl: creative.videoUrl ?? undefined,
+                                        mediaFormat: creative.mediaFormat ?? undefined, mediaAssetId: creative.mediaAssetId ?? undefined, rejectionReason: creative.rejectionReason ?? undefined,
+                                        imageSpecs: specs && typeof specs.width === 'number' && typeof specs.height === 'number' && typeof specs.bytes === 'number' ?
+                                          { width: specs.width, height: specs.height, bytes: specs.bytes, mimeType: specs.mimeType } : undefined });
                                     } catch (err) {
                                       setActionError(err instanceof Error ? err.message : 'Creative details unavailable.');
                                     }
@@ -410,16 +393,21 @@ export function CampaignsManager() {
                                 </Button>
                               )}
                               {camp.status !== 'rejected' && camp.status !== 'trash' && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  aria-label={camp.status === 'active' ? `Pause ${camp.title}` : `Resume ${camp.title}`}
-                                  disabled={pendingWrites.has(camp.id)}
-                                  onClick={() => handleToggleStatus(camp.id)}
-                                >
-                                  {camp.status === 'active' ? <Pause style={{ width: 14, height: 14 }} /> : <Play style={{ width: 14, height: 14 }} />}
-                                </Button>
+                                <>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    aria-label={camp.status === 'active' ? `Pause ${camp.title}` : `Resume ${camp.title}`}
+                                    disabled={pendingWrites.has(camp.id) || !canResume}
+                                    onClick={() => handleToggleStatus(camp.id)}
+                                  >
+                                    {camp.status === 'active' ? <Pause style={{ width: 14, height: 14 }} /> : <Play style={{ width: 14, height: 14 }} />}
+                                  </Button>
+                                  {!canResume && camp.status !== 'active' && (
+                                    <ActionHelp action={`Resume ${camp.title}`} reason={resumeReason} />
+                                  )}
+                                </>
                               )}
                             </div>
                           </TableCell>

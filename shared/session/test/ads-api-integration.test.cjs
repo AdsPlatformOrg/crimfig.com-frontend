@@ -4,11 +4,22 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const ts = require("typescript");
+require('../../api-client/test/load.cjs');
+const { createAdsClient } = require('../../api-client/src/index.ts');
+const { createAdsOperations } = require('../../api-client/src/ads-operations.ts');
 function modules(fetcher, app = "ads") {
   const root = path.resolve(__dirname, `../../../web/${app}/src/lib`);
   const cache = new Map();
   function load(name) {
     if (name === "session") return { sessionFetch: fetcher };
+    if (name === 'ads-api-client') {
+      const send = async (url, init = {}) => fetcher(new URL(url).pathname + new URL(url).search, {
+        ...init, body: init.body instanceof Blob ? await init.body.text() : init.body,
+      });
+      return { adsApi: () => createAdsOperations(createAdsClient({ origin: 'https://ads.example', sessionFetch: send,
+        publicFetch: request => send(request.url, { method: request.method, headers: request.headers }),
+      })) };
+    }
     if (cache.has(name)) return cache.get(name);
     const exports = {};
     cache.set(name, exports);
@@ -24,19 +35,24 @@ function modules(fetcher, app = "ads") {
       require: (relative) => load(relative.replace("./", "")),
       URL,
       URLSearchParams,
+      crypto: require("node:crypto").webcrypto,
     });
     return exports;
   }
   return load;
 }
-const success = (data) =>
+const success = (data, status = 200) =>
   new Response(JSON.stringify({ status: "success", data }), {
-    headers: { "Content-Type": "application/json" },
+    status, headers: { "Content-Type": "application/json" },
   });
 
 test("location authoring is available only with an explicit server capability", async () => {
   for (const value of [undefined, false, "true", true]) {
-    const load = modules(async () => success({ geoTargetingEnabled: value }));
+    const load = modules(async () => success({ geoTargetingEnabled: value, supportedAdTypes: ['text', 'image'] }));
+    if (typeof value !== 'boolean') {
+      await assert.rejects(load('campaigns-api').loadCreationCapabilities());
+      continue;
+    }
     assert.equal(
       (await load("campaigns-api").loadCreationCapabilities())
         .geoTargetingEnabled,
@@ -207,6 +223,7 @@ test("Ads account campaigns and public catalog use different endpoints without d
         remainingBudgetUsdCents: 500,
         costPerClickUsdCents: 0,
         status: "paused",
+        moderationStatus: 'draft',
       },
     ]);
   })("campaigns-api");
@@ -223,13 +240,16 @@ test("campaign creation attaches actual creatives and submits review once in ord
   const api = modules(async (url, init) => {
     calls.push([url, init]);
     return success({
-      id: url.endsWith("campaigns") ? "saved-id" : "creative-id",
+      id: "saved-id",
+      title: 'Saved', format: 'card', campaignId: 'saved-id', name: 'Stack', destinationUrl: 'https://example.test',
+      status: 'draft', moderationStatus: 'draft', budgetUsdCents: 500, remainingBudgetUsdCents: 500,
+      contentRevision: init.method === 'PATCH' ? 2 : 1,
       ...(url.endsWith("campaigns")
-        ? { defaultStackId: "stack-id" }
+        ? { defaultStackId: "11111111-1111-4111-8111-111111111111" }
         : url.endsWith("submit-review")
           ? { moderationStatus: "pending_primary_review" }
           : {}),
-    });
+    }, init.method === 'POST' ? 201 : 200);
   })("campaigns-api");
   assert.equal(
     await api.createCampaignWorkflow(
@@ -253,6 +273,7 @@ test("campaign creation attaches actual creatives and submits review once in ord
               adType: "text",
               headline: "Creative",
               destinationUrl: "https://example.test",
+              adFormat: "card",
             },
           ],
         },
@@ -261,14 +282,19 @@ test("campaign creation attaches actual creatives and submits review once in ord
     "saved-id",
   );
   assert.deepEqual(
-    calls.map((call) => call[0]),
+    calls.map((call) => [call[0], call[1].method]),
     [
-      "/api/v1/campaigns",
-      "/api/v1/campaigns/saved-id/ad-stacks/stack-id",
-      "/api/v1/campaigns/saved-id/creatives",
-      "/api/v1/campaigns/saved-id/submit-review",
+      ["/api/v1/campaigns", "POST"],
+      ["/api/v1/campaigns/saved-id", "PATCH"],
+      ["/api/v1/campaigns/saved-id/submit-review", "POST"],
     ],
   );
+  const patchBody = JSON.parse(calls[1][1].body);
+  assert.equal(patchBody.expectedRevision, 1);
+  assert.equal(patchBody.stacks[0].id, "11111111-1111-4111-8111-111111111111");
+  assert.equal(patchBody.stacks[0].ads[0].headline, "Creative");
+  const submitBody = JSON.parse(calls[2][1].body);
+  assert.equal(submitBody.expectedRevision, 2);
 });
 
 test("partial campaign writes surface the saved ID without continuing or replaying", async () => {
@@ -276,7 +302,7 @@ test("partial campaign writes surface the saved ID without continuing or replayi
   const api = modules(async (url) => {
     calls.push(url);
     if (calls.length === 1)
-      return success({ id: "saved-id", defaultStackId: "stack-id" });
+      return success({ id: "saved-id", title: 'Saved', format: 'card', status: 'draft', moderationStatus: 'draft', budgetUsdCents: 500, remainingBudgetUsdCents: 500, defaultStackId: "11111111-1111-4111-8111-111111111111", contentRevision: 1 }, 201);
     throw new Error("lost response");
   })("campaigns-api");
   await assert.rejects(
@@ -301,19 +327,84 @@ test("partial campaign writes surface the saved ID without continuing or replayi
               adType: "text",
               headline: "Creative",
               destinationUrl: "https://example.test",
+              adFormat: "card",
             },
             {
               adType: "text",
               headline: "Another",
               destinationUrl: "https://example.test",
+              adFormat: "card",
             },
           ],
         },
       ],
     ),
-    (err) => err.campaignId === "saved-id" && err.message.includes("reconcile"),
+    (err) => err.campaignId === "saved-id" && err.message.includes("Check"),
   );
   assert.equal(calls.length, 2);
+});
+
+test("saveCampaignEditor persists server draft without submitting and hydrates/scopes recovery per owner", async () => {
+  const calls = [];
+  const api = modules(async (url, init) => {
+    calls.push([url, init?.method || "GET"]);
+    if (url.includes("creation-request")) return success(null);
+    return success({
+      id: "draft-id",
+      title: "Draft Campaign",
+      format: "card",
+      status: "draft",
+      moderationStatus: "draft",
+      budgetUsdCents: 1000,
+      remainingBudgetUsdCents: 1000,
+      defaultStackId: "11111111-1111-4111-8111-111111111111",
+      contentRevision: init?.method === "PATCH" ? 2 : 1,
+    }, init?.method === "POST" ? 201 : 200);
+  })("campaigns-api");
+  const saved = await api.saveCampaignEditor(
+    {
+      title: "Draft Campaign",
+      budgetUsd: 10,
+      format: "card",
+      pricingModel: "cpm",
+      costPerImpressionCents: 50,
+      geoMode: "global",
+      requestId: "22222222-2222-4222-8222-222222222222",
+    },
+    [{ name: "Stack 1", geoMode: "inherit", locations: [], targetDevices: [], targetHours: [], ads: [] }],
+  );
+  assert.equal(saved.id, "draft-id");
+  assert.equal(saved.contentRevision, 2);
+  assert.deepEqual(calls, [
+    ["/api/v1/campaigns/creation-request/22222222-2222-4222-8222-222222222222", "GET"],
+    ["/api/v1/campaigns", "POST"],
+    ["/api/v1/campaigns/draft-id", "PATCH"],
+  ]);
+
+  const editor = modules()("campaign-editor");
+  assert.equal(editor.editorRecoveryScope("owner-a", "camp-1", 3), "owner-a:camp-1:3");
+  assert.notEqual(editor.editorRecoveryScope("owner-a", "camp-1", 3), editor.editorRecoveryScope("owner-b", "camp-1", 3));
+  const hydrated = editor.hydrateCampaign({
+    id: "draft-id",
+    title: "Draft Campaign",
+    description: "Desc",
+    category: "Tech",
+    geoMode: "targeted",
+    geoLocations: [{ id: "NG" }],
+    targetDevices: ["mobile"],
+    frequencyCapPerDay: 4,
+    pricingModel: "cpc",
+    budgetUsdCents: 1500,
+    dailyBudgetUsdCents: 500,
+    costPerImpressionUsdCents: 60,
+    costPerClickUsdCents: 25,
+    adStacks: [{ id: "s1", name: "Primary Stack", settings: { geoMode: "inherit", locations: [], targetDevices: ["mobile"] } }],
+    creatives: [{ id: "a1", adStackId: "s1", adType: "image", headline: "Headline", bodyText: "Body", ctaText: "Visit", destinationUrl: "https://example.com", mediaAssetId: "m1", imageUrl: "/api/v1/uploads/media/m1.png", adFormat: "banner", imageSpecs: { width: 728, height: 90, bytes: 12000, mimeType: "image/png" } }],
+  });
+  assert.equal(hydrated.budgetUsd, 15);
+  assert.equal(hydrated.dailyBudgetUsd, 5);
+  assert.equal(hydrated.stacks[0].ads[0].imageInfo.width, 728);
+  assert.equal(hydrated.stacks[0].ads[0].adFormat, "banner");
 });
 
 test("unsupported pricing never creates a campaign and failed status changes never succeed", async () => {

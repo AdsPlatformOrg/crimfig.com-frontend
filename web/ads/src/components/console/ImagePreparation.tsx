@@ -7,7 +7,7 @@ import { ImagePlus, RotateCw, RotateCcw, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { MediaPreview } from "../MediaPreview";
 import { useDialog } from "../../lib/use-dialog";
-import { sessionFetch } from "../../lib/session";
+import { adsApi } from '../../lib/ads-api-client';
 import { sourceCrop, centeredSelection } from "../../lib/crop-coordinates";
 import {
   encodeWithinBudget,
@@ -425,26 +425,18 @@ export function ImagePreparation({
           },
         }),
       );
-      const res = await sessionFetch("/api/v1/uploads/prepared", {
-        method: "POST",
-        body,
-        signal,
-      });
-      const json = await res.json();
+      const uploaded = await adsApi().uploadPrepared(body, signal);
       signal.throwIfAborted();
       if (run !== generation.current) return;
       if (
-        !res.ok ||
-        !json.data?.assetId ||
-        !json.data?.width ||
-        !json.data?.preparation
+        !uploaded.assetId ||
+        !uploaded.width ||
+        !uploaded.preparation
       )
         throw Error(
-          typeof json.message === "string"
-            ? json.message
-            : "The upload and saved image specs could not be confirmed.",
+          'The upload and saved image specs could not be confirmed.',
         );
-      const asset = { ...json.data, adFormat: layout } as PreparedImageAsset;
+      const asset = { ...uploaded, adFormat: layout } as PreparedImageAsset;
       setSaved(asset);
       onUploaded(asset);
       if (bitmap.current)

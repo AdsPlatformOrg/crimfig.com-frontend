@@ -100,7 +100,7 @@ const routes: Record<string, ['advertiser' | 'promoter' | 'admin', string]> = {
 };
 export function ProtectedWorkspace({ children }: { children: ReactNode }) {
  const path = usePathname();
- const [role, activeNavId] = routes[path] ?? ['advertiser', 'overview_dash'];
+ const [role, activeNavId] = routes[path] ?? (path.startsWith('/campaigns/') ? ['advertiser', 'campaigns'] : ['advertiser', 'overview_dash']);
  const workspace = <AdsConsoleShell role={role} activeNavId={activeNavId}>{children}</AdsConsoleShell>;
  return <SessionGate>{role === 'admin' ? <AdminGuard key={path}>{workspace}</AdminGuard> : workspace}</SessionGate>;
 }

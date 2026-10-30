@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: [],
+  transpilePackages: ['@crimfig/api-client'],
   async rewrites() {
     const backendUrl =
       process.env.ADS_API_BACKEND_URL ||

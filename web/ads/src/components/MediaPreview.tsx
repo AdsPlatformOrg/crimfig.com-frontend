@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { sessionFetch } from '../lib/session';
+import { adsApi } from '../lib/ads-api-client';
 import { previewPath } from '../lib/media-preview';
 
 /** Blob URL lives only for this mounted preview and is revoked on source change/unmount. */
@@ -15,9 +15,8 @@ export function MediaPreview({ source, mode = 'owner' }: { source: string; mode?
     void (async () => {
       try {
         const path = previewPath(source, window.location.origin, mode);
-        const response = await sessionFetch(path, { signal: controller.signal });
-        if (!response.ok) throw new Error(response.status === 403 ? 'You do not have permission to preview this asset.' : 'This media preview is unavailable.');
-        const blob = await response.blob();
+        const key = decodeURIComponent(path.split('/').pop()!);
+        const blob = await adsApi().media(key, mode, controller.signal);
         if (!/^(image\/(png|jpeg|gif|webp|avif)|video\/(mp4|webm|ogg))$/i.test(blob.type)) throw new Error('Unsupported preview format.');
         if (controller.signal.aborted) return;
         objectUrl = URL.createObjectURL(blob);
