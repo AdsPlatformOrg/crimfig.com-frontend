@@ -614,12 +614,12 @@ export function ImagePreparation({
                             }
                             disabled={working}
                           >
-                            <option value="compact">Compact - cap 50 KB</option>
+                            <option value="compact">Compact - cap 100 KB</option>
                             <option value="standard">
-                              Standard - cap 150 KB
+                              Standard - cap 250 KB
                             </option>
                             <option value="larger">
-                              Larger feed - cap 200 KB
+                              Larger feed - cap 300 KB
                             </option>
                           </select>
                         </label>

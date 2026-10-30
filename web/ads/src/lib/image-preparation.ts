@@ -1,13 +1,13 @@
 import { stripImageMetadata } from './image-metadata';
-export const IMAGE_QUALITY = 0.97;
+export const IMAGE_QUALITY = 1.0;
 export const SOURCE_LIMIT = 100000000;
 export const SOURCE_PIXELS = 24000000;
 export const SOURCE_EDGE = 16384;
 export const PREVIEW_EDGE = 2048;
 export const IMAGE_PROFILES = {
-  compact: { target: 40000, cap: 50000 },
-  standard: { target: 100000, cap: 150000 },
-  larger: { target: 150000, cap: 200000 },
+  compact: { target: 80000, cap: 100000 },
+  standard: { target: 230000, cap: 250000 },
+  larger: { target: 280000, cap: 300000 },
 } as const;
 export type ImageProfile = keyof typeof IMAGE_PROFILES;
 export interface Crop {
@@ -216,8 +216,8 @@ export async function encodeWithinBudget(
         "This device could not produce an image within the byte cap.",
       );
     }
-    const next = scale * Math.min(0.85, Math.sqrt(target / blob.size) * 0.92);
-    if (Math.round(crop.width * next) === width) scale *= 0.7;
+    const next = scale * Math.min(0.95, Math.sqrt(target / blob.size) * 0.98);
+    if (Math.round(crop.width * next) === width) scale *= 0.9;
     else scale = next;
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
