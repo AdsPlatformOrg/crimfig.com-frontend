@@ -423,3 +423,9 @@ Real jed.com.ng DOM confirms correct pilot tag, stage base and crossorigin anony
 ## 2026-10-31 — PLAN-0055 slot integration readiness corrections
 Corrected actual nextJsSnippet/installation response handling, request-only versus rendered status, check failures, clipboard failure/manual copy, size preset payloads and anonymous-CORS zero-reservation React loader. Four actual handler/fixture tests pass; Next production build passes32 routes with existing warnings. Isolated staging source includes prior promoter page/nav work, excludes unrelated Auth changes/env. No deployment or live-render claim; see docs/reviews/plan-0053/plan0055-readiness-review.md.
 
+
+## 2026-10-31 — PLAN-0061 corrective plan drafted
+Reviewed PLAN-0057/0058 source and drafted .agents/plans/PLAN-0061-house-ad-and-slot-analytics-monitoring-gap-fixes.md (DRAFT/PENDING): durable House creative attribution, schema-correct analytics, Platform Admin House/slot performance, delivery/creative safeguards and monitoring diagnostics. PLAN-0057 reformatted; PLAN-0058 historical evidence retained with gap amendment. Documentation only; no implementation/tests/deployment/config changes. Broader checks remain DEFERRED — OWNER REQUEST.
+## 2026-10-31 — PLAN-0062 contextual sidebar plan
+Drafted PLAN-0062 (DRAFT/PENDING) for workspace-first feature menus, nested secondary ecosystem tools, header/account separation, safe route namespace resolution and Admin subtree guarding. Source review found unlisted routes falling back to Advertiser, duplicate workspace links and unconditional Billing shortcut. Includes focused rejection-first and interaction unit acceptance; broader verification deferred. Documentation only; existing PLAN-0061 approval/work preserved.
+
