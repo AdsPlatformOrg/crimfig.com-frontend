@@ -387,55 +387,115 @@ function ErrorMonitorAuthedConsole() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))',
-            gap: '14px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
+            gap: '16px',
             marginBottom: '24px',
           }}
         >
-          <Card style={{ padding: '16px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-              Captured Error Groups
+          <Card
+            style={{
+              padding: '18px 20px',
+              backgroundColor: 'var(--bg-elevated)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '14px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                Captured Error Groups
+              </span>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(212, 20, 58, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-crimson)' }}>
+                <Activity size={14} />
+              </div>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>
               {summary.totalGroups}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
               {summary.totalOccurrences} total occurrences
             </div>
           </Card>
 
-          <Card style={{ padding: '16px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-              Email-Eligible (5xx &amp; Financial)
+          <Card
+            style={{
+              padding: '18px 20px',
+              backgroundColor: 'var(--bg-elevated)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '14px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                Email-Eligible (5xx &amp; Financial)
+              </span>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: summary.server5xxGroups + summary.financialAlertGroups > 0 ? 'rgba(212, 20, 58, 0.12)' : 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: summary.server5xxGroups + summary.financialAlertGroups > 0 ? 'var(--color-crimson)' : '#10b981' }}>
+                <AlertTriangle size={14} />
+              </div>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-crimson)', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: summary.server5xxGroups + summary.financialAlertGroups > 0 ? 'var(--color-crimson)' : 'var(--text-primary)', lineHeight: 1.1 }}>
               {summary.server5xxGroups + summary.financialAlertGroups}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
               {summary.server5xxGroups} server 5xx • {summary.financialAlertGroups} financial
             </div>
           </Card>
 
-          <Card style={{ padding: '16px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-              Monitor Only (Policy Excluded)
+          <Card
+            style={{
+              padding: '18px 20px',
+              backgroundColor: 'var(--bg-elevated)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '14px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                Monitor Only (Policy Excluded)
+              </span>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(100, 116, 139, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                <Server size={14} />
+              </div>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>
               {summary.monitorOnlyGroups}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
               403 / 404 / 429 &amp; non-financial 4xx
             </div>
           </Card>
 
-          <Card style={{ padding: '16px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-              Email Outbox &amp; Suppression
+          <Card
+            style={{
+              padding: '18px 20px',
+              backgroundColor: 'var(--bg-elevated)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '14px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', fontWeight: 700 }}>
+                Email Outbox &amp; Suppression
+              </span>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1' }}>
+                <Mail size={14} />
+              </div>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
-              {summary.providerAcceptedGroups} accepted
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>
+              {summary.providerAcceptedGroups} <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>accepted</span>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
               {summary.suppressedDuplicateCount} duplicates suppressed ({summary.runtimePolicy.suppressionWindowMinutes}m window)
             </div>
           </Card>
