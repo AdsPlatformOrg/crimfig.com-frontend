@@ -108,30 +108,30 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   // Promoter Nav Groups
   const promoterNavGroups: NavGroup[] = [
     {
-      title: 'Monetization',
+      title: 'Websites & Delivery',
       items: [
         { id: 'websites', label: 'Websites', icon: Globe, href: '/promoter/websites' },
         { id: 'slots', label: 'CrimFig Ads Slots', icon: Layers, href: '/promoter/slots' },
+      ],
+    },
+    {
+      title: 'Direct Advertising',
+      items: [
         { id: 'adstation', label: 'AdStation Direct Ads', icon: Share2, href: '/promoter/adstation' },
+      ],
+    },
+    {
+      title: 'Distribution Channels',
+      items: [
         { id: 'individuals', label: 'Links & Reels Social', icon: Share2, href: '/promoter/individuals' },
         { id: 'mobile_apps', label: 'Mobile Apps SDK', icon: Smartphone, href: '/promoter/mobile-apps' },
       ],
     },
     {
-      title: 'Deals & Discovery',
+      title: 'Discovery & Quality',
       items: [
         { id: 'marketplace', label: 'Ad Marketplace', icon: Share2, href: '/promoter/marketplace' },
         { id: 'quality', label: 'Quality & Trust Score', icon: ShieldCheck, href: '/promoter/quality' },
-      ],
-    },
-    {
-      title: 'Earnings & Account',
-      items: [
-        { id: 'billing_escrow', label: 'Earnings & Payouts', icon: CreditCard, href: '/billing' },
-        { id: 'profile', label: 'User Profile', icon: User, href: '/profile' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
-        { id: 'notifications', label: 'Notifications', icon: Bell, href: '/notifications' },
-        { id: 'support', label: 'Support & Knowledge', icon: HelpCircle, href: '/support' },
       ],
     },
   ];
@@ -139,9 +139,10 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   // Admin Nav Groups
   const adminNavGroups: NavGroup[] = [
     {
-      title: 'Governance & Audits',
+      title: 'Advertising Operations',
       items: [
         { id: 'moderation', label: 'Creative Review Queue', icon: ShieldCheck, href: '/admin/moderation' },
+        { id: 'house_ads', label: 'CrimFig House Ads', icon: Sparkles, href: '/admin/house-ads' },
         { id: 'admin_disputes', label: 'Traffic Adjustments', icon: ShieldAlert, href: '/admin/disputes' },
       ],
     },
@@ -149,9 +150,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
       title: 'System & Health',
       items: [
         { id: 'admin_tests', label: 'API Test Suite', icon: Sparkles, href: '/admin/tests' },
-        { id: 'quality', label: 'Traffic Integrity Engine', icon: ShieldCheck, href: '/quality' },
-        { id: 'notifications', label: 'Admin Alerts', icon: Bell, href: '/notifications' },
-        { id: 'support', label: 'Support Queue', icon: HelpCircle, href: '/support' },
+        { id: 'quality', label: 'Traffic Integrity Engine', icon: ShieldCheck, href: '/promoter/quality' },
       ],
     },
   ];
@@ -185,7 +184,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 71px)', position: 'relative' }}>
         <DashboardSidebar
           app="ads"
-          groups={[{title:'Workspaces',items:[{id:'workspace_advertiser',label:'Advertiser Studio',icon:BarChart3,href:'/dashboard'},{id:'workspace_promoter',label:'Promoter Hub',icon:UserCheck,href:'/promoter'},...((isStaffUser||role==='admin')?[{id:'workspace_admin',label:'Admin Console',icon:ShieldCheck,href:'/admin/moderation'}]:[])]},...currentNavGroups]}
+          groups={currentNavGroups}
           activeId={activeNavId}
           onSelect={(id) => {
             if (id === 'overview_dash') {
@@ -198,6 +197,8 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
               router.push('/billing');
             } else if (id === 'websites') {
               router.push('/promoter/websites');
+            } else if (id === 'slots') {
+              router.push('/promoter/slots');
             } else if (id === 'adstation') {
               router.push('/promoter/adstation');
             } else if (id === 'individuals') {
@@ -210,6 +211,8 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
               router.push('/promoter/quality');
             } else if (id === 'moderation') {
               router.push('/admin/moderation');
+            } else if (id === 'house_ads') {
+              router.push('/admin/house-ads');
             } else if (id === 'admin_disputes') {
               router.push('/admin/disputes');
             } else if (id === 'admin_tests') {
@@ -221,11 +224,15 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
           isMobileOpen={isMobileNavOpen}
           onCloseMobile={() => setIsMobileNavOpen(false)}
-          switchAppLink={{
-            label: 'Billing & Wallet',
-            href: billingBase,
-            icon: CreditCard,
-          }}
+          switchAppLink={
+            role === 'advertiser'
+              ? {
+                  label: 'Billing & Wallet',
+                  href: billingBase,
+                  icon: CreditCard,
+                }
+              : undefined
+          }
         />
 
         {/* Page Content Slot */}
