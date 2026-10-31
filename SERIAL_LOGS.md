@@ -399,3 +399,27 @@ PLAN-0052 drafted separately for withdrawal risk/policy/independent execution. E
 ## 2026-10-30 — PLAN-0052 security alert planning amendment
 
 Updated the withdrawal-security draft for internal theft prevention and protected financial RED alerts to both owner email addresses. Planned restricted incident timeline, masked impact and per-recipient delivery/acknowledgement/escalation states in existing administration UI; acknowledgement never approves a payment/unfreeze. No frontend source/UI behavior changed or tests executed; no emails sent. See .agents/plans/PLAN-0052-withdrawal-risk-policy-and-independent-execution-security.md; DRAFT/PENDING retained.
+## 2026-10-31 — PLAN-0053 readiness plan
+Drafted .agents/plans/PLAN-0053-launch-readiness-and-railway-configuration.md with current embed contract, frontend API rewrite and manual Railway recommendations. Local presence inventory records no secrets; Railway state unknown. No UI/runtime/deployment changes or tests. Proposed actions remain DRAFT.
+
+## 2026-10-31 — PLAN-0053 deployed configuration checkpoint
+Read-only Railway access confirmed with existing token. Active frontend deployments report SUCCESS; Ads API target configured in both environments. Production/staging loader differences and missing returned ADS_PUBLIC_URL require reconciliation before authenticated pilot. Evidence: docs/reviews/plan-0053/execution-checkpoint.md. No UI/runtime/deployment changes. PLAN-0053 IN_PROGRESS.
+
+## 2026-10-31 — PLAN-0053 real promoter registration checkpoint
+Confirmed intended staging account in Auth profile using existing SSO; registered jed.com.ng in real Websites UI. Card reports Verification Required and 0 active ads. Actual public TXT challenge/screenshot recorded in docs/reviews/plan-0053/execution-checkpoint.md. No design or runtime code changes; ownership/render pilot pending owner DNS publication. Focused backend suites pass 15/15; no fake browser-render claim.
+
+## 2026-10-31 — PLAN-0053 real website verification and slot creation
+Existing owner staging session now verifies jed.com.ng after approved Ads API deploy. Verified status survives reload. AdStation network banner pilot created; actual canonical tag shown and persists. Saved website/slot screenshots and minimal API states, prepared manual explicit-staging embed snippet. No frontend source/deployment/design change. Real publisher render and diagnostics pending owner's test-page URL. PLAN-0053 IN_PROGRESS.
+
+## 2026-10-31 — PLAN-0055 promoter UI separation draft
+Drafted dedicated Websites, CrimFig Ads Slots and AdStation Direct Ads pages/nav per JED's clarified product purpose. Includes real canonical install/test flow first, readable layout and correct workspace active states, preserved tokens/shared components, existing pilot reuse and direct-only eligibility-gated AdStation afterward. Source/screenshot review and UI/UX skill guidance only; no implementation/tests/deployments. See .agents/plans/PLAN-0055-promoter-slots-first-and-separate-adstation-direct-ads-ui.md.
+
+## 2026-10-31 — PLAN-0055 publisher empty-space plan amendment
+Updated draft for canonical HTML/React/Next snippets and diagnostic UI: reserve while loading, fit successful creative, collapse failed/unfilled slots, preserve measurable lazy triggers and explicit retries, document publisher wrapper constraints and verify responsive no-gap behavior. No code/tests/deployments; DRAFT/PENDING retained.
+
+## 2026-10-31 — PLAN-0053 installed publisher tag / PLAN-0055 empty-state evidence
+Real jed.com.ng DOM confirms correct pilot tag, stage base and crossorigin anonymous. Natural scrolling triggers backend request with 500, no CORS failure. Loader leaves empty unavailable slot at 250px; screenshot and state saved under docs/reviews/plan-0053. Both backend exception and failure-collapse now recorded as separate blockers. No code/site/config changes.
+
+## 2026-10-31 — PLAN-0055 slot integration readiness corrections
+Corrected actual nextJsSnippet/installation response handling, request-only versus rendered status, check failures, clipboard failure/manual copy, size preset payloads and anonymous-CORS zero-reservation React loader. Four actual handler/fixture tests pass; Next production build passes32 routes with existing warnings. Isolated staging source includes prior promoter page/nav work, excludes unrelated Auth changes/env. No deployment or live-render claim; see docs/reviews/plan-0053/plan0055-readiness-review.md.
+

@@ -137,6 +137,7 @@ export function CrimFigAdSlot({
         id={`cf-pub-loader-${uid}`}
         src={`${resolvedApiBase}/api/v1/delivery/pub-loader.js?pk=${encodeURIComponent(publisherKey)}`}
         strategy="afterInteractive"
+        crossOrigin="anonymous"
         async
       />
 
@@ -145,7 +146,7 @@ export function CrimFigAdSlot({
         className={`crimfig-pub-slot${className ? ` ${className}` : ''}`}
         style={{
           display: 'block',
-          minHeight: slotConfig?.height || 60,
+          minHeight: 0,
           maxWidth: slotConfig?.width || undefined,
           ...style,
         }}
@@ -154,6 +155,7 @@ export function CrimFigAdSlot({
         data-ad-slot={resolvedSlotId}
         data-cf-placement={resolvedSlotId}
         data-cf-api-base={resolvedApiBase}
+        data-cf-height={slotConfig?.height || 90}
         data-cf-handle={placement}
         data-cf-responsive={responsive ? 'true' : 'false'}
         data-cf-format="auto"

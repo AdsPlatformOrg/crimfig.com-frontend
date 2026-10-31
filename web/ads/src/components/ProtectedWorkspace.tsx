@@ -81,6 +81,10 @@ const routes: Record<string, ['advertiser' | 'promoter' | 'admin', string]> = {
     "promoter",
     "websites"
   ],
+  "/promoter/slots": [
+    "promoter",
+    "slots"
+  ],
   "/campaigns/new": [
     "advertiser",
     "new_campaign"

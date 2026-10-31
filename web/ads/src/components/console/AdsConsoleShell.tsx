@@ -110,8 +110,9 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
     {
       title: 'Monetization',
       items: [
-        { id: 'websites', label: 'Websites & Ad Slots', icon: Globe, href: '/promoter/websites' },
-        { id: 'adstation', label: 'AdStation Direct Deals', icon: Layers, href: '/promoter/adstation' },
+        { id: 'websites', label: 'Websites', icon: Globe, href: '/promoter/websites' },
+        { id: 'slots', label: 'CrimFig Ads Slots', icon: Layers, href: '/promoter/slots' },
+        { id: 'adstation', label: 'AdStation Direct Ads', icon: Share2, href: '/promoter/adstation' },
         { id: 'individuals', label: 'Links & Reels Social', icon: Share2, href: '/promoter/individuals' },
         { id: 'mobile_apps', label: 'Mobile Apps SDK', icon: Smartphone, href: '/promoter/mobile-apps' },
       ],
