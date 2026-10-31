@@ -1,5 +1,20 @@
 # crimfig-frontend — Serial Activity Log
 
+## 2026-10-31 — PLAN-0052 Option A & B Customer & Reviewer Flows (ACT-20261031-002, COMPLETED)
+- Built interactive step-up TOTP verification modal on `WithdrawalForm` using accessible `useDialog` with focus trapping, Escape handling, and Crimson design tokens. Wired `prepareWithdrawalAuthorization`, `beginWithdrawalChallenge`, `confirmWithdrawalChallenge`, and `confirmWithdrawal` with signed `ownerProof`.
+- Added independent reviewer approval workflow to `FinancialPolicyPanel` in `frontend/web/billing` allowing platform admins to initiate review on held withdrawals, execute staff TOTP step-up, and submit `independent_review` proofs to Billing (`POST /api/v1/withdrawals/:reference/reviews`).
+- Added Next.js API rewrite in `frontend/web/billing/next.config.ts` routing `/api/v1/financial-authorizations/:path*` to the Auth service.
+- Added negative-first unit tests in `frontend/shared/session/test/withdrawal-api.test.cjs` covering authorization preparation, challenge retrieval, TOTP confirmation, reviewer proof submission, and payload binding (15/15 passing).
+- Verified production build of `@crimfig/web-billing` (`next build` succeeded with code 0).
+
+## 2026-10-31 — PLAN-0052 withdrawal availability and hold messaging (ACT-20261031-001, IN_PROGRESS)
+- Existing withdrawal form reads authenticated availability, disables new requests while unavailable and provides accessible explanatory help. Existing recovery remains available; held/unknown requests do not display payment success.
+- Ten focused withdrawal API unit cases passed. Customer/reviewer Auth confirmation screens remain unfinished; execution must stay disabled. No browser, visual, build or deployment checks performed.
+
+## 2026-10-30 — PLAN-0052 read-only financial policy view (ACT-20261030-030, IN_PROGRESS)
+- Added platform-admin policy figures to the existing Billing admin page, with loading/unavailable states, disabled limit changes and keyboard/tap-accessible explanation. Non-platform-admin staff do not see figures; API separately enforces permission.
+- Two focused frontend policy-validation unit cases passed. Visual/build/browser checks remain deferred by owner request. Full transaction challenge, review and incident UI integration remains open.
+
 All significant changes, decisions, and agent actions are recorded here in reverse chronological order.
 
 ## 2026-10-30 — PLAN-0048 & PLAN-0050 Campaign Details/Edit Pages, Draft Saving, ActionHelp & Generated Client Wiring (ACT-20261030-018)
@@ -371,3 +386,16 @@ Added `/campaigns/[id]` and `/campaigns/[id]/edit` routes (`CampaignPage.tsx`), 
 
 ## PLAN-0047 & PLAN-0049 — 2026-10-30 code-first & unit-test implementation
 Pushed PLAN-0048/0050 staging commit `be85626` to `origin/dev` as `jed-chela`. Updated `PromoterWebsitesView.tsx`, `CrimFigAdSlot.tsx`, and `campaigns-api.ts` (`websiteView`, `verifyWebsite`, `submitWebsiteForReview`, `loadWebsiteSlots`, `createWebsiteSlot`, `checkSlotInstallation`) to render method-specific HTML meta tag vs DNS TXT verification instructions, display `verificationErrorMessage` and `policyStatus`, and generate environment-safe canonical slot embed snippets using `NEXT_PUBLIC_ADS_API_URL`. Verified 32/32 frontend unit tests (`ads-api-integration.test.cjs`, `staff-ui.test.cjs`) and 34/34 `contracts.mjs check`. Live browser/375px/staging checks DEFERRED — OWNER REQUEST.
+
+## 2026-10-30 - code audit and failure-first unit assertions
+Reviewed today's completed scope and recent PLAN-0045/0047/0048/0049 implementations. Fixed paid-release gating, simulated reservation bounds/replay, stale moderation receipts, pending-funding release, monitor sinks/opt-in worker/lease ownership, browser source spoofing, image caps/quality metadata, decoder/correlation and portable contract provenance. Added 54 regression cases. Latest per-file evidence: 149 backend and 78 frontend/contract checks pass; one existing local HTTP boundary failed on an earlier attempt and remains explicitly deferred, excluded from unit runs. No real email, financial/account action, deployment or broad/visual checks in this audit. Remaining code/setup gaps and full commands: ../docs/reviews/2026-10-30-code-audit.md. Canonical AGENTS.md now requires rejection assertions before valid cases, with no unauthorized side effects; code-first workflow retained. Existing log entries preserved.
+
+## 2026-10-30 — four-plan code-only pass and withdrawal security draft
+
+PLAN-0048: added generated typed campaign pagination with server filter/counts and existing UI controls, stale-result suppression, synchronous pre-write recovery identity/payload persistence, draft/account bounds and expired-website ownership feedback. Added PATCH/correlation CORS in the backend. Generated Ads contract artifacts (37 operations, schema 9b6144f67619); no check/test mode run. Existing audit tests/changes preserved. New tests and all broader checks deferred by JED for this pass; earlier counts are historical. Migration/configuration and four-plan test review remain pending; see ../docs/reviews/2026-10-30-four-plan-code-pass.md.
+
+PLAN-0052 drafted separately for withdrawal risk/policy/independent execution. Existing Billing withdrawal UI inspected; no withdrawal UI or provider behavior changed for this draft. Draft approval remains pending. No commit/push/deploy or live financial/account action.
+
+## 2026-10-30 — PLAN-0052 security alert planning amendment
+
+Updated the withdrawal-security draft for internal theft prevention and protected financial RED alerts to both owner email addresses. Planned restricted incident timeline, masked impact and per-recipient delivery/acknowledgement/escalation states in existing administration UI; acknowledgement never approves a payment/unfreeze. No frontend source/UI behavior changed or tests executed; no emails sent. See .agents/plans/PLAN-0052-withdrawal-risk-policy-and-independent-execution-security.md; DRAFT/PENDING retained.

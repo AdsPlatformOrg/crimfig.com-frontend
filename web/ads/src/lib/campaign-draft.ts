@@ -16,7 +16,7 @@ export function bidEstimate(
 export function readDraft(storage: Pick<Storage, "getItem">, userId: string) {
   const raw = storage.getItem(DRAFT_PREFIX + userId);
   if (!raw) return null;
-  if (raw.length > 250000) throw Error("Saved draft is too large.");
+  if (raw.length > 1000000) throw Error("Saved draft is too large.");
   const value = JSON.parse(raw);
   if (
     value.version !== 1 ||

@@ -89,6 +89,8 @@ export function CampaignCreationWizard({
 }: CampaignWizardProps) {
   const initial=useMemo(()=>campaign?hydrateCampaign(campaign):null,[campaign]);
   const [savedRevision,setSavedRevision]=useState(campaign?.contentRevision??1);
+  const durableJournal=useRef<Record<string,unknown>>({});
+  const draftIdentity=useRef<number|undefined>(undefined);
   const [pendingOperation,setPendingOperation]=useState<{phase:'save'|'submit';campaignId:string;expectedRevision:number;requestId:string}|null>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -225,6 +227,7 @@ export function CampaignCreationWizard({
           setRequestId(draft.requestId || crypto.randomUUID());
           setSavedCampaignId(draft.savedCampaignId || campaign?.id || '');
           setSavedRevision(draft.savedRevision??campaign?.contentRevision??1);
+          durableJournal.current={pendingPayload:draft.pendingPayload??null};
           setPendingOperation(draft.pendingOperation??null);
           setSubmissionUncertain(!!draft.submissionUncertain);
           setDraftNotice(
@@ -237,7 +240,7 @@ export function CampaignCreationWizard({
           );
         }
 
-        if (active) setDraftOwner(editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision));
+        if (active) {draftIdentity.current=dashboardSession().getSnapshot().identityVersion;setDraftOwner(editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision));}
       })
       .catch(() => {
         if (active) {
@@ -253,46 +256,21 @@ export function CampaignCreationWizard({
     };
   }, []);
 
+  // Flush operation identity before sending a write. React's debounced draft is insufficient at crash boundaries.
+  function persistDraft(overrides:Record<string,unknown>={}) {
+    const session=dashboardSession().getSnapshot();
+    if(!draftOwner||session.status!=='authenticated'||session.signOut||session.identityVersion!==draftIdentity.current) throw new Error('Your draft cannot be saved on this device. Sign in again before saving.');
+    const {stacks:overrideStacks,...metadata}=overrides;
+    durableJournal.current={...durableJournal.current,...metadata};
+    const snapshot={version:1,savedAt:Date.now(),title,description,category,stacks,geoMode,locations,devices,schedule,frequencyCap,
+      pricingModel,budgetUsd,dailyBudgetUsd,cpmBidCents,cpcBidCents,requestId,savedCampaignId,savedRevision,pendingOperation,submissionUncertain,...durableJournal.current,...(overrideStacks?{stacks:overrideStacks}:{})};
+    try {const serialized=JSON.stringify(snapshot);if(serialized.length>1000000)throw new Error('Draft too large');localStorage.setItem(DRAFT_PREFIX+draftOwner,serialized);}
+    catch {throw new Error('This device could not save recovery information. Free some browser storage before saving the campaign.');}
+  }
   useEffect(() => {
     if (!draftOwner) return;
-    const timer = setTimeout(() => {
-      const session = dashboardSession().getSnapshot();
-      if (session.status !== 'authenticated' || session.signOut) return;
-      try {
-        localStorage.setItem(
-          DRAFT_PREFIX + draftOwner,
-          JSON.stringify({
-            version: 1,
-            savedAt: Date.now(),
-            title,
-            description,
-            category,
-            stacks,
-            geoMode,
-            locations,
-            devices,
-            schedule,
-            frequencyCap,
-            pricingModel,
-            budgetUsd,
-            dailyBudgetUsd,
-            cpmBidCents,
-            cpcBidCents,
-            requestId,
-            savedCampaignId,
-            savedRevision,
-            pendingOperation,
-            submissionUncertain,
-          }),
-        );
-      } catch {
-        setDraftNotice(
-          "This device could not save the draft. Keep the tab open.",
-        );
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
+    const timer=setTimeout(()=>{try{persistDraft();}catch(error){setDraftNotice(error instanceof Error?error.message:'This device could not save the draft.');}},300);
+    return()=>clearTimeout(timer);
   }, [
     draftOwner,
     title,
@@ -657,17 +635,22 @@ export function CampaignCreationWizard({
     if(sendForReview && (!validateStep(1)||!validateStep(2)||!validateStep(3)||!validateStep(4))) return;
     submitBusy.current=true;setIsSubmitting(true);setSubmissionUncertain(true);setError(null);
     try {
+      const profile=await dashboardSession().getProfile();
+      if(editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision)!==draftOwner)throw new Error('Your account changed. Open the campaign again before saving.');
+      persistDraft({submissionUncertain:true});
       const saved=await saveCampaignEditor({title,description,category,budgetUsd,dailyBudgetUsd,costPerImpressionCents:cpmBidCents,costPerClickCents:cpcBidCents,pricingModel,format:campaign?.format??'card',targetDevices:devices,schedule,requestId,frequencyCapPerDay:frequencyCap,geoMode,locations:geoMode==='targeted'?locations:[]},
         stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,targetHours:[],schedule:stack.schedule,
           ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline,bodyText:ad.bodyText,ctaText:ad.ctaText,destinationUrl:ad.destinationUrl,adFormat:ad.adFormat??'card',mediaAssetId:ad.mediaAssetId}))})),
         savedCampaignId?{id:savedCampaignId,contentRevision:savedRevision}:undefined,
-        (id,revision,defaultId)=>{setSavedCampaignId(id);setSavedRevision(revision);if(defaultId)setStacks(current=>current.map((stack,i)=>i===0?{...stack,id:defaultId}:stack));},
-        (id,control)=>{setPendingOperation({phase:'save',campaignId:id,...control});});
+        (id,revision,defaultId)=>{persistDraft({savedCampaignId:id,savedRevision:revision,...(defaultId?{stacks:stacks.map((stack,i)=>i===0?{...stack,id:defaultId}:stack)}:{})});setSavedCampaignId(id);setSavedRevision(revision);if(defaultId)setStacks(current=>current.map((stack,i)=>i===0?{...stack,id:defaultId}:stack));},
+        (id,control,payload)=>{const operation={phase:'save' as const,campaignId:id,...control};persistDraft({savedCampaignId:id,pendingOperation:operation,pendingPayload:payload});setPendingOperation(operation);});
       setSavedCampaignId(saved.id);setSavedRevision(saved.contentRevision);originalSignature.current=dirtySignature;
-      const confirmed=await adsApi().details(saved.id);setStacks(hydrateCampaign(confirmed).stacks);
+      const confirmed=await adsApi().details(saved.id);const recoveredStacks=hydrateCampaign(confirmed).stacks;
+      persistDraft({savedCampaignId:saved.id,savedRevision:saved.contentRevision,stacks:recoveredStacks,pendingOperation:null,pendingPayload:null});setPendingOperation(null);setStacks(recoveredStacks);
       if(sendForReview) {
         const control={expectedRevision:saved.contentRevision,requestId:crypto.randomUUID()};
-        setPendingOperation({phase:'submit',campaignId:saved.id,...control});
+        const operation={phase:'submit' as const,campaignId:saved.id,...control};
+        persistDraft({pendingOperation:operation,pendingPayload:control});setPendingOperation(operation);
         await adsApi().submit(saved.id,control);
       }
       if(draftOwner)localStorage.removeItem(DRAFT_PREFIX+draftOwner);

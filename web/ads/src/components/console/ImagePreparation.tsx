@@ -640,7 +640,7 @@ export function ImagePreparation({
                       <p>
                         {source.width}x{source.height}px source -{" "}
                         {(source.size / 1000000).toFixed(2)} MB. Encoder quality
-                        stays at 0.97; dimensions reduce automatically. The
+                        stays at {IMAGE_QUALITY.toFixed(2)}; dimensions reduce automatically. The
                         source stays in this browser.
                       </p>
                       <p>

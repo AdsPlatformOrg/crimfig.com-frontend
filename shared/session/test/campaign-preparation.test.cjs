@@ -60,7 +60,7 @@ test("draft reads are account-scoped, bounded and expired drafts are not restore
     null,
   );
 });
-test("fixed crop is re-rendered from source at .97 while dimensions automatically reach each cap", async () => {
+test("fixed crop is re-rendered from source at 1.00 while dimensions automatically reach each cap", async () => {
   const quality = [],
     draws = [];
   class Canvas {
@@ -85,16 +85,16 @@ test("fixed crop is re-rendered from source at .97 while dimensions automaticall
   const source = { id: "original" },
     crop = { x: 20, y: 30, width: 2000, height: 1000 };
   for (const [profile, cap] of [
-    ["compact", 50000],
-    ["standard", 150000],
-    ["larger", 200000],
+    ["compact", 100000],
+    ["standard", 250000],
+    ["larger", 300000],
   ]) {
     const output = await encodeWithinBudget(source, crop, profile, 2048);
     assert.ok(output.blob.size <= cap);
     assert.ok(Math.abs(output.width / output.height - 2) < 0.02);
   }
   assert.ok(quality.length > 3);
-  assert.ok(quality.every((q) => q === 0.97));
+  assert.ok(quality.every((q) => q === 1));
   assert.ok(
     draws.every(
       (a) =>

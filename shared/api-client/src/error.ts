@@ -26,8 +26,8 @@ export function responseError(operation: string, method: string, path: string, s
   const data = body && typeof body === 'object' ? body as Record<string, unknown> : {};
   const allowed = status === 409 ? ['CONFLICT', 'STALE_REVISION', 'BUDGET_REJECTED'] : [statusCodes[status] || 'INTERNAL_ERROR'];
   const code = typeof data.code === 'string' && allowed.includes(data.code) ? data.code : statusCodes[status] || 'INTERNAL_ERROR';
-  const id = data.requestId ?? headerId;
-  const requestId = typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ? id : undefined;
+  const validId=(id:unknown):id is string=>typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  const requestId = validId(data.requestId) ? data.requestId : validId(headerId) ? headerId : undefined;
   const fieldErrors: Record<string, string[]> = {};
   if ([400, 422].includes(status) && data.fieldErrors && typeof data.fieldErrors === 'object') {
     for (const field of Object.keys(data.fieldErrors).slice(0, 30)) if (/^[a-z][a-z0-9_.]{0,63}$/i.test(field) && !/password|token|secret|cookie|authorization/i.test(field)) fieldErrors[field] = ['Check this field.'];

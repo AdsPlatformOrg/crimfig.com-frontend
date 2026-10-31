@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,7 +11,7 @@ import {
   SlidersHorizontal,
   Table,
 } from 'lucide-react';
-import { loadCampaigns, loadCampaignDetails, setCampaignStatus, type CampaignListItem } from '../../../lib/campaigns-api';
+import { loadCampaignPage, loadCampaignDetails, setCampaignStatus, type CampaignListItem } from '../../../lib/campaigns-api';
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
 import { TablePreferencesModal, type ColumnConfig } from '../TablePreferencesModal';
@@ -35,6 +35,11 @@ export function CampaignsManager() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [page,setPage]=useState(1);
+  const [total,setTotal]=useState(0);
+  const [counts,setCounts]=useState<Record<string,number>>({});
+  const generation=useRef(0);
+  const pageSize=25;
   const [pendingWrites, setPendingWrites] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -58,17 +63,21 @@ export function CampaignsManager() {
 
   useEffect(() => {
     fetchCampaigns();
-  }, []);
+    return()=>{generation.current++;};
+  }, [page,statusFilter]);
 
   const fetchCampaigns = async () => {
+    const current=++generation.current;
     try {
       setIsLoading(true);
-      const data = await loadCampaigns(true);
-      setCampaigns(data || []);
+      const data = await loadCampaignPage(statusFilter,page,pageSize);
+      if(current!==generation.current)return;
+      if(page>1&&data.items.length===0){setPage(Math.max(1,Math.ceil(data.total/pageSize)));return;}
+      setCampaigns(data.items);setTotal(data.total);setCounts(data.counts);setActionError(null);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to load campaigns.');
+      if(current===generation.current)setActionError(err instanceof Error ? err.message : 'Failed to load campaigns.');
     } finally {
-      setIsLoading(false);
+      if(current===generation.current)setIsLoading(false);
     }
   };
 
@@ -86,6 +95,7 @@ export function CampaignsManager() {
       setCampaigns((prev) =>
         prev.map((c) => (c.id === campaignId ? { ...c, status: updated.status, moderationStatus: updated.moderationStatus ?? c.moderationStatus, capabilities: updated.capabilities ?? c.capabilities } : c)),
       );
+      await fetchCampaigns();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Failed to update status.');
     } finally {
@@ -97,12 +107,7 @@ export function CampaignsManager() {
     }
   };
 
-  const matchesFilter = (c: Campaign, filter: string) =>
-    filter === 'all' ? true : filter === 'under_review'
-      ? c.status === 'under_review' || c.moderationStatus === 'pending_primary_review' || c.moderationStatus === 'pending_manager_approval'
-      : c.status === filter;
-
-  const displayList = campaigns.filter((c) => matchesFilter(c, statusFilter));
+  const displayList = campaigns;
 
   const visibleCols = columnsConfig.filter((c) => c.visible);
 
@@ -165,13 +170,13 @@ export function CampaignsManager() {
           { id: 'suspended', label: 'Suspended' },
           { id: 'trash', label: 'Trash' },
         ].map((tab) => {
-          const count = campaigns.filter((c) => matchesFilter(c, tab.id)).length;
+          const count = counts[tab.id]??0;
           const isSelected = statusFilter === tab.id;
           return (
             <Button
               key={tab.id}
               type="button"
-              onClick={() => setStatusFilter(tab.id)}
+              onClick={() => {setPage(1);setStatusFilter(tab.id);}}
               variant={isSelected ? 'default' : 'outline'}
               size="sm"
               aria-pressed={isSelected}
@@ -423,6 +428,13 @@ export function CampaignsManager() {
         </Card>
       )}
 
+      <nav aria-label="Campaign pages" style={{display:'flex',alignItems:'center',gap:12}}>
+        <Button variant="outline" disabled={isLoading||page===1} onClick={()=>setPage(p=>p-1)}>Previous</Button>
+        {page===1&&<ActionHelp action="Previous page" reason="You are on the first page." />}
+        <span aria-live="polite">Page {page} of {Math.max(1,Math.ceil(total/pageSize))} · {total} campaigns</span>
+        <Button variant="outline" disabled={isLoading||page*pageSize>=total} onClick={()=>setPage(p=>p+1)}>Next</Button>
+        {page*pageSize>=total&&<ActionHelp action="Next page" reason="There are no more campaign pages in this filter." />}
+      </nav>
       {/* Table Preferences Modal */}
       <TablePreferencesModal
         isOpen={isTablePrefsOpen}

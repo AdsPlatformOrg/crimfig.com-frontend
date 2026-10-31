@@ -15,6 +15,7 @@ export type CreativeRecord = operations['Campaigns_replaceCreative']['responses'
 export function createAdsOperations(client: ReturnType<typeof createAdsClient>) {
   return {
     async listCampaigns(status?: string) { return dataOf(await client.GET('/api/v1/campaigns', { params: { query: { status } } })); },
+    async campaignPage(status='all',page=1,pageSize=25) { return dataOf(await client.GET('/api/v1/campaigns/page',{params:{query:{status,page,pageSize}}})); },
     async catalog(category?: string) { return dataOf(await client.GET('/api/v1/campaigns/catalog', { params: { query: { category } } })); },
     async capabilities() { return dataOf(await client.GET('/api/v1/campaigns/creation-capabilities')); },
     async details(id: string) { return dataOf(await client.GET('/api/v1/campaigns/{id}', { params: { path: { id } } })); },

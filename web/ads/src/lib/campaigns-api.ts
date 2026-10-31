@@ -93,11 +93,12 @@ export function websiteView(site: any) {
     typeof site.verificationToken !== "string"
   )
     throw new Error("Invalid website response.");
+  const expired=site.verificationStatus==='verified'&&(!site.verificationExpiresAt||Date.parse(site.verificationExpiresAt)<=Date.now());
   return {
     ...site,
-    isVerified: site.verificationStatus === "verified",
-    verificationStatus: site.verificationStatus ?? (site.isVerified ? "verified" : "pending"),
-    verificationErrorMessage: site.verificationErrorMessage ?? null,
+    isVerified: site.verificationStatus === "verified"&&!expired,
+    verificationStatus: expired?'failed':site.verificationStatus ?? (site.isVerified ? "verified" : "pending"),
+    verificationErrorMessage: expired?'Website ownership verification has expired. Verify your website again to resume delivery.':site.verificationErrorMessage ?? null,
     policyStatus: site.policyStatus ?? (site.verificationStatus === "verified" ? "testing" : "unverified"),
     lastPingAt: site.lastPingAt ?? "No delivery evidence loaded",
     activePlacementCount: site.activePlacementCount ?? 0,
@@ -109,6 +110,10 @@ export function loadCampaigns(own: false): Promise<ReturnType<typeof campaignVie
 export async function loadCampaigns(own: boolean) {
   return own ? (await adsApi().listCampaigns()).map(campaign => campaignView(campaign)) :
     (await adsApi().catalog()).map(campaign => campaignView(campaign));
+}
+export async function loadCampaignPage(status='all',page=1,pageSize=25) {
+  const result=await adsApi().campaignPage(status,page,pageSize);
+  return {...result,items:result.items.map(campaign=>campaignView(campaign))};
 }
 export async function loadWebsites() {
   return arrayData(await apiData("/api/v1/promoters/websites")).map(
@@ -186,7 +191,7 @@ export async function createCampaignWorkflow(input:CampaignDefaultsInput,stacks:
   return campaign.id;
 }
 
-export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(StackDraftInput & {id?:string;ads:(CreativeDraftInput & {id?:string})[]})[], existing?:{id:string;contentRevision:number}, onCreated?:(id:string,revision:number,defaultStackId?:string)=>void, onOperation?:(id:string,control:{expectedRevision:number;requestId:string})=>void) {
+export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(StackDraftInput & {id?:string;ads:(CreativeDraftInput & {id?:string})[]})[], existing?:{id:string;contentRevision:number}, onCreated?:(id:string,revision:number,defaultStackId?:string)=>void, onOperation?:(id:string,control:{expectedRevision:number;requestId:string},payload:unknown)=>void) {
   let campaign=existing;
   if(!campaign) {
     const found=input.requestId?await adsApi().creation(input.requestId):null;
@@ -199,8 +204,7 @@ export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(St
   }
   try {
     const control={expectedRevision:campaign.contentRevision,requestId:crypto.randomUUID()};
-    onOperation?.(campaign.id,control);
-    return await adsApi().save(campaign.id,{
+    const payload={
       ...control,
       title:input.title.trim()||'Untitled campaign',description:input.description??'',category:input.category??'',channels:input.channels,
       budgetUsd:input.budgetUsd,dailyBudgetUsd:input.dailyBudgetUsd,costPerImpressionCents:input.costPerImpressionCents,costPerClickCents:input.costPerClickCents,
@@ -208,7 +212,9 @@ export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(St
       geoMode:input.geoMode,locations:input.locations,
       stacks:stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,schedule:stack.schedule,
         ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline??'',bodyText:ad.bodyText??'',ctaText:ad.ctaText??'',destinationUrl:ad.destinationUrl,adFormat:ad.adFormat,mediaAssetId:ad.mediaAssetId}))})),
-    });
+    };
+    onOperation?.(campaign.id,control,payload);
+    return await adsApi().save(campaign.id,payload);
   } catch(error) { throw new CampaignWorkflowError(campaign.id,error instanceof Error?error.message:'Save outcome is unknown. Check the campaign before trying again.',error); }
 }
 

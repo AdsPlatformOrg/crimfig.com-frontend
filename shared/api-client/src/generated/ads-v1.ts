@@ -223,6 +223,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Campaigns_campaignPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/{id}": {
         parameters: {
             query?: never;
@@ -886,6 +902,292 @@ export interface components {
                 title: string;
                 touchesCount?: number;
                 updatedAt?: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Campaigns_campaignPageResponse: {
+            data: {
+                counts: {
+                    [key: string]: number;
+                };
+                items: ({
+                    adStacks?: ({
+                        campaignId: string;
+                        creatives?: ({
+                            /** @enum {string} */
+                            adFormat?: "banner" | "card" | "video" | "interstitial";
+                            adStackId?: string | null;
+                            /** @enum {string} */
+                            adType?: "text" | "image" | "video";
+                            bodyText?: string | null;
+                            campaignId: string;
+                            ctaText?: string | null;
+                            destinationUrl: string;
+                            headline?: string | null;
+                            id: string;
+                            imageSpecs?: ({
+                                bytes?: number;
+                                height?: number;
+                                mimeType?: string;
+                                preparation?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                renditions?: {
+                                    [key: string]: unknown;
+                                }[];
+                                sha256?: string | null;
+                                width?: number;
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                            imageUrl?: string | null;
+                            mediaAssetId?: string | null;
+                            /** @enum {string|null} */
+                            mediaFormat?: "image" | "gif" | "video" | null;
+                            posterUrl?: string | null;
+                            rejectionReason?: string | null;
+                            /** @enum {string} */
+                            reviewStatus?: "pending" | "approved" | "rejected";
+                            status?: string;
+                            videoUrl?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        effectiveSettings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        geoMode?: string;
+                        id: string;
+                        name: string;
+                        position?: number;
+                        schedule?: (({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        })) | null;
+                        settings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        targetDevices?: string | null;
+                        targetHours?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    advertiserId?: string;
+                    approvedRevision?: number | null;
+                    approvedSubmissionId?: string | null;
+                    budgetUsd?: number;
+                    budgetUsdCents: number;
+                    capabilities?: {
+                        blocker: string | null;
+                        canActivate: boolean;
+                        canBeginEdit: boolean;
+                        canEdit: boolean;
+                        canPause: boolean;
+                        canSubmit: boolean;
+                        canTrash: boolean;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    category?: string | null;
+                    channels?: string | null;
+                    clicksCount?: number;
+                    contentRevision?: number;
+                    costPerClickUsdCents?: number;
+                    costPerImpressionUsdCents?: number;
+                    createdAt?: string;
+                    creatives?: ({
+                        /** @enum {string} */
+                        adFormat?: "banner" | "card" | "video" | "interstitial";
+                        adStackId?: string | null;
+                        /** @enum {string} */
+                        adType?: "text" | "image" | "video";
+                        bodyText?: string | null;
+                        campaignId: string;
+                        ctaText?: string | null;
+                        destinationUrl: string;
+                        headline?: string | null;
+                        id: string;
+                        imageSpecs?: ({
+                            bytes?: number;
+                            height?: number;
+                            mimeType?: string;
+                            preparation?: {
+                                [key: string]: unknown;
+                            } | null;
+                            renditions?: {
+                                [key: string]: unknown;
+                            }[];
+                            sha256?: string | null;
+                            width?: number;
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                        imageUrl?: string | null;
+                        mediaAssetId?: string | null;
+                        /** @enum {string|null} */
+                        mediaFormat?: "image" | "gif" | "video" | null;
+                        posterUrl?: string | null;
+                        rejectionReason?: string | null;
+                        /** @enum {string} */
+                        reviewStatus?: "pending" | "approved" | "rejected";
+                        status?: string;
+                        videoUrl?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    currentSubmissionId?: string | null;
+                    dailyBudgetUsd?: number | null;
+                    dailyBudgetUsdCents?: number | null;
+                    defaultStackId?: string;
+                    description?: string | null;
+                    endsAt?: string | null;
+                    /** @enum {string} */
+                    format: "banner" | "card" | "video" | "interstitial";
+                    formats?: ("banner" | "card" | "video" | "interstitial")[];
+                    frequencyCapPerDay?: number;
+                    geoLocations?: {
+                        [key: string]: unknown;
+                    }[];
+                    geoMode?: string;
+                    hourlyPacingUsdCents?: number | null;
+                    hoversCount?: number;
+                    id: string;
+                    impressionsCount?: number;
+                    /** @enum {string} */
+                    moderationStatus: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
+                    pricingModel?: string;
+                    pricingVersion?: number;
+                    rejectionReason?: string | null;
+                    remainingBudgetUsd?: number;
+                    remainingBudgetUsdCents: number;
+                    schedule?: (({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    })) | null;
+                    spentUsd?: number;
+                    startsAt?: string | null;
+                    /** @enum {string} */
+                    status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
+                    submissionIntentId?: string | null;
+                    submissionRequestId?: string | null;
+                    submissionState?: string | null;
+                    submittedAt?: string | null;
+                    targetCountries?: string | null;
+                    targetDevices?: (string | string[]) | null;
+                    targetHours?: (string | number[]) | null;
+                    targetStates?: string | null;
+                    title: string;
+                    touchesCount?: number;
+                    updatedAt?: string;
+                } & {
+                    [key: string]: unknown;
+                })[];
+                page: number;
+                pageSize: number;
+                total: number;
             } & {
                 [key: string]: unknown;
             };
@@ -5612,6 +5914,119 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Campaigns_addCreativeResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_campaignPage: {
+        parameters: {
+            query?: {
+                status?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_campaignPageResponse"];
                 };
             };
             /** @description Sanitized API error */

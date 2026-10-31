@@ -8,6 +8,34 @@ export interface WithdrawalQuote {
   rate: number; expiresAt: string;
 }
 export interface WithdrawalStatus { reference: string; status: string; confirmation?: string; refund?: { grossUsdCents: number; refundUsdCents: number; retainedUsdCents: number; retainedKobo: number } }
+
+export interface FinancialProof {
+  version: 1;
+  keyId: string;
+  purpose: 'owner_authorization' | 'independent_review';
+  audience: 'financial-executor';
+  environment: 'test' | 'live';
+  digest: string;
+  actorId: string;
+  personId: string;
+  nonce: string;
+  issuedAt: number;
+  expiresAt: number;
+  signature: string;
+}
+
+export interface FinancialChallengeResponse {
+  challengeId: string;
+  purpose: string;
+  binding?: any;
+  expiresAt: number | string;
+  consumed?: boolean;
+}
+export async function withdrawalAvailability(): Promise<{ available: boolean; reason: string | null }> {
+  const data = await billingData('/api/v1/withdrawals/availability');
+  if (!data || typeof data.available !== 'boolean' || (data.reason !== null && !['security_setup','security_unavailable'].includes(data.reason))) throw new Error('Withdrawal availability could not be confirmed.');
+  return data;
+}
 export function withdrawalRequest(search: string): string | null {
   const values = new URLSearchParams(search).getAll('withdrawal_request');
   if (!values.length) return null;
@@ -37,10 +65,50 @@ function status(data: WithdrawalStatus, reference?: string) {
       data.refund.refundUsdCents + data.refund.retainedUsdCents !== data.refund.grossUsdCents)) throw new Error('Refund breakdown could not be confirmed.');
   return data;
 }
-export async function confirmWithdrawal(quote: WithdrawalQuote) {
+export async function prepareWithdrawalAuthorization(quote: WithdrawalQuote): Promise<{ reference: string; digest: string; state: string }> {
   validateWithdrawalQuote(quote, { requestId: quote.requestId, bankAccountId: quote.bankAccountId, amountUsd: quote.amountUsdCents / 100 });
-  return status(await billingData('/api/v1/withdrawals', post({ requestId: quote.requestId, quoteId: quote.quoteId,
-    bankAccountId: quote.bankAccountId, amountUsd: quote.amountUsdCents / 100 })), quote.reference);
+  const data = await billingData('/api/v1/withdrawals/authorizations', post({
+    requestId: quote.requestId, quoteId: quote.quoteId, bankAccountId: quote.bankAccountId, amountUsd: quote.amountUsdCents / 100,
+  }));
+  if (!data || typeof data.reference !== 'string' || !/^wd_[a-f0-9]{40}$/.test(data.reference) || typeof data.digest !== 'string') {
+    throw new Error('Withdrawal authorization could not be prepared.');
+  }
+  return data;
+}
+
+export async function beginWithdrawalChallenge(reference: string): Promise<FinancialChallengeResponse> {
+  if (!/^wd_[a-f0-9]{40}$/.test(reference)) throw new Error('Invalid withdrawal reference.');
+  const data = await billingData<FinancialChallengeResponse>(`/api/v1/financial-authorizations/withdrawals/${encodeURIComponent(reference)}/challenges`, post({}));
+  if (!data || !uuid.test(data.challengeId)) throw new Error('Financial authorization challenge could not be retrieved.');
+  return data;
+}
+
+export async function confirmWithdrawalChallenge(challengeId: string, code: string): Promise<{ id: string; proof: FinancialProof }> {
+  if (!uuid.test(challengeId)) throw new Error('Invalid challenge ID.');
+  if (!/^\d{6}$/.test(code)) throw new Error('Enter a valid 6-digit authenticator code.');
+  const data = await billingData<{ id: string; proof: FinancialProof }>(`/api/v1/financial-authorizations/challenges/${encodeURIComponent(challengeId)}/confirm`, post({ code }));
+  if (!data || !data.proof || data.proof.version !== 1 || !data.proof.signature) throw new Error('Financial authorization proof could not be confirmed.');
+  return data;
+}
+
+export async function submitReviewAuthorization(reference: string, proof: FinancialProof): Promise<{ reference: string; state: string }> {
+  if (!/^wd_[a-f0-9]{40}$/.test(reference)) throw new Error('Invalid withdrawal reference.');
+  if (!proof || proof.purpose !== 'independent_review' || !proof.signature) throw new Error('Valid reviewer proof required.');
+  const data = await billingData<{ reference: string; state: string }>(`/api/v1/withdrawals/${encodeURIComponent(reference)}/reviews`, post({ proof }));
+  if (!data || data.reference !== reference) throw new Error('Review could not be submitted.');
+  return data;
+}
+
+export async function confirmWithdrawal(quote: WithdrawalQuote, ownerProof?: FinancialProof) {
+  validateWithdrawalQuote(quote, { requestId: quote.requestId, bankAccountId: quote.bankAccountId, amountUsd: quote.amountUsdCents / 100 });
+  const payload: Record<string, any> = {
+    requestId: quote.requestId,
+    quoteId: quote.quoteId,
+    bankAccountId: quote.bankAccountId,
+    amountUsd: quote.amountUsdCents / 100,
+  };
+  if (ownerProof) payload.ownerProof = ownerProof;
+  return status(await billingData('/api/v1/withdrawals', post(payload)), quote.reference);
 }
 export async function recoverWithdrawal(requestId: string) {
   if (!uuid.test(requestId)) throw new Error('Invalid withdrawal request.');

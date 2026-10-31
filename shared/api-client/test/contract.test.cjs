@@ -19,7 +19,7 @@ test('offline export loads real controller metadata, no business/DB modules or l
   try {
     const one = await exportContract(), two = await exportContract();
     assert.equal(one.text, two.text); assert.deepEqual(one.document, artifact);
-    assert.equal(one.manifest.operations.length, 36);
+    assert.equal(one.manifest.operations.length, 37);
     assert.equal(one.document.paths['/api/v1/campaigns/catalog'].get.security.length, 0);
     assert.deepEqual(one.document.paths['/api/v1/campaigns'].post.security, [{ bearer: [] }]);
     assert.deepEqual(one.document.paths['/api/v1/admin/ads/moderation/campaigns/{id}/manager-approval'].post['x-ads-roles'], ['ads_manager']);
@@ -46,13 +46,13 @@ test('all documented operations have distinct IDs, success/error schema and appr
     assert.ok(operation.responses['400']); assert.ok(operation.responses['503']);
     assert.ok(Object.keys(operation.responses).some(code => /^2\d\d$/.test(code)));
   }
-  assert.equal(new Set(ids).size, 36);
+  assert.equal(new Set(ids).size, 37);
   assert.ok(artifact.paths['/api/v1/uploads/prepared'].post.requestBody.content['multipart/form-data']);
   assert.ok(artifact.paths['/api/v1/uploads/media/{storageKey}'].get.responses['206'].content['application/octet-stream']);
   assert.equal(artifact.paths['/api/v1/uploads/media/{storageKey}'].get.security.length, 0);
 });
 test('manifest detects changed artifacts and source-provenance input is explicit', () => {
-  const text = fs.readFileSync(path.join(root, 'src/generated/ads-v1.json'), 'utf8');
+  const text = fs.readFileSync(path.join(root, 'src/generated/ads-v1.json'), 'utf8').replace(/\r\n/g,'\n');
   const manifest = require('../src/generated/ads-v1.manifest.json');
   const hash = value => crypto.createHash('sha256').update(value).digest('hex');
   assert.equal(hash(text), manifest.sha256); assert.notEqual(hash(text.replace('campaigns', 'campaings')), manifest.sha256);

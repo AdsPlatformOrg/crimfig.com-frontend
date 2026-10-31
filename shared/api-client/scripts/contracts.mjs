@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import openapiTS, { astToString } from 'openapi-typescript';
+import {contractText,sameContractText} from './contract-text.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const workspace = path.resolve(root, '../..');
@@ -17,7 +18,7 @@ const result = await exportContract();
 const sourceHash = crypto.createHash('sha256');
 for (const relative of ['api/ads-api/src/contracts/ads-contract.ts', 'api/ads-api/src/contracts/api-configuration.ts',
   ...['campaigns', 'uploads', 'moderation'].map(name => `api/ads-api/src/modules/${name}/${name}.controller.ts`)]) {
-  sourceHash.update(relative).update(fs.readFileSync(path.join(backend, relative)));
+  sourceHash.update(relative).update(contractText(fs.readFileSync(path.join(backend, relative),'utf8')));
 }
 const manifest = JSON.stringify({ ...result.manifest, sourceSha256: sourceHash.digest('hex'), generator: 'openapi-typescript@7.13.0' }, null, 2) + '\n';
 const types = astToString(await openapiTS(result.document));
@@ -31,7 +32,7 @@ const outputs = new Map([
 const stale = [];
 for (const [filename, contents] of outputs) {
   if (mode === 'generate') { fs.mkdirSync(path.dirname(filename), { recursive: true }); fs.writeFileSync(filename, contents); }
-  else if (!fs.existsSync(filename) || fs.readFileSync(filename, 'utf8') !== contents) stale.push(path.relative(workspace, filename));
+  else if (!fs.existsSync(filename) || !sameContractText(fs.readFileSync(filename, 'utf8'),contents)) stale.push(path.relative(workspace, filename));
 }
 if (stale.length) throw new Error(`Stale API contract/client: ${stale.join(', ')}. Run pnpm api:generate; fix DTO/response metadata at the backend source, never generated files.`);
 console.log(`${mode}: ${result.manifest.operations.length} operations; schema ${result.manifest.sha256.slice(0, 12)}`);

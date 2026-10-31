@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { SessionGate } from '../../components/SessionGate';
 import { BillingAdminGuard } from '../../components/BillingAdminGuard';
+import { FinancialPolicyPanel } from '../../components/console/FinancialPolicyPanel';
 import { ShieldCheck, RefreshCw, Layers, DollarSign, ArrowLeft } from 'lucide-react';
 
 export default function BillingAdminPage() {
@@ -74,6 +75,7 @@ export default function BillingAdminPage() {
             </Link>
           </div>
 
+          <FinancialPolicyPanel />
           {/* Operational Cards */}
           <div
             style={{

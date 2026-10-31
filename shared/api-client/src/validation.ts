@@ -6,7 +6,9 @@ export function jsonSchema(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(jsonSchema);
   if (!value || typeof value !== 'object') return value;
   const record = value as Schema;
-  const converted = Object.fromEntries(Object.entries(record).filter(([key]) => !['nullable', 'example', 'xml', 'discriminator'].includes(key)).map(([key, val]) => [key, jsonSchema(val)]));
+  const schemaMaps = ['properties', 'patternProperties', 'definitions', '$defs', 'schemas'];
+  const converted = Object.fromEntries(Object.entries(record).filter(([key]) => !['nullable', 'example', 'xml', 'discriminator'].includes(key)).map(([key, val]) => [key,
+    schemaMaps.includes(key) && val && typeof val==='object' ? Object.fromEntries(Object.entries(val).map(([name,schema])=>[name,jsonSchema(schema)])) : jsonSchema(val)]));
   return record.nullable ? { anyOf: [converted, { type: 'null' }] } : converted;
 }
 const ajv = new Ajv({ strict: false, validateFormats: false, allErrors: false, ownProperties: true });
