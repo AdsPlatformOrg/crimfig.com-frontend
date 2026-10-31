@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { AuthAdminGuard } from './AuthAdminGuard';
 import { consentSession } from '../lib/consent';
+import { ThemeSwitcher } from './ThemeSwitcher';
 import { Badge, Button, Card, Input } from './ui';
 
 export interface ErrorMonitorSummary {
@@ -942,6 +943,7 @@ function ErrorMonitorAuthedConsole() {
           backgroundColor: 'var(--bg-elevated)',
           border: '1px solid var(--border-subtle)',
           borderRadius: '14px',
+          marginBottom: '28px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -994,6 +996,29 @@ function ErrorMonitorAuthedConsole() {
           ))}
         </div>
       </Card>
+
+      {/* Console Footer with Theme Switcher (PLAN-0063) */}
+      <footer
+        style={{
+          borderTop: '1px solid var(--border-subtle)',
+          paddingTop: '20px',
+          paddingBottom: '20px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          fontSize: '12px',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CrimFig Platform Monitor</span>
+          <span>•</span>
+          <span>© {new Date().getFullYear()} CrimFig Ecosystem</span>
+        </div>
+        <ThemeSwitcher showLabel labelPrefix="Theme:" />
+      </footer>
     </div>
   );
 }
