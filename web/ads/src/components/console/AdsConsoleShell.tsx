@@ -1,3 +1,4 @@
+import { workspaceNavigation } from '../../lib/workspace-navigation';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
@@ -43,6 +44,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   useEffect(() => { setIsMobileNavOpen(false); }, [pathname]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [staffRoles,setStaffRoles]=useState<string[]>([]);
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
   const authBase = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
   const billingBase = ecosystemOrigin('billing', process.env.NEXT_PUBLIC_BILLING_WEB_URL, authBase);
@@ -62,9 +64,10 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
     let active = true;
     async function checkStaff() {
       try {
-        const res = await apiData<{ isStaff: boolean }>('/api/v1/ecosystem/staff-status').catch(() => null);
+        const res = await apiData<{ isStaff: boolean; roles:string[] }>('/api/v1/ecosystem/staff-status').catch(() => null);
         if (active && res) {
           setIsStaffUser(Boolean(res.isStaff));
+          setStaffRoles(Array.isArray(res.roles)?res.roles:[]);
         }
       } catch {
         // Safe default: non-staff
@@ -76,88 +79,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
     };
   }, []);
 
-  // Advertiser Nav Groups
-  const advertiserNavGroups: NavGroup[] = [
-    {
-      title: 'Campaign Management',
-      items: [
-        { id: 'overview_dash', label: 'Overview Dashboard', icon: BarChart3, href: '/dashboard' },
-        { id: 'campaigns', label: 'Active Campaigns', icon: Layers, href: '/campaigns' },
-        { id: 'new_campaign', label: 'Create Campaign', icon: Plus, href: '/campaigns/new' },
-      ],
-    },
-    {
-      title: 'Performance & Traffic',
-      items: [
-        { id: 'conversions', label: 'Conversion Tracking', icon: Sparkles, href: '/conversions' },
-        { id: 'disputes', label: 'Invalid Traffic Audits', icon: ShieldCheck, href: '/disputes' },
-      ],
-    },
-    {
-      title: 'Finance & Account',
-      items: [
-        { id: 'billing_escrow', label: 'Billing & Escrow', icon: CreditCard, href: '/billing' },
-        { id: 'profile', label: 'User Profile', icon: User, href: '/profile' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' },
-        { id: 'notifications', label: 'Notifications', icon: Bell, href: '/notifications' },
-        { id: 'support', label: 'Help & Support', icon: HelpCircle, href: '/support' },
-      ],
-    },
-  ];
-
-  // Promoter Nav Groups
-  const promoterNavGroups: NavGroup[] = [
-    {
-      title: 'Websites & Delivery',
-      items: [
-        { id: 'websites', label: 'Websites', icon: Globe, href: '/promoter/websites' },
-        { id: 'slots', label: 'CrimFig Ads Slots', icon: Layers, href: '/promoter/slots' },
-      ],
-    },
-    {
-      title: 'Direct Advertising',
-      items: [
-        { id: 'adstation', label: 'AdStation Direct Ads', icon: Share2, href: '/promoter/adstation' },
-      ],
-    },
-    {
-      title: 'Distribution Channels',
-      items: [
-        { id: 'individuals', label: 'Links & Reels Social', icon: Share2, href: '/promoter/individuals' },
-        { id: 'mobile_apps', label: 'Mobile Apps SDK', icon: Smartphone, href: '/promoter/mobile-apps' },
-      ],
-    },
-    {
-      title: 'Discovery & Quality',
-      items: [
-        { id: 'marketplace', label: 'Ad Marketplace', icon: Share2, href: '/promoter/marketplace' },
-        { id: 'quality', label: 'Quality & Trust Score', icon: ShieldCheck, href: '/promoter/quality' },
-      ],
-    },
-  ];
-
-  // Admin Nav Groups
-  const adminNavGroups: NavGroup[] = [
-    {
-      title: 'Advertising Operations',
-      items: [
-        { id: 'moderation', label: 'Creative Review Queue', icon: ShieldCheck, href: '/admin/moderation' },
-        { id: 'house_ads', label: 'CrimFig House Ads', icon: Sparkles, href: '/admin/house-ads' },
-        { id: 'admin_disputes', label: 'Traffic Adjustments', icon: ShieldAlert, href: '/admin/disputes' },
-      ],
-    },
-    {
-      title: 'System & Health',
-      items: [
-        { id: 'admin_tests', label: 'API Test Suite', icon: Sparkles, href: '/admin/tests' },
-        { id: 'quality', label: 'Traffic Integrity Engine', icon: ShieldCheck, href: '/promoter/quality' },
-      ],
-    },
-  ];
-
-
-  const currentNavGroups: NavGroup[] =
-    role === 'admin' ? adminNavGroups : role === 'promoter' ? promoterNavGroups : advertiserNavGroups;
+  const currentNavGroups=workspaceNavigation(role,staffRoles);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)' }}>
@@ -175,7 +97,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           <div className="cf-console-actions">
             {role==='advertiser' && pathname!=='/campaigns/new' && <Button asChild size="sm" className="cf-console-context-action"><Link href="/campaigns/new"><Plus size={16} aria-hidden="true" />New Campaign</Link></Button>}
             {role==='promoter' && <Button asChild variant="secondary" size="sm" className="cf-console-context-action"><Link href="/promoter/websites?action=new"><Plus size={16} aria-hidden="true" />Add Property</Link></Button>}
-            <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:'/settings'},{label:'Account Security',href:`${authBase}/security`}]} />
+            <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:`/settings?workspace=${role}`},{label:'Account Security',href:`${authBase}/security`}]} />
           </div>
         </div>
       </header>
@@ -186,39 +108,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           app="ads"
           groups={currentNavGroups}
           activeId={activeNavId}
-          onSelect={(id) => {
-            if (id === 'overview_dash') {
-              router.push('/dashboard');
-            } else if (id === 'new_campaign') {
-              router.push('/campaigns/new');
-            } else if (['campaigns', 'conversions', 'disputes', 'notifications', 'support', 'profile', 'settings'].includes(id)) {
-              router.push(`/${id}`);
-            } else if (id === 'billing_escrow') {
-              router.push('/billing');
-            } else if (id === 'websites') {
-              router.push('/promoter/websites');
-            } else if (id === 'slots') {
-              router.push('/promoter/slots');
-            } else if (id === 'adstation') {
-              router.push('/promoter/adstation');
-            } else if (id === 'individuals') {
-              router.push('/promoter/individuals');
-            } else if (id === 'mobile_apps') {
-              router.push('/promoter/mobile-apps');
-            } else if (id === 'marketplace') {
-              router.push('/promoter/marketplace');
-            } else if (id === 'quality') {
-              router.push('/promoter/quality');
-            } else if (id === 'moderation') {
-              router.push('/admin/moderation');
-            } else if (id === 'house_ads') {
-              router.push('/admin/house-ads');
-            } else if (id === 'admin_disputes') {
-              router.push('/admin/disputes');
-            } else if (id === 'admin_tests') {
-              router.push('/admin/tests');
-            }
-          }}
+          onSelect={(id)=>{const item=currentNavGroups.flatMap(group=>group.items.flatMap(item=>item.children||[item])).find(item=>item.id===id);if(item?.href)router.push(item.href);}}
 
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}

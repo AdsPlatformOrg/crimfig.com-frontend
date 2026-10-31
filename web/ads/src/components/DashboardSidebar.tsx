@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import {
@@ -38,6 +38,8 @@ export interface NavItem {
   action?: () => void;
   href?: string;
   active?: boolean;
+  children?: NavItem[];
+  roles?: string[];
 }
 
 export interface NavGroup {
@@ -72,6 +74,10 @@ export function DashboardSidebar({
   onCloseMobile,
   switchAppLink,
 }: DashboardSidebarProps) {
+  const sidebarRef=useRef<HTMLElement>(null);
+  useEffect(()=>{if(!isMobileOpen)return;const old=document.body.style.overflow;const previous=document.activeElement as HTMLElement;document.body.style.overflow='hidden';const root=sidebarRef.current;const focusable=()=>Array.from(root?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),[tabindex="0"]')||[]);focusable()[0]?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){onCloseMobile?.();return;}if(e.key==='Tab'){const nodes=focusable();const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};root?.addEventListener('keydown',key);return()=>{document.body.style.overflow=old;root?.removeEventListener('keydown',key);previous?.focus();};},[isMobileOpen,onCloseMobile]);
+  const [expanded,setExpanded]=useState<Record<string,boolean>>({});
+  useEffect(()=>{for(const group of groups)for(const item of group.items)if(item.children?.some(child=>child.id===activeId))setExpanded(old=>({...old,[item.id]:true}));},[activeId,groups]);
   return (
     <>
       {/* Mobile Drawer Backdrop */}
@@ -91,6 +97,9 @@ export function DashboardSidebar({
 
       {/* Sidebar Container */}
       <aside
+        ref={sidebarRef}
+        role={isMobileOpen?"dialog":undefined}
+        aria-modal={isMobileOpen||undefined}
         id={`${app}-dashboard-sidebar`}
         className="cf-dashboard-sidebar"
         data-mobile-open={isMobileOpen}
@@ -163,6 +172,7 @@ export function DashboardSidebar({
                 )}
 
                 {group.items.map((item) => {
+                  if(item.children){const containsActive=item.children.some(child=>child.id===activeId);const open=expanded[item.id]??containsActive;return <div key={item.id}><Button variant="ghost" aria-expanded={open} aria-controls={`nav-${item.id}`} onClick={()=>{if(isCollapsed)onToggleCollapse?.();setExpanded(old=>({...old,[item.id]:!open}));}} style={{width:'100%',minHeight:44,justifyContent:'flex-start',gap:8,color:'var(--text-primary)'}} title={isCollapsed?item.label:undefined}><item.icon style={{width:18,height:18}}/><span style={{fontSize:isCollapsed?10:13}}>{item.label}</span></Button>{open&&<ul id={`nav-${item.id}`} style={{listStyle:'none',padding:isCollapsed?0:'0 0 0 16px',margin:0}}>{item.children.map(child=><li key={child.id}><Link href={child.href||'#'} aria-current={child.id===activeId?'page':undefined} onClick={onCloseMobile} style={{display:'block',padding:'12px 8px',minHeight:44,fontSize:13,overflowWrap:'anywhere',background:child.id===activeId?'var(--badge-bg)':'transparent',color:child.id===activeId?'var(--color-crimson)':'var(--text-secondary)',borderRadius:8}}>{child.label}</Link></li>)}</ul>}</div>;}
                   const Icon = item.icon;
                   const isActive = activeId === item.id;
 

@@ -1,3 +1,6 @@
+## 2026-10-31 - PLAN-0064 local repair implementation
+Approved by JED (proceed). Reports/drill-downs, catalog/theme/error-state fixes, nested permission-aware navigation, retained masked request diagnostics and media/snapshot corrections implemented. Evidence: docs/reviews/2026-10-31-plan0064-implementation.md. Backend 89/89 (7 suites); targeted 35/35 rerun is a subset. Frontend 14/14. Migrations 0030/0031 registered, not applied. No deployment, DB/config writes or commits/pushes. Live 500 cause and browser acceptance unverified; broader checks DEFERRED - OWNER REQUEST. Owner requested round-up. PLAN-0064 remains IN_PROGRESS for release acceptance.
+
 # crimfig-frontend — Serial Activity Log
 
 ## 2026-10-31 — PLAN-0052 Option A & B Customer & Reviewer Flows (ACT-20261031-002, COMPLETED)
@@ -429,3 +432,8 @@ Reviewed PLAN-0057/0058 source and drafted .agents/plans/PLAN-0061-house-ad-and-
 ## 2026-10-31 — PLAN-0062 contextual sidebar plan
 Drafted PLAN-0062 (DRAFT/PENDING) for workspace-first feature menus, nested secondary ecosystem tools, header/account separation, safe route namespace resolution and Admin subtree guarding. Source review found unlisted routes falling back to Advertiser, duplicate workspace links and unconditional Billing shortcut. Includes focused rejection-first and interaction unit acceptance; broader verification deferred. Documentation only; existing PLAN-0061 approval/work preserved.
 
+## 2026-10-31 — PLAN-0063 monitor diagnostics and themes plan
+Drafted PLAN-0063 (DRAFT/PENDING) including detailed stack/request/response/log inspector, retained occurrence search, improved dark/light contrast and footer Light/Dark switch reusing existing ThemeSwitcher/crimfig-theme. Loading, unavailable/legacy/truncated states and focused interaction/theme units specified. Documentation only; no UI code/tests/deployment. Broader acceptance deferred.
+
+## 2026-10-31 — PLAN-0064 reporting/navigation/theme repair plan
+Drafted PLAN-0064 DRAFT/PENDING: fix Auth light canvas mismatch, House styling/error states, management alias on performance page, duplicate workspace wrapper, missing creative/website/promoter/slot reports and diagnostic inspector. Complete contextual nested navigation and requirement-to-page/API/unit evidence. Screenshots are owner evidence; no fresh runtime/visual verification or implementation performed. Broader checks remain deferred.

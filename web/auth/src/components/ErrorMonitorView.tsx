@@ -1,6 +1,7 @@
 'use client';
+import { ErrorRequestDiagnostics } from './ErrorRequestDiagnostics';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Activity,
@@ -90,6 +91,7 @@ export interface ErrorMonitorOccurrenceItem {
 }
 
 export interface ErrorMonitorSourceItem {
+  environment?:string;
   service: string;
   displayName: string;
   sourceType: 'server' | 'browser';
@@ -188,7 +190,10 @@ function ErrorMonitorAuthedConsole() {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const loadSequence=useRef(0);
+  const [detailErrors,setDetailErrors]=useState<Record<string,string>>({});
   const loadMonitorData = useCallback(async (activeFilters: FilterState) => {
+    const sequence=++loadSequence.current;
     setLoading(true);
     setErrorMessage(null);
     try {
@@ -246,6 +251,7 @@ function ErrorMonitorAuthedConsole() {
         sourcesRes.json(),
       ]);
 
+      if(sequence!==loadSequence.current)return;
       setSummary(summaryJson?.data ?? null);
       setGroups(Array.isArray(errorsJson?.data?.items) ? errorsJson.data.items : []);
       setCorrelatedChain(
@@ -255,16 +261,18 @@ function ErrorMonitorAuthedConsole() {
       );
       setSources(Array.isArray(sourcesJson?.data) ? sourcesJson.data : []);
     } catch (err) {
+      if(sequence!==loadSequence.current)return;
       setErrorMessage(
         err instanceof Error ? err.message : 'Failed to load platform error monitor data.',
       );
     } finally {
-      setLoading(false);
+      if(sequence===loadSequence.current)setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void loadMonitorData(appliedFilters);
+    return()=>{loadSequence.current++;};
   }, [appliedFilters, loadMonitorData]);
 
   const handleApplyFilters = () => {
@@ -280,13 +288,14 @@ function ErrorMonitorAuthedConsole() {
     setAppliedFilters(reset);
   };
 
-  const handleToggleExpand = async (groupId: string) => {
-    if (expandedGroupId === groupId) {
+  const handleToggleExpand = async (groupId: string, retry=false) => {
+    if (expandedGroupId === groupId && !retry) {
       setExpandedGroupId(null);
       return;
     }
     setExpandedGroupId(groupId);
     if (groupDetails[groupId]) return;
+    setDetailErrors(old=>({...old,[groupId]:''}));
 
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://auth.crimfig.com';
@@ -294,6 +303,7 @@ function ErrorMonitorAuthedConsole() {
       const res = await consentSession().request(detailUrl, {
         headers: { Accept: 'application/json' },
       });
+      if (!res.ok)throw new Error(`Detail unavailable (HTTP ${res.status})`);
       if (res.ok) {
         const json = await res.json();
         setGroupDetails((prev) => ({
@@ -307,7 +317,7 @@ function ErrorMonitorAuthedConsole() {
         }));
       }
     } catch {
-      // Non-fatal detail expansion error
+      setDetailErrors(old=>({...old,[groupId]:'Cannot load samples. Retry this request.'}));
     }
   };
 
@@ -898,6 +908,7 @@ function ErrorMonitorAuthedConsole() {
                     <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
                       Recent Sanitized Occurrence Samples ({detail?.occurrences?.length ?? group.sampledOccurrenceCount})
                     </div>
+                    {detailErrors[group.id]&&<div role="alert">{detailErrors[group.id]} <Button variant="outline" onClick={()=>void handleToggleExpand(group.id,true)}>Retry samples</Button></div>}
                     {detail?.occurrences?.map((occ) => (
                       <div
                         key={occ.id}
@@ -914,6 +925,7 @@ function ErrorMonitorAuthedConsole() {
                       >
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
                           <code>req: {occ.requestId}</code>
+                          <a href={`/admin/error-monitor?occurrence=${encodeURIComponent(occ.id)}&environment=${encodeURIComponent(occ.environment||group.environment)}&service=${encodeURIComponent(occ.service)}&requestId=${encodeURIComponent(occ.requestId)}`}>Open full diagnostics</a>
                           {occ.correlationId && occ.correlationId !== occ.requestId && (
                             <code>corr: {occ.correlationId}</code>
                           )}
@@ -935,6 +947,8 @@ function ErrorMonitorAuthedConsole() {
             );
           })}
       </div>
+
+      <ErrorRequestDiagnostics environment={appliedFilters.environment} service={appliedFilters.service} />
 
       {/* Registered Sources & Coverage Matrix */}
       <Card
@@ -961,7 +975,7 @@ function ErrorMonitorAuthedConsole() {
         >
           {sources.map((src) => (
             <div
-              key={src.service}
+              key={`${src.environment||"unknown"}:${src.service}`}
               style={{
                 padding: '12px',
                 borderRadius: '10px',
@@ -973,7 +987,7 @@ function ErrorMonitorAuthedConsole() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{src.displayName}</strong>
+                <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{src.displayName} · {src.environment||"unknown"}</strong>
                 <Badge
                   variant="secondary"
                   style={{

@@ -18,6 +18,10 @@ export function ThemeSwitcher({ showLabel = false, labelPrefix = 'Theme:' }: The
     try { const value = localStorage.getItem('crimfig-theme'); if (validTheme(value)) saved = value; } catch { /* Storage can be unavailable. */ }
     setTheme(saved);
     document.documentElement.setAttribute('data-theme', saved);
+    const sync = () => { const value=document.documentElement.getAttribute('data-theme'); if(validTheme(value))setTheme(value); };
+    const observer=new MutationObserver(sync);observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+    const storage=(e:StorageEvent)=>{if(e.key==='crimfig-theme'&&validTheme(e.newValue))document.documentElement.setAttribute('data-theme',e.newValue);};window.addEventListener('storage',storage);
+    return()=>{observer.disconnect();window.removeEventListener('storage',storage);};
   }, []);
 
   const toggleTheme = (newTheme: 'light' | 'dark') => {

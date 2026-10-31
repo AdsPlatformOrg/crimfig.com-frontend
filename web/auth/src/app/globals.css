@@ -105,8 +105,8 @@
 }
 
 body {
-  background-color: var(--color-fig-dark);
-  color: var(--color-white);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   font-family: var(--font-primary);
   min-height: 100vh;
   display: flex;
