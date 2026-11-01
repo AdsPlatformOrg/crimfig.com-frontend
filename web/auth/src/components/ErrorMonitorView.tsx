@@ -453,7 +453,7 @@ function ErrorMonitorAuthedConsole() {
               {summary.server5xxGroups + summary.financialAlertGroups}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-              {summary.server5xxGroups} server 5xx • {summary.financialAlertGroups} financial
+              {summary.server5xxGroups} server 5xx  •  {summary.financialAlertGroups} financial
             </div>
           </Card>
 
@@ -663,7 +663,7 @@ function ErrorMonitorAuthedConsole() {
               }}
             >
               <option value="all">All Notification States</option>
-              <option value="excluded_by_policy">Monitor only — email excluded by policy</option>
+              <option value="excluded_by_policy">Monitor only  —  email excluded by policy</option>
               <option value="provider_accepted">Provider accepted</option>
               <option value="suppressed_duplicate">Suppressed duplicate</option>
               <option value="pending">Pending outbox</option>
@@ -841,7 +841,7 @@ function ErrorMonitorAuthedConsole() {
                     </div>
 
                     <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {group.errorCategory} — {group.safeSummary}
+                      {group.errorCategory}  —  {group.safeSummary}
                     </div>
 
                     <div
@@ -987,7 +987,7 @@ function ErrorMonitorAuthedConsole() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{src.displayName} � {src.environment||"unknown"}</strong>
+                <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{src.displayName}  ·  {src.environment||"unknown"}</strong>
                 <Badge
                   variant="secondary"
                   style={{
@@ -1028,7 +1028,7 @@ function ErrorMonitorAuthedConsole() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>CrimFig Platform Monitor</span>
-          <span>•</span>
+          <span> • </span>
           <span>© {new Date().getFullYear()} CrimFig Ecosystem</span>
         </div>
         <ThemeSwitcher showLabel labelPrefix="Theme:" />
