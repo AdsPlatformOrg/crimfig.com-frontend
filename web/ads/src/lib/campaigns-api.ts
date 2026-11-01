@@ -84,6 +84,8 @@ export function campaignView<T extends Partial<CampaignRecord> & { id: string; t
     destinationUrl: typeof c.destinationUrl === 'string' ? c.destinationUrl : '',
     imageUrl: typeof c.imageUrl === 'string' ? c.imageUrl : undefined,
     videoUrl: typeof c.videoUrl === 'string' ? c.videoUrl : undefined,
+    totalCreativesCount: typeof (c as any).totalCreativesCount === 'number' ? (c as any).totalCreativesCount : 0,
+    approvedCreativesCount: typeof (c as any).approvedCreativesCount === 'number' ? (c as any).approvedCreativesCount : 0,
   };
 }
 export function websiteView(site: any) {

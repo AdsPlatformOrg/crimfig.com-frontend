@@ -5,6 +5,23 @@ import { sessionFetch } from '../../lib/session';
 import { adsApi } from '../../lib/ads-api-client';
 import { ApiError } from '@crimfig/api-client';
 import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Card } from '../ui/card';
+import {
+  Table as ShadTable,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '../ui/dropdown-menu';
 import { ModerationReviewDialog } from './ModerationReviewDialog';
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -18,6 +35,8 @@ import {
   Layers,
   FileImage,
   Tv,
+  MoreVertical,
+  ImageIcon,
 } from 'lucide-react';
 
 type ModerationQueue = Awaited<ReturnType<ReturnType<typeof adsApi>['queue']>>;
@@ -56,45 +75,40 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
     item: null,
   });
 
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-    setRoles([]);
-    void sessionFetch(`${apiBase}/api/v1/ecosystem/staff-status`, { signal: controller.signal })
-      .then(async (response) => (response.ok ? response.json() : null))
-      .then((body) => {
-        if (active && body?.data?.isStaff === true && Array.isArray(body.data.roles)) {
-          setRoles(body.data.roles.filter((role: unknown): role is string => typeof role === 'string'));
-        }
-      })
-      .catch(() => {
-        if (active) setRoles([]);
-      });
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [apiBase]);
-
   const fetchQueue = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    setIsForbidden(false);
     try {
-      const next = await adsApi().queue(reviewStage);
-      setQueue(next);
+      setIsLoading(true);
+      setError(null);
+      const data = await adsApi().queue(reviewStage);
+      setQueue(data);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 403) setIsForbidden(true);
-      setQueue(null);
-      setError(err instanceof Error ? err.message : 'Moderation queue unavailable.');
+      if (err instanceof ApiError && (err.status === 403 || err.status === 401)) {
+        setIsForbidden(true);
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Failed to load moderation queue');
     } finally {
       setIsLoading(false);
     }
-  }, [apiBase, reviewStage]);
+  }, [reviewStage]);
 
   useEffect(() => {
-    void fetchQueue();
+    const fetchUser = async () => {
+      try {
+        const res = await sessionFetch('/api/v1/auth/me');
+        if (res.ok) {
+          const user = await res.json();
+          setRoles(user.roles || (user.role ? [user.role] : []));
+        }
+      } catch {
+        // Fallback: roles remain empty
+      }
+    };
+    fetchUser();
+    fetchQueue();
   }, [fetchQueue]);
+
+  const currentCanReview = reviewStage === 'reviewer' ? canReview : canManage;
 
   const openReviewModal = (
     targetType: 'campaign' | 'stack' | 'creative',
@@ -124,16 +138,39 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
     const { targetType, stage, item } = dialogState;
     if (!item) return;
 
-    const payload = {
-      expectedRevision: item.contentRevision,
-      submissionId: item.submissionId,
+    // Concurrency / freshness verification: ensure snapshot metadata is present
+    let submissionId = item.submissionId;
+    let expectedRevision = item.contentRevision;
+
+    if (!submissionId || !expectedRevision) {
+      // Re-fetch submission detail snapshot before dispatching
+      try {
+        const campaignId = targetType === 'campaign' ? item.id : item.campaignId;
+        if (campaignId) {
+          const detail = await adsApi().submission(campaignId);
+          submissionId = detail.submissionId;
+          expectedRevision = detail.contentRevision;
+        }
+      } catch {
+        // Fallback to item fields
+      }
+    }
+
+    if (!submissionId || !expectedRevision) {
+      throw new Error('Authoritative submission snapshot unavailable. Refresh queue.');
+    }
+
+    // Whitelisted DTO payload with no undefined or extraneous properties
+    const payload: any = {
+      expectedRevision,
+      submissionId,
       requestId: crypto.randomUUID(),
       decision: data.decision,
-      advertiserNote: data.advertiserNote,
-      internalNote: data.internalNote,
-      note: data.internalNote || data.advertiserNote || '',
-      reasonCode: data.reasonCode,
     };
+    if (data.advertiserNote) payload.advertiserNote = data.advertiserNote;
+    if (data.internalNote) payload.internalNote = data.internalNote;
+    if (data.internalNote || data.advertiserNote) payload.note = data.internalNote || data.advertiserNote;
+    if (data.reasonCode && data.decision === 'rejected') payload.reasonCode = data.reasonCode;
 
     if (targetType === 'campaign') {
       await adsApi().reviewCampaign(item.id, stage, payload);
@@ -248,350 +285,486 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
     );
   }
 
-  const currentCanReview = reviewStage === 'reviewer' ? canReview : canManage;
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
+            Compliance &amp; Moderation
+          </span>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 0 0' }}>
+            Review Queue ({error ? '—' : queue?.totalPending ?? 0} Pending)
+          </h1>
+        </div>
+
+        {/* Stage Toggle: Reviewer (Tier-1) vs Manager (Tier-2) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-surface)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+          <Button
+            type="button"
+            size="sm"
+            variant={reviewStage === 'reviewer' ? 'default' : 'ghost'}
+            onClick={() => setReviewStage('reviewer')}
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              backgroundColor: reviewStage === 'reviewer' ? 'var(--color-crimson)' : 'transparent',
+              color: reviewStage === 'reviewer' ? '#FFFFFF' : 'var(--text-secondary)',
+            }}
+          >
+            Review 1 (Primary)
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={reviewStage === 'manager' ? 'default' : 'ghost'}
+            onClick={() => setReviewStage('manager')}
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              backgroundColor: reviewStage === 'manager' ? '#4f46e5' : 'transparent',
+              color: reviewStage === 'manager' ? '#FFFFFF' : 'var(--text-secondary)',
+            }}
+          >
+            Review 2 (Manager Approval)
+          </Button>
+        </div>
+      </div>
+
       {actionMessage && (
         <div
           role="status"
           style={{
-            padding: 16,
-            borderRadius: 8,
-            border: '1px solid var(--border-subtle)',
-            background: 'var(--bg-surface)',
-            color: 'var(--text-primary)',
-            overflowWrap: 'anywhere',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: 'var(--color-success)',
+            fontSize: '13px',
+            fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}
         >
           <span>{actionMessage}</span>
-          <Button
-            type="button"
-            variant="outline"
+          <button
             onClick={() => setActionMessage(null)}
-            style={{ padding: '6px 10px', fontSize: '12px' }}
+            style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700 }}
           >
-            Dismiss
-          </Button>
+            ×
+          </button>
         </div>
       )}
 
-      {/* Header bar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-        <div>
-          <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
-            Compliance &amp; Moderation
-          </span>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-            {error ? 'Review Queue Unavailable' : isLoading ? 'Loading review queue...' : `Review Queue (${queue?.totalPending ?? 0} Pending)`}
-          </h2>
+      {error && (
+        <div
+          role="alert"
+          style={{
+            padding: '12px 16px',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: 'var(--color-error)',
+            fontSize: '13px',
+            fontWeight: 600,
+          }}
+        >
+          {error}
         </div>
+      )}
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center' }}>
-          {/* Stage toggle */}
-          <div style={{ display: 'inline-flex', padding: '2px', backgroundColor: 'var(--badge-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-            <Button
-              type="button"
-              onClick={() => setReviewStage('reviewer')}
-              aria-pressed={reviewStage === 'reviewer'}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '11px',
-                fontWeight: 700,
-                backgroundColor: reviewStage === 'reviewer' ? 'var(--color-crimson)' : 'transparent',
-                color: reviewStage === 'reviewer' ? '#FFFFFF' : 'var(--text-secondary)',
-              }}
-            >
-              Review 1 (Reviewer)
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setReviewStage('manager')}
-              aria-pressed={reviewStage === 'manager'}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '11px',
-                fontWeight: 700,
-                backgroundColor: reviewStage === 'manager' ? 'var(--color-fig-dark)' : 'transparent',
-                color: reviewStage === 'manager' ? '#FFFFFF' : 'var(--text-secondary)',
-              }}
-            >
-              Review 2 (Manager)
-            </Button>
-          </div>
-
-          {/* Section tabs */}
+      {/* Tabs Row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <Button
             type="button"
-            onClick={() => setActiveTab('campaigns')}
-            aria-pressed={activeTab === 'campaigns'}
+            variant={activeTab === 'creatives' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setActiveTab('creatives')}
             style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '13px',
-              backgroundColor: activeTab === 'campaigns' ? 'var(--color-crimson)' : 'var(--bg-surface)',
-              color: activeTab === 'campaigns' ? '#FFFFFF' : 'var(--text-secondary)',
+              fontWeight: 700,
+              backgroundColor: activeTab === 'creatives' ? 'var(--color-crimson)' : undefined,
+              color: activeTab === 'creatives' ? '#FFFFFF' : undefined,
             }}
           >
-            Campaigns ({error ? '—' : queue?.campaigns.length ?? 0})
+            Creatives ({error ? '—' : queue?.creatives.length ?? 0})
           </Button>
           <Button
             type="button"
+            variant={activeTab === 'stacks' ? 'default' : 'outline'}
+            size="sm"
             onClick={() => setActiveTab('stacks')}
-            aria-pressed={activeTab === 'stacks'}
             style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '13px',
-              backgroundColor: activeTab === 'stacks' ? 'var(--color-crimson)' : 'var(--bg-surface)',
-              color: activeTab === 'stacks' ? '#FFFFFF' : 'var(--text-secondary)',
+              fontWeight: 700,
+              backgroundColor: activeTab === 'stacks' ? '#3B82F6' : undefined,
+              color: activeTab === 'stacks' ? '#FFFFFF' : undefined,
             }}
           >
             Ad Stacks ({error ? '—' : (queue?.stacks as any)?.length ?? 0})
           </Button>
           <Button
             type="button"
-            onClick={() => setActiveTab('creatives')}
-            aria-pressed={activeTab === 'creatives'}
+            variant={activeTab === 'campaigns' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setActiveTab('campaigns')}
             style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '13px',
-              backgroundColor: activeTab === 'creatives' ? 'var(--color-crimson)' : 'var(--bg-surface)',
-              color: activeTab === 'creatives' ? '#FFFFFF' : 'var(--text-secondary)',
+              fontWeight: 700,
+              backgroundColor: activeTab === 'campaigns' ? 'var(--color-fig-dark, #171B2A)' : undefined,
+              color: activeTab === 'campaigns' ? '#FFFFFF' : undefined,
             }}
           >
-            Creatives ({error ? '—' : queue?.creatives.length ?? 0})
-          </Button>
-
-          <Button
-            type="button"
-            aria-label="Refresh moderation queue"
-            onClick={fetchQueue}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-surface)',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-            }}
-          >
-            <RefreshCw style={{ width: 14, height: 14 }} />
+            Campaigns ({error ? '—' : queue?.campaigns.length ?? 0})
           </Button>
         </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={fetchQueue}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+        >
+          <RefreshCw style={{ width: 12, height: 12 }} /> Refresh
+        </Button>
       </div>
 
-      {/* Main Content Area */}
+      {/* Tab Content Tables */}
       {isLoading ? (
-        <div className="theme-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          Loading pending submissions...
-        </div>
-      ) : activeTab === 'campaigns' ? (
-        queue?.campaigns.length === 0 ? (
-          <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Campaign Queue Clear</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              No campaigns currently waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {queue?.campaigns.map((camp) => (
-              <div
-                key={camp.id}
-                className="theme-card"
-                style={{
-                  padding: '24px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '16px',
-                  borderLeft: '4px solid var(--color-crimson)',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Model: {camp.pricingModel.toUpperCase()} · Budget: ${(camp.budgetUsdCents / 100).toFixed(2)} · Stage: {camp.moderationStatus}
-                  </div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                    {camp.title}
-                  </div>
-                </div>
+        <Card style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          Loading queue items...
+        </Card>
+      ) : activeTab === 'creatives' ? (
+        /* Creatives Table */
+        <Card style={{ overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <ShadTable style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '700px' }}>
+              <TableHeader>
+                <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <TableHead style={{ width: '70px', padding: '12px 16px' }}>Preview</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Creative Headline &amp; Body</TableHead>
+                  <TableHead style={{ width: '100px', padding: '12px 16px' }}>Format</TableHead>
+                  <TableHead style={{ width: '140px', padding: '12px 16px' }}>Status</TableHead>
+                  <TableHead style={{ width: '180px', padding: '12px 16px' }}>Destination</TableHead>
+                  <TableHead style={{ width: '120px', padding: '12px 16px', textAlign: 'right' }}>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {queue?.creatives.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                      No creatives waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  queue?.creatives.map((crt) => (
+                    <TableRow key={crt.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <div
+                          style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '6px',
+                            backgroundColor: 'var(--bg-surface)',
+                            border: '1px solid var(--border-subtle)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {(crt.imageUrl || crt.videoUrl) ? (
+                            <MediaPreview source={(crt.videoUrl || crt.imageUrl)!} mode="review" />
+                          ) : (
+                            <ImageIcon style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+                          )}
+                        </div>
+                      </TableCell>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {currentCanReview && (
-                    <Button
-                      type="button"
-                      onClick={() => openReviewModal('campaign', camp.title, reviewStage, camp)}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        backgroundColor: 'var(--color-crimson)',
-                        color: '#FFFFFF',
-                        fontWeight: 600,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {reviewStage === 'reviewer' ? 'Perform Review 1' : 'Perform Review 2 (Go Live)'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {crt.headline || 'Creative Headline'}
+                        </div>
+                        {crt.bodyText && (
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {crt.bodyText}
+                          </div>
+                        )}
+                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          ID: {crt.id.slice(0, 8)}...
+                        </div>
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <Badge variant="outline" style={{ textTransform: 'uppercase', fontSize: '11px', fontWeight: 600 }}>
+                          {crt.adFormat || crt.adType}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <Badge
+                          variant="outline"
+                          style={{
+                            backgroundColor: reviewStage === 'reviewer' ? 'var(--color-warning-bg)' : 'rgba(99, 102, 241, 0.1)',
+                            color: reviewStage === 'reviewer' ? 'var(--color-warning)' : '#4f46e5',
+                            fontWeight: 600,
+                          }}
+                        >
+                          ● {reviewStage === 'reviewer' ? 'PENDING R1' : 'PENDING R2'}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <a
+                          href={crt.destinationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontSize: '12px',
+                            color: 'var(--color-crimson)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            textDecoration: 'none',
+                            maxWidth: '160px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <span>{crt.destinationUrl || 'Destination'}</span>
+                          <ExternalLink style={{ width: 11, height: 11 }} />
+                        </a>
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          {currentCanReview && (
+                            <Button
+                              size="sm"
+                              onClick={() => openReviewModal('creative', crt.headline || crt.id.slice(0, 8), reviewStage, crt)}
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                backgroundColor: reviewStage === 'reviewer' ? 'var(--color-crimson)' : '#4f46e5',
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}
+                            </Button>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label="Creative options">
+                                <MoreVertical style={{ width: 14, height: 14 }} />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(crt.id)}>
+                                Copy Creative ID
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </ShadTable>
           </div>
-        )
+        </Card>
       ) : activeTab === 'stacks' ? (
-        ((queue?.stacks as any)?.length ?? 0) === 0 ? (
-          <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Ad Stack Queue Clear</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              No ad stacks waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {(queue?.stacks as any)?.map((stk: any) => (
-              <div
-                key={stk.id}
-                className="theme-card"
-                style={{
-                  padding: '24px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '16px',
-                  borderLeft: '4px solid #3B82F6',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Campaign: {stk.campaignTitle || 'Campaign'} · Review: {stk.reviewStatus}
-                  </div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                    {stk.name}
-                  </div>
-                </div>
+        /* Ad Stacks Table */
+        <Card style={{ overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <ShadTable style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '600px' }}>
+              <TableHeader>
+                <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <TableHead style={{ padding: '12px 16px' }}>Stack Name</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Campaign</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Review Stage</TableHead>
+                  <TableHead style={{ width: '120px', padding: '12px 16px', textAlign: 'right' }}>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {((queue?.stacks as any)?.length ?? 0) === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                      No ad stacks waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  (queue?.stacks as any)?.map((stk: any) => (
+                    <TableRow key={stk.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Layers style={{ width: 16, height: 16, color: '#3B82F6', flexShrink: 0 }} />
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stk.name}</span>
+                        </div>
+                      </TableCell>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {currentCanReview && (
-                    <Button
-                      type="button"
-                      onClick={() => openReviewModal('stack', stk.name, reviewStage, stk)}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        backgroundColor: '#3B82F6',
-                        color: '#FFFFFF',
-                        fontWeight: 600,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {reviewStage === 'reviewer' ? 'Perform Review 1' : 'Perform Review 2'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle', color: 'var(--text-secondary)' }}>
+                        {stk.campaignTitle || 'Campaign'}
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <Badge
+                          variant="outline"
+                          style={{
+                            backgroundColor: reviewStage === 'reviewer' ? 'var(--color-warning-bg)' : 'rgba(99, 102, 241, 0.1)',
+                            color: reviewStage === 'reviewer' ? 'var(--color-warning)' : '#4f46e5',
+                            fontWeight: 600,
+                          }}
+                        >
+                          ● {reviewStage === 'reviewer' ? 'REVIEW 1 PENDING' : 'REVIEW 2 PENDING'}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          {currentCanReview && (
+                            <Button
+                              size="sm"
+                              onClick={() => openReviewModal('stack', stk.name, reviewStage, stk)}
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                backgroundColor: '#3B82F6',
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}
+                            </Button>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label="Stack options">
+                                <MoreVertical style={{ width: 14, height: 14 }} />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(stk.id)}>
+                                Copy Stack ID
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </ShadTable>
           </div>
-        )
+        </Card>
       ) : (
-        queue?.creatives.length === 0 ? (
-          <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Creative Queue Clear</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              All submitted advertiser headlines, copies, and media assets have been moderated for this stage.
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {queue?.creatives.map((crt) => (
-              <div
-                key={crt.id}
-                className="theme-card"
-                style={{
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px',
-                  borderLeft: '4px solid var(--color-crimson)',
-                }}
-              >
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
-                  <div style={{ maxWidth: '640px' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Type: {crt.adType || crt.mediaFormat} · ID: {crt.id.slice(0, 8)}... · Status: {crt.reviewStatus}
-                    </div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
-                      {crt.headline || 'Creative Headline'}
-                    </div>
-                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                      {crt.bodyText}
-                    </p>
-                    {(crt.imageUrl || crt.videoUrl) && <MediaPreview source={(crt.videoUrl || crt.imageUrl)!} mode="review" />}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', fontSize: '12px', color: 'var(--color-crimson)' }}>
-                      <span>CTA: {crt.ctaText}</span>
-                      <span>·</span>
-                      <a href={crt.destinationUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span>Destination</span>
-                        <ExternalLink style={{ width: 12, height: 12 }} />
-                      </a>
-                    </div>
-                  </div>
+        /* Campaigns Table */
+        <Card style={{ overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <ShadTable style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '700px' }}>
+              <TableHeader>
+                <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <TableHead style={{ padding: '12px 16px' }}>Campaign Title</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Pricing &amp; Budget</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Creative Progress</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Moderation Stage</TableHead>
+                  <TableHead style={{ width: '140px', padding: '12px 16px', textAlign: 'right' }}>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {queue?.campaigns.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                      No campaigns waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  queue?.campaigns.map((camp: any) => {
+                    const approvedAds = camp.approvedCreativesCount ?? 0;
+                    const totalAds = camp.totalCreativesCount ?? 0;
+                    return (
+                      <TableRow key={camp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{camp.title}</span>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Revision: {camp.contentRevision ?? 1} · ID: {camp.id.slice(0, 8)}...
+                          </div>
+                        </TableCell>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }}>
-                    {currentCanReview && (
-                      <Button
-                        type="button"
-                        onClick={() => openReviewModal('creative', crt.headline || crt.id.slice(0, 8), reviewStage, crt)}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          backgroundColor: 'var(--color-crimson)',
-                          color: '#FFFFFF',
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {reviewStage === 'reviewer' ? 'Perform Review 1' : 'Perform Review 2'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                        <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                          <div style={{ fontWeight: 600 }}>${(camp.budgetUsdCents / 100).toFixed(2)} USD</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                            Model: {camp.pricingModel?.toUpperCase()}
+                          </div>
+                        </TableCell>
+
+                        <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                          <Badge
+                            variant="outline"
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              backgroundColor: approvedAds > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                              color: approvedAds > 0 ? 'var(--color-success)' : 'var(--color-error)',
+                              border: approvedAds > 0 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                            }}
+                          >
+                            {approvedAds}/{totalAds} Ads Approved
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                          <Badge
+                            variant="outline"
+                            style={{
+                              backgroundColor: reviewStage === 'reviewer' ? 'var(--color-warning-bg)' : 'rgba(99, 102, 241, 0.1)',
+                              color: reviewStage === 'reviewer' ? 'var(--color-warning)' : '#4f46e5',
+                              fontWeight: 600,
+                            }}
+                          >
+                            ● {reviewStage === 'reviewer' ? 'REVIEW 1 PENDING' : 'REVIEW 2 (GO LIVE)'}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            {currentCanReview && (
+                              <Button
+                                size="sm"
+                                onClick={() => openReviewModal('campaign', camp.title, reviewStage, camp)}
+                                style={{
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  backgroundColor: reviewStage === 'reviewer' ? 'var(--color-crimson)' : 'var(--color-success)',
+                                  color: '#FFFFFF',
+                                }}
+                              >
+                                {reviewStage === 'reviewer' ? 'Review 1' : 'Approve Live'}
+                              </Button>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label="Campaign options">
+                                  <MoreVertical style={{ width: 14, height: 14 }} />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(camp.id)}>
+                                  Copy Campaign ID
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </ShadTable>
           </div>
-        )
+        </Card>
       )}
 
       {/* Standard Dialog for Review Decisions */}

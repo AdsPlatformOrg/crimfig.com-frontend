@@ -10,7 +10,16 @@ import {
   Pause,
   SlidersHorizontal,
   Table,
+  MoreVertical,
+  Layers,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '../../ui/dropdown-menu';
 import { loadCampaignPage, loadCampaignDetails, setCampaignStatus, type CampaignListItem } from '../../../lib/campaigns-api';
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
@@ -48,14 +57,13 @@ export function CampaignsManager() {
   const [columnsConfig, setColumnsConfig] = useState<ColumnConfig[]>([
     { key: 'campaign', label: 'Campaign Title', visible: true, order: 0 },
     { key: 'status', label: 'Status', visible: true, order: 1 },
-    { key: 'budget', label: 'Total Budget', visible: true, order: 2 },
-    { key: 'spend', label: 'Spend', visible: true, order: 3 },
-    { key: 'views', label: 'Views (Impressions)', visible: true, order: 4 },
-    { key: 'clicks', label: 'Clicks', visible: true, order: 5 },
-    { key: 'hovers', label: 'Hovers', visible: true, order: 6 },
-    { key: 'touches', label: 'Touches', visible: true, order: 7 },
-    { key: 'ctr', label: 'CTR (%)', visible: true, order: 8 },
-    { key: 'actions', label: 'Actions', visible: true, order: 9 },
+    { key: 'creatives', label: 'Creative Progress', visible: true, order: 2 },
+    { key: 'budget', label: 'Total Budget', visible: true, order: 3 },
+    { key: 'spend', label: 'Spend', visible: true, order: 4 },
+    { key: 'views', label: 'Views (Impressions)', visible: true, order: 5 },
+    { key: 'clicks', label: 'Clicks', visible: true, order: 6 },
+    { key: 'ctr', label: 'CTR (%)', visible: true, order: 7 },
+    { key: 'actions', label: 'Actions', visible: true, order: 8 },
   ]);
 
   // Inline Creative Replacement Modal
@@ -314,6 +322,26 @@ export function CampaignsManager() {
                           </TableCell>
                         );
                       }
+                      if (col.key === 'creatives') {
+                        const approved = camp.approvedCreativesCount ?? 0;
+                        const totalAds = camp.totalCreativesCount ?? 0;
+                        return (
+                          <TableCell key={col.key}>
+                            <Badge
+                              variant="outline"
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                backgroundColor: approved > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                color: approved > 0 ? 'var(--color-success)' : 'var(--color-error)',
+                                border: approved > 0 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                              }}
+                            >
+                              {approved}/{totalAds} Ads Approved
+                            </Badge>
+                          </TableCell>
+                        );
+                      }
                       if (col.key === 'budget') {
                         return <TableCell key={col.key}>${camp.budgetUsd.toFixed(2)} USD</TableCell>;
                       }
@@ -367,52 +395,89 @@ export function CampaignsManager() {
                         const resumeReason = camp.capabilities?.blocker || 'This campaign needs current approval before delivery can resume.';
                         return (
                           <TableCell key={col.key} style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
                               <Link
-                                href={camp.capabilities?.canEdit ? `/campaigns/${camp.id}/edit` : `/campaigns/${camp.id}`}
-                                style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-crimson)', textDecoration: 'none', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}
+                                href={`/campaigns/${camp.id}`}
+                                style={{
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  color: 'var(--color-crimson)',
+                                  textDecoration: 'none',
+                                  padding: '5px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid var(--border-subtle)',
+                                  backgroundColor: 'var(--bg-surface)',
+                                }}
                               >
-                                {camp.capabilities?.canEdit ? 'Edit Draft' : 'Manage'}
+                                View Stacks
                               </Link>
-                              {camp.status === 'rejected' && (
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={async () => {
-                                    try {
-                                      const details = await loadCampaignDetails(camp.id);
-                                      const creative = details.creatives.find(item => item.reviewStatus === 'rejected');
-                                      if (!creative) throw new Error('No rejected creative is available for replacement.');
-                                      const specs = creative.imageSpecs;
-                                      setReplacementCreative({ ...creative, expectedRevision: details.contentRevision ?? 1, imageUrl: creative.imageUrl ?? undefined, videoUrl: creative.videoUrl ?? undefined,
-                                        mediaFormat: creative.mediaFormat ?? undefined, mediaAssetId: creative.mediaAssetId ?? undefined, rejectionReason: creative.rejectionReason ?? undefined,
-                                        imageSpecs: specs && typeof specs.width === 'number' && typeof specs.height === 'number' && typeof specs.bytes === 'number' ?
-                                          { width: specs.width, height: specs.height, bytes: specs.bytes, mimeType: specs.mimeType } : undefined });
-                                    } catch (err) {
-                                      setActionError(err instanceof Error ? err.message : 'Creative details unavailable.');
-                                    }
-                                  }}
-                                >
-                                  Replace Creative
-                                </Button>
-                              )}
-                              {camp.status !== 'rejected' && camp.status !== 'trash' && (
-                                <>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    aria-label={camp.status === 'active' ? `Pause ${camp.title}` : `Resume ${camp.title}`}
-                                    disabled={pendingWrites.has(camp.id) || !canResume}
-                                    onClick={() => handleToggleStatus(camp.id)}
-                                  >
-                                    {camp.status === 'active' ? <Pause style={{ width: 14, height: 14 }} /> : <Play style={{ width: 14, height: 14 }} />}
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" aria-label={`Actions for ${camp.title}`}>
+                                    <MoreVertical style={{ width: 16, height: 16 }} />
                                   </Button>
-                                  {!canResume && camp.status !== 'active' && (
-                                    <ActionHelp action={`Resume ${camp.title}`} reason={resumeReason} />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => router.push(`/campaigns/${camp.id}`)}>
+                                    View Campaign & Ad Stacks
+                                  </DropdownMenuItem>
+                                  {camp.capabilities?.canEdit && (
+                                    <DropdownMenuItem onClick={() => router.push(`/campaigns/${camp.id}/edit`)}>
+                                      Edit Draft Campaign
+                                    </DropdownMenuItem>
                                   )}
-                                </>
+                                  {camp.status !== 'rejected' && camp.status !== 'trash' && canResume && (
+                                    <DropdownMenuItem onClick={() => handleToggleStatus(camp.id)}>
+                                      {camp.status === 'active' ? 'Pause Campaign' : 'Resume Campaign'}
+                                    </DropdownMenuItem>
+                                  )}
+                                  {camp.status === 'rejected' && (
+                                    <DropdownMenuItem
+                                      onClick={async () => {
+                                        try {
+                                          const details = await loadCampaignDetails(camp.id);
+                                          const creative = details.creatives.find((item) => item.reviewStatus === 'rejected');
+                                          if (!creative) throw new Error('No rejected creative is available for replacement.');
+                                          const specs = creative.imageSpecs;
+                                          setReplacementCreative({
+                                            ...creative,
+                                            expectedRevision: details.contentRevision ?? 1,
+                                            imageUrl: creative.imageUrl ?? undefined,
+                                            videoUrl: creative.videoUrl ?? undefined,
+                                            mediaFormat: creative.mediaFormat ?? undefined,
+                                            mediaAssetId: creative.mediaAssetId ?? undefined,
+                                            rejectionReason: creative.rejectionReason ?? undefined,
+                                            imageSpecs:
+                                              specs &&
+                                              typeof specs.width === 'number' &&
+                                              typeof specs.height === 'number' &&
+                                              typeof specs.bytes === 'number'
+                                                ? {
+                                                    width: specs.width,
+                                                    height: specs.height,
+                                                    bytes: specs.bytes,
+                                                    mimeType: specs.mimeType,
+                                                  }
+                                                : undefined,
+                                          });
+                                        } catch (err) {
+                                          setActionError(err instanceof Error ? err.message : 'Creative details unavailable.');
+                                        }
+                                      }}
+                                    >
+                                      Replace Rejected Creative
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(camp.id)}>
+                                    Copy Campaign ID
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+
+                              {!canResume && camp.status !== 'active' && (
+                                <ActionHelp action={`Resume ${camp.title}`} reason={resumeReason} />
                               )}
                             </div>
                           </TableCell>

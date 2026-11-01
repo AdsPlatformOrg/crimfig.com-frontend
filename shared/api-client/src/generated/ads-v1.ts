@@ -2947,6 +2947,7 @@ export interface components {
             data: {
                 campaigns: ({
                     advertiserId: string;
+                    approvedCreativesCount: number;
                     budgetUsdCents: number;
                     contentRevision: number;
                     createdAt: string;
@@ -2958,6 +2959,7 @@ export interface components {
                     status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
                     submissionId: string;
                     title: string;
+                    totalCreativesCount: number;
                 } & {
                     [key: string]: unknown;
                 })[];

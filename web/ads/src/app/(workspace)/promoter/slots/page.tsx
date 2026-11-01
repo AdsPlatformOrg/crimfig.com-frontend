@@ -18,6 +18,24 @@ import {
 import { sessionFetch } from '../../../../lib/session';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
+import { Badge } from '../../../../components/ui/badge';
+import { Card } from '../../../../components/ui/card';
+import {
+  Table as ShadTable,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../../../../components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '../../../../components/ui/dropdown-menu';
+import { MoreVertical } from 'lucide-react';
 import { EmptyState } from '../../../../components/EmptyState';
 import { SetupGuide } from '../../../../components/console/SetupGuide';
 
@@ -372,112 +390,129 @@ export default function PromoterSlotsPage() {
           onAction={() => setShowCreateModal(true)}
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {slots.map((slot) => {
-            const result = installationResults[slot.id];
-            const isChecking = checkingSlotId === slot.id;
+        <Card style={{ overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <ShadTable style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '700px' }}>
+              <TableHeader>
+                <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <TableHead style={{ padding: '12px 16px' }}>Slot Name</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Format</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Lifecycle Status</TableHead>
+                  <TableHead style={{ padding: '12px 16px' }}>Installation Telemetry</TableHead>
+                  <TableHead style={{ width: '140px', padding: '12px 16px', textAlign: 'right' }}>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {slots.map((slot) => {
+                  const result = installationResults[slot.id];
+                  const isChecking = checkingSlotId === slot.id;
 
-            return (
-              <div
-                key={slot.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '18px 20px',
-                  backgroundColor: 'var(--bg-elevated)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-subtle)',
-                  flexWrap: 'wrap',
-                  gap: '16px',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '240px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{slot.name}</span>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        padding: '2px 8px',
-                        borderRadius: '999px',
-                        textTransform: 'uppercase',
-                        backgroundColor:
-                          slot.lifecycleStatus === 'active'
-                            ? 'rgba(16, 185, 129, 0.15)'
-                            : slot.lifecycleStatus === 'testing'
-                            ? 'rgba(59, 130, 246, 0.15)'
-                            : 'rgba(148, 163, 184, 0.15)',
-                        color:
-                          slot.lifecycleStatus === 'active'
-                            ? '#10b981'
-                            : slot.lifecycleStatus === 'testing'
-                            ? '#3b82f6'
-                            : '#94a3b8',
-                      }}
-                    >
-                      {slot.lifecycleStatus}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    <span>Format: <strong style={{ color: 'var(--text-primary)' }}>{slot.format}</strong></span>
-                    <span>•</span>
-                    <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{slot.slotTagId}</span>
-                  </div>
-                </div>
+                  return (
+                    <TableRow key={slot.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{slot.name}</div>
+                        <div style={{ fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          {slot.slotTagId}
+                        </div>
+                      </TableCell>
 
-                {/* Status Telemetry */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {result && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
-                      {result.status === 'rendered' ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#10b981', fontWeight: 600 }}>
-                          <CheckCircle2 style={{ width: 14, height: 14 }} /> Verified Rendered
-                        </span>
-                  ) : result.status === 'script_seen' ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#3b82f6', fontWeight: 500 }}>
-                          <Clock style={{ width: 14, height: 14 }} /> Ad Request Detected (Render Pending)
-                        </span>
-                      ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: 500 }}>
-                          <AlertCircle style={{ width: 14, height: 14 }} /> {result.status === 'error' ? result.diagnostics || 'Installation check unavailable.' : 'No Signals Yet'}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <Badge variant="outline" style={{ textTransform: 'uppercase', fontSize: '11px', fontWeight: 600 }}>
+                          {slot.format}
+                        </Badge>
+                      </TableCell>
 
-                  <Button
-                    onClick={() => handleCheckInstallation(slot.id)}
-                    disabled={isChecking}
-                    variant="outline"
-                    size="sm"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
-                  >
-                    <RefreshCw style={{ width: 13, height: 13, animation: isChecking ? 'spin 1s linear infinite' : 'none' }} />
-                    {isChecking ? 'Checking...' : 'Test Installation'}
-                  </Button>
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        <Badge
+                          variant="outline"
+                          style={{
+                            backgroundColor:
+                              slot.lifecycleStatus === 'active'
+                                ? 'rgba(16, 185, 129, 0.15)'
+                                : slot.lifecycleStatus === 'testing'
+                                ? 'rgba(59, 130, 246, 0.15)'
+                                : 'rgba(148, 163, 184, 0.15)',
+                            color:
+                              slot.lifecycleStatus === 'active'
+                                ? '#10b981'
+                                : slot.lifecycleStatus === 'testing'
+                                ? '#3b82f6'
+                                : '#94a3b8',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          ● {slot.lifecycleStatus}
+                        </Badge>
+                      </TableCell>
 
-                  <Button
-                    onClick={() => handleOpenInstall(slot)}
-                    style={{
-                      backgroundColor: 'var(--color-crimson)',
-                      color: '#FFFFFF',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                    size="sm"
-                  >
-                    <Code2 style={{ width: 14, height: 14 }} />
-                    Get Embed Code
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                      <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                        {result ? (
+                          result.status === 'rendered' ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#10b981', fontWeight: 600, fontSize: '12px' }}>
+                              <CheckCircle2 style={{ width: 14, height: 14 }} /> Verified Rendered
+                            </span>
+                          ) : result.status === 'script_seen' ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#3b82f6', fontWeight: 500, fontSize: '12px' }}>
+                              <Clock style={{ width: 14, height: 14 }} /> Ad Request Detected
+                            </span>
+                          ) : (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: 500, fontSize: '12px' }}>
+                              <AlertCircle style={{ width: 14, height: 14 }} /> {result.status === 'error' ? result.diagnostics || 'Check unavailable' : 'No Signals'}
+                            </span>
+                          )
+                        ) : (
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Not tested yet</span>
+                        )}
+                      </TableCell>
+
+                      <TableCell style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                          <Button
+                            onClick={() => handleOpenInstall(slot)}
+                            size="sm"
+                            style={{
+                              backgroundColor: 'var(--color-crimson)',
+                              color: '#FFFFFF',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            <Code2 style={{ width: 13, height: 13 }} />
+                            Code
+                          </Button>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label={`Actions for ${slot.name}`}>
+                                <MoreVertical style={{ width: 14, height: 14 }} />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleCheckInstallation(slot.id)} disabled={isChecking}>
+                                Test Installation
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleOpenInstall(slot)}>
+                                View Embed Snippet
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(slot.slotTagId)}>
+                                Copy Tag ID
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </ShadTable>
+          </div>
+        </Card>
       )}
 
       {/* Create Slot Modal */}
