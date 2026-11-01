@@ -1,16 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import * as Dialog from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, X } from 'lucide-react';
 
 export interface ModerationReviewDialogProps {
   isOpen: boolean;
@@ -70,64 +63,112 @@ export function ModerationReviewDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DialogContent className="sm:max-w-[540px] bg-background border border-border shadow-xl rounded-xl">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader className="space-y-1 pb-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-crimson)]">
-                {stageLabel}
-              </span>
-              {isPlatformAdmin && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                  Platform Admin
-                </span>
-              )}
-            </div>
-            <DialogTitle className="text-lg font-bold text-foreground">
-              Review {targetLabel}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground truncate">
-              {targetTitle}
-            </DialogDescription>
-          </DialogHeader>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="cf-report-overlay" style={{ zIndex: 1200 }} />
+        <Dialog.Content
+          className="cf-report-dialog"
+          style={{
+            zIndex: 1201,
+            maxWidth: '540px',
+            padding: '24px',
+            backgroundColor: 'var(--bg-elevated)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-xl)',
+          }}
+        >
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
+                    {stageLabel}
+                  </span>
+                  {isPlatformAdmin && (
+                    <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '9999px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                      Platform Admin
+                    </span>
+                  )}
+                </div>
+                <Dialog.Title style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
+                  Review {targetLabel}
+                </Dialog.Title>
+                <Dialog.Description style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', margin: 0 }}>
+                  {targetTitle}
+                </Dialog.Description>
+              </div>
 
-          {error && (
-            <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{error}</span>
+              <Dialog.Close asChild>
+                <button
+                  type="button"
+                  aria-label="Close dialog"
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    padding: '4px',
+                  }}
+                >
+                  <X style={{ width: 18, height: 18 }} />
+                </button>
+              </Dialog.Close>
             </div>
-          )}
 
-          <div className="py-4 space-y-4">
+            {error && (
+              <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.2)', color: 'var(--color-crimson)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
+                <span>{error}</span>
+              </div>
+            )}
+
             {/* Decision selector */}
             <div>
-              <label className="text-xs font-semibold text-foreground block mb-2">
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>
                 Moderation Decision
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button
                   type="button"
                   onClick={() => setDecision('approved')}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border text-xs font-semibold transition-all ${
-                    decision === 'approved'
-                      ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm'
-                      : 'border-border bg-card text-muted-foreground hover:bg-muted'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    border: decision === 'approved' ? '2px solid #10B981' : '1px solid var(--border-subtle)',
+                    backgroundColor: decision === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
+                    color: decision === 'approved' ? '#059669' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <CheckCircle2 style={{ width: 16, height: 16, color: '#10B981' }} />
                   Approve
                 </button>
                 <button
                   type="button"
                   onClick={() => setDecision('rejected')}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border text-xs font-semibold transition-all ${
-                    decision === 'rejected'
-                      ? 'bg-[var(--color-crimson)]/10 border-[var(--color-crimson)] text-[var(--color-crimson)] font-bold shadow-sm'
-                      : 'border-border bg-card text-muted-foreground hover:bg-muted'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    border: decision === 'rejected' ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
+                    backgroundColor: decision === 'rejected' ? 'rgba(212, 20, 58, 0.1)' : 'var(--bg-surface)',
+                    color: decision === 'rejected' ? 'var(--color-crimson)' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
                 >
-                  <XCircle className="w-4 h-4 text-[var(--color-crimson)]" />
+                  <XCircle style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
                   Reject
                 </button>
               </div>
@@ -136,13 +177,21 @@ export function ModerationReviewDialog({
             {/* Rejection reason dropdown */}
             {decision === 'rejected' && (
               <div>
-                <label className="text-xs font-semibold text-foreground block mb-1">
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
                   Rejection Reason Code
                 </label>
                 <select
                   value={reasonCode}
                   onChange={(e) => setReasonCode(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-[var(--color-crimson)]"
+                  style={{
+                    width: '100%',
+                    fontSize: '12px',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-page)',
+                    color: 'var(--text-primary)',
+                  }}
                 >
                   <option value="POLICY_VIOLATION">General Policy Violation</option>
                   <option value="MISLEADING">Misleading / Clickbait Claims</option>
@@ -157,62 +206,86 @@ export function ModerationReviewDialog({
 
             {/* Reason for Advertiser (Optional) */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-semibold text-foreground">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Reason for Advertiser
                 </label>
-                <span className="text-[10px] text-muted-foreground">Optional</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Optional</span>
               </div>
               <textarea
                 value={advertiserNote}
                 onChange={(e) => setAdvertiserNote(e.target.value)}
                 placeholder="Message visible to advertiser explaining the decision or feedback..."
                 rows={3}
-                className="w-full text-xs p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-[var(--color-crimson)] resize-none"
+                style={{
+                  width: '100%',
+                  fontSize: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: 'var(--bg-page)',
+                  color: 'var(--text-primary)',
+                  resize: 'none',
+                  boxSizing: 'border-box',
+                }}
               />
             </div>
 
             {/* Reason for Reviewer Only (Internal Note) */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-semibold text-foreground">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Reason for Reviewer Only
                 </label>
-                <span className="text-[10px] text-muted-foreground">Internal audit only</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Internal audit only</span>
               </div>
               <textarea
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
                 placeholder="Internal audit notes visible only to staff reviewers and managers..."
                 rows={2}
-                className="w-full text-xs p-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-[var(--color-crimson)] resize-none"
+                style={{
+                  width: '100%',
+                  fontSize: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: 'var(--bg-page)',
+                  color: 'var(--text-primary)',
+                  resize: 'none',
+                  boxSizing: 'border-box',
+                }}
               />
             </div>
-          </div>
 
-          <DialogFooter className="pt-3 border-t border-border flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isSubmitting}
-              onClick={onClose}
-              className="text-xs h-9"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className={`text-xs h-9 font-semibold text-white ${
-                decision === 'approved' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-[var(--color-crimson)] hover:bg-[var(--color-crimson-dark)]'
-              }`}
-            >
-              {isSubmitting ? 'Submitting...' : `Confirm ${decision === 'approved' ? 'Approval' : 'Rejection'}`}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={onClose}
+                style={{ fontSize: '12px', padding: '8px 16px' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  fontSize: '12px',
+                  padding: '8px 16px',
+                  backgroundColor: decision === 'approved' ? '#059669' : 'var(--color-crimson)',
+                  color: '#FFFFFF',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {isSubmitting ? 'Submitting...' : `Confirm ${decision === 'approved' ? 'Approval' : 'Rejection'}`}
+              </Button>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
-
