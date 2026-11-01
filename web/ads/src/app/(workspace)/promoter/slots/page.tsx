@@ -1,4 +1,5 @@
 'use client';
+import {houseRewardEligibility} from '../../../../lib/cfig-format';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -44,6 +45,9 @@ interface PromoterWebsite {
   domain: string;
   url: string;
   verificationStatus: string;
+  verificationExpiresAt?:string;
+  isSuspended?:boolean;
+  isActive?:boolean;
   policyStatus?: string;
   isVerified?: boolean;
 }
@@ -316,7 +320,7 @@ export default function PromoterSlotsPage() {
             CrimFig Ads Slots
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-            Create and install canonical ad slots to display CrimFig ads on your website and earn revenue.
+            Create and install CrimFig slots. Ownership verification and suitability approval are separate; TESTING earns zero $cfig.
           </p>
         </div>
 
@@ -374,6 +378,7 @@ export default function PromoterSlotsPage() {
         )}
       </div>
 
+      {selectedWebsite&&<p className="text-sm">{houseRewardEligibility(selectedWebsite)}</p>}
       {selectedWebsite && <SetupGuide website={{ id: selectedWebsite.id, domain: selectedWebsite.domain }} slots={slots.map((s) => ({ id: s.id, name: s.name, slotTagId: s.slotTagId }))} />}
 
       {/* Slots List or Empty State */}

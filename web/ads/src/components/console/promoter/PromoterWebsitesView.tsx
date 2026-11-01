@@ -1,4 +1,5 @@
 'use client';
+import {houseRewardEligibility} from '../../../lib/cfig-format';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -32,6 +33,9 @@ interface PromoterWebsite {
   verificationToken: string;
   verificationMethod: 'html_file_and_meta_tag' | 'dns_txt';
   verificationStatus?: string;
+  verificationExpiresAt?:string;
+  isSuspended?:boolean;
+  isActive?:boolean;
   verificationErrorMessage?: string | null;
   policyStatus?: string;
   isVerified: boolean;
@@ -50,6 +54,8 @@ export function PromoterWebsitesView() {
   const [newWebDomain, setNewWebDomain] = useState('');
   const [newWebMethod, setNewWebMethod] = useState<'html_file_and_meta_tag' | 'dns_txt'>('html_file_and_meta_tag');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingReview,setSubmittingReview]=useState<string|null>(null);
+  const [reviewMessage,setReviewMessage]=useState('');
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Ad Spaces Modal
@@ -132,8 +138,10 @@ export function PromoterWebsitesView() {
 
   const placementMeta = CRIMFIG_PLACEMENTS[selectedPlacement];
 
+  const submitReview=async(id:string)=>{if(submittingReview)return;setSubmittingReview(id);setActionError(null);setReviewMessage('');try{await apiData('/api/v1/promoters/websites/'+id+'/submit-review',{method:'POST'});setReviewMessage('Website submitted for suitability review. Ownership verification is not policy approval.');await fetchWebsites();}catch(e){setActionError(e instanceof Error?e.message:'Review submission unavailable');}finally{setSubmittingReview(null);}};
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {reviewMessage&&<p role="status" className="text-sm">{reviewMessage}</p>}
       {actionError && (
         <div
           role="alert"
@@ -156,7 +164,7 @@ export function PromoterWebsitesView() {
             Registered Websites &amp; Ad Slots
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-            Verify website domain ownership and configure CrimFig ad placement codes.
+            DNS verifies ownership automatically. Suitability approval is a separate existing staff review; TESTING websites earn zero $cfig.
           </p>
         </div>
         <Button
@@ -238,6 +246,9 @@ export function PromoterWebsitesView() {
                   Status: {site.lastPingAt || 'Pending verification'}
                   {site.isVerified && site.policyStatus ? ` • Supply Policy: ${site.policyStatus.toUpperCase()}` : ''}
                 </p>
+
+                <p className="mt-2 text-sm">{houseRewardEligibility(site)}</p>
+                {site.isVerified&&site.policyStatus==='testing'&&<Button type="button" className="mt-2 min-h-11" variant="outline" disabled={!!submittingReview} onClick={()=>void submitReview(site.id)}>{submittingReview===site.id?'Submitting…':'Submit for suitability review'}</Button>}
 
                 {!site.isVerified && site.verificationErrorMessage && (
                   <p style={{ fontSize: '12px', color: 'var(--color-error)', marginTop: '6px', fontWeight: 600 }}>

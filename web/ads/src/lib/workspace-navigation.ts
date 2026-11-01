@@ -101,6 +101,7 @@ export function workspaceNavigation(
 
   // Promoter Nav Groups
   const promoterNavGroups: NavGroup[] = [
+    {title:"Promotional rewards",items:[{id:"promoter_cfig",label:"Virtual $cfig",icon:Sparkles,href:"/promoter/rewards"}]},
     {
       title: "Websites & Delivery",
       items: [
@@ -167,6 +168,7 @@ export function workspaceNavigation(
 
   // Admin Nav Groups
   const adminNavGroups: NavGroup[] = [
+    {title:"Promotional rewards",items:[{roles:["super_admin","ads_finance"],id:"admin_cfig",label:"House Ad rewards",icon:Sparkles,href:"/admin/rewards/cfig",children:[{id:"cfig_policies",label:"Policies",icon:Settings,href:"/admin/rewards/cfig/policies"},{id:"cfig_reserve",label:"Funding status",icon:ShieldCheck,href:"/admin/rewards/cfig/reserve"}]}]},
     {
       title: "Advertising Operations",
       items: [
