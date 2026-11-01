@@ -49,7 +49,20 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
       return result.data;
     },
     async queue(stage: 'reviewer' | 'manager') { return dataOf(await client.GET('/api/v1/admin/ads/moderation/queue', { params: { query: { stage } } })); },
-    async reviewCreative(id: string, body: ReviewInput) { return dataOf(await client.POST('/api/v1/admin/ads/moderation/creatives/{id}/decision', { params: { path: { id } }, body })); },
+    async reviewCreative(id: string, stage: 'reviewer' | 'manager' | 'legacy', body: ReviewInput) {
+      if (stage === 'manager') {
+        return dataOf(await client.POST('/api/v1/admin/ads/moderation/creatives/{id}/manager-approval', { params: { path: { id } }, body }));
+      }
+      if (stage === 'reviewer') {
+        return dataOf(await client.POST('/api/v1/admin/ads/moderation/creatives/{id}/primary-review', { params: { path: { id } }, body }));
+      }
+      return dataOf(await client.POST('/api/v1/admin/ads/moderation/creatives/{id}/decision', { params: { path: { id } }, body }));
+    },
+    async reviewStack(id: string, stage: 'reviewer' | 'manager', body: ReviewInput) {
+      return stage === 'reviewer'
+        ? dataOf(await client.POST('/api/v1/admin/ads/moderation/stacks/{id}/primary-review', { params: { path: { id } }, body }))
+        : dataOf(await client.POST('/api/v1/admin/ads/moderation/stacks/{id}/manager-approval', { params: { path: { id } }, body }));
+    },
     async reviewCampaign(id: string, stage: 'reviewer' | 'manager', body: ReviewInput) {
       return stage === 'reviewer' ? dataOf(await client.POST('/api/v1/admin/ads/moderation/campaigns/{id}/primary-review', { params: { path: { id } }, body })) :
         dataOf(await client.POST('/api/v1/admin/ads/moderation/campaigns/{id}/manager-approval', { params: { path: { id } }, body }));

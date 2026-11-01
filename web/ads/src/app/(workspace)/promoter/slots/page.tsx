@@ -80,7 +80,7 @@ export default function PromoterSlotsPage() {
 
   // Form State
   const [newSlotName, setNewSlotName] = useState('');
-  const [newSlotFormat, setNewSlotFormat] = useState('banner');
+  const [newSlotFormat, setNewSlotFormat] = useState('auto');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -140,6 +140,65 @@ export default function PromoterSlotsPage() {
     try {
       setIsSubmitting(true);
       setFormError(null);
+
+      let allowedPresetIds: string[] | undefined = undefined;
+      let slotFormat = 'banner';
+      let slotWidth: number | undefined = undefined;
+      let slotHeight: number | undefined = undefined;
+
+      if (newSlotFormat === 'auto') {
+        allowedPresetIds = undefined; // Auto: any of the 9 approved sizes
+        slotFormat = 'banner';
+      } else if (newSlotFormat === 'leaderboard') {
+        allowedPresetIds = ['leaderboard'];
+        slotFormat = 'banner';
+        slotWidth = 728;
+        slotHeight = 90;
+      } else if (newSlotFormat === 'medium_rectangle') {
+        allowedPresetIds = ['medium_rectangle'];
+        slotFormat = 'card';
+        slotWidth = 300;
+        slotHeight = 250;
+      } else if (newSlotFormat === 'large_rectangle') {
+        allowedPresetIds = ['large_rectangle'];
+        slotFormat = 'card';
+        slotWidth = 336;
+        slotHeight = 280;
+      } else if (newSlotFormat === 'mobile_banner') {
+        allowedPresetIds = ['mobile_banner'];
+        slotFormat = 'banner';
+        slotWidth = 320;
+        slotHeight = 50;
+      } else if (newSlotFormat === 'large_mobile_banner') {
+        allowedPresetIds = ['large_mobile_banner'];
+        slotFormat = 'banner';
+        slotWidth = 320;
+        slotHeight = 100;
+      } else if (newSlotFormat === 'half_page') {
+        allowedPresetIds = ['half_page'];
+        slotFormat = 'banner';
+        slotWidth = 300;
+        slotHeight = 600;
+      } else if (newSlotFormat === 'billboard') {
+        allowedPresetIds = ['billboard'];
+        slotFormat = 'banner';
+        slotWidth = 970;
+        slotHeight = 250;
+      } else if (newSlotFormat === 'square') {
+        allowedPresetIds = ['square'];
+        slotFormat = 'square';
+        slotWidth = 250;
+        slotHeight = 250;
+      } else if (newSlotFormat === 'large_square') {
+        allowedPresetIds = ['large_square'];
+        slotFormat = 'square';
+        slotWidth = 300;
+        slotHeight = 300;
+      } else if (newSlotFormat === 'interstitial') {
+        allowedPresetIds = undefined;
+        slotFormat = 'interstitial';
+      }
+
       const res = await sessionFetch('/api/v1/adstation/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -147,9 +206,10 @@ export default function PromoterSlotsPage() {
           websiteId: selectedWebsite.id,
           name: newSlotName.trim(),
           slotType: 'network', // CrimFig Publisher Network slot
-          format: newSlotFormat === 'interstitial' ? 'interstitial' : 'banner',
-          width: newSlotFormat === 'mpu' ? 300 : newSlotFormat === 'sidebar' ? 160 : newSlotFormat === 'banner' ? 728 : undefined,
-          height: newSlotFormat === 'mpu' ? 250 : newSlotFormat === 'sidebar' ? 600 : newSlotFormat === 'banner' ? 90 : undefined,
+          format: slotFormat,
+          width: slotWidth,
+          height: slotHeight,
+          allowedPresetIds,
           responsive: true,
         }),
       });
@@ -476,7 +536,7 @@ export default function PromoterSlotsPage() {
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Format Preset
+                  Image Ad Size & Compatibility
                 </label>
                 <select
                   value={newSlotFormat}
@@ -492,11 +552,21 @@ export default function PromoterSlotsPage() {
                     fontFamily: 'Poppins, sans-serif',
                   }}
                 >
-                  <option value="banner">Leaderboard Banner (728x90 / Responsive)</option>
-                  <option value="mpu">In-Content MPU (300x250)</option>
-                  <option value="sidebar">Sidebar Sticky (160x600 / 300x600)</option>
+                  <option value="auto">Automatic — any approved image size (Recommended)</option>
+                  <option value="medium_rectangle">Medium Rectangle (300x250 · 6:5)</option>
+                  <option value="large_rectangle">Large Rectangle (336x280 · 6:5)</option>
+                  <option value="leaderboard">Leaderboard Banner (728x90 · 364:45)</option>
+                  <option value="mobile_banner">Mobile Banner (320x50 · 32:5)</option>
+                  <option value="large_mobile_banner">Large Mobile Banner (320x100 · 16:5)</option>
+                  <option value="half_page">Half Page (300x600 · 1:2)</option>
+                  <option value="billboard">Billboard (970x250 · 97:25)</option>
+                  <option value="square">Square (250x250 · 1:1)</option>
+                  <option value="large_square">Large Square (300x300 · 1:1)</option>
                   <option value="interstitial">Fluid Interstitial Card</option>
                 </select>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  Automatic allows all 9 approved presets that fit the usable space. Setting a specific size restricts placement delivery to that preset.
+                </p>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>

@@ -1,12 +1,24 @@
 'use client';
+
 import { MediaPreview } from '../MediaPreview';
 import { sessionFetch } from '../../lib/session';
 import { adsApi } from '../../lib/ads-api-client';
 import { ApiError } from '@crimfig/api-client';
 import { Button } from '../ui/button';
+import { ModerationReviewDialog } from './ModerationReviewDialog';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { ShieldCheck, CheckCircle2, XCircle, AlertCircle, RefreshCw, Eye, ExternalLink, Filter } from 'lucide-react';
+import {
+  ShieldCheck,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  RefreshCw,
+  ExternalLink,
+  Layers,
+  FileImage,
+  Tv,
+} from 'lucide-react';
 
 type ModerationQueue = Awaited<ReturnType<ReturnType<typeof adsApi>['queue']>>;
 
@@ -20,107 +32,151 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
   const [isForbidden, setIsForbidden] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'creatives' | 'campaigns'>('creatives');
-  const [decisionNote, setDecisionNote] = useState<{ [id: string]: string }>({});
-  const [decisionReason, setDecisionReason] = useState<{ [id: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState<{ [id: string]: boolean }>({});
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'stacks' | 'creatives'>('campaigns');
 
   const [roles, setRoles] = useState<string[]>([]);
-  const canReview = roles.includes('ads_reviewer');
-  const canManage = roles.includes('ads_manager');
-  const canOverride = roles.includes('super_admin');
+  const isPlatformAdmin = roles.includes('super_admin');
+  const canReview = isPlatformAdmin || roles.includes('ads_reviewer') || roles.includes('ads_admin');
+  const canManage = isPlatformAdmin || roles.includes('ads_manager') || roles.includes('ads_admin');
 
   const [reviewStage, setReviewStage] = useState<'reviewer' | 'manager'>('reviewer');
-  const canDecideCampaign = reviewStage === 'reviewer' ? canReview : canManage;
+
+  // Modal dialog state
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean;
+    targetType: 'campaign' | 'stack' | 'creative';
+    targetTitle: string;
+    stage: 'reviewer' | 'manager';
+    item: any;
+  }>({
+    isOpen: false,
+    targetType: 'campaign',
+    targetTitle: '',
+    stage: 'reviewer',
+    item: null,
+  });
 
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
     setRoles([]);
     void sessionFetch(`${apiBase}/api/v1/ecosystem/staff-status`, { signal: controller.signal })
-      .then(async response => response.ok ? response.json() : null)
-      .then(body => { if (active && body?.data?.isStaff === true && Array.isArray(body.data.roles)) setRoles(body.data.roles.filter((role: unknown): role is string => typeof role === 'string')); })
-      .catch(() => { if (active) setRoles([]); });
-    return () => { active = false; controller.abort(); };
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((body) => {
+        if (active && body?.data?.isStaff === true && Array.isArray(body.data.roles)) {
+          setRoles(body.data.roles.filter((role: unknown): role is string => typeof role === 'string'));
+        }
+      })
+      .catch(() => {
+        if (active) setRoles([]);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [apiBase]);
 
   const fetchQueue = useCallback(async () => {
-    setIsLoading(true); setError(null); setIsForbidden(false);
+    setIsLoading(true);
+    setError(null);
+    setIsForbidden(false);
     try {
       const next = await adsApi().queue(reviewStage);
       setQueue(next);
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) setIsForbidden(true);
-      setQueue(null); setError(err instanceof Error ? err.message : 'Moderation queue unavailable.');
-    } finally { setIsLoading(false); }
+      setQueue(null);
+      setError(err instanceof Error ? err.message : 'Moderation queue unavailable.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [apiBase, reviewStage]);
 
-  useEffect(() => { void fetchQueue(); }, [fetchQueue]);
+  useEffect(() => {
+    void fetchQueue();
+  }, [fetchQueue]);
 
-  const handleCreativeDecision = async (crt: { id: string; submissionId: string; contentRevision: number }, decision: 'approved' | 'rejected') => {
-    if (!canReview) return;
-    const { id } = crt;
-    setIsSubmitting((prev) => ({ ...prev, [id]: true }));
-    try {
-      await adsApi().reviewCreative(id, {
-        expectedRevision: crt.contentRevision,
-        submissionId: crt.submissionId,
-        requestId: crypto.randomUUID(),
-        decision, reasonCode: decision === 'rejected' ? (decisionReason[id] || 'POLICY_VIOLATION') : undefined,
-        note: decisionNote[id] || '',
-      });
-      setQueue(prev => prev ? { ...prev, creatives: prev.creatives.filter(c => c.id !== id), totalPending: Math.max(0, prev.totalPending - 1) } : null);
-    } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : 'Moderation request could not be confirmed.');
-    } finally {
-      setIsSubmitting((prev) => ({ ...prev, [id]: false }));
-    }
+  const openReviewModal = (
+    targetType: 'campaign' | 'stack' | 'creative',
+    targetTitle: string,
+    stage: 'reviewer' | 'manager',
+    item: any,
+  ) => {
+    setDialogState({
+      isOpen: true,
+      targetType,
+      targetTitle,
+      stage,
+      item,
+    });
   };
 
-  const handleCampaignDecision = async (camp: { id: string; submissionId: string; contentRevision: number }, decision: 'approved' | 'rejected') => {
-    if (!canDecideCampaign) return;
-    const { id } = camp;
-    setIsSubmitting((prev) => ({ ...prev, [id]: true }));
-    try {
-      await adsApi().reviewCampaign(id, reviewStage, {
-        expectedRevision: camp.contentRevision,
-        submissionId: camp.submissionId,
-        requestId: crypto.randomUUID(),
-        decision, reasonCode: decision === 'rejected' ? (decisionReason[id] || 'BUDGET_OR_TARGETING_ISSUE') : undefined,
-        note: decisionNote[id] || '',
-      });
-      setQueue(prev => prev ? { ...prev, campaigns: prev.campaigns.filter(c => c.id !== id), totalPending: Math.max(0, prev.totalPending - 1) } : null);
-    } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : 'Moderation request could not be confirmed.');
-    } finally {
-      setIsSubmitting((prev) => ({ ...prev, [id]: false }));
-    }
+  const closeReviewModal = () => {
+    setDialogState((prev) => ({ ...prev, isOpen: false, item: null }));
   };
 
-  const handleEmergencyOverride = async (camp: { id: string; submissionId: string; contentRevision: number }) => {
-    if (!canOverride) return;
-    const { id } = camp;
-    const reason = window.prompt(
-      'SUPER ADMIN EMERGENCY OVERRIDE:\nEnter a mandatory, documented justification for overriding the dual-reviewer workflow (min 10 chars):'
-    );
-    if (!reason || reason.trim().length < 10) {
-      setActionMessage('Override cancelled: A valid documented reason (at least 10 characters) is required for immutable audit logging.');
-      return;
-    }
+  const handleModalSubmit = async (data: {
+    decision: 'approved' | 'rejected';
+    advertiserNote?: string;
+    internalNote?: string;
+    reasonCode?: string;
+  }) => {
+    const { targetType, stage, item } = dialogState;
+    if (!item) return;
 
-    setIsSubmitting((prev) => ({ ...prev, [id]: true }));
-    try {
-      await adsApi().override(id, reason.trim(), 'approved', {
-        expectedRevision: camp.contentRevision,
-        submissionId: camp.submissionId,
-        requestId: crypto.randomUUID(),
-      });
-      setActionMessage('Campaign emergency override successful. Status set to Approved with audit trail.');
-      setQueue(prev => prev ? { ...prev, campaigns: prev.campaigns.filter(c => c.id !== id), totalPending: Math.max(0, prev.totalPending - 1) } : null);
-    } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : 'Moderation request could not be confirmed.');
-    } finally {
-      setIsSubmitting((prev) => ({ ...prev, [id]: false }));
+    const payload = {
+      expectedRevision: item.contentRevision,
+      submissionId: item.submissionId,
+      requestId: crypto.randomUUID(),
+      decision: data.decision,
+      advertiserNote: data.advertiserNote,
+      internalNote: data.internalNote,
+      note: data.internalNote || data.advertiserNote || '',
+      reasonCode: data.reasonCode,
+    };
+
+    if (targetType === 'campaign') {
+      await adsApi().reviewCampaign(item.id, stage, payload);
+      setActionMessage(
+        `Campaign "${dialogState.targetTitle}" ${data.decision === 'approved' ? (stage === 'manager' ? 'fully APPROVED and is now LIVE!' : 'passed Review 1 and forwarded to Review 2') : 'REJECTED'}.`,
+      );
+      setQueue((prev) =>
+        prev
+          ? {
+              ...prev,
+              campaigns: prev.campaigns.filter((c) => c.id !== item.id),
+              totalPending: Math.max(0, prev.totalPending - 1),
+            }
+          : null,
+      );
+    } else if (targetType === 'stack') {
+      await adsApi().reviewStack(item.id, stage, payload);
+      setActionMessage(
+        `Ad Stack "${dialogState.targetTitle}" ${data.decision === 'approved' ? (stage === 'manager' ? 'fully APPROVED!' : 'passed Review 1') : 'REJECTED'}.`,
+      );
+      setQueue((prev) =>
+        prev
+          ? {
+              ...prev,
+              stacks: (prev.stacks || []).filter((s: any) => s.id !== item.id),
+              totalPending: Math.max(0, prev.totalPending - 1),
+            }
+          : null,
+      );
+    } else if (targetType === 'creative') {
+      await adsApi().reviewCreative(item.id, stage, payload);
+      setActionMessage(
+        `Creative "${dialogState.targetTitle}" ${data.decision === 'approved' ? (stage === 'manager' ? 'fully APPROVED!' : 'passed Review 1') : 'REJECTED'}.`,
+      );
+      setQueue((prev) =>
+        prev
+          ? {
+              ...prev,
+              creatives: prev.creatives.filter((c) => c.id !== item.id),
+              totalPending: Math.max(0, prev.totalPending - 1),
+            }
+          : null,
+      );
     }
   };
 
@@ -169,7 +225,7 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             Restricted Moderation Queue
           </h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '520px', lineHeight: 1.6, marginBottom: '20px' }}>
-            This workspace queue is reserved for assigned compliance reviewers, managers, and system administrators. If you require moderation privileges for ad campaigns or creatives, contact your organization admin to grant the appropriate staff role.
+            This workspace queue is reserved for assigned compliance reviewers, managers, and platform administrators.
           </p>
           <a
             href="/dashboard"
@@ -192,10 +248,38 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
     );
   }
 
+  const currentCanReview = reviewStage === 'reviewer' ? canReview : canManage;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {error && <p role="alert">{error}</p>}
-      {actionMessage && <div role="status" style={{ padding: 16, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--text-primary)', overflowWrap: 'anywhere' }}>{actionMessage} <Button type="button" onClick={() => setActionMessage(null)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>Dismiss</Button></div>}
+      {error && <p role="alert" className="text-destructive text-sm">{error}</p>}
+      {actionMessage && (
+        <div
+          role="status"
+          style={{
+            padding: 16,
+            borderRadius: 8,
+            border: '1px solid var(--border-subtle)',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-primary)',
+            overflowWrap: 'anywhere',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>{actionMessage}</span>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setActionMessage(null)}
+            style={{ padding: '6px 10px', fontSize: '12px' }}
+          >
+            Dismiss
+          </Button>
+        </div>
+      )}
+
       {/* Header bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
         <div>
@@ -203,28 +287,50 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
             Compliance &amp; Moderation
           </span>
           <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-            {error ? 'Review Queue Unavailable' : isLoading ? 'Loading review queue' : `Review Queue (${queue?.totalPending ?? 0} Pending)`}
+            {error ? 'Review Queue Unavailable' : isLoading ? 'Loading review queue...' : `Review Queue (${queue?.totalPending ?? 0} Pending)`}
           </h2>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', maxWidth: '100%' }}>
-          <Button
-            type="button"
-            onClick={() => setActiveTab('creatives')}
-            aria-pressed={activeTab === 'creatives'}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '13px',
-              backgroundColor: activeTab === 'creatives' ? 'var(--color-crimson)' : 'var(--bg-surface)',
-              color: activeTab === 'creatives' ? '#FFFFFF' : 'var(--text-secondary)',
-            }}
-          >
-            Creative Assets ({error ? '—' : queue?.creatives.length ?? 0})
-          </Button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center' }}>
+          {/* Stage toggle */}
+          <div style={{ display: 'inline-flex', padding: '2px', backgroundColor: 'var(--badge-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <Button
+              type="button"
+              onClick={() => setReviewStage('reviewer')}
+              aria-pressed={reviewStage === 'reviewer'}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '11px',
+                fontWeight: 700,
+                backgroundColor: reviewStage === 'reviewer' ? 'var(--color-crimson)' : 'transparent',
+                color: reviewStage === 'reviewer' ? '#FFFFFF' : 'var(--text-secondary)',
+              }}
+            >
+              Review 1 (Reviewer)
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setReviewStage('manager')}
+              aria-pressed={reviewStage === 'manager'}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '11px',
+                fontWeight: 700,
+                backgroundColor: reviewStage === 'manager' ? 'var(--color-fig-dark)' : 'transparent',
+                color: reviewStage === 'manager' ? '#FFFFFF' : 'var(--text-secondary)',
+              }}
+            >
+              Review 2 (Manager)
+            </Button>
+          </div>
+
+          {/* Section tabs */}
           <Button
             type="button"
             onClick={() => setActiveTab('campaigns')}
@@ -242,44 +348,41 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
           >
             Campaigns ({error ? '—' : queue?.campaigns.length ?? 0})
           </Button>
-          {activeTab === 'campaigns' && (
-            <div style={{ display: 'inline-flex', flexWrap: 'wrap', padding: '2px', backgroundColor: 'var(--badge-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-              <Button
-                type="button"
-                onClick={() => setReviewStage('reviewer')}
-                aria-pressed={reviewStage === 'reviewer'}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  backgroundColor: reviewStage === 'reviewer' ? 'var(--color-fig-dark)' : 'transparent',
-                  color: reviewStage === 'reviewer' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
-              >
-                Tier-1: Reviewer
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setReviewStage('manager')}
-                aria-pressed={reviewStage === 'manager'}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  backgroundColor: reviewStage === 'manager' ? 'var(--color-fig-dark)' : 'transparent',
-                  color: reviewStage === 'manager' ? '#FFFFFF' : 'var(--text-secondary)',
-                }}
-              >
-                Tier-2: Manager Approval
-              </Button>
-            </div>
-          )}
+          <Button
+            type="button"
+            onClick={() => setActiveTab('stacks')}
+            aria-pressed={activeTab === 'stacks'}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '13px',
+              backgroundColor: activeTab === 'stacks' ? 'var(--color-crimson)' : 'var(--bg-surface)',
+              color: activeTab === 'stacks' ? '#FFFFFF' : 'var(--text-secondary)',
+            }}
+          >
+            Ad Stacks ({error ? '—' : (queue?.stacks as any)?.length ?? 0})
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setActiveTab('creatives')}
+            aria-pressed={activeTab === 'creatives'}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '13px',
+              backgroundColor: activeTab === 'creatives' ? 'var(--color-crimson)' : 'var(--bg-surface)',
+              color: activeTab === 'creatives' ? '#FFFFFF' : 'var(--text-secondary)',
+            }}
+          >
+            Creatives ({error ? '—' : queue?.creatives.length ?? 0})
+          </Button>
+
           <Button
             type="button"
             aria-label="Refresh moderation queue"
@@ -298,17 +401,134 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
         </div>
       </div>
 
+      {/* Main Content Area */}
       {isLoading ? (
         <div className="theme-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
           Loading pending submissions...
         </div>
-      ) : activeTab === 'creatives' ? (
+      ) : activeTab === 'campaigns' ? (
+        queue?.campaigns.length === 0 ? (
+          <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
+            <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Campaign Queue Clear</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              No campaigns currently waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {queue?.campaigns.map((camp) => (
+              <div
+                key={camp.id}
+                className="theme-card"
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  borderLeft: '4px solid var(--color-crimson)',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Model: {camp.pricingModel.toUpperCase()} · Budget: ${(camp.budgetUsdCents / 100).toFixed(2)} · Stage: {camp.moderationStatus}
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                    {camp.title}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {currentCanReview && (
+                    <Button
+                      type="button"
+                      onClick={() => openReviewModal('campaign', camp.title, reviewStage, camp)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        backgroundColor: 'var(--color-crimson)',
+                        color: '#FFFFFF',
+                        fontWeight: 600,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {reviewStage === 'reviewer' ? 'Perform Review 1' : 'Perform Review 2 (Go Live)'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : activeTab === 'stacks' ? (
+        ((queue?.stacks as any)?.length ?? 0) === 0 ? (
+          <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
+            <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Ad Stack Queue Clear</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              No ad stacks waiting for {reviewStage === 'reviewer' ? 'Review 1' : 'Review 2'}.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {(queue?.stacks as any)?.map((stk: any) => (
+              <div
+                key={stk.id}
+                className="theme-card"
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  borderLeft: '4px solid #3B82F6',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Campaign: {stk.campaignTitle || 'Campaign'} · Review: {stk.reviewStatus}
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                    {stk.name}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {currentCanReview && (
+                    <Button
+                      type="button"
+                      onClick={() => openReviewModal('stack', stk.name, reviewStage, stk)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        backgroundColor: '#3B82F6',
+                        color: '#FFFFFF',
+                        fontWeight: 600,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {reviewStage === 'reviewer' ? 'Perform Review 1' : 'Perform Review 2'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
         queue?.creatives.length === 0 ? (
           <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
             <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Creative Queue Clear</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              All submitted advertiser headlines, copies, and media assets have been moderated.
+              All submitted advertiser headlines, copies, and media assets have been moderated for this stage.
             </p>
           </div>
         ) : (
@@ -328,10 +548,10 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
                   <div style={{ maxWidth: '640px' }}>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Type: {crt.adType || crt.mediaFormat} · ID: {crt.id.slice(0, 8)}...
+                      Type: {crt.adType || crt.mediaFormat} · ID: {crt.id.slice(0, 8)}... · Status: {crt.reviewStatus}
                     </div>
                     <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
-                      {crt.headline}
+                      {crt.headline || 'Creative Headline'}
                     </div>
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                       {crt.bodyText}
@@ -347,58 +567,13 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                     </div>
                   </div>
 
-                  {canReview && <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '220px' }}>
-                    <select
-                      value={decisionReason[crt.id] || ''}
-                      onChange={(e) => setDecisionReason({ ...decisionReason, [crt.id]: e.target.value })}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--border-subtle)',
-                        backgroundColor: 'var(--bg-page)',
-                        fontSize: '12px',
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      <option value="">Select rejection reason (if rejecting)...</option>
-                      <option value="MISLEADING">Misleading / Clickbait Claims</option>
-                      <option value="PROHIBITED">Prohibited Financial / Gambling Products</option>
-                      <option value="BROKEN_URL">Destination URL Unreachable (404/500)</option>
-                      <option value="LOW_QUALITY">Low Resolution / Distorted Media</option>
-                      <option value="TRADEMARK">Unverified Trademark / Impersonation</option>
-                    </select>
-
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }}>
+                    {currentCanReview && (
                       <Button
                         type="button"
-                        disabled={isSubmitting[crt.id]}
-                        onClick={() => handleCreativeDecision(crt, 'approved')}
+                        onClick={() => openReviewModal('creative', crt.headline || crt.id.slice(0, 8), reviewStage, crt)}
                         style={{
-                          flex: 1,
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          backgroundColor: '#10B981',
-                          color: '#FFFFFF',
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                        }}
-                      >
-                        <CheckCircle2 style={{ width: 14, height: 14 }} />
-                        Approve
-                      </Button>
-                      <Button
-                        type="button"
-                        disabled={isSubmitting[crt.id]}
-                        onClick={() => handleCreativeDecision(crt, 'rejected')}
-                        style={{
-                          flex: 1,
-                          padding: '8px 12px',
+                          padding: '8px 16px',
                           borderRadius: '6px',
                           border: 'none',
                           backgroundColor: 'var(--color-crimson)',
@@ -406,114 +581,29 @@ export function AdminModerationQueue({ apiBase }: AdminModerationQueueProps) {
                           fontWeight: 600,
                           fontSize: '12px',
                           cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
                         }}
                       >
-                        <XCircle style={{ width: 14, height: 14 }} />
-                        Reject
+                        {reviewStage === 'reviewer' ? 'Perform Review 1' : 'Perform Review 2'}
                       </Button>
-                    </div>
-                  </div>}
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      ) : (
-        queue?.campaigns.length === 0 ? (
-          <div className="theme-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <CheckCircle2 style={{ width: 40, height: 40, color: '#10B981', margin: '0 auto 12px' }} />
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Campaign Queue Clear</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              No campaigns currently waiting for administrative review.
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {queue?.campaigns.map((camp) => (
-              <div
-                key={camp.id}
-                className="theme-card"
-                style={{
-                  padding: '24px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '16px',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    Model: {camp.pricingModel.toUpperCase()} · Budget: ${(camp.budgetUsdCents / 100).toFixed(2)}
+                    )}
                   </div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                    {camp.title}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {canDecideCampaign && <Button
-                    type="button"
-                    disabled={isSubmitting[camp.id]}
-                    onClick={() => handleCampaignDecision(camp, 'approved')}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      backgroundColor: '#10B981',
-                      color: '#FFFFFF',
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {reviewStage === 'reviewer' ? 'Approve & Pass to Manager' : 'Approve Campaign'}
-                  </Button>}
-                  {canDecideCampaign && <Button
-                    type="button"
-                    disabled={isSubmitting[camp.id]}
-                    onClick={() => handleCampaignDecision(camp, 'rejected')}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      backgroundColor: 'var(--color-crimson)',
-                      color: '#FFFFFF',
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Reject
-                  </Button>}
-                  {canOverride && <Button
-                    type="button"
-                    title="Super Admin Emergency Override: Requires mandatory justification audit entry"
-                    disabled={isSubmitting[camp.id]}
-                    onClick={() => handleEmergencyOverride(camp)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                      color: 'var(--text-muted)',
-                      fontWeight: 600,
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Emergency Override
-                  </Button>}
                 </div>
               </div>
             ))}
           </div>
         )
       )}
+
+      {/* Standard Dialog for Review Decisions */}
+      <ModerationReviewDialog
+        isOpen={dialogState.isOpen}
+        onClose={closeReviewModal}
+        targetType={dialogState.targetType}
+        targetTitle={dialogState.targetTitle}
+        stage={dialogState.stage}
+        isPlatformAdmin={isPlatformAdmin}
+        onSubmit={handleModalSubmit}
+      />
     </div>
   );
 }
