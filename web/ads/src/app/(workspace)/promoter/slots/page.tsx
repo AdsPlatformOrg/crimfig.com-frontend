@@ -19,6 +19,7 @@ import { sessionFetch } from '../../../../lib/session';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { EmptyState } from '../../../../components/EmptyState';
+import { SetupGuide } from '../../../../components/console/SetupGuide';
 
 interface PromoterWebsite {
   id: string;
@@ -294,6 +295,8 @@ export default function PromoterSlotsPage() {
           <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No registered websites found. Add a website first.</span>
         )}
       </div>
+
+      {selectedWebsite && <SetupGuide website={{ id: selectedWebsite.id, domain: selectedWebsite.domain }} slots={slots.map((s) => ({ id: s.id, name: s.name, slotTagId: s.slotTagId }))} />}
 
       {/* Slots List or Empty State */}
       {isLoadingSlots ? (
