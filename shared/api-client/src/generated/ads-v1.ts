@@ -603,7 +603,7 @@ export interface components {
                 id: string;
                 imageSpecs?: ({
                     bytes?: number;
-                    height?: number;
+                    height?: number | null;
                     mimeType?: string;
                     preparation?: {
                         [key: string]: unknown;
@@ -612,7 +612,7 @@ export interface components {
                         [key: string]: unknown;
                     }[];
                     sha256?: string | null;
-                    width?: number;
+                    width?: number | null;
                 } & {
                     [key: string]: unknown;
                 }) | null;
@@ -650,7 +650,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -659,7 +659,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -813,7 +813,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -822,7 +822,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -930,7 +930,7 @@ export interface components {
                             id: string;
                             imageSpecs?: ({
                                 bytes?: number;
-                                height?: number;
+                                height?: number | null;
                                 mimeType?: string;
                                 preparation?: {
                                     [key: string]: unknown;
@@ -939,7 +939,7 @@ export interface components {
                                     [key: string]: unknown;
                                 }[];
                                 sha256?: string | null;
-                                width?: number;
+                                width?: number | null;
                             } & {
                                 [key: string]: unknown;
                             }) | null;
@@ -1093,7 +1093,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -1102,7 +1102,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -1212,7 +1212,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -1221,7 +1221,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -1375,7 +1375,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -1384,7 +1384,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -1487,7 +1487,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -1496,7 +1496,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -1655,7 +1655,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -1664,7 +1664,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -1818,7 +1818,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -1827,7 +1827,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -1931,7 +1931,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -1940,7 +1940,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -2094,7 +2094,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -2103,7 +2103,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -2207,7 +2207,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -2216,7 +2216,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -2370,7 +2370,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -2379,7 +2379,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -2531,7 +2531,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -2540,7 +2540,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -2694,7 +2694,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -2703,7 +2703,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -2912,7 +2912,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -2921,7 +2921,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -2965,7 +2965,7 @@ export interface components {
                             id: string;
                             imageSpecs?: ({
                                 bytes?: number;
-                                height?: number;
+                                height?: number | null;
                                 mimeType?: string;
                                 preparation?: {
                                     [key: string]: unknown;
@@ -2974,7 +2974,7 @@ export interface components {
                                     [key: string]: unknown;
                                 }[];
                                 sha256?: string | null;
-                                width?: number;
+                                width?: number | null;
                             } & {
                                 [key: string]: unknown;
                             }) | null;
@@ -3128,7 +3128,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -3137,7 +3137,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -3256,7 +3256,7 @@ export interface components {
                     id: string;
                     imageSpecs?: ({
                         bytes?: number;
-                        height?: number;
+                        height?: number | null;
                         mimeType?: string;
                         preparation?: {
                             [key: string]: unknown;
@@ -3265,7 +3265,7 @@ export interface components {
                             [key: string]: unknown;
                         }[];
                         sha256?: string | null;
-                        width?: number;
+                        width?: number | null;
                     } & {
                         [key: string]: unknown;
                     }) | null;
@@ -3317,7 +3317,7 @@ export interface components {
                             id: string;
                             imageSpecs?: ({
                                 bytes?: number;
-                                height?: number;
+                                height?: number | null;
                                 mimeType?: string;
                                 preparation?: {
                                     [key: string]: unknown;
@@ -3326,7 +3326,7 @@ export interface components {
                                     [key: string]: unknown;
                                 }[];
                                 sha256?: string | null;
-                                width?: number;
+                                width?: number | null;
                             } & {
                                 [key: string]: unknown;
                             }) | null;
@@ -3480,7 +3480,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -3489,7 +3489,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -3591,7 +3591,7 @@ export interface components {
                                 id: string;
                                 imageSpecs?: ({
                                     bytes?: number;
-                                    height?: number;
+                                    height?: number | null;
                                     mimeType?: string;
                                     preparation?: {
                                         [key: string]: unknown;
@@ -3600,7 +3600,7 @@ export interface components {
                                         [key: string]: unknown;
                                     }[];
                                     sha256?: string | null;
-                                    width?: number;
+                                    width?: number | null;
                                 } & {
                                     [key: string]: unknown;
                                 }) | null;
@@ -3754,7 +3754,7 @@ export interface components {
                             id: string;
                             imageSpecs?: ({
                                 bytes?: number;
-                                height?: number;
+                                height?: number | null;
                                 mimeType?: string;
                                 preparation?: {
                                     [key: string]: unknown;
@@ -3763,7 +3763,7 @@ export interface components {
                                     [key: string]: unknown;
                                 }[];
                                 sha256?: string | null;
-                                width?: number;
+                                width?: number | null;
                             } & {
                                 [key: string]: unknown;
                             }) | null;
@@ -3860,7 +3860,7 @@ export interface components {
                         id: string;
                         imageSpecs?: ({
                             bytes?: number;
-                            height?: number;
+                            height?: number | null;
                             mimeType?: string;
                             preparation?: {
                                 [key: string]: unknown;
@@ -3869,7 +3869,7 @@ export interface components {
                                 [key: string]: unknown;
                             }[];
                             sha256?: string | null;
-                            width?: number;
+                            width?: number | null;
                         } & {
                             [key: string]: unknown;
                         }) | null;
@@ -3902,7 +3902,7 @@ export interface components {
                             id: string;
                             imageSpecs?: ({
                                 bytes?: number;
-                                height?: number;
+                                height?: number | null;
                                 mimeType?: string;
                                 preparation?: {
                                     [key: string]: unknown;
@@ -3911,7 +3911,7 @@ export interface components {
                                     [key: string]: unknown;
                                 }[];
                                 sha256?: string | null;
-                                width?: number;
+                                width?: number | null;
                             } & {
                                 [key: string]: unknown;
                             }) | null;
