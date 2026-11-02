@@ -69,6 +69,7 @@ interface AdstationSlot {
 
 interface EmbedSnippet {
   slotTagId: string;
+  deliveryReadiness?:{status:string;blockers:string[];remainingChecks:string[];message:string};
   htmlSnippet: string;
   nextJsSnippet: string;
 }
@@ -706,6 +707,8 @@ export default function PromoterSlotsPage() {
                     {embedSnippet.htmlSnippet}
                   </pre>
                 </div>
+
+                {embedSnippet.deliveryReadiness&&<section aria-label="Delivery readiness" className="cf-section"><h3 style={{fontSize:'16px'}}>Paid delivery readiness</h3><p style={{fontSize:'14px'}}>{embedSnippet.deliveryReadiness.message}</p>{embedSnippet.deliveryReadiness.blockers.length?<ul>{embedSnippet.deliveryReadiness.blockers.map(code=><li key={code}>{code.replace(/_/g,' ').toLowerCase()}</li>)}</ul>:<p>Supply checks pass. Consent, traffic, campaign targeting, approved formats and auction checks still apply to each request.</p>}</section>}
 
                 {/* React / Next.js Snippet */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

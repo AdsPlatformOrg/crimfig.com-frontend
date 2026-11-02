@@ -3,14 +3,14 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),ts=require('typescript');
 const text=n=>typeof n==='string'?n:Array.isArray(n)?n.map(text).join(''):n?.children?.map(text).join('')||'';
 const cfigHelpers={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'../../../web/ads/src/lib/cfig-format.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:cfigHelpers});
-function mount(reply,clipboard=async()=>{}){
+function mount(reply,clipboard=async()=>{},readiness){
  const state=[],effects=[];let cursor=0,tree;
  const changed=(a,b)=>!a||a.length!==b.length||a.some((v,i)=>v!==b[i]);
  const react={createElement:(type,props,...children)=>({type,props:props||{},children}),useState(initial){const i=cursor++;if(!(i in state))state[i]=initial;return[state[i],value=>{state[i]=typeof value==='function'?value(state[i]):value;}];},useEffect(fn,deps){const i=cursor++;if(changed(state[i],deps)){state[i]=deps;effects.push(fn);}},useCallback(fn,deps){const i=cursor++;if(changed(state[i]?.deps,deps))state[i]={deps,fn};return state[i].fn;}};
  const exports={};
  const sessionFetch=async url=>{
   if(url.endsWith('/check-installation'))return reply;
-  if(url.endsWith('/embed'))return{ok:true,json:async()=>({data:{htmlSnippet:'<ins>canonical HTML</ins>',nextJsSnippet:'<CrimFigAdSlot slotTagId="cf-slot-test" publisherKey="site" />'}})};
+  if(url.endsWith('/embed'))return{ok:true,json:async()=>({data:{deliveryReadiness:readiness,htmlSnippet:'<ins>canonical HTML</ins>',nextJsSnippet:'<CrimFigAdSlot slotTagId="cf-slot-test" publisherKey="site" />'}})};
   return{ok:true,json:async()=>({data:url.endsWith('/promoters/websites')?[{id:'site',domain:'example.com',verificationStatus:'verified'}]:[{id:'slot',websiteId:'site',slotTagId:'cf-slot-test',name:'Pilot',format:'banner',lifecycleStatus:'testing'}]})};
  };
  const source=fs.readFileSync(path.resolve(__dirname,'../../../web/ads/src/app/(workspace)/promoter/slots/page.tsx'),'utf8');
@@ -18,7 +18,7 @@ function mount(reply,clipboard=async()=>{}){
  const api={render(){cursor=0;tree=exports.default();while(effects.length)effects.shift()();return tree;},async settle(){await new Promise(setImmediate);this.render();},nodes(){const all=[];function visit(n){if(!n||typeof n!=='object')return;if(Array.isArray(n))return n.forEach(visit);all.push(n);n.children?.forEach(visit);}visit(tree);return all;},button(label){return this.nodes().find(n=>['Button','DropdownMenuItem'].includes(n.type)&&text(n).trim()===(label==='Get Embed Code'?'Code':label));},text(){return text(tree);}};
  api.render();return api;
 }
-async function loaded(reply,clipboard){const m=mount(reply,clipboard);for(let i=0;i<4;i++)await m.settle();return m;}
+async function loaded(reply,clipboard,readiness){const m=mount(reply,clipboard,readiness);for(let i=0;i<4;i++)await m.settle();return m;}
 test('failed installation check shows its error without a verified badge',async()=>{
  const m=await loaded({ok:false,json:async()=>({message:'Evidence temporarily unavailable'})});
  await m.button('Test Installation').props.onClick();await m.settle();
@@ -40,3 +40,6 @@ test('real render verdict and canonical React snippet fields are displayed',asyn
  await m.button('Test Installation').props.onClick();await m.settle();assert.match(m.text(),/Verified Rendered/);
  await m.button('Get Embed Code').props.onClick();await m.settle();assert.match(m.text(),/CrimFigAdSlot slotTagId=/);
 });
+
+test('blocked paid readiness remains distinct from installation and copy succeeds',async()=>{const m=await loaded({},undefined,{status:'blocked',blockers:['WEBSITE_APPROVAL_REQUIRED'],remainingChecks:['MEASUREMENT_CONSENT'],message:'Pre-auction checks do not guarantee paid fill.'});await m.button('Get Embed Code').props.onClick();await m.settle();assert.match(m.text(),/website approval required/);assert.match(m.text(),/do not guarantee paid fill/);assert.doesNotMatch(m.text(),/Verified Rendered/);});
+test('passing supply checks still explains per-request gates rather than promising paid ads',async()=>{const m=await loaded({},undefined,{status:'request_checks_pending',blockers:[],remainingChecks:['MEASUREMENT_CONSENT'],message:'Not a paid delivery guarantee.'});await m.button('Get Embed Code').props.onClick();await m.settle();assert.match(m.text(),/Consent, traffic, campaign targeting/);assert.match(m.text(),/Not a paid delivery guarantee/);});
