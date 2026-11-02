@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
+const formatExports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'../../../web/ads/src/lib/admin-format.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:formatExports,Intl,Date});
 
 // Runs the real component effects and event handlers without a DOM or network.
 function mount(file, dependencies, props = {}) {
@@ -61,7 +62,7 @@ function moderation(roles,api={},authorityRequest) {
  const calls=[],writes=[];
  const queue={campaigns:[{id:cid,title:'Campaign title',submissionId:sid,contentRevision:3}],stacks:[{id:cid,name:'Stack title',submissionId:sid,contentRevision:3}],creatives:[{id:cid,headline:'Creative title',submissionId:sid,contentRevision:3}],hasMore:{campaigns:false,stacks:false,creatives:true}};
  const base={moderationSummary:async type=>({scope:type,asOf:'2026-11-02T12:00:00.000Z',reviewerCount:150,managerCount:20,submissionCount:30,oldestSubmittedAt:null,oldestAgeSeconds:null,unknownAgeCount:0,overdueCount:null,targetStatus:'not_configured'}),queue:async(stage,page)=>{calls.push(['queue',stage,page]);return queue;},moderationDetail:async(type,id)=>({targetType:type,targetId:id,campaign:{id:cid,status:'paused'},item:{id,headline:'Inspected title'},content:{id,headline:'Immutable title'},submissionId:sid,contentRevision:3,capabilities:{reviewer:{allowed:roles.some(r=>['ads_reviewer','ads_admin','super_admin'].includes(r)),reason:null},manager:{allowed:roles.some(r=>['ads_manager','ads_admin','super_admin'].includes(r)),reason:null}},children:[],targets:[],history:[],hasMoreChildren:false,hasMoreHistory:false}),reviewCreative:async(id,stage,body)=>{writes.push([id,stage,body]);return boundReceipt('creative',id,stage,body);},reviewStack:async(id,stage,body)=>{writes.push([id,stage,body]);return boundReceipt('stack',id,stage,body);},reviewCampaign:async(id,stage,body)=>{writes.push([id,stage,body]);return boundReceipt('campaign',id,stage,body);},...api};
- const app=mount('ads/src/components/console/AdminModerationQueue.tsx',{'@crimfig/api-client':{ApiError:ModerationApiError},'../../lib/session':{dashboardSession:()=>({getSnapshot:()=>({}),subscribe:()=>()=>{}}),sessionFetch:async url=>{calls.push(['staff',url]);if(authorityRequest)return authorityRequest();return Response.json({data:{userId:cid,isStaff:roles.length>0,roles}});}},'../../lib/ads-api-client':{adsApi:()=>base}},{apiBase:''});
+ const app=mount('ads/src/components/console/AdminModerationQueue.tsx',{'@crimfig/api-client':{ApiError:ModerationApiError},'../../lib/session':{dashboardSession:()=>({getSnapshot:()=>({}),subscribe:()=>()=>{}}),sessionFetch:async url=>{calls.push(['staff',url]);if(authorityRequest)return authorityRequest();return Response.json({data:{userId:cid,isStaff:roles.length>0,roles}});}},'../../lib/ads-api-client':{adsApi:()=>base},'../../lib/admin-format':formatExports},{apiBase:''});
  return {app,calls,writes,base,queue};
 }
 const button=(app,label)=>app.nodes().find(n=>typeof n.props.onClick==='function'&&text(n).trim()===label);
@@ -288,4 +289,8 @@ test('PLAN0077 workspace refresh revalidates authority, queue, summary and selec
 });
 test('PLAN0077 confirmed decision remains confirmed when follow-up queue read fails',async()=>{
  const {app,base,writes}=moderation(['ads_admin']);await ready(app);button(app,'View details').props.onClick();await ready(app);app.nodes().filter(n=>typeof n.props.onClick==='function'&&text(n)==='Review 1').at(-1).props.onClick();app.render();const form=app.nodes().find(n=>typeof n.props.onSubmit==='function');base.queue=async()=>{throw Error('queue offline');};await form.props.onSubmit({decision:'approved'});await ready(app);assert.equal(writes.length,1);assert.match(text(app.render()),/Decision recorded/);assert.equal(button(app,'Check outcome'),undefined);assert.equal(button(app,'Refresh').props.disabled,false);app.unmount();
+});
+
+test('PLAN0078 same-context refresh retains read-only rows while context changes remove obsolete rows',async()=>{
+ const {app,base,queue}=moderation(['ads_admin']);await ready(app);let resolve;base.queue=()=>new Promise(done=>resolve=done);await button(app,'Refresh').props.onClick();await ready(app);assert.ok(button(app,'Creative title'));assert.equal(button(app,'View details').props.disabled,true);button(app,'Ad Stacks').props.onClick();await ready(app);assert.equal(button(app,'Creative title'),undefined);resolve(queue);await ready(app);app.unmount();
 });

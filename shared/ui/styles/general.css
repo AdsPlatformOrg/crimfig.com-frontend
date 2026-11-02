@@ -1,0 +1,15 @@
+/* Opt-in CrimFig patterns. Tokens remain in each application's globals.css. */
+.cf-page-title {font-family:var(--font-primary);font-size:1.5rem;font-weight:600;line-height:1.3;color:var(--text-primary);margin:0}
+.cf-section-title {font-family:var(--font-primary);font-size:1.125rem;font-weight:600;line-height:1.4;color:var(--text-primary);margin:0}
+.cf-surface {background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-lg)}
+.cf-section {display:flex;flex-direction:column;gap:16px;min-width:0}
+.cf-form-group {display:flex;flex-direction:column;gap:8px;min-width:0}
+.cf-form-label {font-size:.875rem;font-weight:500;line-height:1.4}
+.cf-dialog-section {padding-block:20px;min-width:0}
+.cf-muted {color:var(--text-secondary);font-size:.875rem;line-height:1.5}
+.cf-empty-state {padding:24px 16px;text-align:center;color:var(--text-secondary);font-size:.875rem}
+.cf-numeric {font-variant-numeric:tabular-nums}
+.cf-technical {font-size:.8125rem;overflow-wrap:anywhere;min-width:0}
+.cf-technical pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;font-size:inherit}
+.cf-data-table {width:100%;border-collapse:collapse;font-size:.875rem}
+@media(max-width:700px){.cf-page-title{font-size:1.25rem}.cf-dialog-section{padding-block:16px}}

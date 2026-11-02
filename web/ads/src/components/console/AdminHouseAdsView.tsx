@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
+import { Textarea } from "../ui/textarea";
 import { Button, Input } from "../ui";
 import { sessionFetch } from "@/lib/session";
 
@@ -48,6 +49,10 @@ export function AdminHouseAdsView() {
     [saving, setSaving] = useState(false),
     [formError, setFormError] = useState(""),
     [archive, setArchive] = useState<Creative | null>(null);
+  const initialForm=useRef(''),mutationBusy=useRef(false);
+  const [discardRequested,setDiscardRequested]=useState(false),[filename,setFilename]=useState('');
+  useEffect(()=>{if(open){initialForm.current=JSON.stringify(form);setDiscardRequested(false);setFilename('');}},[open]);
+  function closeEditor(){if(mutationBusy.current)return;if(JSON.stringify(form)!==initialForm.current){setDiscardRequested(true);return;}setOpen(false);}
   const [preview, setPreview] = useState(""),
     [previewError, setPreviewError] = useState("");
   useEffect(() => {
@@ -134,7 +139,8 @@ export function AdminHouseAdsView() {
   }, [page]);
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (saving) return;
+    if (mutationBusy.current) return;
+    mutationBusy.current=true;
     setSaving(true);
     setFormError("");
     try {
@@ -167,11 +173,12 @@ export function AdminHouseAdsView() {
     } catch (e) {
       setFormError(e instanceof Error ? e.message : "Save failed");
     } finally {
-      setSaving(false);
+      mutationBusy.current=false;setSaving(false);
     }
   }
   async function upload(file: File | undefined) {
-    if (!file || saving) return;
+    if (!file || mutationBusy.current) return;
+    mutationBusy.current=true;setFilename(file.name);
     setSaving(true);
     setFormError("");
     try {
@@ -197,11 +204,12 @@ export function AdminHouseAdsView() {
     } catch (e) {
       setFormError(e instanceof Error ? e.message : "Upload failed");
     } finally {
-      setSaving(false);
+      mutationBusy.current=false;setSaving(false);
     }
   }
   async function confirmArchive() {
-    if (!archive || saving) return;
+    if (!archive || mutationBusy.current) return;
+    mutationBusy.current=true;
     setSaving(true);
     setFormError("");
     try {
@@ -215,14 +223,14 @@ export function AdminHouseAdsView() {
     } catch (e) {
       setFormError(e instanceof Error ? e.message : "Archive failed");
     } finally {
-      setSaving(false);
+      mutationBusy.current=false;setSaving(false);
     }
   }
   return (
-    <section className="cf-report">
+    <section className="cf-report cf-admin-ui cf-house-admin">
       <header className="cf-report-header">
         <div>
-          <h1>House Ads Management</h1>
+          <h1 className="cf-page-title">House Ads</h1>
           <p>
             Manage zero-charge platform creatives. Performance is reported
             separately.
@@ -336,10 +344,10 @@ export function AdminHouseAdsView() {
           Next creatives
         </Button>
       </div>
-      <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Root open={open} onOpenChange={value=>value?setOpen(true):closeEditor()}>
         <Dialog.Portal>
           <Dialog.Overlay className="cf-report-overlay" />
-          <Dialog.Content className="cf-report-dialog">
+          <Dialog.Content className="cf-report-dialog cf-house-dialog cf-admin-ui">
             <Dialog.Title>
               {editing ? "Edit House Ad" : "Add House Ad"}
             </Dialog.Title>
@@ -347,14 +355,15 @@ export function AdminHouseAdsView() {
               Configure creative content and preview. Preview does not send
               delivery events.
             </Dialog.Description>
-            <form onSubmit={save} className="cf-report-form">
+            <form onSubmit={save} className="cf-report-form" aria-busy={saving}>
+              {discardRequested&&<aside role="alert" className="cf-surface cf-dialog-section"><p>Discard your unsaved changes?</p><Button type="button" variant="destructive" onClick={()=>{setDiscardRequested(false);setOpen(false);}}>Discard changes</Button><Button type="button" variant="outline" onClick={()=>setDiscardRequested(false)}>Keep editing</Button></aside>}
+              <fieldset disabled={saving} className="cf-section tw:grid tw:gap-4 tw:md:grid-cols-2"><legend>Ad copy</legend>
               {(
                 [
                   "title",
                   "headline",
                   "bodyText",
                   "ctaText",
-                  "destinationUrl",
                 ] as const
               ).map((key) => (
                 <label key={key}>
@@ -367,19 +376,22 @@ export function AdminHouseAdsView() {
                       destinationUrl: "Destination URL",
                     }[key]
                   }
-                  <Input
+                  {key==='bodyText'?<Textarea required rows={4} value={form[key]} onChange={event=>setForm({...form,[key]:event.target.value})}/>:                  <Input
                     required
-                    type={key === "destinationUrl" ? "url" : "text"}
+                    type="text"
                     value={form[key]}
                     onChange={(e) =>
                       setForm({ ...form, [key]: e.target.value })
                     }
-                  />
+                  />}
                 </label>
               ))}
+              </fieldset>
+              <fieldset disabled={saving} className="cf-section"><legend>Assets &amp; destination</legend>
+              <label>Destination URL<Input required type="url" value={form.destinationUrl} onChange={event=>setForm({...form,destinationUrl:event.target.value})}/></label>
               <label>
-                Creative type
-                <select
+                Ad type
+                <select className="cf-input"
                   value={form.adType}
                   onChange={(e) => setForm({ ...form, adType: e.target.value })}
                 >
@@ -419,9 +431,11 @@ export function AdminHouseAdsView() {
                   />
                 </label>
               )}
+              {filename&&<p className="cf-muted" role="status">Selected file: {filename}</p>}
+              </fieldset><fieldset disabled={saving} className="cf-section"><legend>Specifications &amp; delivery</legend>
               <label>
                 Format
-                <select
+                <select className="cf-input"
                   value={form.format}
                   onChange={(e) => setForm({ ...form, format: e.target.value })}
                 >
@@ -440,7 +454,7 @@ export function AdminHouseAdsView() {
               <div className="cf-report-grid">
                 {(["width", "height", "priority"] as const).map((key) => (
                   <label key={key}>
-                    {key}
+                    {key==='priority'?'Delivery priority':`${key==='width'?'Width':'Height'} (px)`}
                     <Input
                       type="number"
                       required
@@ -470,11 +484,13 @@ export function AdminHouseAdsView() {
                 />{" "}
                 Active
               </label>
+              </fieldset>
               {previewError && <p role="alert">{previewError}</p>}
               <div className="cf-report-panel">
-                <strong>Creative preview</strong>
+                <h3 className="cf-section-title">Live preview (nonbillable)</h3>
                 {form.adType === "image" && form.imageUrl ? (
                   <img
+                    className="cf-house-preview"
                     src={preview || undefined}
                     onError={() => setPreviewError("Image preview failed")}
                     alt={form.headline}
@@ -486,6 +502,7 @@ export function AdminHouseAdsView() {
                   />
                 ) : form.adType === "video" && form.videoUrl ? (
                   <video
+                    className="cf-house-preview"
                     src={preview || undefined}
                     onError={() => setPreviewError("Video preview failed")}
                     controls
@@ -503,7 +520,7 @@ export function AdminHouseAdsView() {
                   {saving ? "Saving…" : "Save creative"}
                 </Button>
                 <Dialog.Close asChild>
-                  <Button type="button" variant="outline">
+                  <Button type="button" variant="outline" disabled={saving}>
                     Cancel
                   </Button>
                 </Dialog.Close>
@@ -515,19 +532,19 @@ export function AdminHouseAdsView() {
       <Dialog.Root
         open={!!archive}
         onOpenChange={(value) => {
-          if (!value) setArchive(null);
+          if (!value&&!mutationBusy.current) setArchive(null);
         }}
       >
         <Dialog.Portal>
           <Dialog.Overlay className="cf-report-overlay" />
-          <Dialog.Content className="cf-report-dialog">
+          <Dialog.Content className="cf-report-dialog cf-house-dialog cf-admin-ui">
             <Dialog.Title>Archive {archive?.title}?</Dialog.Title>
             <Dialog.Description>
               Stops future selection while preserving historical attribution.
             </Dialog.Description>
             {formError && <p role="alert">{formError}</p>}
             <div className="cf-report-actions">
-              <Button disabled={saving} onClick={() => void confirmArchive()}>
+              <Button variant="destructive" disabled={saving} onClick={() => void confirmArchive()}>
                 Archive creative
               </Button>
               <Dialog.Close asChild>

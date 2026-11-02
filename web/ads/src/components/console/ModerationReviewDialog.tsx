@@ -84,16 +84,16 @@ export function ModerationReviewDialog({
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
                     {stageLabel}
                   </span>
                   {isPlatformAdmin && (
-                    <span style={{ fontSize: '14px', fontWeight: 600, padding: '2px 6px', borderRadius: '9999px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, padding: '2px 6px', borderRadius: '9999px', backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>
                       Platform Admin
                     </span>
                   )}
                 </div>
-                <Title style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
+                <Title style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
                   Review {targetLabel}
                 </Title>
                 <Description style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px', margin: 0 }}>
@@ -121,7 +121,7 @@ export function ModerationReviewDialog({
             </div>
 
             {error && (
-              <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.2)', color: 'var(--color-crimson)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--color-crimson)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
                 <span>{error}</span>
               </div>
@@ -146,8 +146,8 @@ export function ModerationReviewDialog({
                     borderRadius: '8px',
                     border: decision === 'approved' ? '2px solid #10B981' : '1px solid var(--border-subtle)',
                     backgroundColor: decision === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
-                    color: decision === 'approved' ? '#059669' : 'var(--text-secondary)',
-                    fontWeight: 700,
+                    color: decision === 'approved' ? 'var(--color-crimson)' : 'var(--text-secondary)',
+                    fontWeight: 600,
                     fontSize: '14px',
                     cursor: 'pointer',
                   }}
@@ -169,7 +169,7 @@ export function ModerationReviewDialog({
                     border: decision === 'rejected' ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
                     backgroundColor: decision === 'rejected' ? 'rgba(212, 20, 58, 0.1)' : 'var(--bg-surface)',
                     color: decision === 'rejected' ? 'var(--color-crimson)' : 'var(--text-secondary)',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     fontSize: '14px',
                     cursor: 'pointer',
                   }}
@@ -286,8 +286,8 @@ export function ModerationReviewDialog({
                 style={{
                   fontSize: '14px',
                   padding: '8px 16px',
-                  backgroundColor: decision === 'approved' ? '#059669' : 'var(--color-crimson)',
-                  color: '#FFFFFF',
+                  backgroundColor: decision === 'approved' ? 'var(--color-crimson)' : 'var(--color-crimson)',
+                  color: 'var(--color-white)',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
