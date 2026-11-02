@@ -23,7 +23,7 @@ export async function verifyFundingReference(reference: string): Promise<{ statu
       typeof tx.id === 'string' && tx.id && Number.isSafeInteger(tx.amountUsdCents) && tx.amountUsdCents > 0) {
     return { status: 'confirmed', reference };
   }
-  throw new Error('Payment confirmation could not be validated. Check its status again before starting another payment.');
+  throw new Error('Payment confirmation is unavailable. This payment may still complete.');
 }
 export function validFundingRequestId(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -47,11 +47,12 @@ export async function recoverFundingRequest(requestId: string): Promise<FundingA
   if (!validFundingRequestId(requestId)) throw new Error('Invalid funding request ID.');
   const response = await sessionFetch(`/api/v1/wallet/funding-requests/${encodeURIComponent(requestId)}`);
   if (response.status === 404) return { kind: 'missing', requestId };
-  if (!response.ok) throw new Error('Funding request recovery is unavailable. Do not start another payment.');
+  if (!response.ok) throw new Error('Payment lookup is unavailable. The existing payment may still complete; lookup is optional for a separate deposit.');
   const body = await response.json();
   if (body?.status !== 'success') throw new Error('Funding request recovery could not be validated.');
   return fundingAttempt(body.data, requestId);
 }
+const fundingSetupMessages:Record<string,string>={PROVIDER_GATEWAY_NOT_CONFIGURED:'Checkout is not configured yet. Please contact support.',PROVIDER_WORKLOAD_NOT_CONFIGURED:'Checkout connection setup is incomplete. Please contact support.',PROVIDER_RECEIPT_KEYS_NOT_CONFIGURED:'Checkout verification setup is incomplete. Please contact support.',FUNDING_GATEWAY_NOT_READY:'Checkout setup is unavailable. Please contact support.',FUNDING_QUOTE_UNAVAILABLE:'A fresh conversion quote is unavailable. Please try again shortly.',FUNDING_RETURN_URL_NOT_CONFIGURED:'The payment return page is not configured for this environment. Please contact support.'};
 export class FundingStartError extends Error {
   constructor(message: string, readonly uncertain: boolean, readonly reference?: string) { super(message); }
 }
@@ -63,11 +64,12 @@ export async function startFunding(amountUsd: number, saveCard: boolean, request
   }
   let res: Response;
   try {
-    res = await sessionFetch('/api/v1/wallet/fund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountUsd, saveCard, requestId }) });
-  } catch { throw new FundingStartError('Payment initialization could not be confirmed. Review pending transactions before starting another payment.', true); }
+    res = await sessionFetch('/api/v1/wallet/fund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(30000), body: JSON.stringify({ amountUsd, saveCard, requestId }) });
+  } catch { throw new FundingStartError('Payment initialization could not be confirmed. Retry this same request or check its status; it may still complete.', true); }
   let json: any;
   try { json = await res.json(); } catch { throw new FundingStartError('Payment initialization could not be confirmed. Review pending transactions.', true); }
   if (!res.ok) {
+    if(res.status===503&&typeof json?.code==='string'&&Object.hasOwn(fundingSetupMessages,json.code))throw new FundingStartError(fundingSetupMessages[json.code],json?.fundingOutcome!=='not_started');
     throw new FundingStartError('Payment initialization could not be confirmed. Check the payment status before trying again.',
       ![400, 401, 403].includes(res.status), validFundingReference(json?.reference) ? json.reference : undefined);
   }
@@ -76,7 +78,7 @@ export async function startFunding(amountUsd: number, saveCard: boolean, request
     const attempt = fundingAttempt(json.data, requestId);
     if (attempt.amountUsd !== cents / 100) throw new Error('Funding amount mismatch');
     return attempt;
-  } catch { throw new FundingStartError('Checkout could not be confirmed. Recover this funding request before retrying.', true,
+  } catch { throw new FundingStartError('Checkout could not be confirmed. Retry the same request or check the existing payment.', true,
     validFundingReference(json?.data?.reference) ? json.data.reference : undefined); }
 }
 
@@ -90,6 +92,7 @@ export async function loadTransactions() {
         !Number.isFinite(new Date(row.createdAt).getTime()) || typeof row.description !== 'string' ||
         (row.reference !== null && typeof row.reference !== 'string')) throw new Error('Transaction history returned an invalid entry.');
     return { id: row.id, type: row.type, status: row.status, description: row.description,
+      fundingRequestId:row.type==='wallet_fund'&&row.provider==='paystack'&&validFundingRequestId(row.parsedMetadata?.fundingRequestId)?row.parsedMetadata.fundingRequestId.toLowerCase():null,
       reference: row.reference, amountUsd: row.amountUsdCents / 100,
       amountNgn: row.amountNgnKobo === null ? null : row.amountNgnKobo / 100,
       createdAt: new Date(row.createdAt).toLocaleString() };

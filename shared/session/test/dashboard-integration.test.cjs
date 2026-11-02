@@ -7,6 +7,7 @@ const ts = require("typescript");
 const session = require("../dist/index.js");
 
 function load(relative, env = {}, extras = {}) {
+  if(extras.window?.location?.origin&&!extras.window.location.hostname)extras.window.location.hostname=new URL(extras.window.location.origin).hostname;
   const exports = {};
   const source = fs.readFileSync(
     path.resolve(__dirname, "../../../web", relative),
@@ -22,6 +23,7 @@ function load(relative, env = {}, extras = {}) {
     exports,
     require: (name) => {
       if (name === "./campaign-draft") return { clearCampaignDrafts: () => {} };
+      if(name.endsWith('/shared/ui/origins')){const exports={};const source=fs.readFileSync(path.resolve(__dirname,'../../ui/origins.ts'),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports,URL,process:{env},window:extras.window});return exports;}
       assert.equal(name, "@crimfig/session");
       return extras.session || session;
     },

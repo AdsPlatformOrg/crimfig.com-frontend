@@ -8,7 +8,7 @@ function api(fetcher) {
     if (cache.has(name)) return cache.get(name);
     const exports = {}; cache.set(name, exports);
     const code = ts.transpileModule(fs.readFileSync(path.join(root, `${name}.ts`), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-    vm.runInNewContext(code,{exports,require:r=>load(r.replace('./','')),URL,URLSearchParams}); return exports;
+    vm.runInNewContext(code,{exports,require:r=>load(r.replace('./','')),URL,URLSearchParams,AbortSignal}); return exports;
   }
   return load('funding-api');
 }
@@ -91,4 +91,12 @@ test('only owner recovery 404 reports missing; outages and malformed responses r
 test('explicit submission preserves the durable request identity on the only POST', async () => {
   let calls=0;const service=api(async (url,init)=>{calls++;assert.equal(JSON.parse(init.body).requestId,requestId);return response({status:'pending',requestId,checkoutReady:false,reference,transactionId:'tx',amountUsd:5});});
   assert.equal((await service.startFunding(5,false,requestId)).kind,'pending');assert.equal(calls,1);
+});
+
+
+test('safe setup/quote codes are actionable but raw provider messages are never displayed',async()=>{
+ for(const code of ['PROVIDER_GATEWAY_NOT_CONFIGURED','PROVIDER_WORKLOAD_NOT_CONFIGURED','PROVIDER_RECEIPT_KEYS_NOT_CONFIGURED','FUNDING_QUOTE_UNAVAILABLE']){
+  await assert.rejects(api(async()=>new Response(JSON.stringify({code,message:'sk_live_secret provider debug',fundingOutcome:'not_started'}),{status:503})).startFunding(5,false,requestId),error=>{assert.equal(error.uncertain,false);assert.doesNotMatch(error.message,/sk_live_secret|provider debug/);assert.match(error.message,/Checkout|conversion/);return true;});
+ }
+ await assert.rejects(api(async()=>new Response(JSON.stringify({code:'UNKNOWN',message:'private secret',fundingOutcome:'not_started'}),{status:503})).startFunding(5,false,requestId),error=>error.uncertain===true&&!error.message.includes('private secret'));
 });

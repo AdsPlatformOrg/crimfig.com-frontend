@@ -98,6 +98,7 @@ interface Transaction {
   amountNgn: number | null;
   description: string;
   reference: string | null;
+  fundingRequestId?:string|null;
   createdAt: string;
 }
 
@@ -110,6 +111,8 @@ interface RewardItem {
   date: string;
   status: 'available' | 'redeemed';
 }
+
+type FundingIntent={requestId:string;amountUsd:number;saveCard:boolean;reference?:string};
 
 interface BillingConsoleProps {
   onReturnToLanding?: () => void;
@@ -167,6 +170,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
   const [saveCardPref, setSaveCardPref] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const fundDialogEpoch=useRef(0);
+  const closeDeposit=()=>{fundDialogEpoch.current++;setIsFundOpen(false);};
 
   // Withdrawal Modal
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
@@ -193,7 +198,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
   const resolutionGeneration = useRef(0);
   useEffect(() => { resolutionGeneration.current++; setIsResolving(false); setResolvedAccountName(null); setResolvedIdentity(null); }, [newAccountNumber, newBankCode]);
 
-  const fundDialog = useDialog(isFundOpen, () => setIsFundOpen(false));
+  const fundDialog = useDialog(isFundOpen, closeDeposit);
   const withdrawDialog = useDialog(isWithdrawOpen, () => setIsWithdrawOpen(false));
   const bankDialog = useDialog(isAddBankOpen, () => setIsAddBankOpen(false));
 
@@ -206,8 +211,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
   const [fundAttemptUncertain, setFundAttemptUncertain] = useState(false);
   const [requestRecovery, setRequestRecovery] = useState<{ phase: 'none' | 'loading' | 'ready' | 'pending' | 'missing' | 'unavailable'; id: string | null; url: string | null }>({ phase: 'none', id: null, url: null });
   const recoveryGeneration = useRef(0);
-  const requestBlocksFunding = !['none', 'missing'].includes(requestRecovery.phase);
+  const fundingIntent = useRef<FundingIntent|null>(null);
   const accountGeneration = useRef(0), verificationGeneration = useRef(0), lifecycleGeneration = useRef(0), fundingBusy = useRef(false);
+  const fundingPoll=useRef<{reference:string|null;attempts:number}>({reference:null,attempts:0});
   const inFlightVerification = useRef<{ reference: string; promise: ReturnType<typeof verifyFundingReference> } | null>(null);
   const refreshAccountData = useCallback(async () => {
     const generation = ++accountGeneration.current;
@@ -234,10 +240,18 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       const result = await request.promise;
       if (generation !== verificationGeneration.current) return;
       setFundingCheck({ phase: result.status, reference });
-      if (result.status === 'confirmed') { setFundAttemptUncertain(false); await refreshAccountData(); }
+      if (result.status === 'confirmed') { if(fundingIntent.current?.reference===reference){setFundAttemptUncertain(false);fundingIntent.current=null;} await refreshAccountData(); }
     } catch { if (generation === verificationGeneration.current) setFundingCheck({ phase: 'unavailable', reference }); }
     finally { if (inFlightVerification.current === request) inFlightVerification.current = null; }
   }, [refreshAccountData]);
+  useEffect(()=>{
+    if(fundingCheck.phase!=='pending'||!fundingCheck.reference)return;
+    if(fundingPoll.current.reference!==fundingCheck.reference)fundingPoll.current={reference:fundingCheck.reference,attempts:0};
+    if(fundingPoll.current.attempts>=6)return;
+    const reference=fundingCheck.reference;
+    const timer=setTimeout(()=>{fundingPoll.current.attempts++;void checkFunding(reference);},5000);
+    return()=>clearTimeout(timer);
+  },[fundingCheck,checkFunding]);
   const recoverRequest = useCallback(async (requestId: string, expectedReference?: string) => {
     const generation = ++recoveryGeneration.current;
     verificationGeneration.current++;
@@ -245,9 +259,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     try {
       const attempt = await recoverFundingRequest(requestId);
       if (generation !== recoveryGeneration.current) return;
-      if (attempt.kind === 'missing') { setFundAttemptUncertain(false); setFundingCheck({ phase: 'idle', reference: null }); setRequestRecovery({ phase: 'missing', id: requestId, url: null }); return; }
+      if (attempt.kind === 'missing') { setFundingCheck({ phase: 'idle', reference: null }); setRequestRecovery({ phase: 'missing', id: requestId, url: null }); return; }
       if (expectedReference && attempt.reference !== expectedReference) throw new Error('Request/reference mismatch');
-      setFundAmountUsd(attempt.amountUsd);
+      // Optional recovery never overwrites a separately edited deposit amount.
       const url = new URL(window.location.href); url.searchParams.delete('trxref'); url.searchParams.set('reference', attempt.reference); url.searchParams.set('view', 'console');
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
       if (attempt.kind === 'checkout') { setFundingCheck({ phase: 'idle', reference: null }); setRequestRecovery({ phase: 'ready', id: requestId, url: attempt.url! }); }
@@ -262,19 +276,22 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     if (new URLSearchParams(window.location.search).has('subscription_request')) { setActiveTab('subscriptions'); return invalidateRequests; }
     const returned = fundingReturn(window.location.search);
     const request = fundingRequest(window.location.search);
-    if (request.kind === 'invalid' || returned.kind === 'invalid') { setFundingCheck({ phase: 'invalid', reference: null }); return invalidateRequests; }
-    if (request.kind === 'valid') void recoverRequest(request.requestId, returned.kind === 'valid' ? returned.reference : undefined);
-    else if (returned.kind === 'valid') void checkFunding(returned.reference);
+    if(returned.kind==='invalid'){setFundingCheck({phase:'invalid',reference:null});return invalidateRequests;}
+    // A valid provider return is verified by owner/reference; stale lookup parameters cannot gate it.
+    if(returned.kind==='valid')void checkFunding(returned.reference);
+    else if(request.kind==='valid')void recoverRequest(request.requestId);
+    else if(request.kind==='invalid')setFundingCheck({phase:'invalid',reference:null});
     return invalidateRequests;
   }, [refreshAccountData, checkFunding, recoverRequest, invalidateRequests]);
   const selectFundingReference = (reference: string) => {
-    if (requestRecovery.id) { setOperationError('Recover the current funding request before checking a different payment.'); return; }
+    ++recoveryGeneration.current;setRequestRecovery({phase:'none',id:null,url:null});
     const url = new URL(window.location.href);
-    url.searchParams.delete('trxref'); url.searchParams.set('reference', reference); url.searchParams.set('view', 'console');
+    url.searchParams.delete('funding_request');url.searchParams.delete('trxref'); url.searchParams.set('reference', reference); url.searchParams.set('view', 'console');
     window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
     void checkFunding(reference);
   };
   const dismissFundingConfirmation = () => {
+    ++verificationGeneration.current;++recoveryGeneration.current;
     const url = new URL(window.location.href);
     url.searchParams.delete('reference'); url.searchParams.delete('trxref'); url.searchParams.delete('funding_request'); url.searchParams.set('view', 'console');
     window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
@@ -364,33 +381,37 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     finally { setSavingBank(false); }
   };
 
-  // Never replay checkout creation after an ambiguous outcome.
-  const handleFundSubmit = async () => {
-    if (fundingBusy.current || fundAttemptUncertain || requestBlocksFunding || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)) return;
-    if (!requestRecovery.id && typeof window.crypto?.randomUUID !== 'function') { setPaymentError('Secure funding request creation is unavailable in this browser.'); return; }
-    const lifecycle = lifecycleGeneration.current;
-    fundingBusy.current = true; setIsProcessingPayment(true); setPaymentError(null);
-    try {
-      const requestId = requestRecovery.id || window.crypto.randomUUID();
-      const url = new URL(window.location.href); url.searchParams.set('funding_request', requestId); url.searchParams.set('view', 'console');
-      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
-      setRequestRecovery({ phase: 'loading', id: requestId, url: null });
-      const checkout = await startFunding(fundAmountUsd, saveCardPref, requestId);
-      if (lifecycle !== lifecycleGeneration.current) return;
-      if (checkout.kind === 'checkout') window.location.assign(checkout.url!);
-      else { setIsFundOpen(false); setRequestRecovery({ phase: 'pending', id: checkout.requestId, url: null }); void checkFunding(checkout.reference); }
-    } catch (error) {
-      if (lifecycle !== lifecycleGeneration.current) return;
-      const uncertain = error instanceof FundingStartError ? error.uncertain : true;
-      setFundAttemptUncertain(uncertain);
-      setRequestRecovery(previous => ({ ...previous, phase: uncertain ? 'unavailable' : 'missing', url: null }));
-      setPaymentError(error instanceof Error ? error.message : 'Payment initialization could not be confirmed.');
-      if (error instanceof FundingStartError && error.reference) {
-        const url = new URL(window.location.href); url.searchParams.delete('trxref'); url.searchParams.set('reference', error.reference); url.searchParams.set('view', 'console');
-        window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
-        setIsFundOpen(false); void checkFunding(error.reference);
-      }
-    } finally { fundingBusy.current = false; setIsProcessingPayment(false); }
+  // A new deposit is an explicit new intent; recovery of an older payment is optional.
+  const openDeposit = () => {
+    if(fundingBusy.current)return;
+    ++recoveryGeneration.current;fundDialogEpoch.current++;fundingIntent.current=null;setFundAttemptUncertain(false);setPaymentError(null);setIsFundOpen(true);
+  };
+  const handleFundSubmit = async (retrySame=false) => {
+    if(fundingBusy.current || (fundAttemptUncertain&&!retrySame))return;
+    if(typeof window.crypto?.randomUUID!=='function'){setPaymentError('Secure funding request creation is unavailable in this browser.');return;}
+    if(walletStatus!=='ready'||!Number.isFinite(fundAmountUsd)||fundAmountUsd<1)return;
+    const saved:FundingIntent|null=retrySame?fundingIntent.current:{requestId:window.crypto.randomUUID(),amountUsd:fundAmountUsd,saveCard:saveCardPref};
+    if(!saved){setPaymentError('Select Deposit to start a new payment.');return;}
+    fundingIntent.current=saved;
+    const lifecycle=lifecycleGeneration.current,dialogEpoch=fundDialogEpoch.current;
+    fundingBusy.current=true;setIsProcessingPayment(true);setPaymentError(null);++recoveryGeneration.current;
+    try{
+      const url=new URL(window.location.href);url.searchParams.delete('reference');url.searchParams.delete('trxref');url.searchParams.set('funding_request',saved.requestId);url.searchParams.set('view','console');
+      window.history.replaceState(window.history.state,'',`${url.pathname}${url.search}${url.hash}`);
+      setRequestRecovery({phase:'loading',id:saved.requestId,url:null});
+      const checkout=await startFunding(saved.amountUsd,saved.saveCard,saved.requestId);
+      if(lifecycle!==lifecycleGeneration.current)return;
+      saved.reference=checkout.reference;setFundAttemptUncertain(false);
+      if(checkout.kind==='checkout'){if(dialogEpoch===fundDialogEpoch.current)window.location.assign(checkout.url!);else setRequestRecovery({phase:'ready',id:checkout.requestId,url:checkout.url!});}
+      else{setIsFundOpen(false);setRequestRecovery({phase:'pending',id:checkout.requestId,url:null});void checkFunding(checkout.reference);}
+    }catch(error){
+      if(lifecycle!==lifecycleGeneration.current)return;
+      const uncertain=error instanceof FundingStartError?error.uncertain:true;
+      setFundAttemptUncertain(uncertain);if(!uncertain)fundingIntent.current=null;
+      setRequestRecovery({phase:uncertain?'unavailable':'missing',id:saved.requestId,url:null});
+      setPaymentError(error instanceof Error?error.message:'Payment initialization could not be confirmed.');
+      if(error instanceof FundingStartError&&error.reference){saved.reference=error.reference;void checkFunding(error.reference);}
+    }finally{fundingBusy.current=false;if(lifecycle===lifecycleGeneration.current)setIsProcessingPayment(false);}
   };
 
   const handleRedeemRewards = () => { setOperationError('Rewards redemption is currently unavailable. No balance was changed.'); };
@@ -406,7 +427,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       title: 'Wallet & Balances',
       items: [
         { id: 'overview', label: 'Wallet Overview', icon: Wallet },
-        { id: 'fund_action', label: 'Fund Wallet', icon: ArrowDownLeft, action: () => setIsFundOpen(true) },
+        { id: 'fund_action', label: 'Fund Wallet', icon: ArrowDownLeft, action: openDeposit },
         { id: 'transactions', label: 'Transactions & Receipts', icon: Clock, badge: transactions.length },
       ],
     },
@@ -536,25 +557,28 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           <AlertDescription style={{ minWidth: 0, flex: '1 1 200px' }}>{walletStatus === 'unavailable' ? 'Wallet balance could not be loaded. ' : ''}{ledgerError}</AlertDescription>
           <Button type="button" variant="outline" size="sm" style={{ flexShrink: 0 }} onClick={() => void refreshAccountData()}>Refresh account data</Button>
         </Alert>}
+        {fundingCheck.phase==='confirmed'&&<Alert variant="success"><AlertDescription>Payment confirmed. Updated balance is shown when available.</AlertDescription></Alert>}
+        <details className="billing-payment-help"><summary>Find or check a payment (optional)</summary><p>Previous payments remain in Transactions. A pending payment may still complete; a separate deposit creates a separate payment.</p><Button type="button" variant="outline" onClick={()=>setActiveTab('transactions')}>View transactions</Button>
         {requestRecovery.phase !== 'none' && fundingCheck.phase !== 'confirmed' && <Alert variant="info" style={{ overflowWrap: 'anywhere' }}>
           <div>
           <strong>{requestRecovery.phase === 'ready' ? 'Existing checkout recovered' : requestRecovery.phase === 'missing' ? 'Continue this funding request' : requestRecovery.phase === 'loading' ? 'Recovering funding request' : 'Funding request needs a status check'}</strong>
-          <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{requestRecovery.phase === 'ready' ? 'Resume the same checkout. No second payment intent was created.' : requestRecovery.phase === 'missing' ? 'No request was found for this account. Funding will reuse this request ID when you submit the amount.' : 'This request ID is retained across reloads. Recover it before starting another payment.'}</p>
+          <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{requestRecovery.phase === 'ready' ? 'Continue the existing checkout without creating a new payment.' : requestRecovery.phase === 'missing' ? 'No matching request was found for this account. You can start a new deposit.' : 'Check this existing payment if you need help. It does not prevent you starting a separate deposit.'}</p>
           {requestRecovery.id && <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Request: {requestRecovery.id}</p>}
           {requestRecovery.phase === 'ready' && requestRecovery.url && <Button type="button" variant="outline" size="sm" onClick={() => window.location.assign(requestRecovery.url!)}>Resume existing checkout</Button>}
-          {requestRecovery.id && requestRecovery.phase !== 'loading' && <Button type="button" variant="outline" size="sm" onClick={() => void recoverRequest(requestRecovery.id!)}>Recover request</Button>}
+          {requestRecovery.id && requestRecovery.phase !== 'loading' && <Button type="button" variant="outline" size="sm" onClick={() => void recoverRequest(requestRecovery.id!)}>Find existing payment</Button>}
           </div>
         </Alert>}
         {fundingCheck.phase !== 'idle' && <Alert variant={fundingCheck.phase === 'confirmed' ? 'success' : fundingCheck.phase === 'invalid' || fundingCheck.phase === 'unavailable' ? 'destructive' : 'info'} style={{ overflowWrap: 'anywhere' }}>
           <div>
           <strong>{fundingCheck.phase === 'checking' ? 'Checking payment status' : fundingCheck.phase === 'confirmed' ? 'Payment confirmed by Billing' : fundingCheck.phase === 'pending' ? 'Payment is still pending' : fundingCheck.phase === 'invalid' ? 'Invalid payment return reference' : 'Payment status could not be confirmed'}</strong>
-          <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{fundingCheck.phase === 'confirmed' ? 'The payment was recorded. Your balance and transaction history are refreshed separately below.' : 'A return link does not confirm payment. Check its status before starting another payment.'}</p>
+          <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{fundingCheck.phase === 'confirmed' ? 'The payment was recorded. Your balance and transaction history are refreshed separately below.' : 'This payment may still complete. Check it here, or deliberately start a separate deposit.'}</p>
           {fundingCheck.reference && <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Reference: {fundingCheck.reference}</p>}
           {fundingCheck.reference && fundingCheck.phase !== 'confirmed' && <Button type="button" variant="outline" size="sm" disabled={fundingCheck.phase === 'checking'} loading={fundingCheck.phase === 'checking'} onClick={() => void checkFunding(fundingCheck.reference!)}>{fundingCheck.phase === 'checking' ? 'Checking…' : 'Check payment status'}</Button>}
           {['confirmed', 'invalid'].includes(fundingCheck.phase) && <Button type="button" variant="outline" size="sm" onClick={dismissFundingConfirmation}>Dismiss</Button>}
           </div>
         </Alert>}
-        {fundAttemptUncertain && fundingCheck.phase === 'idle' && <Alert variant="warning"><div>Payment initialization could not be confirmed. Review pending transactions before starting another payment. <Button type="button" variant="outline" size="sm" onClick={() => { setIsFundOpen(false); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</Button></div></Alert>}
+        {fundAttemptUncertain && fundingCheck.phase === 'idle' && <Alert variant="warning"><div>An earlier payment is unconfirmed and may still complete. Check it below or deliberately start a separate deposit. <Button type="button" variant="outline" size="sm" onClick={() => { closeDeposit(); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</Button></div></Alert>}
+        </details>
         {/* Navigation Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', overflowX: 'auto', fontSize: '13px', fontWeight: 600 }}>
           {[
@@ -621,8 +645,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
                   <Button
                     type="button"
-                    disabled={walletStatus !== 'ready' || fundAttemptUncertain || requestBlocksFunding || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)}
-                    onClick={() => setIsFundOpen(true)}
+                    disabled={walletStatus !== 'ready' || isProcessingPayment}
+                    onClick={openDeposit}
                     style={{ flex: 1 }}
                   >
                     <ArrowDownLeft style={{ width: 16, height: 16 }} /> Fund Wallet
@@ -768,8 +792,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
               </div>
               <Button
                 type="button"
-                disabled={walletStatus !== 'ready' || fundAttemptUncertain || requestBlocksFunding || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)}
-                onClick={() => setIsFundOpen(true)}
+                disabled={walletStatus !== 'ready' || isProcessingPayment}
+                onClick={openDeposit}
               >
                 <Plus style={{ width: 16, height: 16 }} /> Add Card via Deposit
               </Button>
@@ -781,7 +805,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 title="No Saved Cards Found"
                 description="Make your first deposit to securely save a debit or credit card for automatic recurring subscriptions."
                 actionLabel="Fund Wallet & Save Card"
-                onAction={() => setIsFundOpen(true)}
+                onAction={openDeposit}
               />
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
@@ -1019,7 +1043,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                           <Badge variant={t.status === 'completed' ? 'secondary' : 'outline'}>
                             {t.status}
                           </Badge>
-                          {t.type === 'wallet_fund' && t.status === 'pending' && t.reference && <Button type="button" variant="outline" size="sm" disabled={fundingCheck.phase === 'checking'} onClick={() => selectFundingReference(t.reference!)}>Check payment</Button>}
+                          {t.type === 'wallet_fund' && t.status === 'pending' && t.reference && <Button type="button" variant="outline" size="sm" disabled={fundingCheck.phase === 'checking'&&fundingCheck.reference===t.reference} onClick={() => selectFundingReference(t.reference!)}>Check payment</Button>}{t.type==='wallet_fund'&&t.status==='pending'&&t.fundingRequestId&&<Button type="button" variant="outline" size="sm" disabled={requestRecovery.phase==='loading'&&requestRecovery.id===t.fundingRequestId} onClick={()=>void recoverRequest(t.fundingRequestId!,t.reference||undefined)}>Find checkout</Button>}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1066,13 +1090,13 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       {/* MODAL: FUND WALLET */}
       {isFundOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
-          <div ref={fundDialog} role="dialog" aria-modal="true" aria-label="Deposit to CrimFig Wallet" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '480px', padding: '32px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
+          <div ref={fundDialog} role="dialog" aria-modal="true" aria-label="Deposit to CrimFig Wallet" tabIndex={-1} className="theme-card" style={{ width: '100%', maxWidth: '480px', padding: '24px', backgroundColor: 'var(--bg-page)', position: 'relative', boxSizing: 'border-box', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' }}>
             <Button
               type="button"
               variant="ghost"
               size="icon"
               aria-label="Close Deposit to CrimFig Wallet"
-              onClick={() => setIsFundOpen(false)}
+              onClick={closeDeposit}
               style={{ position: 'absolute', top: '16px', right: '16px' }}
             >
               <X style={{ width: 20, height: 20 }} />
@@ -1080,22 +1104,24 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Deposit to CrimFig Wallet</h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-              Funding is credited after Billing verifies the provider payment. Your return link alone does not confirm payment.
+              Choose an amount and continue to secure Paystack checkout. Your wallet updates after payment is verified.
             </p>
 
-            {paymentError ? (
+            {paymentError && (
               <Alert variant="destructive" style={{ alignItems: 'center', flexDirection: 'column', textAlign: 'center' }}>
                 <AlertCircle style={{ width: 32, height: 32 }} />
                 <AlertDescription>{paymentError}</AlertDescription>
-                {fundAttemptUncertain ? <Button type="button" variant="outline" onClick={() => { setIsFundOpen(false); setActiveTab('transactions'); void refreshAccountData(); }}>Review transactions</Button> : <Button type="button" variant="outline" onClick={() => setPaymentError(null)}>Back to funding</Button>}
+                {fundAttemptUncertain&&fundingIntent.current&&<p>Retry keeps the original ${fundingIntent.current.amountUsd.toFixed(2)} request.</p>}
+                {fundAttemptUncertain&&<><Button type="button" variant="outline" disabled={isProcessingPayment} onClick={()=>void handleFundSubmit(true)}>Retry same request</Button><Button type="button" variant="outline" disabled={isProcessingPayment} onClick={openDeposit}>Start a separate deposit</Button></>}
               </Alert>
-            ) : (
+            )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label htmlFor="billing-fund-amount" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Deposit Amount (USD)</label>
                   <div style={{ position: 'relative' }}>
                     <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-muted)' }}>$</span>
                     <Input id="billing-fund-amount"
+                      disabled={isProcessingPayment||fundAttemptUncertain}
                       type="number"
                       min={1}
                       step={0.01}
@@ -1109,9 +1135,9 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                   </div>
                 </div>
 
-                <div>
+                <details><summary>Payment options</summary>
                   <label htmlFor="billing-fund-method" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Payment Method</label>
-                  <select id="billing-fund-method" className="cf-input"
+                  <select id="billing-fund-method" className="cf-input" disabled={isProcessingPayment||fundAttemptUncertain}
                     value={selectedCardId}
                     onChange={(e) => setSelectedCardId(e.target.value)}
                   >
@@ -1120,33 +1146,33 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                       <option key={c.id} value={c.id} disabled>Saved {c.cardBrand} ending in •••• {c.last4}</option>
                     ))}
                   </select>
-                </div>
+                </details>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
                     type="checkbox"
                     id="save_card"
+                    disabled={isProcessingPayment||fundAttemptUncertain}
                     checked={saveCardPref}
                     onChange={(e) => setSaveCardPref(e.target.checked)}
                     style={{ cursor: 'pointer' }}
                   />
                   <label htmlFor="save_card" style={{ fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                    Save card securely for future deposits and recurring subscriptions
+                    Save this card with Paystack for eligible future payments
                   </label>
                 </div>
 
                 <Button
                   type="button"
-                  disabled={isProcessingPayment || fundAttemptUncertain || requestBlocksFunding || walletStatus !== 'ready' || fundAmountUsd < 1 || ['checking', 'pending', 'unavailable'].includes(fundingCheck.phase)}
+                  disabled={isProcessingPayment || fundAttemptUncertain || walletStatus !== 'ready' || !Number.isFinite(fundAmountUsd) || fundAmountUsd < 1}
                   loading={isProcessingPayment}
-                  onClick={handleFundSubmit}
+                  onClick={() => void handleFundSubmit()}
                   style={{ marginTop: '8px' }}
                 >
                   {isProcessingPayment && <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.75s linear infinite' }} />}
                   {isProcessingPayment ? 'Processing...' : `Pay $${fundAmountUsd.toFixed(2)} USD`}
                 </Button>
               </div>
-            )}
           </div>
         </div>
       )}
