@@ -72,7 +72,7 @@ test('real controller envelopes with independent service fixtures conform, and w
   const asset = await uploads.readyAsset('asset', { user: { sub: 'owner' } });
   assert.equal(validateResponse('/api/v1/uploads/assets/{assetId}', 'GET', 200, asset), true);
   const moderation = new controllers[2]({ getQueue: async stage => {
-    assert.equal(stage, 'manager'); return { campaigns: [], creatives: [], totalPending: 0 };
+    assert.equal(stage, 'manager'); return { campaigns: [], stacks: [], creatives: [], totalPending: 0 };
   } });
   assert.equal(validateResponse('/api/v1/admin/ads/moderation/queue', 'GET', 200, await moderation.getQueue({ query: { stage: 'manager' } })), true);
 });

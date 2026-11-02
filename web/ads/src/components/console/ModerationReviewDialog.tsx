@@ -7,6 +7,7 @@ import { CheckCircle2, XCircle, AlertCircle, X } from 'lucide-react';
 
 export interface ModerationReviewDialogProps {
   isOpen: boolean;
+  embedded?: boolean;
   onClose: () => void;
   targetType: 'campaign' | 'stack' | 'creative';
   targetTitle: string;
@@ -24,6 +25,7 @@ export interface ModerationReviewDialogProps {
 
 export function ModerationReviewDialog({
   isOpen,
+  embedded = false,
   onClose,
   targetType,
   targetTitle,
@@ -44,7 +46,7 @@ export function ModerationReviewDialog({
   const [error, setError] = useState<string | null>(null);
 
   const stageLabel = stage === 'reviewer' ? 'Review 1 (Primary Review)' : 'Review 2 (Manager Approval)';
-  const targetLabel = targetType === 'campaign' ? 'Campaign' : targetType === 'stack' ? 'Ad Stack' : 'Creative Asset';
+  const targetLabel = targetType === 'campaign' ? 'Campaign' : targetType === 'stack' ? 'Ad Stack' : 'Ad';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,25 +77,9 @@ export function ModerationReviewDialog({
     }
   };
 
-  return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && safeClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="cf-report-overlay" style={{ zIndex: 1200 }} />
-        <Dialog.Content
-          className="cf-report-dialog cf-mod-review"
-          style={{
-            zIndex: 1201,
-            maxHeight: '90dvh',
-            overflowY: 'auto',
-            width: 'calc(100vw - 32px)',
-            maxWidth: '540px',
-            padding: '24px',
-            backgroundColor: 'var(--bg-elevated)',
-            borderRadius: '16px',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'var(--shadow-xl)',
-          }}
-        >
+  const Title = embedded ? 'h2' : Dialog.Title;
+  const Description = embedded ? 'p' : Dialog.Description;
+  const form = (
           <form aria-busy={isSubmitting} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
               <div>
@@ -107,15 +93,15 @@ export function ModerationReviewDialog({
                     </span>
                   )}
                 </div>
-                <Dialog.Title style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
+                <Title style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
                   Review {targetLabel}
-                </Dialog.Title>
-                <Dialog.Description style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px', margin: 0 }}>
+                </Title>
+                <Description style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px', margin: 0 }}>
                   {targetTitle}
-                </Dialog.Description>
+                </Description>
               </div>
 
-              <Dialog.Close asChild>
+              <>
                 <button
                   type="button"
                   disabled={isSubmitting || locked}
@@ -131,7 +117,7 @@ export function ModerationReviewDialog({
                 >
                   <X style={{ width: 18, height: 18 }} />
                 </button>
-              </Dialog.Close>
+              </>
             </div>
 
             {error && (
@@ -310,6 +296,29 @@ export function ModerationReviewDialog({
               </Button>
             </div>
           </form>
+  );
+  if (embedded) return isOpen ? form : null;
+  return (
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && safeClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="cf-report-overlay" style={{ zIndex: 1200 }} />
+        <Dialog.Content
+          className="cf-report-dialog cf-mod-review"
+          style={{
+            zIndex: 1201,
+            maxHeight: '90dvh',
+            overflowY: 'auto',
+            width: 'calc(100vw - 32px)',
+            maxWidth: '540px',
+            padding: '24px',
+            backgroundColor: 'var(--bg-elevated)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-xl)',
+          }}
+        >
+          {form}
+
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -799,7 +799,7 @@ export interface components {
                 posterUrl?: string | null;
                 rejectionReason?: string | null;
                 /** @enum {string} */
-                reviewStatus?: "pending" | "approved" | "rejected";
+                reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                 status?: string;
                 videoUrl?: string | null;
             } & {
@@ -846,7 +846,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -1009,7 +1009,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -1126,7 +1126,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -1289,7 +1289,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -1408,7 +1408,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -1571,7 +1571,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -1683,7 +1683,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -1851,7 +1851,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2014,7 +2014,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -2127,7 +2127,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2290,7 +2290,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -2403,7 +2403,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2566,7 +2566,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -2727,7 +2727,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2890,7 +2890,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -3207,7 +3207,7 @@ export interface components {
                         [key: string]: unknown;
                     }) | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     submissionId: string;
                     videoUrl?: string | null;
@@ -3223,7 +3223,7 @@ export interface components {
                 };
                 page?: number;
                 pageSize?: number;
-                stacks?: ({
+                stacks: ({
                     campaignId: string;
                     campaignTitle: string;
                     contentRevision: number;
@@ -3286,7 +3286,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -3449,7 +3449,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -3643,7 +3643,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -3806,7 +3806,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -3937,7 +3937,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -4100,7 +4100,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -4206,7 +4206,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -4272,7 +4272,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -4435,7 +4435,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -4554,7 +4554,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -4706,7 +4706,7 @@ export interface components {
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
                     /** @enum {string} */
-                    reviewStatus?: "pending" | "approved" | "rejected";
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -4769,7 +4769,7 @@ export interface components {
                                 posterUrl?: string | null;
                                 rejectionReason?: string | null;
                                 /** @enum {string} */
-                                reviewStatus?: "pending" | "approved" | "rejected";
+                                reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                                 status?: string;
                                 videoUrl?: string | null;
                             } & {
@@ -4932,7 +4932,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -5067,7 +5067,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -5230,7 +5230,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -5341,7 +5341,7 @@ export interface components {
                                 posterUrl?: string | null;
                                 rejectionReason?: string | null;
                                 /** @enum {string} */
-                                reviewStatus?: "pending" | "approved" | "rejected";
+                                reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                                 status?: string;
                                 videoUrl?: string | null;
                             } & {
@@ -5504,7 +5504,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -5610,7 +5610,7 @@ export interface components {
                         posterUrl?: string | null;
                         rejectionReason?: string | null;
                         /** @enum {string} */
-                        reviewStatus?: "pending" | "approved" | "rejected";
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -5652,7 +5652,7 @@ export interface components {
                             posterUrl?: string | null;
                             rejectionReason?: string | null;
                             /** @enum {string} */
-                            reviewStatus?: "pending" | "approved" | "rejected";
+                            reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {

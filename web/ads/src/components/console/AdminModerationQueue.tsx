@@ -31,7 +31,7 @@ function assertReviewReceipt(result:unknown,intent:Intent){
     throw new Error('Review receipt does not match the original decision. Its outcome remains unconfirmed.');
 }
 const kinds = ['creative','stack','campaign'] as const;
-const labels = {creative:'Creatives',stack:'Ad Stacks',campaign:'Campaigns'};
+const labels = {creative:'Ads',stack:'Ad Stacks',campaign:'Campaigns'};
 const plural = {creative:'creatives',stack:'stacks',campaign:'campaigns'} as const;
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const message = (err:unknown) => err instanceof Error ? err.message : 'Request unavailable. Try again.';
@@ -93,10 +93,10 @@ export function AdminModerationQueue(_props:{apiBase:string}) {
   const fetchQueue=useCallback(async()=>{
     const generation=++queueGeneration.current;
     setLoading(true);setQueue(null);setError('');
-    try {const result=await adsApi().queue(stage,page);if(alive.current && generation===queueGeneration.current)setQueue(result);}
+    try {const result=await adsApi().queue(stage,page);if(alive.current && generation===queueGeneration.current){setQueue(result);if(page>1&&result[plural[kind]].length===0)setPage(value=>Math.max(1,value-1));}}
     catch(err){if(alive.current && generation===queueGeneration.current)setError(err instanceof ApiError && err.status===401?'Session expired. Sign in again.':err instanceof ApiError && err.status===403?'Ads staff access denied.':message(err));}
     finally{if(alive.current && generation===queueGeneration.current)setLoading(false);}
-  },[stage,page]);
+  },[stage,page,kind]);
   useEffect(()=>{if(authority==='ready')void fetchQueue();},[authority,fetchQueue]);
   useEffect(()=>{
     const generation=++summaryGeneration.current;setSummary(null);setSummaryError('');
@@ -144,7 +144,7 @@ export function AdminModerationQueue(_props:{apiBase:string}) {
       setNotice(`Decision recorded: ${receipt.decision.decision}. Campaign state: ${lifecycle}.`);
       intent.current=null;setUncertain(null);setReviewing(false);setDetail(null);setSelection(null);
       const url=new URL(window.location.href);url.searchParams.delete('itemType');url.searchParams.delete('itemId');window.history.replaceState(null,'',url);
-      await fetchQueue();
+      void fetchQueue();
     } catch(err){
       if(!alive.current || permissionGeneration!==roleGeneration.current)return;
       // A transport/server failure may follow a committed write. Preserve exact payload + UUID.
@@ -160,13 +160,20 @@ export function AdminModerationQueue(_props:{apiBase:string}) {
       if(!alive.current || permissionGeneration!==roleGeneration.current)return;
       assertReviewReceipt(result,saved);
       setNotice(`Decision confirmed: ${result.decision.decision}. Check refreshed lifecycle status before assuming delivery is live.`);
-      intent.current=null;setUncertain(null);setReviewing(false);setSelection(null);setDetail(null);await fetchQueue();
+      intent.current=null;setUncertain(null);setReviewing(false);setSelection(null);setDetail(null);void fetchQueue();
     }catch(err){if(!alive.current || permissionGeneration!==roleGeneration.current)return;setNotice(`Outcome not confirmed: ${message(err)} The original request ID is retained.`);}finally{busy.current=false;if(alive.current)setWriting(false);}
+  }
+  async function refreshWorkspace(){
+    if(busy.current)return;
+    if(uncertain)await reconcile();
+    // Authority refresh invalidates pending queue/detail reads and retriggers all workspace reads.
+    // It preserves any unresolved decision identity; no decision POST is made here.
+    await reloadRoles();
   }
   const canRole=roles.some(r=>['ads_admin','super_admin',stage==='reviewer'?'ads_reviewer':'ads_manager'].includes(r));
   const rows=(queue?.[plural[kind]] || []) as Record<string,unknown>[];
   return <section className="cf-moderation" aria-label="Moderation queue">
-    <header className="cf-mod-toolbar"><div><p className="cf-mod-eyebrow">Compliance & moderation</p><h1>Review Queue</h1><p>Inspect submitted content, then record the permitted review.</p></div><Button variant="outline" disabled={loading||writing} onClick={()=>authority==='ready'?void fetchQueue():void reloadRoles()}><RefreshCw size={16}/> Refresh</Button></header>
+    <header className="cf-mod-toolbar"><div><p className="cf-mod-eyebrow">Compliance & moderation</p><h1>Review Queue</h1><p>Inspect submitted content, then record the permitted review.</p></div><Button data-moderation-refresh variant="outline" disabled={loading||writing} onClick={()=>void refreshWorkspace()}><RefreshCw size={16}/> Refresh</Button></header>
     <div className="cf-mod-toolbar" aria-label="Review stage">{(['reviewer','manager'] as const).map((value,i)=><Button key={value} variant={stage===value?'default':'outline'} aria-pressed={stage===value} disabled={writing||!!uncertain} onClick={()=>{setStage(value);setPage(1);setReviewing(false);}}>Review {i+1} ({i===0?'Primary':'Manager Approval'})</Button>)}</div>
     {notice&&<p role="status">{notice}</p>}
     {uncertain&&<aside role="alert"><p>Decision outcome unconfirmed. Request: {uncertain.id}. Do not create another decision.</p><Button disabled={writing} onClick={()=>void reconcile()}>Check outcome</Button> <Button variant="outline" disabled={writing} onClick={()=>void reconcile(true)}>Retry same decision</Button></aside>}
@@ -189,7 +196,7 @@ export function AdminModerationQueue(_props:{apiBase:string}) {
           <div className="cf-mod-identity">
             {kind==='creative'&&<button className="cf-mod-preview" aria-label={`View preview and details for ${title(row)}`} onClick={()=>open(kind,String(row.id))}>{typeof row.imageUrl==='string'?<MediaPreview source={row.imageUrl} mode="review"/>:<FileImage size={24}/>}</button>}
             <div><button className="cf-mod-title" onClick={()=>open(kind,String(row.id))}>{title(row)}</button><p className="cf-mod-meta">Revision {typeof row.contentRevision==='number'?row.contentRevision:'unavailable'} · {String(row.id)}</p>
-              {kind==='campaign'&&<p className="cf-mod-meta">Creative approvals: {typeof row.approvedCreativesCount==='number'&&typeof row.totalCreativesCount==='number'?`${row.approvedCreativesCount} / ${row.totalCreativesCount}`:'unavailable'}</p>}
+              {kind==='campaign'&&<p className="cf-mod-meta">Ad approvals: {typeof row.approvedCreativesCount==='number'&&typeof row.totalCreativesCount==='number'?`${row.approvedCreativesCount} / ${row.totalCreativesCount}`:'unavailable'}</p>}
               <Badge variant="outline">{display(row.reviewStatus || row.moderationStatus)}</Badge><p className="cf-mod-meta">Submission age: {age(clockTime(row,'submittedAt'),queue?.asOf)} · Review {stage==='reviewer'?1:2} wait: {age(clockTime(row,'stageStartedAt'),queue?.asOf,clockTime(row,'submittedAt'))} · Target not configured</p></div>
           </div>
           <div className="cf-mod-actions"><Button variant="outline" disabled={writing||!!uncertain} onClick={()=>open(kind,String(row.id))}>View details</Button><Button disabled={!canRole||writing||!!uncertain||!row.submissionId||!Number.isSafeInteger(row.contentRevision)} onClick={()=>open(kind,String(row.id),true)}>Review {stage==='reviewer'?1:2}</Button>{!canRole?<p>Your Ads staff role cannot perform this review.</p>:(!row.submissionId||!Number.isSafeInteger(row.contentRevision))&&<p>Review metadata unavailable. Open details to inspect the current submission.</p>}</div>
@@ -198,21 +205,22 @@ export function AdminModerationQueue(_props:{apiBase:string}) {
         <nav className="cf-mod-toolbar" aria-label="Queue pagination"><Button variant="outline" disabled={page===1||writing||!!uncertain} onClick={()=>setPage(p=>p-1)}>Previous</Button><span>Page {page}</span><Button variant="outline" disabled={!queue?.hasMore?.[plural[kind]]||writing||!!uncertain} onClick={()=>setPage(p=>p+1)}>Next</Button></nav>
       </>}
     </>}
-    <Dialog.Root open={!!selection} onOpenChange={value=>{if(!value)close();}}><Dialog.Portal><Dialog.Overlay className="cf-report-overlay"/><Dialog.Content className="cf-report-dialog cf-mod-detail" onCloseAutoFocus={event=>{event.preventDefault();opener.current?.focus();}} onEscapeKeyDown={e=>{if(writing||uncertain)e.preventDefault();}} onPointerDownOutside={e=>{if(writing||uncertain)e.preventDefault();}}>
+    <Dialog.Root open={!!selection} onOpenChange={value=>{if(!value)close();}}><Dialog.Portal><Dialog.Overlay className="cf-report-overlay"/><Dialog.Content className="cf-report-dialog cf-mod-detail" onCloseAutoFocus={event=>{event.preventDefault();if(opener.current?.isConnected)opener.current.focus();else document.querySelector<HTMLButtonElement>('[data-moderation-refresh]')?.focus();}} onEscapeKeyDown={e=>{if(writing||uncertain)e.preventDefault();}} onPointerDownOutside={e=>{if(writing||uncertain)e.preventDefault();}}>
       <header className="cf-mod-toolbar"><div><Dialog.Title>Submitted item details</Dialog.Title><Dialog.Description>Read-only evidence. Previewing does not serve an ad or record delivery events.</Dialog.Description></div><Button variant="outline" aria-label="Close details" disabled={writing||!!uncertain} onClick={close}><X size={18}/></Button></header>
-      {detailError?<p role="alert">{detailError}</p>:!detail?<p role="status">Loading authorized details…</p>:<>
+      {!reviewing&&(detailError?<p role="alert">{detailError}</p>:!detail?<p role="status">Loading authorized details…</p>:<>
         <h2>{title(detail.item)}</h2><Button variant="outline" onClick={()=>void navigator.clipboard.writeText(detail.targetId).catch(()=>setDetailError('Could not copy ID. Select the ID text to copy manually.'))}>Copy item ID</Button><p>Item ID: {detail.targetId}</p><p>Submission: {detail.submissionId||'Unavailable'} · Revision: {detail.contentRevision??'Unavailable'}</p>
         {detail.targetType==='campaign'&&<p>Review 2 approval activates this campaign if the server accepts its current prerequisites.</p>}{detail.content&&<><h3>Submitted content</h3>{typeof detail.content.imageUrl==='string'&&<MediaPreview source={detail.content.imageUrl} mode="review"/>}{typeof detail.content.videoUrl==='string'&&<MediaPreview source={detail.content.videoUrl} mode="review"/>}<Fields value={Object.fromEntries(Object.entries(detail.content).filter(([key])=>['title','name','headline','bodyText','ctaText','destinationUrl','adType','adFormat','imageSpecs','mediaFormat','schedule','geoMode','targetDevices'].includes(key)))}/><details><summary>All submitted fields</summary><Fields value={detail.content}/></details></>}
         <ModerationClaimPanel key={`${detail.targetType}:${detail.targetId}:${detail.submissionId}:${detail.contentRevision}:${stage}:${actorId}`} type={detail.targetType} id={detail.targetId} submissionId={detail.submissionId} revision={detail.contentRevision} stage={stage} actorId={actorId} canReview={detail.capabilities[stage].allowed} isAdmin={roles.some(role=>['ads_admin','super_admin'].includes(role))}/>
         <h3>Current item & review state</h3><Fields value={Object.fromEntries(Object.entries(detail.item).filter(([key])=>['status','reviewStatus','moderationStatus','primaryReviewerId','primaryReviewedAt','managerReviewerId','managerReviewedAt','rejectionReason'].includes(key)))}/><details><summary>All current metadata</summary><Fields value={detail.item}/></details>
-        <h3>Parent campaign</h3><p>{detail.campaign.title} · {detail.campaign.status} · {detail.campaign.moderationStatus}</p><p>Budget: {typeof detail.campaign.budgetUsdCents==='number'?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(detail.campaign.budgetUsdCents/100):'Unavailable'} · Pricing: {detail.campaign.pricingModel||'Unavailable'}</p>{detail.targetType!=='creative'&&<p>Approved active creatives: {detail.creativeProgress?.approved??'Unavailable'} / {detail.creativeProgress?.total??'Unavailable'}</p>}{detail.targetType!=='campaign'&&<Button variant="outline" disabled={writing||!!uncertain} onClick={()=>open('campaign',detail.campaign.id)}>View parent campaign</Button>}{detail.targetType==='creative'&&typeof detail.item.adStackId==='string'&&<Button variant="outline" disabled={writing||!!uncertain} onClick={()=>open('stack',detail.item.adStackId as string)}>View parent stack</Button>}<details><summary>Campaign settings and targeting</summary><Fields value={detail.campaign}/></details>
+        <h3>Parent campaign</h3><p>{detail.campaign.title} · {detail.campaign.status} · {detail.campaign.moderationStatus}</p><p>Budget: {typeof detail.campaign.budgetUsdCents==='number'?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(detail.campaign.budgetUsdCents/100):'Unavailable'} · Pricing: {detail.campaign.pricingModel||'Unavailable'}</p>{detail.targetType!=='creative'&&<p>Approved active ads: {detail.creativeProgress?.approved??'Unavailable'} / {detail.creativeProgress?.total??'Unavailable'}</p>}{detail.targetType!=='campaign'&&<Button variant="outline" disabled={writing||!!uncertain} onClick={()=>open('campaign',detail.campaign.id)}>View parent campaign</Button>}{detail.targetType==='creative'&&typeof detail.item.adStackId==='string'&&<Button variant="outline" disabled={writing||!!uncertain} onClick={()=>open('stack',detail.item.adStackId as string)}>View parent stack</Button>}<details><summary>Campaign settings and targeting</summary><Fields value={detail.campaign}/></details>
         <h3>Targeting</h3>{detail.targets.length?detail.targets.map((row,i)=><Fields key={i} value={row}/>):<p>No submitted targeting records.</p>}
         <h3>Related submitted items</h3>{detail.children.map((row,i)=><div key={i}>{typeof row.id==='string'&&<Button variant="outline" disabled={writing||!!uncertain} onClick={()=>open('adType' in row?'creative':'stack',row.id as string)}>View {title(row)}</Button>}<Fields value={row}/></div>)}
         <h3>Staff review history</h3><p>Internal notes stay within this staff view; advertiser notes have a separate audience.</p>{detail.history.length?detail.history.map((row,i)=><Fields key={i} value={row}/>):<p>No recorded decisions.</p>}
         <div className="cf-mod-toolbar"><Button variant="outline" disabled={detailPage===1||writing||!!uncertain} onClick={()=>setDetailPage(p=>p-1)}>Previous details</Button><span>Details page {detailPage}</span><Button variant="outline" disabled={(!detail.hasMoreChildren&&!detail.hasMoreHistory)||writing||!!uncertain} onClick={()=>setDetailPage(p=>p+1)}>Next details</Button></div>
         <p>{detail.capabilities[stage].reason||'Review is available for this immutable submission. Approval prerequisites are rechecked on the server.'}</p><Button disabled={!detail.capabilities[stage].allowed||writing||!!uncertain} onClick={()=>setReviewing(true)}>Review {stage==='reviewer'?1:2}</Button>
-      </>}
+      </>)}
+    {reviewing&&detail&&<ModerationReviewDialog embedded key={`${detail.targetType}:${detail.targetId}:${detail.submissionId}:${detail.contentRevision}:${stage}`} isOpen={reviewing} onClose={()=>{if(!busy.current&&!uncertain)setReviewing(false);}} targetType={detail.targetType} targetTitle={`${title(detail.item)} · revision ${detail.contentRevision}`} stage={stage} isPlatformAdmin={roles.some(r=>['ads_admin','super_admin'].includes(r))} locked={!!uncertain} reasons={detail.reviewOptions?.reasons} onSubmit={confirm}/>}
     </Dialog.Content></Dialog.Portal></Dialog.Root>
-    {reviewing&&detail&&<ModerationReviewDialog key={`${detail.targetType}:${detail.targetId}:${detail.submissionId}:${detail.contentRevision}:${stage}`} isOpen={reviewing} onClose={()=>{if(!busy.current&&!uncertain)setReviewing(false);}} targetType={detail.targetType} targetTitle={`${title(detail.item)} · revision ${detail.contentRevision}`} stage={stage} isPlatformAdmin={roles.some(r=>['ads_admin','super_admin'].includes(r))} locked={!!uncertain} reasons={detail.reviewOptions?.reasons} onSubmit={confirm}/>}
+
   </section>;
 }

@@ -73,7 +73,7 @@ for(const roles of [[],['ads_finance'],['ads_support'],['ads_reviewer'],['ads_ma
  if(!read){assert.equal(calls.some(c=>c[0]==='queue'),false);assert.equal(button(app,'View details'),undefined);app.unmount();return;}
  for(const stage of ['reviewer','manager']) {
   button(app,stage==='reviewer'?'Review 1 (Primary)':'Review 2 (Manager Approval)').props.onClick();await ready(app);
-  for(const label of ['Creatives','Ad Stacks','Campaigns']) {
+  for(const label of ['Ads','Ad Stacks','Campaigns']) {
    button(app,label).props.onClick();await ready(app);
    assert.ok(button(app,'View details'));
    const action=button(app,stage==='reviewer'?'Review 1':'Review 2');assert.ok(action);
@@ -270,4 +270,22 @@ test('PLAN-0045: AuthAdminPage hides Error Monitor navigation for non-super_admi
     assert.equal(rendered.includes('NAV_ERROR_MONITOR_VISIBLE'), shouldShowNav);
     guardMod.unmount();
   }
+});
+
+test('PLAN0077 confirmed approval releases locks and another item is immediately reviewable',async()=>{
+ const {app,writes}=moderation(['ads_admin']);await ready(app);
+ for(let i=0;i<2;i++){
+  button(app,'View details').props.onClick();await ready(app);
+  app.nodes().filter(n=>typeof n.props.onClick==='function'&&text(n)==='Review 1').at(-1).props.onClick();app.render();
+  const form=app.nodes().find(n=>typeof n.props.onSubmit==='function');assert.equal(form.props.embedded,true);
+  await form.props.onSubmit({decision:'approved'});await ready(app);
+  assert.equal(button(app,'Refresh').props.disabled,false);assert.equal(button(app,'View details').props.disabled,false);
+ }
+ assert.equal(writes.length,2);assert.notEqual(writes[0][2].requestId,writes[1][2].requestId);app.unmount();
+});
+test('PLAN0077 workspace refresh revalidates authority, queue, summary and selected detail without writes',async()=>{
+ let details=0,summaries=0;const fixture=moderation(['ads_admin']);const original=fixture.base.moderationDetail;fixture.base.moderationDetail=async(...args)=>{details++;return original(...args);};const summary=fixture.base.moderationSummary;fixture.base.moderationSummary=async(...args)=>{summaries++;return summary(...args);};const {app,calls,writes}=fixture;await ready(app);button(app,'View details').props.onClick();await ready(app);const before={details,summaries,staff:calls.filter(c=>c[0]==='staff').length};await button(app,'Refresh').props.onClick();await ready(app);await ready(app);assert.ok(details>before.details);assert.ok(summaries>before.summaries);assert.ok(calls.filter(c=>c[0]==='staff').length>before.staff);assert.equal(writes.length,0);app.unmount();
+});
+test('PLAN0077 confirmed decision remains confirmed when follow-up queue read fails',async()=>{
+ const {app,base,writes}=moderation(['ads_admin']);await ready(app);button(app,'View details').props.onClick();await ready(app);app.nodes().filter(n=>typeof n.props.onClick==='function'&&text(n)==='Review 1').at(-1).props.onClick();app.render();const form=app.nodes().find(n=>typeof n.props.onSubmit==='function');base.queue=async()=>{throw Error('queue offline');};await form.props.onSubmit({decision:'approved'});await ready(app);assert.equal(writes.length,1);assert.match(text(app.render()),/Decision recorded/);assert.equal(button(app,'Check outcome'),undefined);assert.equal(button(app,'Refresh').props.disabled,false);app.unmount();
 });

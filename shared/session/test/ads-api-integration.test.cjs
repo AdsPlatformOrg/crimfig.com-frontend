@@ -621,6 +621,7 @@ test("websiteView and verifyWebsite preserve verificationErrorMessage, policySta
     return success([
       {
         id: "site-jed-ok",
+        verificationExpiresAt: new Date(Date.now()+86400000).toISOString(),
         domain: "jed.com.ng",
         url: "https://jed.com.ng/",
         verificationToken: "cf_verify_1234567890abcdef1234567890abcdef",

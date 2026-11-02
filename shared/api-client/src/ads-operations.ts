@@ -60,7 +60,11 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
       return dataOf(await client.POST('/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/takeover',{params,body}));
     },
     async moderationSummary(targetType:'all'|'creative'|'stack'|'campaign'='all') {return dataOf(await client.GET('/api/v1/admin/ads/moderation/operations-summary',{params:{query:{targetType}}}));},
-    async queue(stage: 'reviewer' | 'manager', page=1) { return dataOf(await client.GET('/api/v1/admin/ads/moderation/queue', { params: { query: { stage, page } } })); },
+    async queue(stage: 'reviewer' | 'manager', page=1) {
+      const result=dataOf(await client.GET('/api/v1/admin/ads/moderation/queue', { cache:'no-store', params: { query: { stage, page } } }));
+      if(!result || !['creatives','stacks','campaigns'].every(key=>Array.isArray((result as unknown as Record<string,unknown>)[key])))throw new Error('Moderation queue response is unavailable. Refresh to try again.');
+      return {...result,creatives:result.creatives!,stacks:result.stacks!,campaigns:result.campaigns!};
+    },
     async reviewCreative(id: string, stage: 'reviewer' | 'manager' | 'legacy', body: ReviewInput) {
       if (stage === 'manager') {
         return dataOf(await client.POST('/api/v1/admin/ads/moderation/creatives/{id}/manager-approval', { params: { path: { id } }, body }));

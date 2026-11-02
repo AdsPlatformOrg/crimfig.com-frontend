@@ -173,9 +173,9 @@ export function workspaceNavigation(
       title: "Advertising Operations",
       items: [
         {
-          roles: ["super_admin", "ads_admin", "ads_reviewer"],
+          roles: ["super_admin", "ads_admin", "ads_reviewer", "ads_manager", "ads_support"],
           id: "moderation",
-          label: "Creative Review Queue",
+          label: "Ad Review Queue",
           icon: ShieldCheck,
           href: "/admin/moderation",
         },
