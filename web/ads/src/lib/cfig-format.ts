@@ -41,3 +41,11 @@ export function houseRewardEligibility(
     return "Suitability review pending: earns zero $cfig until approved.";
   return "Website policy approval required; earns zero $cfig.";
 }
+
+/** Decimal promotional units to exact micro-cfig; never round user input. */
+export function parseCfig(value: string): string | null {
+  if (!/^(0|[1-9][0-9]{0,11})(\.[0-9]{1,6})?$/.test(value)) return null;
+  const [whole, fraction = ""] = value.split(".");
+  const units = BigInt(whole) * 1000000n + BigInt(fraction.padEnd(6, "0"));
+  return units > 0n ? units.toString() : null;
+}

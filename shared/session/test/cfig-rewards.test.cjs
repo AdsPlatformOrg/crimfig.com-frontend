@@ -69,7 +69,7 @@ const text = (n) =>
       : Array.isArray(n)
         ? n.map(text).join(" ")
         : (n.children || []).map(text).join(" ");
-function mount(mode, request) {
+function mount(mode, request, component = "view") {
   let cursor = 0,
     tree;
   const states = [],
@@ -108,21 +108,28 @@ function mount(mode, request) {
     },
   };
   const generic = new Proxy({}, { get: (_, k) => k });
-  const { CfigRewardsView } = compile(
-    "web/ads/src/components/console/CfigRewardsView.tsx",
+  const compiled = compile(
+    component === "controls"
+      ? "web/ads/src/components/console/CfigFundedControls.tsx"
+      : "web/ads/src/components/console/CfigRewardsView.tsx",
     {
       react: react,
       "next/link": { __esModule: true, default: "Link" },
       "@/lib/session": { sessionFetch: request },
       "@/lib/cfig-format": format,
       "../ui": generic,
+      "./CfigFundedControls": { CfigFundedControls: "CfigFundedControls" },
     },
     { React: react, crypto: { randomUUID: () => "test-request" } },
   );
+  const Component =
+    component === "controls"
+      ? compiled.CfigFundedControls
+      : compiled.CfigRewardsView;
   const api = {
     render() {
       cursor = 0;
-      tree = CfigRewardsView({ mode });
+      tree = Component({ mode });
       while (effects.length) effects.shift()();
       return tree;
     },
@@ -344,3 +351,149 @@ test("historical House awards and qualification dates survive prospective thresh
   assert.match(ui.text(), /2026-11-05T00:00:00.000Z/);
   assert.match(ui.text(), /No funded-point bonus/);
 });
+
+test("conversion input rejects rounding, negatives and exponents", () => {
+  for (const value of ["0", "-1", "1e2", "01", "1.0000001", "NaN", ""])
+    assert.equal(format.parseCfig(value), null);
+  assert.equal(format.parseCfig("100.000001"), "100000001");
+});
+test("funding authority errors remain unavailable, never converted into a funded balance", async () => {
+  const ui = mount(
+    "reserve",
+    async () => ({
+      ok: false,
+      status: 503,
+      json: async () => ({ message: "Backing requires reconciliation" }),
+    }),
+    "controls",
+  );
+  await ui.settle();
+  assert.match(ui.text(), /Backing requires reconciliation/);
+  assert.doesNotMatch(ui.text(), /points issued/);
+});
+test("disabled conversion cannot send a mutation even when its handler is invoked", async () => {
+  const calls = [];
+  const ui = mount(
+    "promoter",
+    async (url, options) => {
+      calls.push({ url, options });
+      return response({
+        conversionEnabled: false,
+        cohorts: [],
+        minimumPoints: 1,
+        monthlyMaximumPoints: 100,
+      });
+    },
+    "controls",
+  );
+  await ui.settle();
+  const button = ui
+    .nodes()
+    .find((n) => n.type === "Button" && text(n) === "Conversion unavailable");
+  assert.equal(button.props.disabled, true);
+  await button.props.onClick();
+  await ui.settle();
+  assert.equal(calls.filter((c) => c.options?.method === "POST").length, 0);
+});
+test("unconfirmed conversion retries keep one identity and do not show false success", async () => {
+  const writes = [];
+  const cohort = {
+    allocationId: "allocation",
+    policyId: "policy",
+    availableMicroCfig: "200000000",
+    cfigPerPoint: "100",
+    termsVersion: "original-v1",
+  };
+  const ui = mount(
+    "promoter",
+    async (url, options) => {
+      if (options?.method === "POST") {
+        writes.push(JSON.parse(options.body));
+        return {
+          ok: false,
+          status: 503,
+          json: async () => ({ message: "Outcome unconfirmed" }),
+        };
+      }
+      return response({
+        conversionEnabled: true,
+        cohorts: [cohort],
+        minimumPoints: 1,
+        monthlyMaximumPoints: 100,
+      });
+    },
+    "controls",
+  );
+  await ui.settle();
+  ui.nodes()
+    .find((n) => n.type === "Button" && text(n).includes("original-v1"))
+    .props.onClick();
+  ui.nodes()
+    .find((n) => n.type === "Input")
+    .props.onChange({ target: { value: "100" } });
+  ui.render();
+  await ui
+    .nodes()
+    .find((n) => n.type === "Button" && text(n) === "Convert cleared $cfig")
+    .props.onClick();
+  await ui.settle();
+  assert.match(ui.text(), /Outcome unconfirmed/);
+  assert.doesNotMatch(ui.text(), /points issued/);
+  await ui
+    .nodes()
+    .find((n) => n.type === "Button" && text(n) === "Convert cleared $cfig")
+    .props.onClick();
+  await ui.settle();
+  assert.equal(writes.length, 2);
+  assert.equal(writes[0].requestId, writes[1].requestId);
+  assert.equal(writes[0].microCfig, "100000000");
+  assert.ok(ui.nodes().find((n) => n.type === "Input").props.disabled);
+});
+test("successful conversion reports actual issued points and exact residual", async () => {
+  const cohort = {
+    allocationId: "allocation",
+    policyId: "policy",
+    availableMicroCfig: "200000000",
+    cfigPerPoint: "100",
+    termsVersion: "original-v1",
+  };
+  const ui = mount(
+    "promoter",
+    async (url, options) =>
+      response(
+        options?.method === "POST"
+          ? {
+              id: "receipt",
+              points: "1",
+              debitedMicroCfig: "100000000",
+              residualMicroCfig: "99999999",
+            }
+          : {
+              conversionEnabled: true,
+              cohorts: [cohort],
+              minimumPoints: 1,
+              monthlyMaximumPoints: 100,
+            },
+      ),
+    "controls",
+  );
+  await ui.settle();
+  ui.nodes()
+    .find((n) => n.type === "Button" && text(n).includes("original-v1"))
+    .props.onClick();
+  ui.nodes()
+    .find((n) => n.type === "Input")
+    .props.onChange({ target: { value: "199.999999" } });
+  ui.render();
+  await ui
+    .nodes()
+    .find((n) => n.type === "Button" && text(n) === "Convert cleared $cfig")
+    .props.onClick();
+  await ui.settle();
+  assert.match(ui.text(), /1\s+funded points issued/);
+  assert.match(ui.text(), /99.999999 \$cfig/);
+  assert.match(ui.text(), /receipt/);
+});
+
+test('disabled funding controls cannot propose or attest cash',async()=>{const writes=[];const ui=mount('reserve',async(url,options)=>{if(options?.method==='POST')writes.push(options);return response({enabled:{funding:false},allocations:[],issues:[],reconciliations:[]});},'controls');await ui.settle();for(const label of ['Prepare source reconciliation','Propose backed allocation']){const button=ui.nodes().find(n=>n.type==='Button'&&text(n)===label);assert.equal(button.props.disabled,true);await button.props.onClick();}assert.equal(writes.length,0);assert.match(ui.text(),/cannot deposit money or issue points/);});
+test('source reconciliation submits identifiers and evidence without an invented amount',async()=>{const writes=[];const data={enabled:{funding:true},allocations:[],issues:[],reconciliations:[]};const ui=mount('reserve',async(url,options)=>{if(options?.method==='POST'){writes.push({url,body:JSON.parse(options.body)});return response({id:'review-id',status:'awaiting_independent_reconciliation'});}return response(data);},'controls');await ui.settle();const inputs=ui.nodes().filter(n=>n.type==='Input');['ledger-id','Independent bank evidence reference','2026-11-10T00:00:00Z'].forEach((value,i)=>inputs[i].props.onChange({target:{value}}));ui.render();await ui.nodes().find(n=>n.type==='Button'&&text(n)==='Prepare source reconciliation').props.onClick();await ui.settle();assert.equal(writes.length,1);assert.match(writes[0].url,/reconciliations$/);assert.equal(writes[0].body.sourceId,'ledger-id');assert.equal(writes[0].body.amountCents,undefined);assert.equal(writes[0].body.kind,'backing');assert.match(ui.text(),/awaiting_independent_reconciliation/);});

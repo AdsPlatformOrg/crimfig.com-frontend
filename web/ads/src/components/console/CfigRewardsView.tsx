@@ -1,4 +1,5 @@
 "use client";
+import { CfigFundedControls } from "./CfigFundedControls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { sessionFetch } from "@/lib/session";
@@ -829,11 +830,14 @@ export function CfigRewardsView({ mode }: { mode: Mode }) {
           </CardContent>
         </Card>
       )}
+      {(mode === "promoter" || mode === "reserve") && !loading && (
+        <CfigFundedControls mode={mode} />
+      )}
       {mode === "reserve" && reserve && !loading && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Existing Rewards Fund — no conversion allocation
+              Existing Rewards Fund — accounting totals
             </CardTitle>
             <CardDescription>{reserve.status}</CardDescription>
           </CardHeader>
@@ -894,7 +898,8 @@ export function CfigRewardsView({ mode }: { mode: Mode }) {
                   <p>{r.reason}</p>
                   <p>
                     Pending Δ {r.pending_delta} · Available Δ{" "}
-                    {r.available_delta} · Invalid Δ {r.invalid_delta}
+                    {r.available_delta} · Invalid Δ {r.invalid_delta} ·
+                    Converted Δ {r.converted_delta ?? "0"}
                   </p>
                 </article>
               ))

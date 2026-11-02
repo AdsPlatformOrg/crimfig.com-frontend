@@ -446,3 +446,7 @@ Drafted PLAN-0063 (DRAFT/PENDING) including detailed stack/request/response/log 
 
 ## 2026-10-31 — PLAN-0064 reporting/navigation/theme repair plan
 Drafted PLAN-0064 DRAFT/PENDING: fix Auth light canvas mismatch, House styling/error states, management alias on performance page, duplicate workspace wrapper, missing creative/website/promoter/slot reports and diagnostic inspector. Complete contextual nested navigation and requirement-to-page/API/unit evidence. Screenshots are owner evidence; no fresh runtime/visual verification or implementation performed. Broader checks remain deferred.
+
+
+## 2026-11-02 — PLAN-0070 remaining code and unit scope
+Added existing-style promoter conversion/admin source reconciliation/allocation controls, exact cfig input/residual/receipt reporting, stable unconfirmed retries and honest disabled/unavailable states. Actual converted ledger movement display. Focused21 rewards/readiness tests PASS; preserved unrelated CampaignBreadcrumbs edit. See docs/reviews/plan-0070/funded-integration-20261102.md and unit-test-results.txt. Broader build/type/lint/browser/staging/provider/real DB checks DEFERRED — OWNER REQUEST. No migration execution, deployment, funding/earning/conversion activation, commit, merge or push.
