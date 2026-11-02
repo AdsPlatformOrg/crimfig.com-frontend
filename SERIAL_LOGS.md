@@ -450,3 +450,7 @@ Drafted PLAN-0064 DRAFT/PENDING: fix Auth light canvas mismatch, House styling/e
 
 ## 2026-11-02 — PLAN-0070 remaining code and unit scope
 Added existing-style promoter conversion/admin source reconciliation/allocation controls, exact cfig input/residual/receipt reporting, stable unconfirmed retries and honest disabled/unavailable states. Actual converted ledger movement display. Focused21 rewards/readiness tests PASS; preserved unrelated CampaignBreadcrumbs edit. See docs/reviews/plan-0070/funded-integration-20261102.md and unit-test-results.txt. Broader build/type/lint/browser/staging/provider/real DB checks DEFERRED — OWNER REQUEST. No migration execution, deployment, funding/earning/conversion activation, commit, merge or push.
+
+
+## 2026-11-02 — PLAN-0070 dev publication and staging preparation
+Verified GitHub jed-chela/push access, committed489a7d5 and pushed origin/dev; Railway ADS-frontend deployment1fc37c96-a389-4f58-b640-32999d75eb36 SUCCESS for that revision. Production unchanged; CampaignBreadcrumbs local whitespace excluded. Focused21 rewards/readiness tests remain PASS; full CI failed broader report/website/schedule/header/moderation fixtures, not claimed green. Backend strict-DTO staging build correction prepared and locally built; database has no public proxy and private SSH requires a key, approval requested. No migration/financial activation/paused-service changes. Documentation-only publication log; see docs/reviews/plan-0070/staging-rollout-20261102.md.
