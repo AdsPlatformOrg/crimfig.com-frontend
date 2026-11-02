@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState, useId } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, AlertCircle, X } from 'lucide-react';
@@ -12,6 +12,8 @@ export interface ModerationReviewDialogProps {
   targetTitle: string;
   stage: 'reviewer' | 'manager';
   isPlatformAdmin?: boolean;
+  locked?: boolean;
+  reasons?: {code:string;label:string}[];
   onSubmit: (data: {
     decision: 'approved' | 'rejected';
     advertiserNote?: string;
@@ -27,12 +29,17 @@ export function ModerationReviewDialog({
   targetTitle,
   stage,
   isPlatformAdmin = false,
+  locked = false,
+  reasons = [],
   onSubmit,
 }: ModerationReviewDialogProps) {
+  const inFlight = useRef(false);
+  const id = useId();
+  const safeClose = () => { if (!inFlight.current && !locked) onClose(); };
   const [decision, setDecision] = useState<'approved' | 'rejected'>('approved');
   const [advertiserNote, setAdvertiserNote] = useState('');
   const [internalNote, setInternalNote] = useState('');
-  const [reasonCode, setReasonCode] = useState('POLICY_VIOLATION');
+  const [reasonCode, setReasonCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +48,11 @@ export function ModerationReviewDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(inFlight.current || locked) return;
+    if(advertiserNote.trim().length>2000 || internalNote.trim().length>2000){setError('Notes must be at most 2,000 characters.');return;}
+    if(decision==='rejected' && !reasonCode && !advertiserNote.trim()){setError('Choose a rejection reason or provide a custom advertiser explanation.');return;}
+    if(reasonCode && !reasons.some(reason=>reason.code===reasonCode)){setError('Rejection options changed. Reload the item details.');return;}
+    inFlight.current=true;
     setIsSubmitting(true);
     setError(null);
 
@@ -49,7 +61,7 @@ export function ModerationReviewDialog({
         decision,
         advertiserNote: advertiserNote.trim() || undefined,
         internalNote: internalNote.trim() || undefined,
-        reasonCode: decision === 'rejected' ? reasonCode : undefined,
+        reasonCode: decision === 'rejected' ? reasonCode || undefined : undefined,
       });
       // Reset form
       setAdvertiserNote('');
@@ -58,18 +70,22 @@ export function ModerationReviewDialog({
     } catch (err: any) {
       setError(err?.message || 'Failed to submit review decision.');
     } finally {
+      inFlight.current=false;
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && safeClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="cf-report-overlay" style={{ zIndex: 1200 }} />
         <Dialog.Content
-          className="cf-report-dialog"
+          className="cf-report-dialog cf-mod-review"
           style={{
             zIndex: 1201,
+            maxHeight: '90dvh',
+            overflowY: 'auto',
+            width: 'calc(100vw - 32px)',
             maxWidth: '540px',
             padding: '24px',
             backgroundColor: 'var(--bg-elevated)',
@@ -78,15 +94,15 @@ export function ModerationReviewDialog({
             boxShadow: 'var(--shadow-xl)',
           }}
         >
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form aria-busy={isSubmitting} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)', letterSpacing: '0.05em' }}>
                     {stageLabel}
                   </span>
                   {isPlatformAdmin && (
-                    <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '9999px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, padding: '2px 6px', borderRadius: '9999px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
                       Platform Admin
                     </span>
                   )}
@@ -94,7 +110,7 @@ export function ModerationReviewDialog({
                 <Dialog.Title style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
                   Review {targetLabel}
                 </Dialog.Title>
-                <Dialog.Description style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', margin: 0 }}>
+                <Dialog.Description style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px', margin: 0 }}>
                   {targetTitle}
                 </Dialog.Description>
               </div>
@@ -102,6 +118,8 @@ export function ModerationReviewDialog({
               <Dialog.Close asChild>
                 <button
                   type="button"
+                  disabled={isSubmitting || locked}
+                  onClick={safeClose}
                   aria-label="Close dialog"
                   style={{
                     border: 'none',
@@ -117,7 +135,7 @@ export function ModerationReviewDialog({
             </div>
 
             {error && (
-              <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.2)', color: 'var(--color-crimson)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.2)', color: 'var(--color-crimson)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
                 <span>{error}</span>
               </div>
@@ -125,12 +143,13 @@ export function ModerationReviewDialog({
 
             {/* Decision selector */}
             <div>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>
+              <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '8px' }}>
                 Moderation Decision
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button
                   type="button"
+                  disabled={isSubmitting || locked}
                   onClick={() => setDecision('approved')}
                   style={{
                     display: 'flex',
@@ -143,7 +162,7 @@ export function ModerationReviewDialog({
                     backgroundColor: decision === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
                     color: decision === 'approved' ? '#059669' : 'var(--text-secondary)',
                     fontWeight: 700,
-                    fontSize: '13px',
+                    fontSize: '14px',
                     cursor: 'pointer',
                   }}
                 >
@@ -152,6 +171,7 @@ export function ModerationReviewDialog({
                 </button>
                 <button
                   type="button"
+                  disabled={isSubmitting || locked}
                   onClick={() => setDecision('rejected')}
                   style={{
                     display: 'flex',
@@ -164,7 +184,7 @@ export function ModerationReviewDialog({
                     backgroundColor: decision === 'rejected' ? 'rgba(212, 20, 58, 0.1)' : 'var(--bg-surface)',
                     color: decision === 'rejected' ? 'var(--color-crimson)' : 'var(--text-secondary)',
                     fontWeight: 700,
-                    fontSize: '13px',
+                    fontSize: '14px',
                     cursor: 'pointer',
                   }}
                 >
@@ -177,15 +197,18 @@ export function ModerationReviewDialog({
             {/* Rejection reason dropdown */}
             {decision === 'rejected' && (
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
-                  Rejection Reason Code
+                <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
+                  Rejection reason
                 </label>
                 <select
+                  id={`${id}-reason`}
+                  aria-label="Rejection reason code"
+                  disabled={isSubmitting || locked}
                   value={reasonCode}
                   onChange={(e) => setReasonCode(e.target.value)}
                   style={{
                     width: '100%',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     padding: '8px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-subtle)',
@@ -193,13 +216,8 @@ export function ModerationReviewDialog({
                     color: 'var(--text-primary)',
                   }}
                 >
-                  <option value="POLICY_VIOLATION">General Policy Violation</option>
-                  <option value="MISLEADING">Misleading / Clickbait Claims</option>
-                  <option value="PROHIBITED">Prohibited Financial / Gambling Products</option>
-                  <option value="BROKEN_URL">Destination URL Unreachable (404/500)</option>
-                  <option value="LOW_QUALITY">Low Resolution / Distorted Media</option>
-                  <option value="TRADEMARK">Unverified Trademark / Impersonation</option>
-                  <option value="BUDGET_OR_TARGETING_ISSUE">Budget or Targeting Parameter Inconsistency</option>
+                  <option value="">Choose a reason, or write a custom explanation below</option>
+                  {reasons.map(reason=><option key={reason.code} value={reason.code}>{reason.label}</option>)}
                 </select>
               </div>
             )}
@@ -207,19 +225,23 @@ export function ModerationReviewDialog({
             {/* Reason for Advertiser (Optional) */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Reason for Advertiser
                 </label>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Optional</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Optional</span>
               </div>
               <textarea
+                id={`${id}-advertiser`}
+                aria-label="Reason for Advertiser"
+                maxLength={2000}
+                disabled={isSubmitting || locked}
                 value={advertiserNote}
                 onChange={(e) => setAdvertiserNote(e.target.value)}
                 placeholder="Message visible to advertiser explaining the decision or feedback..."
                 rows={3}
                 style={{
                   width: '100%',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   padding: '10px 12px',
                   borderRadius: '8px',
                   border: '1px solid var(--border-subtle)',
@@ -234,19 +256,23 @@ export function ModerationReviewDialog({
             {/* Reason for Reviewer Only (Internal Note) */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                <label style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Reason for Reviewer Only
                 </label>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Internal audit only</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Internal audit only</span>
               </div>
               <textarea
+                id={`${id}-internal`}
+                aria-label="Internal reviewer note"
+                maxLength={2000}
+                disabled={isSubmitting || locked}
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
                 placeholder="Internal audit notes visible only to staff reviewers and managers..."
                 rows={2}
                 style={{
                   width: '100%',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   padding: '10px 12px',
                   borderRadius: '8px',
                   border: '1px solid var(--border-subtle)',
@@ -262,17 +288,17 @@ export function ModerationReviewDialog({
               <Button
                 type="button"
                 variant="outline"
-                disabled={isSubmitting}
-                onClick={onClose}
-                style={{ fontSize: '12px', padding: '8px 16px' }}
+                disabled={isSubmitting || locked}
+                onClick={safeClose}
+                style={{ fontSize: '14px', padding: '8px 16px' }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || locked}
                 style={{
-                  fontSize: '12px',
+                  fontSize: '14px',
                   padding: '8px 16px',
                   backgroundColor: decision === 'approved' ? '#059669' : 'var(--color-crimson)',
                   color: '#FFFFFF',

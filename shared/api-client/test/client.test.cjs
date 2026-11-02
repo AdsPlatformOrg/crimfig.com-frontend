@@ -124,3 +124,24 @@ test('error codes must agree with the status and correlation IDs must be valid U
     assert.equal(error.outcome, 'unknown'); return true;
   });
 });
+
+
+test('moderation summary rejects missing totals and HTTP denial rather than returning fake zeros',async()=>{
+ await assert.rejects(setup(async()=>ok({scope:'creative',asOf:'2026-11-02T12:00:00Z'})).moderationSummary('creative'),error=>error instanceof ApiError&&error.category==='protocol');
+ await assert.rejects(setup(async()=>new Response('{}',{status:403})).moderationSummary('creative'),error=>error instanceof ApiError&&error.status===403);
+});
+test('moderation summary sends scoped staff GET and retains genuine zero with unconfigured overdue null',async()=>{
+ const data={scope:'stack',asOf:'2026-11-02T12:00:00Z',reviewerCount:0,managerCount:10,submissionCount:2,oldestSubmittedAt:null,oldestAgeSeconds:null,unknownAgeCount:1,overdueCount:null,targetStatus:'not_configured'};
+ const api=setup(async(url,init)=>{assert.equal(url,`${origin}/api/v1/admin/ads/moderation/operations-summary?targetType=stack`);assert.equal(init.method,'GET');assert.equal(init.credentials,'omit');return ok(data);});assert.deepEqual(await api.moderationSummary('stack'),data);
+});
+
+
+test('claim denial is surfaced without automatic mutation retry or fabricated active lease',async()=>{
+ let calls=0;const api=setup(async()=>{calls++;return new Response('{}',{status:403});});await assert.rejects(api.changeModerationClaim('campaign','id','acquire',{requestId:'request',submissionId:'submission',expectedRevision:3,stage:'reviewer'}),error=>error instanceof ApiError&&error.status===403);assert.equal(calls,1);
+});
+test('claim reads are GET-only and typed writes carry exact revision/request/claim binding',async()=>{
+ const calls=[],policy={ttlSeconds:600,maxLifetimeSeconds:3600,renewal:'manual'},body={requestId:'request',submissionId:'submission',expectedRevision:3,stage:'reviewer',claimId:'claim-id'};
+ const state={enabled:false,serverTime:'2026-11-02T12:00:00Z',policy,claim:null};
+ const api=setup(async(url,init)=>{calls.push({url,init});return init.method==='GET'?ok(state):ok({...state,enabled:true,outcome:'released'},201);});assert.deepEqual(await api.moderationClaim('campaign','id','reviewer'),state);assert.equal(calls.length,1);assert.equal(calls[0].init.method,'GET');assert.equal(calls[0].init.cache,'no-store');assert.equal(calls[0].url,`${origin}/api/v1/admin/ads/moderation/items/campaign/id/claim?stage=reviewer`);
+ await api.changeModerationClaim('campaign','id','release',body);assert.equal(calls[1].url,`${origin}/api/v1/admin/ads/moderation/items/campaign/id/claim/release`);assert.deepEqual(JSON.parse(await calls[1].init.body.text()),body);
+});

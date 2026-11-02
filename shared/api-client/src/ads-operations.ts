@@ -7,6 +7,7 @@ export type CreateCampaignInput = components['schemas']['CreateCampaignDto'];
 export type AddCreativeInput = components['schemas']['AddCreativeDto'];
 export type ReplaceCreativeInput = components['schemas']['ReplaceCreativeDto'];
 export type UpdateStackInput = components['schemas']['UpdateStackDto'];
+export type ClaimInput=components['schemas']['ModerationClaimDto'];
 export type ReviewInput = components['schemas']['ReviewDecisionDto'];
 export type CampaignRecord = operations['Campaigns_getAdvertiserCampaigns']['responses'][200]['content']['application/json']['data'][number];
 export type CreativeRecord = operations['Campaigns_replaceCreative']['responses'][200]['content']['application/json']['data'];
@@ -32,6 +33,8 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
     async beginEdit(id:string,body:BeginEditInput) { return dataOf(await client.POST('/api/v1/campaigns/{id}/begin-edit',{body,params:{path:{id}}})); },
     async mutation(id:string,requestId:string) { return dataOf(await client.GET('/api/v1/campaigns/{id}/mutations/{requestId}',{params:{path:{id,requestId}}})); },
     async deleteCreative(id:string,creativeId:string,body:MutationControl) { return dataOf(await client.DELETE('/api/v1/campaigns/{id}/creatives/{creativeId}',{body,params:{path:{id,creativeId}}})); },
+    async moderationDetail(targetType:'creative'|'stack'|'campaign',id:string,page=1) {return dataOf(await client.GET('/api/v1/admin/ads/moderation/items/{targetType}/{id}',{params:{path:{targetType,id},query:{page}}}));},
+    async reviewReceipt(id:string,requestId:string) {return dataOf(await client.GET('/api/v1/admin/ads/moderation/campaigns/{id}/review-requests/{requestId}',{params:{path:{id,requestId}}}));},
     async submission(id:string) { return dataOf(await client.GET('/api/v1/admin/ads/moderation/campaigns/{id}/submission',{params:{path:{id}}})); },
     async audit(id:string,offset=0) { return dataOf(await client.GET('/api/v1/admin/ads/moderation/campaigns/{id}/change-audit',{params:{path:{id},query:{offset}}})); },
     async uploadSettings() { return dataOf(await client.GET('/api/v1/uploads/settings')); },
@@ -48,7 +51,16 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
       if (!result.data) throw new Error('The media preview could not be confirmed.');
       return result.data;
     },
-    async queue(stage: 'reviewer' | 'manager') { return dataOf(await client.GET('/api/v1/admin/ads/moderation/queue', { params: { query: { stage } } })); },
+    async moderationClaim(targetType:'creative'|'stack'|'campaign',id:string,stage:'reviewer'|'manager') {return dataOf(await client.GET('/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim',{cache:'no-store',params:{path:{targetType,id},query:{stage}}}));},
+    async changeModerationClaim(targetType:'creative'|'stack'|'campaign',id:string,action:'acquire'|'renew'|'release'|'takeover',body:ClaimInput) {
+      const params={path:{targetType,id}};
+      if(action==='acquire')return dataOf(await client.POST('/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim',{params,body}));
+      if(action==='renew')return dataOf(await client.POST('/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/renew',{params,body}));
+      if(action==='release')return dataOf(await client.POST('/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/release',{params,body}));
+      return dataOf(await client.POST('/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/takeover',{params,body}));
+    },
+    async moderationSummary(targetType:'all'|'creative'|'stack'|'campaign'='all') {return dataOf(await client.GET('/api/v1/admin/ads/moderation/operations-summary',{params:{query:{targetType}}}));},
+    async queue(stage: 'reviewer' | 'manager', page=1) { return dataOf(await client.GET('/api/v1/admin/ads/moderation/queue', { params: { query: { stage, page } } })); },
     async reviewCreative(id: string, stage: 'reviewer' | 'manager' | 'legacy', body: ReviewInput) {
       if (stage === 'manager') {
         return dataOf(await client.POST('/api/v1/admin/ads/moderation/creatives/{id}/manager-approval', { params: { path: { id } }, body }));

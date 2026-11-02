@@ -20,7 +20,7 @@ test('migrated campaign domain helpers compile against generated DTOs without pu
 });
 test('migrated TSX call sites retain valid syntax and covered endpoint literals only live in typed operations', () => {
   const components = path.resolve(root, '../../web/ads/src/components');
-  for (const name of ['console/CampaignCreationWizard.tsx', 'console/CampaignPage.tsx', 'console/ReplaceCreativeModal.tsx', 'console/ImagePreparation.tsx', 'console/AdminModerationQueue.tsx', 'MediaPreview.tsx', 'ActionHelp.tsx']) {
+  for (const name of ['console/CampaignCreationWizard.tsx', 'console/CampaignPage.tsx', 'console/ReplaceCreativeModal.tsx', 'console/ImagePreparation.tsx', 'console/AdminModerationQueue.tsx','console/ModerationClaimPanel.tsx', 'MediaPreview.tsx', 'ActionHelp.tsx']) {
     const source = fs.readFileSync(path.join(components, name), 'utf8');
     const result = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 }, reportDiagnostics: true, fileName: name });
     assert.equal((result.diagnostics || []).length, 0, name);
@@ -30,12 +30,12 @@ test('migrated TSX call sites retain valid syntax and covered endpoint literals 
 
 test('changed component call boundaries agree with generated/domain DTOs (component roots only)', () => {
   const components = path.resolve(root, '../../web/ads/src/components');
-  const names = ['console/CampaignCreationWizard.tsx', 'console/CampaignPage.tsx', 'console/ReplaceCreativeModal.tsx', 'console/ImagePreparation.tsx', 'console/AdminModerationQueue.tsx', 'MediaPreview.tsx', 'ActionHelp.tsx', 'console/advertiser/CampaignsManager.tsx'];
+  const names = ['console/CampaignCreationWizard.tsx', 'console/CampaignPage.tsx', 'console/ReplaceCreativeModal.tsx', 'console/ImagePreparation.tsx', 'console/AdminModerationQueue.tsx','console/ModerationClaimPanel.tsx', 'MediaPreview.tsx', 'ActionHelp.tsx', 'console/advertiser/CampaignsManager.tsx'];
   const roots = names.map(name => path.join(components, name));
   const options = { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
     jsx: ts.JsxEmit.ReactJSX, strict: true, esModuleInterop: true, resolveJsonModule: true, skipLibCheck: true, noEmit: true };
   const host = ts.createCompilerHost(options);
-  host.resolveModuleNames = (names, containing) => names.map(name => name.endsWith('/session') && path.normalize(containing).toLowerCase().includes(`${path.sep}web${path.sep}ads${path.sep}`) ?
+  host.resolveModuleNames = (names, containing) => names.map(name => name === 'next/navigation' ? {resolvedFileName:path.join(root,'test/navigation-stub.d.ts'),extension:ts.Extension.Dts} : name.endsWith('/session') && path.normalize(containing).toLowerCase().includes(`${path.sep}web${path.sep}ads${path.sep}`) ?
     { resolvedFileName: path.join(root, 'test/session-stub.d.ts'), extension: ts.Extension.Dts } : ts.resolveModuleName(name, containing, options, host).resolvedModule);
   const program = ts.createProgram(roots, options, host);
   const selected = new Set(roots.map(name => path.normalize(name)));

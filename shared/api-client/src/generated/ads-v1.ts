@@ -79,6 +79,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/ads/moderation/campaigns/{id}/review-requests/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Moderation_reviewReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/ads/moderation/campaigns/{id}/submission": {
         parameters: {
             query?: never;
@@ -137,6 +153,102 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["Moderation_primaryReviewCreative"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/moderation/items/{targetType}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Moderation_itemDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Moderation_getClaim"];
+        put?: never;
+        post: operations["Moderation_acquireClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Moderation_releaseClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Moderation_renewClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/moderation/items/{targetType}/{id}/claim/takeover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Moderation_takeoverClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/moderation/operations-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Moderation_operationsSummary"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2922,6 +3034,54 @@ export interface components {
             /** Format: uuid */
             submissionId: string;
         };
+        ModerationClaimDto: {
+            /** Format: uuid */
+            claimId?: string | null;
+            expectedRevision: number;
+            reason?: string | null;
+            /** Format: uuid */
+            requestId: string;
+            /** @enum {string} */
+            stage: "reviewer" | "manager";
+            /** Format: uuid */
+            submissionId: string;
+        };
+        Moderation_acquireClaimResponse: {
+            data: {
+                claim: ({
+                    campaignId: string;
+                    claimantId: string;
+                    claimedAt: string;
+                    contentRevision: number;
+                    expiresAt: string;
+                    id: string;
+                    releasedAt: string | null;
+                    /** @enum {string} */
+                    stage: "reviewer" | "manager";
+                    submissionId: string;
+                    targetId: string;
+                    /** @enum {string} */
+                    targetType: "creative" | "stack" | "campaign";
+                } & {
+                    [key: string]: unknown;
+                }) | null;
+                enabled: boolean;
+                /** @enum {string} */
+                outcome: "acquired" | "renewed" | "released" | "taken_over" | "held_by_you" | "held_by_other";
+                policy: {
+                    maxLifetimeSeconds: number;
+                    renewal: string;
+                    ttlSeconds: number;
+                } & {
+                    [key: string]: unknown;
+                };
+                serverTime: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
         Moderation_changeAuditResponse: {
             data: ({
                 action: string;
@@ -2943,8 +3103,43 @@ export interface components {
             /** @enum {string} */
             status: "success";
         };
+        Moderation_getClaimResponse: {
+            data: {
+                claim: ({
+                    campaignId: string;
+                    claimantId: string;
+                    claimedAt: string;
+                    contentRevision: number;
+                    expiresAt: string;
+                    id: string;
+                    releasedAt: string | null;
+                    /** @enum {string} */
+                    stage: "reviewer" | "manager";
+                    submissionId: string;
+                    targetId: string;
+                    /** @enum {string} */
+                    targetType: "creative" | "stack" | "campaign";
+                } & {
+                    [key: string]: unknown;
+                }) | null;
+                enabled: boolean;
+                policy: {
+                    maxLifetimeSeconds: number;
+                    renewal: string;
+                    ttlSeconds: number;
+                } & {
+                    [key: string]: unknown;
+                };
+                serverTime: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
         Moderation_getQueueResponse: {
             data: {
+                asOf?: string;
                 campaigns: ({
                     advertiserId: string;
                     approvedCreativesCount: number;
@@ -2955,6 +3150,12 @@ export interface components {
                     /** @enum {string} */
                     moderationStatus: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
                     pricingModel: string;
+                    reviewClock: ({
+                        stageStartedAt: string | null;
+                        submittedAt: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
                     /** @enum {string} */
                     status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
                     submissionId: string;
@@ -2963,6 +3164,8 @@ export interface components {
                 } & {
                     [key: string]: unknown;
                 })[];
+                /** @enum {string} */
+                countScope?: "loaded_page";
                 creatives: ({
                     /** @enum {string} */
                     adFormat?: "banner" | "card" | "video" | "interstitial";
@@ -2997,6 +3200,12 @@ export interface components {
                     mediaFormat?: "image" | "gif" | "video" | null;
                     posterUrl?: string | null;
                     rejectionReason?: string | null;
+                    reviewClock?: ({
+                        stageStartedAt: string | null;
+                        submittedAt: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "approved" | "rejected";
                     status?: string;
@@ -3005,18 +3214,390 @@ export interface components {
                 } & {
                     [key: string]: unknown;
                 })[];
+                hasMore?: {
+                    campaigns: boolean;
+                    creatives: boolean;
+                    stacks: boolean;
+                } & {
+                    [key: string]: unknown;
+                };
+                page?: number;
+                pageSize?: number;
                 stacks?: ({
                     campaignId: string;
                     campaignTitle: string;
                     contentRevision: number;
                     id: string;
                     name: string;
+                    reviewClock: ({
+                        stageStartedAt: string | null;
+                        submittedAt: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
                     reviewStatus: string;
                     submissionId: string;
                 } & {
                     [key: string]: unknown;
                 })[];
                 totalPending: number;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Moderation_itemDetailResponse: {
+            data: {
+                campaign: {
+                    adStacks?: ({
+                        campaignId: string;
+                        creatives?: ({
+                            /** @enum {string} */
+                            adFormat?: "banner" | "card" | "video" | "interstitial";
+                            adStackId?: string | null;
+                            /** @enum {string} */
+                            adType?: "text" | "image" | "video";
+                            bodyText?: string | null;
+                            campaignId: string;
+                            ctaText?: string | null;
+                            destinationUrl: string;
+                            headline?: string | null;
+                            id: string;
+                            imageSpecs?: ({
+                                bytes?: number;
+                                height?: number | null;
+                                mimeType?: string;
+                                preparation?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                renditions?: {
+                                    [key: string]: unknown;
+                                }[];
+                                sha256?: string | null;
+                                width?: number | null;
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                            imageUrl?: string | null;
+                            mediaAssetId?: string | null;
+                            /** @enum {string|null} */
+                            mediaFormat?: "image" | "gif" | "video" | null;
+                            posterUrl?: string | null;
+                            rejectionReason?: string | null;
+                            /** @enum {string} */
+                            reviewStatus?: "pending" | "approved" | "rejected";
+                            status?: string;
+                            videoUrl?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        effectiveSettings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        geoMode?: string;
+                        id: string;
+                        name: string;
+                        position?: number;
+                        schedule?: (({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        })) | null;
+                        settings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        targetDevices?: string | null;
+                        targetHours?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    advertiserId?: string;
+                    approvedRevision?: number | null;
+                    approvedSubmissionId?: string | null;
+                    budgetUsd?: number;
+                    budgetUsdCents: number;
+                    capabilities?: {
+                        blocker: string | null;
+                        canActivate: boolean;
+                        canBeginEdit: boolean;
+                        canEdit: boolean;
+                        canPause: boolean;
+                        canSubmit: boolean;
+                        canTrash: boolean;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    category?: string | null;
+                    channels?: string | null;
+                    clicksCount?: number;
+                    contentRevision?: number;
+                    costPerClickUsdCents?: number;
+                    costPerImpressionUsdCents?: number;
+                    createdAt?: string;
+                    creatives?: ({
+                        /** @enum {string} */
+                        adFormat?: "banner" | "card" | "video" | "interstitial";
+                        adStackId?: string | null;
+                        /** @enum {string} */
+                        adType?: "text" | "image" | "video";
+                        bodyText?: string | null;
+                        campaignId: string;
+                        ctaText?: string | null;
+                        destinationUrl: string;
+                        headline?: string | null;
+                        id: string;
+                        imageSpecs?: ({
+                            bytes?: number;
+                            height?: number | null;
+                            mimeType?: string;
+                            preparation?: {
+                                [key: string]: unknown;
+                            } | null;
+                            renditions?: {
+                                [key: string]: unknown;
+                            }[];
+                            sha256?: string | null;
+                            width?: number | null;
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                        imageUrl?: string | null;
+                        mediaAssetId?: string | null;
+                        /** @enum {string|null} */
+                        mediaFormat?: "image" | "gif" | "video" | null;
+                        posterUrl?: string | null;
+                        rejectionReason?: string | null;
+                        /** @enum {string} */
+                        reviewStatus?: "pending" | "approved" | "rejected";
+                        status?: string;
+                        videoUrl?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    currentSubmissionId?: string | null;
+                    dailyBudgetUsd?: number | null;
+                    dailyBudgetUsdCents?: number | null;
+                    defaultStackId?: string;
+                    description?: string | null;
+                    endsAt?: string | null;
+                    /** @enum {string} */
+                    format: "banner" | "card" | "video" | "interstitial";
+                    formats?: ("banner" | "card" | "video" | "interstitial")[];
+                    frequencyCapPerDay?: number;
+                    geoLocations?: {
+                        [key: string]: unknown;
+                    }[];
+                    geoMode?: string;
+                    hourlyPacingUsdCents?: number | null;
+                    hoversCount?: number;
+                    id: string;
+                    impressionsCount?: number;
+                    /** @enum {string} */
+                    moderationStatus: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
+                    pricingModel?: string;
+                    pricingVersion?: number;
+                    rejectionReason?: string | null;
+                    remainingBudgetUsd?: number;
+                    remainingBudgetUsdCents: number;
+                    schedule?: (({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    })) | null;
+                    spentUsd?: number;
+                    startsAt?: string | null;
+                    /** @enum {string} */
+                    status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
+                    submissionIntentId?: string | null;
+                    submissionRequestId?: string | null;
+                    submissionState?: string | null;
+                    submittedAt?: string | null;
+                    targetCountries?: string | null;
+                    targetDevices?: (string | string[]) | null;
+                    targetHours?: (string | number[]) | null;
+                    targetStates?: string | null;
+                    title: string;
+                    touchesCount?: number;
+                    updatedAt?: string;
+                } & {
+                    [key: string]: unknown;
+                };
+                capabilities: {
+                    manager: {
+                        allowed: boolean;
+                        reason: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    reviewer: {
+                        allowed: boolean;
+                        reason: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                } & {
+                    [key: string]: unknown;
+                };
+                children: {
+                    [key: string]: unknown;
+                }[];
+                content: {
+                    [key: string]: unknown;
+                } | null;
+                contentRevision: number | null;
+                creativeProgress: {
+                    approved: number | null;
+                    total: number | null;
+                } & {
+                    [key: string]: unknown;
+                };
+                hasMoreChildren: boolean;
+                hasMoreHistory: boolean;
+                history: {
+                    [key: string]: unknown;
+                }[];
+                item: {
+                    [key: string]: unknown;
+                };
+                page: number;
+                reviewOptions: {
+                    customExplanationAllowed: boolean;
+                    noteMaxLength: number;
+                    reasons: ({
+                        code: string;
+                        label: string;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                } & {
+                    [key: string]: unknown;
+                };
+                submissionId: string | null;
+                targetId: string;
+                /** @enum {string} */
+                targetType: "creative" | "stack" | "campaign";
+                targets: {
+                    [key: string]: unknown;
+                }[];
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Moderation_operationsSummaryResponse: {
+            data: {
+                asOf: string;
+                managerCount: number;
+                oldestAgeSeconds: number | null;
+                oldestSubmittedAt: string | null;
+                overdueCount: number | null;
+                reviewerCount: number;
+                /** @enum {string} */
+                scope: "all" | "creative" | "stack" | "campaign";
+                submissionCount: number;
+                /** @enum {string} */
+                targetStatus: "not_configured";
+                unknownAgeCount: number;
             } & {
                 [key: string]: unknown;
             };
@@ -3319,6 +3900,278 @@ export interface components {
         };
         Moderation_primaryReviewCreativeResponse: {
             data: {
+                campaign?: {
+                    adStacks?: ({
+                        campaignId: string;
+                        creatives?: ({
+                            /** @enum {string} */
+                            adFormat?: "banner" | "card" | "video" | "interstitial";
+                            adStackId?: string | null;
+                            /** @enum {string} */
+                            adType?: "text" | "image" | "video";
+                            bodyText?: string | null;
+                            campaignId: string;
+                            ctaText?: string | null;
+                            destinationUrl: string;
+                            headline?: string | null;
+                            id: string;
+                            imageSpecs?: ({
+                                bytes?: number;
+                                height?: number | null;
+                                mimeType?: string;
+                                preparation?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                renditions?: {
+                                    [key: string]: unknown;
+                                }[];
+                                sha256?: string | null;
+                                width?: number | null;
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                            imageUrl?: string | null;
+                            mediaAssetId?: string | null;
+                            /** @enum {string|null} */
+                            mediaFormat?: "image" | "gif" | "video" | null;
+                            posterUrl?: string | null;
+                            rejectionReason?: string | null;
+                            /** @enum {string} */
+                            reviewStatus?: "pending" | "approved" | "rejected";
+                            status?: string;
+                            videoUrl?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        effectiveSettings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        geoMode?: string;
+                        id: string;
+                        name: string;
+                        position?: number;
+                        schedule?: (({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        })) | null;
+                        settings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        targetDevices?: string | null;
+                        targetHours?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    advertiserId?: string;
+                    approvedRevision?: number | null;
+                    approvedSubmissionId?: string | null;
+                    budgetUsd?: number;
+                    budgetUsdCents: number;
+                    capabilities?: {
+                        blocker: string | null;
+                        canActivate: boolean;
+                        canBeginEdit: boolean;
+                        canEdit: boolean;
+                        canPause: boolean;
+                        canSubmit: boolean;
+                        canTrash: boolean;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    category?: string | null;
+                    channels?: string | null;
+                    clicksCount?: number;
+                    contentRevision?: number;
+                    costPerClickUsdCents?: number;
+                    costPerImpressionUsdCents?: number;
+                    createdAt?: string;
+                    creatives?: ({
+                        /** @enum {string} */
+                        adFormat?: "banner" | "card" | "video" | "interstitial";
+                        adStackId?: string | null;
+                        /** @enum {string} */
+                        adType?: "text" | "image" | "video";
+                        bodyText?: string | null;
+                        campaignId: string;
+                        ctaText?: string | null;
+                        destinationUrl: string;
+                        headline?: string | null;
+                        id: string;
+                        imageSpecs?: ({
+                            bytes?: number;
+                            height?: number | null;
+                            mimeType?: string;
+                            preparation?: {
+                                [key: string]: unknown;
+                            } | null;
+                            renditions?: {
+                                [key: string]: unknown;
+                            }[];
+                            sha256?: string | null;
+                            width?: number | null;
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                        imageUrl?: string | null;
+                        mediaAssetId?: string | null;
+                        /** @enum {string|null} */
+                        mediaFormat?: "image" | "gif" | "video" | null;
+                        posterUrl?: string | null;
+                        rejectionReason?: string | null;
+                        /** @enum {string} */
+                        reviewStatus?: "pending" | "approved" | "rejected";
+                        status?: string;
+                        videoUrl?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    currentSubmissionId?: string | null;
+                    dailyBudgetUsd?: number | null;
+                    dailyBudgetUsdCents?: number | null;
+                    defaultStackId?: string;
+                    description?: string | null;
+                    endsAt?: string | null;
+                    /** @enum {string} */
+                    format: "banner" | "card" | "video" | "interstitial";
+                    formats?: ("banner" | "card" | "video" | "interstitial")[];
+                    frequencyCapPerDay?: number;
+                    geoLocations?: {
+                        [key: string]: unknown;
+                    }[];
+                    geoMode?: string;
+                    hourlyPacingUsdCents?: number | null;
+                    hoversCount?: number;
+                    id: string;
+                    impressionsCount?: number;
+                    /** @enum {string} */
+                    moderationStatus: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
+                    pricingModel?: string;
+                    pricingVersion?: number;
+                    rejectionReason?: string | null;
+                    remainingBudgetUsd?: number;
+                    remainingBudgetUsdCents: number;
+                    schedule?: (({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    })) | null;
+                    spentUsd?: number;
+                    startsAt?: string | null;
+                    /** @enum {string} */
+                    status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
+                    submissionIntentId?: string | null;
+                    submissionRequestId?: string | null;
+                    submissionState?: string | null;
+                    submittedAt?: string | null;
+                    targetCountries?: string | null;
+                    targetDevices?: (string | string[]) | null;
+                    targetHours?: (string | number[]) | null;
+                    targetStates?: string | null;
+                    title: string;
+                    touchesCount?: number;
+                    updatedAt?: string;
+                } & {
+                    [key: string]: unknown;
+                };
                 creative: {
                     /** @enum {string} */
                     adFormat?: "banner" | "card" | "video" | "interstitial";
@@ -3371,6 +4224,9 @@ export interface components {
                 };
                 nextStage?: string;
                 stage?: string;
+                targetId?: string;
+                /** @enum {string} */
+                targetType?: "creative";
             } & {
                 [key: string]: unknown;
             };
@@ -3379,6 +4235,278 @@ export interface components {
         };
         Moderation_primaryReviewStackResponse: {
             data: {
+                campaign?: {
+                    adStacks?: ({
+                        campaignId: string;
+                        creatives?: ({
+                            /** @enum {string} */
+                            adFormat?: "banner" | "card" | "video" | "interstitial";
+                            adStackId?: string | null;
+                            /** @enum {string} */
+                            adType?: "text" | "image" | "video";
+                            bodyText?: string | null;
+                            campaignId: string;
+                            ctaText?: string | null;
+                            destinationUrl: string;
+                            headline?: string | null;
+                            id: string;
+                            imageSpecs?: ({
+                                bytes?: number;
+                                height?: number | null;
+                                mimeType?: string;
+                                preparation?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                renditions?: {
+                                    [key: string]: unknown;
+                                }[];
+                                sha256?: string | null;
+                                width?: number | null;
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                            imageUrl?: string | null;
+                            mediaAssetId?: string | null;
+                            /** @enum {string|null} */
+                            mediaFormat?: "image" | "gif" | "video" | null;
+                            posterUrl?: string | null;
+                            rejectionReason?: string | null;
+                            /** @enum {string} */
+                            reviewStatus?: "pending" | "approved" | "rejected";
+                            status?: string;
+                            videoUrl?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        effectiveSettings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        geoMode?: string;
+                        id: string;
+                        name: string;
+                        position?: number;
+                        schedule?: (({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        })) | null;
+                        settings?: {
+                            /** @enum {string} */
+                            geoMode?: "inherit" | "global" | "targeted";
+                            locations?: {
+                                [key: string]: unknown;
+                            }[];
+                            schedule?: ({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            });
+                            targetDevices?: string[];
+                            targetHours?: number[];
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        targetDevices?: string | null;
+                        targetHours?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    advertiserId?: string;
+                    approvedRevision?: number | null;
+                    approvedSubmissionId?: string | null;
+                    budgetUsd?: number;
+                    budgetUsdCents: number;
+                    capabilities?: {
+                        blocker: string | null;
+                        canActivate: boolean;
+                        canBeginEdit: boolean;
+                        canEdit: boolean;
+                        canPause: boolean;
+                        canSubmit: boolean;
+                        canTrash: boolean;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    category?: string | null;
+                    channels?: string | null;
+                    clicksCount?: number;
+                    contentRevision?: number;
+                    costPerClickUsdCents?: number;
+                    costPerImpressionUsdCents?: number;
+                    createdAt?: string;
+                    creatives?: ({
+                        /** @enum {string} */
+                        adFormat?: "banner" | "card" | "video" | "interstitial";
+                        adStackId?: string | null;
+                        /** @enum {string} */
+                        adType?: "text" | "image" | "video";
+                        bodyText?: string | null;
+                        campaignId: string;
+                        ctaText?: string | null;
+                        destinationUrl: string;
+                        headline?: string | null;
+                        id: string;
+                        imageSpecs?: ({
+                            bytes?: number;
+                            height?: number | null;
+                            mimeType?: string;
+                            preparation?: {
+                                [key: string]: unknown;
+                            } | null;
+                            renditions?: {
+                                [key: string]: unknown;
+                            }[];
+                            sha256?: string | null;
+                            width?: number | null;
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                        imageUrl?: string | null;
+                        mediaAssetId?: string | null;
+                        /** @enum {string|null} */
+                        mediaFormat?: "image" | "gif" | "video" | null;
+                        posterUrl?: string | null;
+                        rejectionReason?: string | null;
+                        /** @enum {string} */
+                        reviewStatus?: "pending" | "approved" | "rejected";
+                        status?: string;
+                        videoUrl?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    currentSubmissionId?: string | null;
+                    dailyBudgetUsd?: number | null;
+                    dailyBudgetUsdCents?: number | null;
+                    defaultStackId?: string;
+                    description?: string | null;
+                    endsAt?: string | null;
+                    /** @enum {string} */
+                    format: "banner" | "card" | "video" | "interstitial";
+                    formats?: ("banner" | "card" | "video" | "interstitial")[];
+                    frequencyCapPerDay?: number;
+                    geoLocations?: {
+                        [key: string]: unknown;
+                    }[];
+                    geoMode?: string;
+                    hourlyPacingUsdCents?: number | null;
+                    hoversCount?: number;
+                    id: string;
+                    impressionsCount?: number;
+                    /** @enum {string} */
+                    moderationStatus: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
+                    pricingModel?: string;
+                    pricingVersion?: number;
+                    rejectionReason?: string | null;
+                    remainingBudgetUsd?: number;
+                    remainingBudgetUsdCents: number;
+                    schedule?: (({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    })) | null;
+                    spentUsd?: number;
+                    startsAt?: string | null;
+                    /** @enum {string} */
+                    status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
+                    submissionIntentId?: string | null;
+                    submissionRequestId?: string | null;
+                    submissionState?: string | null;
+                    submittedAt?: string | null;
+                    targetCountries?: string | null;
+                    targetDevices?: (string | string[]) | null;
+                    targetHours?: (string | number[]) | null;
+                    targetStates?: string | null;
+                    title: string;
+                    touchesCount?: number;
+                    updatedAt?: string;
+                } & {
+                    [key: string]: unknown;
+                };
                 decision: {
                     decision: string;
                     id: string;
@@ -3533,6 +4661,9 @@ export interface components {
                     [key: string]: unknown;
                 };
                 stage?: string;
+                targetId?: string;
+                /** @enum {string} */
+                targetType?: "stack";
             } & {
                 [key: string]: unknown;
             };
@@ -3588,6 +4719,306 @@ export interface components {
                     targetId: string;
                     /** @enum {string} */
                     targetType: "campaign" | "creative" | "stack";
+                } & {
+                    [key: string]: unknown;
+                };
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Moderation_reviewReceiptResponse: {
+            data: {
+                requestId: string;
+                result: {
+                    campaign: {
+                        adStacks?: ({
+                            campaignId: string;
+                            creatives?: ({
+                                /** @enum {string} */
+                                adFormat?: "banner" | "card" | "video" | "interstitial";
+                                adStackId?: string | null;
+                                /** @enum {string} */
+                                adType?: "text" | "image" | "video";
+                                bodyText?: string | null;
+                                campaignId: string;
+                                ctaText?: string | null;
+                                destinationUrl: string;
+                                headline?: string | null;
+                                id: string;
+                                imageSpecs?: ({
+                                    bytes?: number;
+                                    height?: number | null;
+                                    mimeType?: string;
+                                    preparation?: {
+                                        [key: string]: unknown;
+                                    } | null;
+                                    renditions?: {
+                                        [key: string]: unknown;
+                                    }[];
+                                    sha256?: string | null;
+                                    width?: number | null;
+                                } & {
+                                    [key: string]: unknown;
+                                }) | null;
+                                imageUrl?: string | null;
+                                mediaAssetId?: string | null;
+                                /** @enum {string|null} */
+                                mediaFormat?: "image" | "gif" | "video" | null;
+                                posterUrl?: string | null;
+                                rejectionReason?: string | null;
+                                /** @enum {string} */
+                                reviewStatus?: "pending" | "approved" | "rejected";
+                                status?: string;
+                                videoUrl?: string | null;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            effectiveSettings?: {
+                                /** @enum {string} */
+                                geoMode?: "inherit" | "global" | "targeted";
+                                locations?: {
+                                    [key: string]: unknown;
+                                }[];
+                                schedule?: ({
+                                    /** @enum {string} */
+                                    mode: "inherit";
+                                    /** @enum {integer} */
+                                    version: 1;
+                                } & {
+                                    [key: string]: unknown;
+                                }) | ({
+                                    /** @enum {string} */
+                                    mode: "round_the_clock" | "custom";
+                                    ranges: ({
+                                        endMinute: number;
+                                        startMinute: number;
+                                    } & {
+                                        [key: string]: unknown;
+                                    })[];
+                                    /** @enum {string} */
+                                    timezone: "Africa/Lagos";
+                                    /** @enum {integer} */
+                                    version: 1;
+                                } & {
+                                    [key: string]: unknown;
+                                });
+                                targetDevices?: string[];
+                                targetHours?: number[];
+                            } & {
+                                [key: string]: unknown;
+                            };
+                            geoMode?: string;
+                            id: string;
+                            name: string;
+                            position?: number;
+                            schedule?: (({
+                                /** @enum {string} */
+                                mode: "inherit";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            }) | ({
+                                /** @enum {string} */
+                                mode: "round_the_clock" | "custom";
+                                ranges: ({
+                                    endMinute: number;
+                                    startMinute: number;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @enum {string} */
+                                timezone: "Africa/Lagos";
+                                /** @enum {integer} */
+                                version: 1;
+                            } & {
+                                [key: string]: unknown;
+                            })) | null;
+                            settings?: {
+                                /** @enum {string} */
+                                geoMode?: "inherit" | "global" | "targeted";
+                                locations?: {
+                                    [key: string]: unknown;
+                                }[];
+                                schedule?: ({
+                                    /** @enum {string} */
+                                    mode: "inherit";
+                                    /** @enum {integer} */
+                                    version: 1;
+                                } & {
+                                    [key: string]: unknown;
+                                }) | ({
+                                    /** @enum {string} */
+                                    mode: "round_the_clock" | "custom";
+                                    ranges: ({
+                                        endMinute: number;
+                                        startMinute: number;
+                                    } & {
+                                        [key: string]: unknown;
+                                    })[];
+                                    /** @enum {string} */
+                                    timezone: "Africa/Lagos";
+                                    /** @enum {integer} */
+                                    version: 1;
+                                } & {
+                                    [key: string]: unknown;
+                                });
+                                targetDevices?: string[];
+                                targetHours?: number[];
+                            } & {
+                                [key: string]: unknown;
+                            };
+                            targetDevices?: string | null;
+                            targetHours?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        advertiserId?: string;
+                        approvedRevision?: number | null;
+                        approvedSubmissionId?: string | null;
+                        budgetUsd?: number;
+                        budgetUsdCents: number;
+                        capabilities?: {
+                            blocker: string | null;
+                            canActivate: boolean;
+                            canBeginEdit: boolean;
+                            canEdit: boolean;
+                            canPause: boolean;
+                            canSubmit: boolean;
+                            canTrash: boolean;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        category?: string | null;
+                        channels?: string | null;
+                        clicksCount?: number;
+                        contentRevision?: number;
+                        costPerClickUsdCents?: number;
+                        costPerImpressionUsdCents?: number;
+                        createdAt?: string;
+                        creatives?: ({
+                            /** @enum {string} */
+                            adFormat?: "banner" | "card" | "video" | "interstitial";
+                            adStackId?: string | null;
+                            /** @enum {string} */
+                            adType?: "text" | "image" | "video";
+                            bodyText?: string | null;
+                            campaignId: string;
+                            ctaText?: string | null;
+                            destinationUrl: string;
+                            headline?: string | null;
+                            id: string;
+                            imageSpecs?: ({
+                                bytes?: number;
+                                height?: number | null;
+                                mimeType?: string;
+                                preparation?: {
+                                    [key: string]: unknown;
+                                } | null;
+                                renditions?: {
+                                    [key: string]: unknown;
+                                }[];
+                                sha256?: string | null;
+                                width?: number | null;
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                            imageUrl?: string | null;
+                            mediaAssetId?: string | null;
+                            /** @enum {string|null} */
+                            mediaFormat?: "image" | "gif" | "video" | null;
+                            posterUrl?: string | null;
+                            rejectionReason?: string | null;
+                            /** @enum {string} */
+                            reviewStatus?: "pending" | "approved" | "rejected";
+                            status?: string;
+                            videoUrl?: string | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        currentSubmissionId?: string | null;
+                        dailyBudgetUsd?: number | null;
+                        dailyBudgetUsdCents?: number | null;
+                        defaultStackId?: string;
+                        description?: string | null;
+                        endsAt?: string | null;
+                        /** @enum {string} */
+                        format: "banner" | "card" | "video" | "interstitial";
+                        formats?: ("banner" | "card" | "video" | "interstitial")[];
+                        frequencyCapPerDay?: number;
+                        geoLocations?: {
+                            [key: string]: unknown;
+                        }[];
+                        geoMode?: string;
+                        hourlyPacingUsdCents?: number | null;
+                        hoversCount?: number;
+                        id: string;
+                        impressionsCount?: number;
+                        /** @enum {string} */
+                        moderationStatus: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
+                        pricingModel?: string;
+                        pricingVersion?: number;
+                        rejectionReason?: string | null;
+                        remainingBudgetUsd?: number;
+                        remainingBudgetUsdCents: number;
+                        schedule?: (({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        })) | null;
+                        spentUsd?: number;
+                        startsAt?: string | null;
+                        /** @enum {string} */
+                        status: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
+                        submissionIntentId?: string | null;
+                        submissionRequestId?: string | null;
+                        submissionState?: string | null;
+                        submittedAt?: string | null;
+                        targetCountries?: string | null;
+                        targetDevices?: (string | string[]) | null;
+                        targetHours?: (string | number[]) | null;
+                        targetStates?: string | null;
+                        title: string;
+                        touchesCount?: number;
+                        updatedAt?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    decision: {
+                        decision: string;
+                        id: string;
+                        reviewerId: string;
+                        targetId: string;
+                        /** @enum {string} */
+                        targetType: "campaign" | "creative" | "stack";
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    live: boolean;
+                    nextStage: string;
+                    stage: string;
+                    targetId: string;
+                    targetType: string;
                 } & {
                     [key: string]: unknown;
                 };
@@ -5187,6 +6618,118 @@ export interface operations {
             };
         };
     };
+    Moderation_reviewReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_reviewReceiptResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     Moderation_submissionDetail: {
         parameters: {
             query?: never;
@@ -5643,6 +7186,809 @@ export interface operations {
             };
         };
     };
+    Moderation_itemDetail: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                targetType: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_itemDetailResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Moderation_getClaim: {
+        parameters: {
+            query?: {
+                stage?: "reviewer" | "manager";
+            };
+            header?: never;
+            path: {
+                targetType: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_getClaimResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Moderation_acquireClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                targetType: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationClaimDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_acquireClaimResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Moderation_releaseClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                targetType: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationClaimDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_acquireClaimResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Moderation_renewClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                targetType: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationClaimDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_acquireClaimResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Moderation_takeoverClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                targetType: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationClaimDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_acquireClaimResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Moderation_operationsSummary: {
+        parameters: {
+            query?: {
+                targetType?: "all" | "creative" | "stack" | "campaign";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Moderation_operationsSummaryResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     Moderation_suspendPromoter: {
         parameters: {
             query?: never;
@@ -5762,6 +8108,7 @@ export interface operations {
         parameters: {
             query?: {
                 stage?: "reviewer" | "manager";
+                page?: number;
             };
             header?: never;
             path?: never;
