@@ -30,6 +30,7 @@ import {
   Filter,
 } from "lucide-react";
 import { sessionFetch } from "@/lib/session";
+import { WebsitePolicyReview } from "./WebsitePolicyReview";
 
 type Kind =
   | "house"
@@ -400,6 +401,10 @@ export function AdminPerformanceView({
                 </Badge>
               ))}
             </div>
+          )}
+
+          {kind === "website" && id && !loading && !error && data.subject?.websiteId && (
+            <WebsitePolicyReview key={id} websiteId={id} currentPolicy={String(data.subject.websiteId.policyStatus || "unknown")} onSaved={() => setRefresh(v => v + 1)} />
           )}
 
           {/* KPI Summary Cards */}

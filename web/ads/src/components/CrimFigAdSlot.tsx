@@ -100,6 +100,8 @@ interface CrimFigAdSlotProps {
   publisherKey: string;
   apiBaseUrl?: string;
   responsive?: boolean;
+  /** Resolve from actual visitor choice before mounting; changing it does not retry an initialized SDK slot. */
+  measurementConsent?: 'unknown' | 'granted' | 'denied';
   fallbackHtml?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -111,6 +113,7 @@ export function CrimFigAdSlot({
   publisherKey,
   apiBaseUrl,
   responsive = true,
+  measurementConsent = 'unknown',
   fallbackHtml,
   className,
   style,
@@ -134,8 +137,8 @@ export function CrimFigAdSlot({
   return (
     <>
       <Script
-        id={`cf-pub-loader-${uid}`}
-        src={`${resolvedApiBase}/api/v1/delivery/pub-loader.js?pk=${encodeURIComponent(publisherKey)}`}
+        id="crimfig-publisher-sdk"
+        src={`${resolvedApiBase}/api/v1/delivery/embed.js`}
         strategy="afterInteractive"
         crossOrigin="anonymous"
         async
@@ -156,6 +159,7 @@ export function CrimFigAdSlot({
         data-cf-placement={resolvedSlotId}
         data-cf-api-base={resolvedApiBase}
         data-cf-height={slotConfig?.height || 90}
+        data-cf-consent={measurementConsent}
         data-cf-handle={placement}
         data-cf-responsive={responsive ? 'true' : 'false'}
         data-cf-format="auto"
@@ -233,6 +237,7 @@ export function generateCrimFigEmbedCode({
      data-cf-publisher="${publisherKey}"
      data-ad-slot="${effectiveSlotId}"
      data-cf-placement="${effectiveSlotId}"
+     data-cf-consent="unknown"
      data-cf-api-base="${resolvedApiBase}"
      data-cf-handle="${placement}"
      data-cf-mode="${mode}"

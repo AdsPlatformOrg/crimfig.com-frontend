@@ -70,6 +70,9 @@ interface AdstationSlot {
 interface EmbedSnippet {
   slotTagId: string;
   deliveryReadiness?:{status:string;blockers:string[];remainingChecks:string[];message:string};
+  sdkSnippet?: string;
+  slotSnippet?: string;
+  consentInstructions?: string;
   htmlSnippet: string;
   nextJsSnippet: string;
 }
@@ -94,7 +97,7 @@ export default function PromoterSlotsPage() {
   const [selectedSlotForInstall, setSelectedSlotForInstall] = useState<AdstationSlot | null>(null);
   const [embedSnippet, setEmbedSnippet] = useState<EmbedSnippet | null>(null);
   const [isLoadingEmbed, setIsLoadingEmbed] = useState(false);
-  const [copiedSnippet, setCopiedSnippet] = useState<'html' | 'react' | null>(null);
+  const [copiedSnippet, setCopiedSnippet] = useState<'html' | 'react' | 'sdk' | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
 
   // Test Installation State
@@ -300,7 +303,7 @@ export default function PromoterSlotsPage() {
     }
   };
 
-  const copyToClipboard = async (text: string, type: 'html' | 'react') => {
+  const copyToClipboard = async (text: string, type: 'html' | 'react' | 'sdk') => {
     setCopyError(null);
     try {
       await navigator.clipboard.writeText(text);
@@ -676,13 +679,26 @@ export default function PromoterSlotsPage() {
               </div>
             ) : embedSnippet ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <section aria-label="Measurement consent" className="cf-section">
+                  <h3 className="cf-section-title">Measurement consent</h3>
+                  <p>{embedSnippet.consentInstructions || 'If your site collects consent, pass the choice before loading the SDK. Set data-cf-consent to granted only after actual consent. Unknown or denied does not disqualify paid delivery. Save a later consent decision and reload; changing the attribute does not retry an initialized slot.'}</p>
+                  <p>Load the SDK once per page. Two instances of the same registered slot are measured independently.</p>
+                </section>
+                {embedSnippet.sdkSnippet && <section aria-label="Page SDK" className="cf-section">
+                  <h3 className="cf-section-title">Step 1: Load the SDK once</h3>
+                  <p>Use the head or your page loader. Pass an existing visitor choice before the first request, or leave the state unknown. Keep one copy of this script for all slots.</p>
+                  <Button variant="outline" size="sm" onClick={() => copyToClipboard(embedSnippet.sdkSnippet!, 'sdk')}>{copiedSnippet === 'sdk' ? 'SDK copied!' : 'Copy SDK'}</Button>
+                  <pre className="cf-technical" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{embedSnippet.sdkSnippet}</pre>
+                  <p>Step 2: Copy the slot markup below to each placement. Its default unknown state records that no consent choice was supplied.</p>
+                </section>}
+
                 {/* HTML Snippet */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Standard HTML Snippet</span>
                     {copyError && <p role="alert">{copyError}</p>}
                     <Button
-                      onClick={() => copyToClipboard(embedSnippet.htmlSnippet, 'html')}
+                      onClick={() => copyToClipboard(embedSnippet.slotSnippet || embedSnippet.htmlSnippet, 'html')}
                       variant="outline"
                       size="sm"
                       style={{ fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
@@ -704,11 +720,11 @@ export default function PromoterSlotsPage() {
                       margin: 0,
                     }}
                   >
-                    {embedSnippet.htmlSnippet}
+                    {embedSnippet.slotSnippet || embedSnippet.htmlSnippet}
                   </pre>
                 </div>
 
-                {embedSnippet.deliveryReadiness&&<section aria-label="Delivery readiness" className="cf-section"><h3 style={{fontSize:'16px'}}>Paid delivery readiness</h3><p style={{fontSize:'14px'}}>{embedSnippet.deliveryReadiness.message}</p>{embedSnippet.deliveryReadiness.blockers.length?<ul>{embedSnippet.deliveryReadiness.blockers.map(code=><li key={code}>{code.replace(/_/g,' ').toLowerCase()}</li>)}</ul>:<p>Supply checks pass. Consent, traffic, campaign targeting, approved formats and auction checks still apply to each request.</p>}</section>}
+                {embedSnippet.deliveryReadiness&&<section aria-label="Delivery readiness" className="cf-section"><h3 style={{fontSize:'16px'}}>Paid delivery readiness</h3><p style={{fontSize:'14px'}}>{embedSnippet.deliveryReadiness.message}</p>{embedSnippet.deliveryReadiness.blockers.length?<ul>{embedSnippet.deliveryReadiness.blockers.map(code=><li key={code}>{code.replace(/_/g,' ').toLowerCase()}</li>)}</ul>:<p>Supply checks pass. Traffic, campaign targeting, approved formats and auction checks still apply to each request.</p>}</section>}
 
                 {/* React / Next.js Snippet */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
