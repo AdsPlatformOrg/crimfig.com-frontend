@@ -30,6 +30,7 @@ import {
   Filter,
 } from "lucide-react";
 import { sessionFetch } from "@/lib/session";
+import { DeliveryReadinessPanel, ReadinessOperations, SlotAuctionEvidence, StaffCampaignLookup, type Readiness } from "./DeliveryReadinessPanel";
 import { WebsitePolicyReview } from "./WebsitePolicyReview";
 
 type Kind =
@@ -65,6 +66,7 @@ type Row = {
 
 type Report = {
   _scope?: string;
+  readiness?: Readiness | null;
   subject?: Record<string, Record<string, unknown>>;
   summary: Row;
   items: Row[];
@@ -406,6 +408,12 @@ export function AdminPerformanceView({
           {kind === "website" && id && !loading && !error && data.subject?.websiteId && (
             <WebsitePolicyReview key={id} websiteId={id} currentPolicy={String(data.subject.websiteId.policyStatus || "unknown")} onSaved={() => setRefresh(v => v + 1)} />
           )}
+
+          {data.readiness && !loading && !error && <DeliveryReadinessPanel report={data.readiness} />}
+
+          {kind === "websites" && <><StaffCampaignLookup /><ReadinessOperations /></>}
+          {kind === "slot" && typeof data.subject?.slotId?.slotTagId === "string" &&
+            <SlotAuctionEvidence key={data.subject.slotId.slotTagId} slotTagId={data.subject.slotId.slotTagId} />}
 
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

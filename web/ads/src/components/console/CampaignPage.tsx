@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { adsApi } from '../../lib/ads-api-client';
 import { type CampaignDetails } from '../../lib/campaign-editor';
 import { CampaignCreationWizard } from './CampaignCreationWizard';
+import { CampaignReadiness } from './DeliveryReadinessPanel';
 import { CampaignBreadcrumbs } from './CampaignBreadcrumbs';
 import { ActionHelp } from '../ActionHelp';
 import {
@@ -138,6 +139,8 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <CampaignBreadcrumbs items={[{ label: campaign.title || 'Campaign' }]} />
+
+      <CampaignReadiness key={id} campaignId={id} />
 
       {/* Campaign Summary Card */}
       <Card style={{ padding: '24px', borderRadius: '12px' }}>

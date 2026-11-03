@@ -9,10 +9,16 @@
 
 import React, { useEffect, useId } from 'react';
 import Script from 'next/script';
+import { ecosystemOrigin } from '../../../../shared/ui/origins';
 
-const DEFAULT_ADS_API_URL = (
-  process.env.NEXT_PUBLIC_ADS_API_URL || 'https://api.ads.crimfig.com'
-).replace(/\/+$/, '');
+function defaultAdsApiUrl(configured=process.env.NEXT_PUBLIC_ADS_API_URL){
+ const app=ecosystemOrigin('ads',process.env.NEXT_PUBLIC_ADS_WEB_URL);
+ if(!configured)return app;
+ const url=new URL(configured);
+ const staging=app==='https://staging-ads.crimfig.com';
+ if(url.username||url.password||url.pathname!=='/'||url.search||url.hash||!['https:','http:'].includes(url.protocol)||(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))||(staging&&(/(^|[-.])production([-.]|$)/.test(url.hostname)||url.hostname==='ads.crimfig.com'||url.hostname==='api.ads.crimfig.com'||url.hostname.includes('.staging.'))))throw Error('Ads API origin conflicts with this deployment');
+ return url.origin;
+}
 
 // ── Placement Catalogue ─────────────────────────────────────────────────────
 export const CRIMFIG_PLACEMENTS: Record<
@@ -120,7 +126,7 @@ export function CrimFigAdSlot({
 }: CrimFigAdSlotProps) {
   const uid = useId().replace(/:/g, '');
   const slotConfig = CRIMFIG_PLACEMENTS[placement];
-  const resolvedApiBase = (apiBaseUrl || DEFAULT_ADS_API_URL).replace(
+  const resolvedApiBase = (defaultAdsApiUrl(apiBaseUrl)).replace(
     /\/+$/,
     '',
   );
@@ -214,7 +220,7 @@ export function generateCrimFigEmbedCode({
   const slotConfig = CRIMFIG_PLACEMENTS[placement];
   if (!slotConfig && !slotTagId) return '';
 
-  const resolvedApiBase = (apiBaseUrl || DEFAULT_ADS_API_URL).replace(
+  const resolvedApiBase = (defaultAdsApiUrl(apiBaseUrl)).replace(
     /\/+$/,
     '',
   );

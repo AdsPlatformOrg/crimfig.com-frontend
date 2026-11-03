@@ -1,5 +1,7 @@
 "use client";
 
+import { ecosystemOrigin } from '../../../../shared/ui/origins';
+
 import { clearCampaignDrafts } from "./campaign-draft";
 import { createSessionClient } from "@crimfig/session";
 
@@ -9,11 +11,7 @@ export function dashboardSession() {
     throw new Error("Dashboard sessions require a browser");
   if (client) return client;
   client = createSessionClient({
-    authOrigin:
-      process.env.NEXT_PUBLIC_AUTH_WEB_URL ||
-      (process.env.NODE_ENV === "production"
-        ? "https://auth.crimfig.com"
-        : "http://localhost:3000"),
+    authOrigin: ecosystemOrigin('auth',process.env.NEXT_PUBLIC_AUTH_WEB_URL),
     apiOrigins: [window.location.origin],
     crossTabSignOut: true,
     allowLocalHttp: process.env.NODE_ENV !== "production",
@@ -40,11 +38,7 @@ export function sessionFetch(input: string | URL, init?: RequestInit) {
 }
 
 export function loginUrl() {
-  const auth =
-    process.env.NEXT_PUBLIC_AUTH_WEB_URL ||
-    (process.env.NODE_ENV === "production"
-      ? "https://auth.crimfig.com"
-      : "http://localhost:3000");
+  const auth = ecosystemOrigin('auth',process.env.NEXT_PUBLIC_AUTH_WEB_URL);
   const url = new URL("/login", auth);
   const back = new URL(window.location.href);
   back.searchParams.set("view", "console");

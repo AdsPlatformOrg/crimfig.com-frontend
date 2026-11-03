@@ -1,5 +1,7 @@
 'use client';
 
+import { ecosystemOrigin } from '../../../../../../shared/ui/origins';
+
 import React, { useState, useEffect } from 'react';
 import {
   DollarSign,
@@ -81,7 +83,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
   };
 
   const openBilling = () => {
-    const base = process.env.NEXT_PUBLIC_BILLING_WEB_URL || (process.env.NODE_ENV === 'production' ? 'https://billing.crimfig.com' : 'http://localhost:3007');
+    const base = ecosystemOrigin('billing',process.env.NEXT_PUBLIC_BILLING_WEB_URL);
     window.location.assign(new URL('/?view=console', base).href);
   };
 

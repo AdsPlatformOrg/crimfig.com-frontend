@@ -20,6 +20,12 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
     async catalog(category?: string) { return dataOf(await client.GET('/api/v1/campaigns/catalog', { params: { query: { category } } })); },
     async capabilities() { return dataOf(await client.GET('/api/v1/campaigns/creation-capabilities')); },
     async details(id: string) { return dataOf(await client.GET('/api/v1/campaigns/{id}', { params: { path: { id } } })); },
+    async deliveryReadiness(id: string, staff = false) {
+      const params = { path: { id } };
+      return staff
+        ? dataOf(await client.GET('/api/v1/campaigns/admin/{id}/delivery-readiness', { params }))
+        : dataOf(await client.GET('/api/v1/campaigns/{id}/delivery-readiness', { params }));
+    },
     async creation(requestId: string) { return dataOf(await client.GET('/api/v1/campaigns/creation-request/{requestId}', { params: { path: { requestId } } })); },
     async create(body: CreateCampaignInput) { return dataOf(await client.POST('/api/v1/campaigns', { body })); },
     async createStack(id: string, name: string, control: MutationControl) { return dataOf(await client.POST('/api/v1/campaigns/{id}/ad-stacks', { params: { path: { id } }, body: { name, ...control } })); },

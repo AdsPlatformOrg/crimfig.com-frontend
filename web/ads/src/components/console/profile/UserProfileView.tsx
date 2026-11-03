@@ -1,5 +1,7 @@
 'use client';
 
+import { ecosystemOrigin } from '../../../../../../shared/ui/origins';
+
 import React, { useState, useEffect } from 'react';
 import { dashboardSession } from '../../../lib/session';
 import { apiData } from '../../../lib/api-data';
@@ -45,7 +47,7 @@ export function UserProfileView() {
     return () => { active = false; };
   }, []);
 
-  const authUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || (process.env.NODE_ENV === 'production' ? 'https://auth.crimfig.com' : 'http://localhost:3000');
+  const authUrl = ecosystemOrigin('auth',process.env.NEXT_PUBLIC_AUTH_WEB_URL);
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>

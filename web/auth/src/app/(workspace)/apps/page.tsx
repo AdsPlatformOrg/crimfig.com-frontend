@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ecosystemOrigin } from '../../../../../../shared/ui/origins';
 import Link from 'next/link';
 import { Key, ExternalLink, ShieldCheck } from 'lucide-react';
 import { Badge } from '../../../components/ui/badge';
@@ -38,7 +39,7 @@ export default function ConnectedAppsPage() {
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
               <Button asChild variant="outline" size="sm">
-                <a href="https://ads.crimfig.com" target="_blank" rel="noreferrer">
+                <a href={ecosystemOrigin('ads',process.env.NEXT_PUBLIC_ADS_URL)} target="_blank" rel="noreferrer">
                   <span>Launch Ads Portal</span>
                   <ExternalLink size={14} />
                 </a>
@@ -59,7 +60,7 @@ export default function ConnectedAppsPage() {
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
               <Button asChild variant="outline" size="sm">
-                <a href="https://billing.crimfig.com" target="_blank" rel="noreferrer">
+                <a href={ecosystemOrigin('billing',process.env.NEXT_PUBLIC_BILLING_URL)} target="_blank" rel="noreferrer">
                   <span>Launch Billing Portal</span>
                   <ExternalLink size={14} />
                 </a>

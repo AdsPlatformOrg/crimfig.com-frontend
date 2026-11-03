@@ -117,7 +117,7 @@ export function ConversionsTab({ advertiserId = 'YOUR_ADVERTISER_ID' }: Conversi
 
   const pixelSnippet = `<!-- CrimFig Universal Conversion Pixel -->
 <script
-  src="https://ads.crimfig.com/api/v1/px.js"
+  src="${typeof window==='undefined'?'':window.location.origin}/api/v1/px.js"
   data-cf-adv="${advertiserId}"
   async
 ></script>`;
@@ -131,7 +131,7 @@ window.cfq.push(['track', 'purchase', {
   itemsCount: 3
 }]);`;
 
-  const curlSnippet = `curl -X POST https://ads.crimfig.com/api/v1/conversions \\
+  const curlSnippet = `curl -X POST ${typeof window==='undefined'?'':window.location.origin}/api/v1/conversions \\
   -H "Authorization: Bearer YOUR_SECRET_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

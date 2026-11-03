@@ -32,7 +32,7 @@ export function WebsitePolicyReview({ websiteId, currentPolicy, onSaved }: {
     finally { busy.current = false; if (live.current) setPending(false); }
   }
   const prefix = `website-review-${websiteId}`;
-  return <section className="cf-surface cf-dialog-section" aria-label="Website suitability review">
+  return <section id="website-suitability-review" className="cf-surface cf-dialog-section" aria-label="Website suitability review">
     <h2 className="cf-section-title">Website suitability review</h2>
     <p className="cf-muted">Current policy: {currentPolicy}. DNS verifies ownership; this staff decision determines suitability for paid advertiser ads.</p>
     <form onSubmit={submit} className="cf-section">

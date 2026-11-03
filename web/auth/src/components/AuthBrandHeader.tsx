@@ -5,6 +5,7 @@ import { CrimFigLogo } from './CrimFigLogo';
 
 interface AuthBrandHeaderProps {
   title: string;
+  appearance?: 'light';
   subtitle?: string;
   logoSize?: number;
   className?: string;
@@ -13,6 +14,7 @@ interface AuthBrandHeaderProps {
 
 export function AuthBrandHeader({
   title,
+  appearance,
   subtitle,
   logoSize = 56,
   className,
@@ -28,15 +30,16 @@ export function AuthBrandHeader({
       }}
     >
       <CrimFigLogo
-        variant="icon"
-        size={logoSize}
+        variant={appearance ? "full" : "icon"}
+        appearance={appearance ? "light" : "auto"}
+        size={appearance ? 36 : logoSize}
         centered
         href="/"
         style={{ marginBottom: '16px' }}
       />
       <h1
         style={{
-          fontSize: '24px',
+          fontSize: appearance ? '22px' : '24px',
           fontWeight: 700,
           color: 'var(--text-primary, #FFFFFF)',
           marginBottom: '6px',

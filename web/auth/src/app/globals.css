@@ -401,3 +401,24 @@ a:hover {
     display: none;
   }
 }
+
+/* Login/signup own their light surface without changing the saved console theme. */
+.auth-entry[data-theme="light"] { --bg-page:#fff; --bg-surface:#F5F6F8; --bg-elevated:#fff; --text-primary:#171B2A; --text-secondary:#475569; --text-muted:#475569; --border-subtle:#E2E8F0; color-scheme:light; background:var(--bg-surface); color:var(--text-primary); min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+.auth-entry .auth-entry-card { width:100%; max-width:440px; padding:28px; background:var(--bg-elevated); border:1px solid var(--border-subtle); box-shadow:var(--shadow-md); border-radius:var(--radius-lg); }
+.auth-entry h1 { font-size:22px; line-height:1.35; }
+.auth-entry form { display:flex; flex-direction:column; gap:18px; }
+.auth-entry label { display:block; font-size:14px; font-weight:500; margin-bottom:6px; }
+.auth-entry label span,.auth-entry-help { color:var(--text-secondary); }
+.auth-entry .cf-input { background:#fff; color:var(--text-primary); border:1px solid #64748B; font-size:16px; min-height:46px; width:100%; }
+.auth-entry .cf-input:focus-visible,.auth-entry button:focus-visible,.auth-entry a:focus-visible { outline:2px solid var(--color-crimson); outline-offset:3px; }
+.auth-entry-label { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.auth-entry a { color:var(--color-crimson-dark); font-size:14px; }
+.auth-password { position:relative; }
+.auth-password .cf-input { padding-right:52px; }
+.auth-password-toggle { position:absolute; right:1px; top:1px; width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:0; border-radius:var(--radius-md); color:var(--text-secondary); cursor:pointer; }
+.auth-entry-help { font-size:13px; line-height:1.5; margin:8px 0 0; }
+.auth-entry .cf-alert { margin-bottom:18px; font-size:14px; overflow-wrap:anywhere; }
+.auth-entry .cf-alert--success { color:#166534; background:#F0FDF4; }
+.auth-entry .cf-alert--destructive { color:#991B1B; background:#FEF2F2; }
+.auth-entry-footer { text-align:center; border-top:1px solid var(--border-subtle); margin-top:24px; padding-top:20px; font-size:14px; }
+@media(max-width:480px){.auth-entry{padding:16px;align-items:flex-start;}.auth-entry .auth-entry-card{padding:24px 20px;}.auth-entry h1{font-size:20px !important;}}

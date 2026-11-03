@@ -9,7 +9,7 @@ export function refreshCoordinatorOrigins(authOrigin: string): string[] {
   if (authOrigin === 'https://staging-auth.crimfig.com') return [authOrigin, 'https://staging-ads.crimfig.com', 'https://staging-billing.crimfig.com'];
   const url = new URL(authOrigin);
   if (url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)) {
-    return [3000, 3005, 3006, 3100, 3105, 3106].map(port => `http://${url.hostname}:${port}`);
+    return [3000, 3005, 3006, 3007, 3100, 3105, 3106, 3107].map(port => `http://${url.hostname}:${port}`);
   }
   return [];
 }
