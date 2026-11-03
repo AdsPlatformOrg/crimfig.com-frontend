@@ -224,7 +224,35 @@ export default function AuctionDecisionDetailPage({
               <Badge variant="outline">{decision.trafficRiskStatus}</Badge>
             </div>
 
-            {/* Platform Paid Delivery Diagnostics Breakdown */}
+            {/* Historical Execution Record */}
+            <div
+              style={{
+                marginTop: '8px',
+                padding: '10px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))',
+                fontSize: '11px',
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: '4px', color: 'var(--text-primary)' }}>
+                Historical Execution Record (Immutable):
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Recorded Outcome: </span>
+                <code style={{ fontWeight: 700, color: isPaid ? 'var(--color-success)' : 'var(--color-crimson)' }}>{primaryReason}</code>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Termination Stage: </span>
+                <span>{terminationStage}</span>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
+                <span>{decision.policyVersion || 'auction_v1'}</span>
+              </div>
+            </div>
+
+            {/* Live Current Platform Diagnostics (clearly delineated from historical record) */}
             {decision.platformDiagnostics && (
               <div
                 style={{
@@ -236,8 +264,11 @@ export default function AuctionDecisionDetailPage({
                   fontSize: '11px',
                 }}
               >
-                <div style={{ fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
-                  Platform Paid Delivery Gates:
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Current Platform Readiness (Live):
+                  </span>
+                  <Badge variant="secondary" style={{ fontSize: '10px' }}>Server Live State</Badge>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
