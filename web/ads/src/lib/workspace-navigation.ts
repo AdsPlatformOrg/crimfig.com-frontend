@@ -19,6 +19,7 @@ import {
   ChevronRight,
   User,
   Settings,
+  History,
 } from "lucide-react";
 export type WorkspaceRole = "advertiser" | "promoter" | "admin";
 export function workspaceNavigation(
@@ -192,6 +193,13 @@ export function workspaceNavigation(
           label: "Website Approvals",
           icon: Globe,
           href: "/admin/websites/review",
+        },
+        {
+          roles: ["super_admin", "ads_admin", "ads_reviewer"],
+          id: "admin_auction_logs",
+          label: "Auction Logs",
+          icon: History,
+          href: "/admin/auction-logs",
         },
         {
           roles: ["super_admin", "ads_admin"],
