@@ -34,6 +34,7 @@ import {
 import { sessionFetch } from "@/lib/session";
 import { DeliveryReadinessPanel, ReadinessOperations, SlotAuctionEvidence, StaffCampaignLookup, type Readiness } from "./DeliveryReadinessPanel";
 import { WebsitePolicyReview } from "./WebsitePolicyReview";
+import { SlotLifecycleManagement } from "./SlotLifecycleManagement";
 
 type Kind =
   | "house"
@@ -519,6 +520,17 @@ export function AdminPerformanceView({
           )}
 
           {kind === "websites" && <><StaffCampaignLookup /><ReadinessOperations /></>}
+          {kind === "slot" && id && (
+            <SlotLifecycleManagement
+              slotId={id}
+              currentLifecycle={String(data.subject?.slotId?.lifecycleStatus || "testing")}
+              installationStatus={String(data.subject?.slotId?.installationStatus || "unchecked")}
+              websitePolicy={String(data.subject?.websiteId?.policyStatus || data.readiness?.gates?.find((g: any) => g.gateCode === "WEBSITE_SUITABILITY")?.status === "eligible" ? "approved" : "testing")}
+              websiteDomain={String(data.subject?.websiteId?.domain || "registered domain")}
+              onUpdated={() => setRefresh(v => v + 1)}
+            />
+          )}
+
           {kind === "slot" && typeof data.subject?.slotId?.slotTagId === "string" &&
             <SlotAuctionEvidence key={data.subject.slotId.slotTagId} slotTagId={data.subject.slotId.slotTagId} />}
 

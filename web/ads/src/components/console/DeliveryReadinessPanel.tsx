@@ -67,19 +67,71 @@ function VerifyEmailAction({ onReload }: { onReload?: () => void }) {
 }
 
 export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { report: Readiness; onReload?: () => void; canAct?: boolean }) {
+  const blockedGates = report.gates.filter(g => g.status === 'blocked' || g.status === 'action_required');
+  const isOverallBlocked = blockedGates.length > 0;
+
   return (
     <section className="cf-section" aria-label="Paid delivery readiness">
-      <h2 className="cf-section-title">Paid delivery readiness</h2>
-      <p className="cf-muted">Checked {new Date(report.evaluatedAt).toLocaleString()}</p>
-      {report.gates.filter(gate => canAct ? gate.owner === 'Advertiser' || gate.owner === 'Moderation' : true).map(gate => (
-        <Card key={gate.gateCode} className="cf-dialog-section">
-          <Badge variant="outline">{statuses[gate.status] ?? 'Unknown'}</Badge>
-          <p>{gate.explanation}</p>
-          <p className="cf-muted">{gate.owner} · {gate.source}{gate.observedAt ? ' · Observed ' + new Date(gate.observedAt).toLocaleString() : ''}</p>
-          {gate.action === 'verify_email' && canAct && <VerifyEmailAction onReload={onReload} />}
-          {gate.action === 'review_website' && <a href="#website-suitability-review">Open suitability review</a>}
-        </Card>
-      ))}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <h2 className="cf-section-title" style={{ margin: 0 }}>Paid delivery readiness</h2>
+          <p className="cf-muted" style={{ margin: '2px 0 0 0' }}>Checked {new Date(report.evaluatedAt).toLocaleString()}</p>
+        </div>
+        <div>
+          <Badge
+            variant="outline"
+            style={{
+              fontSize: '12px',
+              fontWeight: 700,
+              padding: '4px 10px',
+              backgroundColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+              color: isOverallBlocked ? '#EF4444' : '#10B981',
+              borderColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)',
+            }}
+          >
+            {isOverallBlocked ? `DELIVERY BLOCKED (${blockedGates.length} Gate${blockedGates.length === 1 ? '' : 's'})` : 'ALL EVALUATED GATES PASS'}
+          </Badge>
+        </div>
+      </div>
+
+      {report.gates.filter(gate => canAct ? gate.owner === 'Advertiser' || gate.owner === 'Moderation' : true).map(gate => {
+        const isBlocked = gate.status === 'blocked' || gate.status === 'action_required';
+        const isEligible = gate.status === 'eligible' || gate.status === 'observed';
+        return (
+          <Card
+            key={gate.gateCode}
+            className="cf-dialog-section"
+            style={{
+              borderLeft: isBlocked ? '4px solid #EF4444' : isEligible ? '4px solid #10B981' : '4px solid #64748B',
+              marginBottom: '10px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0F172A)' }}>
+                {gate.gateCode.replace(/_/g, ' ')}
+              </span>
+              <Badge
+                variant="outline"
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  backgroundColor: isBlocked ? 'rgba(239, 68, 68, 0.1)' : isEligible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                  color: isBlocked ? '#EF4444' : isEligible ? '#10B981' : '#64748B',
+                }}
+              >
+                {statuses[gate.status] ?? 'Unknown'}
+              </Badge>
+            </div>
+            <p style={{ margin: '4px 0', fontSize: '13px', color: 'var(--text-secondary, #334155)' }}>{gate.explanation}</p>
+            <p className="cf-muted" style={{ margin: '4px 0 0 0', fontSize: '11px' }}>
+              <strong>Owner:</strong> {gate.owner} · <strong>Authority:</strong> {gate.source}
+              {gate.observedAt ? ' · Observed ' + new Date(gate.observedAt).toLocaleString() : ''}
+            </p>
+            {gate.action === 'verify_email' && canAct && <div style={{ marginTop: '8px' }}><VerifyEmailAction onReload={onReload} /></div>}
+            {gate.action === 'review_website' && <div style={{ marginTop: '8px' }}><a href="#website-suitability-review">Open suitability review</a></div>}
+          </Card>
+        );
+      })}
     </section>
   );
 }

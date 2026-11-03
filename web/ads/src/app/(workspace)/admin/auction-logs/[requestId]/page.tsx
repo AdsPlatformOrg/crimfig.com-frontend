@@ -258,7 +258,12 @@ export default function AuctionDecisionDetailPage({
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Winner Campaign: </span>
               {decision.winnerCampaignId ? (
-                <code style={{ fontWeight: 600 }}>{decision.winnerCampaignId.slice(0, 12)}…</code>
+                <Link
+                  href={`/admin/campaigns/readiness/${decision.winnerCampaignId}`}
+                  style={{ fontWeight: 600, color: 'var(--color-crimson, #D4143A)', textDecoration: 'none' }}
+                >
+                  <code>{decision.winnerCampaignId.slice(0, 12)}… (Inspect Readiness)</code>
+                </Link>
               ) : (
                 <span style={{ color: 'var(--text-muted)' }}>None (Fallback triggered)</span>
               )}

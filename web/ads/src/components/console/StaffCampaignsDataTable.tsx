@@ -14,6 +14,8 @@ export type StaffCampaignRow = {
   title: string;
   advertiserId: string;
   advertiserEmail: string | null;
+  advertiserAccountStatus?: string | null;
+  advertiserEmailVerified?: boolean | null;
   status: string;
   moderationStatus: string;
   budgetUsd: number;
@@ -97,6 +99,45 @@ export function StaffCampaignsDataTable() {
           </div>
         </div>
       ),
+    },
+    {
+      id: 'advertiser',
+      header: 'Advertiser Account & Auth',
+      cell: row => {
+        const status = row.advertiserAccountStatus || 'UNKNOWN';
+        const isVerified = row.advertiserEmailVerified;
+        const isActive = status === 'ACTIVE';
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Badge
+                variant="outline"
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  backgroundColor: isActive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                  color: isActive ? '#10B981' : '#F59E0B',
+                  borderColor: isActive ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)',
+                }}
+              >
+                {status}
+              </Badge>
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 500,
+                  color: isVerified ? '#10B981' : '#EF4444',
+                }}
+              >
+                {isVerified ? '✓ Email Verified' : '✕ Email Unverified'}
+              </span>
+            </div>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary, #64748B)' }}>
+              Billing: {isActive ? 'Eligible' : 'Blocked (Account Not Active)'}
+            </span>
+          </div>
+        );
+      },
     },
     {
       id: 'status',

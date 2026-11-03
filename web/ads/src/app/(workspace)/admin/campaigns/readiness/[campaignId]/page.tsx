@@ -48,6 +48,24 @@ export default function AdminCampaignReadinessDetailPage({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Link
+              href={`/admin/auction-logs?search=${encodeURIComponent(campaignId)}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--text-primary, #0F172A)',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-subtle, #CBD5E1)',
+                backgroundColor: 'var(--bg-surface, #FFFFFF)',
+                textDecoration: 'none',
+              }}
+            >
+              <span>Inspect Auction Logs</span>
+            </Link>
+            <Link
               href={`/campaigns/${campaignId}`}
               target="_blank"
               rel="noopener noreferrer"
