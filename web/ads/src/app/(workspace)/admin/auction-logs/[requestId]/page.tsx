@@ -96,6 +96,25 @@ export default function AuctionDecisionDetailPage({
     campaignId?: string; parentOpportunityId?: string; transportRequestId?: string; upstreamStatus?: number;
     reasonCode?: string; billingHandoff?: { reserve: string; issue: string; elapsedMs: number };
   } | undefined;
+  const billingActions: Record<string, [string, string]> = {
+    BILLING_ACCOUNT_INELIGIBLE: ['Account support', 'Check the advertiser and promoter account states in Billing.'],
+    BILLING_SUPPLY_INELIGIBLE: ['Supply operations', 'Inspect slot installation, ownership and website approval.'],
+    BILLING_TRAFFIC_RESTRICTED: ['Traffic operations', 'Review the active restriction in Traffic Adjustments.'],
+    BILLING_CAMPAIGN_INELIGIBLE: ['Campaign operations', 'Check the active campaign revision and approval in Campaign Readiness.'],
+    BILLING_CREATIVE_INELIGIBLE: ['Campaign operations', 'Check the creative approval, format and slot compatibility.'],
+    BILLING_MEDIA_UNAVAILABLE: ['Campaign operations', 'Check media readiness for the selected creative.'],
+    BILLING_RENDITION_INVALID: ['Campaign operations', 'Check the approved creative rendition for this slot.'],
+    BILLING_ESCROW_INACTIVE: ['Billing operations', 'Inspect the campaign escrow and its funding status.'],
+    BILLING_FUNDING_PROOF_INVALID: ['Billing operations', 'Reconcile the funding receipt with the escrow.'],
+    BILLING_FUNDING_PROOF_UNAVAILABLE: ['Billing operations', 'Locate and verify the escrow funding receipt.'],
+    BILLING_CAPACITY_UNAVAILABLE: ['Billing operations', 'Check reservable budget, pacing and frequency limits.'],
+    BILLING_QUOTE_INVALID: ['Ads and Billing engineering', 'Compare the clearing quote with the funded pricing contract.'],
+    BILLING_DECISION_POLICY_MISMATCH: ['Ads and Billing engineering', 'Compare the auction policy and pricing inputs.'],
+    BILLING_DECISION_BINDING_MISMATCH: ['Ads and Billing engineering', 'Compare the decision and reservation binding.'],
+    BILLING_IDENTITY_CONFLICT: ['Billing operations', 'Reconcile the existing opportunity before considering a retry.'],
+    BILLING_DEADLINE_INVALID: ['Ads and Billing engineering', 'Check the request deadline and service timing.'],
+  };
+  const billingAction = billingActions[billingFallback?.reasonCode ?? ''];
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -405,6 +424,8 @@ export default function AuctionDecisionDetailPage({
             <dt>Reservation</dt><dd>{billingFallback.billingHandoff?.reserve ?? 'Unknown'}</dd>
             <dt>Issuance</dt><dd>{billingFallback.billingHandoff?.issue ?? 'Unknown'}</dd>
             <dt>Reason</dt><dd>{billingFallback.reasonCode ?? 'Unknown'}</dd>
+            <dt>Responsible team</dt><dd>{billingAction?.[0] ?? 'Billing operations'}</dd>
+            <dt>Next action</dt><dd>{billingAction?.[1] ?? 'Correlate Billing evidence by opportunity ID. The specific rule was not recorded.'}</dd>
             <dt>Billing HTTP status</dt><dd>{billingFallback.upstreamStatus ?? 'Not recorded'}</dd>
             <dt>Elapsed time</dt><dd>{billingFallback.billingHandoff ? `${billingFallback.billingHandoff.elapsedMs} ms` : 'Not recorded'}</dd>
             <dt>Parent opportunity</dt><dd>{billingFallback.parentOpportunityId ?? 'Not recorded'}</dd>
