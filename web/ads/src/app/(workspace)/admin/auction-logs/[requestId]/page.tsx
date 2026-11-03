@@ -194,7 +194,7 @@ export default function AuctionDecisionDetailPage({
             <h3 style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>01. Supply & Website Admission</h3>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px 0' }}>
-            Website policy, domain ownership, and slot lifecycle verification.
+            Website policy, domain ownership, consent and slot lifecycle verification.
           </p>
           <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div>
@@ -214,6 +214,12 @@ export default function AuctionDecisionDetailPage({
               </div>
             )}
             <div>
+              <span style={{ color: 'var(--text-muted)' }}>Consent State: </span>
+              <Badge variant="outline" style={{ fontWeight: 600 }}>
+                {decision.consentState || (primaryReason.includes('CONSENT') ? 'denied' : 'unknown / not_restricted')}
+              </Badge>
+            </div>
+            <div>
               <span style={{ color: 'var(--text-muted)' }}>Traffic Risk: </span>
               <Badge variant="outline">{decision.trafficRiskStatus}</Badge>
             </div>
@@ -232,11 +238,11 @@ export default function AuctionDecisionDetailPage({
           <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Evaluated Candidates: </span>
-              <strong>{decision.candidateCount}</strong>
+              <strong>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.candidateCount}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Eligible Groups: </span>
-              <strong>{decision.eligibleGroupCount}</strong>
+              <strong>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.eligibleGroupCount}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Grouping Mode: </span>
@@ -265,12 +271,12 @@ export default function AuctionDecisionDetailPage({
                   <code>{decision.winnerCampaignId.slice(0, 12)}… (Inspect Readiness)</code>
                 </Link>
               ) : (
-                <span style={{ color: 'var(--text-muted)' }}>None (Fallback triggered)</span>
+                <span style={{ color: 'var(--text-muted)' }}>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : 'None (Fallback triggered)'}</span>
               )}
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Clearing Price: </span>
-              <strong>${(decision.clearingPriceMicros / 1000000).toFixed(4)}</strong>
+              <strong>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : `$${(decision.clearingPriceMicros / 1000000).toFixed(4)}`}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
