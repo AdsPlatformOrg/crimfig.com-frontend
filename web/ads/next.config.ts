@@ -6,8 +6,13 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@crimfig/api-client'],
   async rewrites() {
     const backendUrl = backendOrigin('ads',process.env);
+    const authUrl = backendOrigin('auth',process.env);
 
     return [
+      {
+        source: '/api/v1/auth/:path*',
+        destination: `${authUrl}/api/v1/auth/:path*`,
+      },
       {
         source: '/api/:path*',
         destination: `${backendUrl}/api/:path*`,

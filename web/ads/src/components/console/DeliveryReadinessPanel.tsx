@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { Badge, Button, Card, Input } from '../ui';
 import { sessionFetch } from '../../lib/session';
 import { adsApi } from '../../lib/ads-api-client';
-import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 
 type Gate = {
   gateCode: string;
@@ -20,8 +20,53 @@ const statuses: Record<string, string> = {
   unknown: 'Unknown', unavailable: 'Unavailable', stale: 'Stale', observed: 'Observed',
 };
 
-export function DeliveryReadinessPanel({ report }: { report: Readiness }) {
-  const auth = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
+type ResendState = 'idle' | 'sending' | 'sent' | 'failed';
+
+/** Sends the signed-in advertiser's own verification email without leaving the page. */
+function VerifyEmailAction({ onReload }: { onReload?: () => void }) {
+  const [state, setState] = useState<ResendState>('idle');
+  const [message, setMessage] = useState('');
+  const lock = useRef(false);
+  async function send() {
+    if (lock.current) return;
+    lock.current = true;
+    setState('sending');
+    try {
+      const response = await sessionFetch('/api/v1/auth/resend-verification', { method: 'POST' });
+      if (response.ok) { setState('sent'); return; }
+      setMessage(response.status === 429 ? 'Too many requests. Wait a few minutes before trying again.'
+        : response.status === 401 ? 'Your session expired. Sign in again, then retry.'
+        : 'The email could not be confirmed as sent. Check your inbox before trying again.');
+      setState('failed');
+    } catch {
+      setMessage('The email could not be confirmed as sent. Check your inbox before trying again.');
+      setState('failed');
+    } finally { lock.current = false; }
+  }
+  return <>
+    <Button variant="outline" disabled={state === 'sending'} onClick={() => void send()}>
+      {state === 'sending' ? 'Sending email…' : 'Send verification email'}
+    </Button>
+    {state === 'failed' && <p role="alert">{message}</p>}
+    <Dialog.Root open={state === 'sent'} onOpenChange={open => { if (!open) setState('idle'); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="cf-report-overlay" />
+        <Dialog.Content className="cf-report-dialog">
+          <Dialog.Title>Verification email sent</Dialog.Title>
+          <Dialog.Description>
+            Check your email inbox (and spam folder) and open the verification link. Then come back here and reload readiness.
+          </Dialog.Description>
+          <div className="cf-mod-toolbar">
+            <Button variant="outline" onClick={() => setState('idle')}>Got it</Button>
+            {onReload && <Button onClick={() => { setState('idle'); onReload(); }}>Reload readiness</Button>}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  </>;
+}
+
+export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { report: Readiness; onReload?: () => void; canAct?: boolean }) {
   return (
     <section className="cf-section" aria-label="Paid delivery readiness">
       <h2 className="cf-section-title">Paid delivery readiness</h2>
@@ -31,14 +76,13 @@ export function DeliveryReadinessPanel({ report }: { report: Readiness }) {
           <Badge variant="outline">{statuses[gate.status] ?? 'Unknown'}</Badge>
           <p>{gate.explanation}</p>
           <p className="cf-muted">{gate.owner} · {gate.source}{gate.observedAt ? ' · Observed ' + new Date(gate.observedAt).toLocaleString() : ''}</p>
-          {gate.action === 'verify_email' && <Button asChild variant="outline"><a href={auth + '/verify-email'}>Verify or resend email</a></Button>}
+          {gate.action === 'verify_email' && canAct && <VerifyEmailAction onReload={onReload} />}
           {gate.action === 'review_website' && <a href="#website-suitability-review">Open suitability review</a>}
         </Card>
       ))}
     </section>
   );
 }
-
 export function CampaignReadiness({ campaignId, staff = false }: { campaignId: string; staff?: boolean }) {
   const endpoint = '/api/v1/campaigns/' + (staff ? 'admin/' : '') + encodeURIComponent(campaignId) + '/delivery-readiness';
   const [snapshot, setSnapshot] = useState<{ endpoint: string; report?: Readiness; error?: string }>();
@@ -56,7 +100,7 @@ export function CampaignReadiness({ campaignId, staff = false }: { campaignId: s
   }, [endpoint, campaignId, staff, refresh]);
   const current = snapshot?.endpoint === endpoint ? snapshot : undefined;
   return <>
-    {current?.report ? <DeliveryReadinessPanel report={current.report} />
+    {current?.report ? <DeliveryReadinessPanel report={current.report} canAct={!staff} onReload={() => setRefresh(value => value + 1)} />
       : <p role={current?.error ? 'alert' : 'status'}>{current?.error ?? 'Checking delivery readiness…'}</p>}
     <Button variant="outline" disabled={!current} onClick={() => setRefresh(value => value + 1)}>Refresh readiness</Button>
   </>;

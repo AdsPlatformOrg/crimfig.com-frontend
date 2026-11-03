@@ -43,7 +43,7 @@ export function AuthEntryForm({mode}:{mode:'login'|'signup'}){
    <div><div className="auth-entry-label"><label htmlFor={`${prefix}-password`}>Password</label>{!signup&&<Link href={authEntryLink('/forgot-password',search)}>Forgot password?</Link>}</div>
     <PasswordField id={`${prefix}-password`} visible={visible} onToggle={()=>setVisible(value=>!value)} value={password} onChange={event=>setPassword(event.target.value)} required autoComplete={signup?'new-password':'current-password'} minLength={signup?8:undefined} maxLength={signup?128:undefined} aria-describedby={signup?'signup-password-help':undefined} disabled={loading}/>
     {signup&&<p id="signup-password-help" className="auth-entry-help">{passwordGuidance}</p>}
-   </div><Button type="submit" loading={loading} disabled={loading}>{loading?(signup?'Creating account…':'Signing in…'):(signup?'Create account':'Sign in')}</Button>
+   </div><Button type="submit" loading={loading} disabled={loading}>{loading?(signup?'Creating accountâ€¦':'Signing inâ€¦'):(signup?'Create account':'Sign in')}</Button>
   </form>}
   <p className="auth-entry-footer">{signup?'Already have an account?':'New to CrimFig?'} <Link href={authEntryLink(signup?'/login':'/signup',search)}>{signup?'Sign in':'Create account'}</Link></p>
  </Card></main>;

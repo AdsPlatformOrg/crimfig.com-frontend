@@ -180,6 +180,13 @@ export function workspaceNavigation(
           href: "/admin/moderation",
         },
         {
+          roles: ["super_admin", "ads_admin", "ads_reviewer", "ads_manager", "ads_support"],
+          id: "admin_campaign_readiness",
+          label: "Campaign Readiness",
+          icon: ShieldCheck,
+          href: "/admin/campaigns/readiness",
+        },
+        {
           roles: ["super_admin", "ads_admin"],
           id: "house",
           label: "House Ads",

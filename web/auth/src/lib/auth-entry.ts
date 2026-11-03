@@ -1,5 +1,5 @@
 import { loginDestination } from './login-return';
-export const passwordGuidance='Use 8–128 characters with uppercase, lowercase, a number and a special character.';
+export const passwordGuidance='Use 8â€“128 characters with uppercase, lowercase, a number and a special character.';
 export function signupPasswordValid(value:string){return value.length>=8&&value.length<=128&&/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/.test(value);}
 export function authEntryLink(path:'/login'|'/signup'|'/forgot-password',search:string){
  const source=new URLSearchParams(search),target=new URLSearchParams();
