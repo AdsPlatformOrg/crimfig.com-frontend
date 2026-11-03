@@ -93,7 +93,8 @@ export default function AuctionDecisionDetailPage({
   const terminationStage = (exclusions[0] as any)?.stage || (isHouse ? 'unknown' : 'auction');
   const admission = (exclusions[0] as { admission?: Record<string, unknown> } | undefined)?.admission;
   const billingFallback = exclusions.find((item: any) => item.stage === 'billing_reserve' || item.stage === 'billing_issue') as {
-    campaignId?: string; parentOpportunityId?: string; transportRequestId?: string; upstreamStatus?: number;
+    campaignId?: string; creativeId?: string; parentOpportunityId?: string; transportRequestId?: string; upstreamStatus?: number;
+    creativeCompatibility?: { stackId?: string; format?: string; type?: string; status?: string; approval?: string; stackArchived?: boolean; slotId?: string; slotFormat?: string; allowedTypeSource?: string; allowedTypes?: string[]; submissionId?: string; contentRevision?: number };
     reasonCode?: string; billingHandoff?: { reserve: string; issue: string; elapsedMs: number };
   } | undefined;
   const billingActions: Record<string, [string, string]> = {
@@ -102,6 +103,16 @@ export default function AuctionDecisionDetailPage({
     BILLING_TRAFFIC_RESTRICTED: ['Traffic operations', 'Review the active restriction in Traffic Adjustments.'],
     BILLING_CAMPAIGN_INELIGIBLE: ['Campaign operations', 'Check the active campaign revision and approval in Campaign Readiness.'],
     BILLING_CREATIVE_INELIGIBLE: ['Campaign operations', 'Check the creative approval, format and slot compatibility.'],
+    BILLING_CREATIVE_NOT_FOUND: ['Campaign operations', 'Check that the selected creative belongs to the campaign.'],
+    BILLING_CREATIVE_INACTIVE: ['Campaign operations', 'Inspect the selected creative lifecycle.'],
+    BILLING_CREATIVE_NOT_APPROVED: ['Campaign operations', 'Inspect the selected creative’s moderation state.'],
+    BILLING_CREATIVE_STACK_NOT_FOUND: ['Campaign operations', 'Inspect the creative’s stack association.'],
+    BILLING_CREATIVE_STACK_ARCHIVED: ['Campaign operations', 'Select a creative from an eligible stack.'],
+    BILLING_CREATIVE_STACK_MISMATCH: ['Campaign operations', 'Verify that the stack belongs to the selected campaign.'],
+    BILLING_CREATIVE_FORMAT_MISMATCH: ['Campaign operations', 'Compare the selected creative and slot formats.'],
+    BILLING_CREATIVE_VIDEO_DISABLED: ['Ads operations', 'Check the video release policy.'],
+    BILLING_CREATIVE_SLOT_TYPES_INVALID: ['Supply operations', 'Correct the slot’s invalid creative type settings.'],
+    BILLING_CREATIVE_TYPE_NOT_ALLOWED: ['Supply operations', 'Check whether the selected type is permitted for this slot.'],
     BILLING_MEDIA_UNAVAILABLE: ['Campaign operations', 'Check media readiness for the selected creative.'],
     BILLING_RENDITION_INVALID: ['Campaign operations', 'Check the approved creative rendition for this slot.'],
     BILLING_ESCROW_INACTIVE: ['Billing operations', 'Inspect the campaign escrow and its funding status.'],
@@ -430,6 +441,21 @@ export default function AuctionDecisionDetailPage({
             <dt>Elapsed time</dt><dd>{billingFallback.billingHandoff ? `${billingFallback.billingHandoff.elapsedMs} ms` : 'Not recorded'}</dd>
             <dt>Parent opportunity</dt><dd>{billingFallback.parentOpportunityId ?? 'Not recorded'}</dd>
             <dt>Transport request</dt><dd>{billingFallback.transportRequestId ?? 'Not recorded'}</dd>
+          </dl>
+          <h4>Selected Creative &amp; Compatibility</h4>
+          <dl>
+            <dt>Creative ID</dt><dd>{billingFallback.creativeId ?? 'Not recorded'}</dd>
+            <dt>Stack ID</dt><dd>{billingFallback.creativeCompatibility?.stackId ?? 'Not recorded'}</dd>
+            <dt>Creative format</dt><dd>{billingFallback.creativeCompatibility?.format ?? 'Not recorded'}</dd>
+            <dt>Slot format</dt><dd>{billingFallback.creativeCompatibility?.slotFormat ?? 'Not recorded'}</dd>
+            <dt>Creative type</dt><dd>{billingFallback.creativeCompatibility?.type ?? 'Not recorded'}</dd>
+            <dt>Status at selection</dt><dd>{billingFallback.creativeCompatibility?.status ?? 'Not recorded'}</dd>
+            <dt>Approval at selection</dt><dd>{billingFallback.creativeCompatibility?.approval ?? 'Not recorded'}</dd>
+            <dt>Stack archived at selection</dt><dd>{typeof billingFallback.creativeCompatibility?.stackArchived === 'boolean' ? billingFallback.creativeCompatibility.stackArchived ? 'Yes' : 'No' : 'Not recorded'}</dd>
+            <dt>Allowed type policy</dt><dd>{billingFallback.creativeCompatibility?.allowedTypeSource ?? 'Not recorded'}</dd>
+            <dt>Allowed creative types</dt><dd>{billingFallback.creativeCompatibility?.allowedTypes?.join(', ') || (billingFallback.creativeCompatibility?.allowedTypes ? 'None' : 'Not recorded')}</dd>
+            <dt>Campaign submission</dt><dd>{billingFallback.creativeCompatibility?.submissionId ?? 'Not recorded'}</dd>
+            <dt>Content revision</dt><dd>{billingFallback.creativeCompatibility?.contentRevision ?? 'Not recorded'}</dd>
           </dl>
         </Card>
       )}
