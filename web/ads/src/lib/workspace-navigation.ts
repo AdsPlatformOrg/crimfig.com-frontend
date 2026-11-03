@@ -187,6 +187,13 @@ export function workspaceNavigation(
           href: "/admin/campaigns/readiness",
         },
         {
+          roles: ["super_admin", "ads_admin", "ads_reviewer"],
+          id: "admin_website_approvals",
+          label: "Website Approvals",
+          icon: Globe,
+          href: "/admin/websites/review",
+        },
+        {
           roles: ["super_admin", "ads_admin"],
           id: "house",
           label: "House Ads",
