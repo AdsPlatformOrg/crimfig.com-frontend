@@ -90,7 +90,8 @@ export default function AuctionDecisionDetailPage({
   const isHouse = decision.inventoryClass === 'house';
   const exclusions = Array.isArray(decision.excludedCandidates) ? decision.excludedCandidates : [];
   const primaryReason = exclusions[0]?.reasonCode || (isHouse ? 'HOUSE_FALLBACK' : 'PAID_WINNER_SELECTED');
-  const terminationStage = (exclusions[0] as any)?.stage || (decision.candidateCount === 0 ? 'supply_admission' : 'auction');
+  const terminationStage = (exclusions[0] as any)?.stage || (isHouse ? 'unknown' : 'auction');
+  const admission = (exclusions[0] as { admission?: Record<string, unknown> } | undefined)?.admission;
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -250,6 +251,22 @@ export default function AuctionDecisionDetailPage({
                 <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
                 <span>{decision.policyVersion || 'auction_v1'}</span>
               </div>
+              {admission && (
+                <dl>
+                  {Object.entries({
+                    'Slot lifecycle': admission.slotLifecycle,
+                    'Website policy': admission.websitePolicy,
+                    'Paid release ready': admission.paidReady,
+                    'Release readiness reason': admission.paidReadinessReason,
+                    'Traffic restricted': admission.trafficRestricted,
+                    'Traffic risk': admission.trafficRisk,
+                    'Consent state': admission.consentState,
+                    'Measurement consent': admission.measurementConsent,
+                  }).map(([label, value]) => (
+                    <div key={label}><dt>{label}</dt><dd>{value == null ? 'Not recorded' : String(value)}</dd></div>
+                  ))}
+                </dl>
+              )}
             </div>
 
             {/* Live Current Platform Diagnostics (clearly delineated from historical record) */}
@@ -314,11 +331,11 @@ export default function AuctionDecisionDetailPage({
           <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Evaluated Candidates: </span>
-              <strong>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.candidateCount}</strong>
+              <strong>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.candidateCount}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Eligible Groups: </span>
-              <strong>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.eligibleGroupCount}</strong>
+              <strong>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.eligibleGroupCount}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Grouping Mode: </span>
@@ -347,12 +364,12 @@ export default function AuctionDecisionDetailPage({
                   <code>{decision.winnerCampaignId.slice(0, 12)}… (Inspect Readiness)</code>
                 </Link>
               ) : (
-                <span style={{ color: 'var(--text-muted)' }}>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : 'None (Fallback triggered)'}</span>
+                <span style={{ color: 'var(--text-muted)' }}>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : 'None (Fallback triggered)'}</span>
               )}
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Clearing Price: </span>
-              <strong>{terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : `$${(decision.clearingPriceMicros / 1000000).toFixed(4)}`}</strong>
+              <strong>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : `$${(decision.clearingPriceMicros / 1000000).toFixed(4)}`}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
@@ -383,7 +400,7 @@ export default function AuctionDecisionDetailPage({
         </h3>
         {exclusions.length === 0 ? (
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-            {isPaid ? 'All evaluated candidates qualified for second-price auction selection.' : 'Pre-auction fallback occurred prior to candidate discovery.'}
+            {isPaid ? 'No candidate exclusions were recorded.' : 'No candidate exclusions were recorded for this fallback.'}
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
