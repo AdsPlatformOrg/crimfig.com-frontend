@@ -6,6 +6,14 @@ import { apiData, arrayData } from '../../../lib/api-data';
 import { fetchDisputes, createDispute } from '../../../lib/disputes-api';
 import { Button } from '../../ui/button';
 import { Textarea } from '../../ui/textarea';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../../ui/table';
 
 interface DisputesTabProps {
   role?: 'advertiser' | 'promoter';
@@ -199,46 +207,46 @@ export function DisputesTab({
           </span>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-            <thead>
-              <tr style={{ background: 'var(--bg-secondary, #F8FAFC)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
-                <th style={{ padding: '12px 18px', fontWeight: 600 }}>Case ID / Scope</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600 }}>Date Range</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600 }}>Reason</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600 }}>Outcome / Adjustment</th>
-                <th style={{ padding: '12px 18px', fontWeight: 600, textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: '22%' }}>Case ID / Scope</TableHead>
+                <TableHead style={{ width: '18%' }}>Date Range</TableHead>
+                <TableHead style={{ width: '28%' }}>Reason</TableHead>
+                <TableHead style={{ width: '12%' }}>Status</TableHead>
+                <TableHead style={{ width: '12%' }}>Outcome / Adjustment</TableHead>
+                <TableHead className="text-right" style={{ width: '8%' }}>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {disputes.length === 0 ? (
-                <tr>
-                  <td colSpan={6} style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <TableRow>
+                  <TableCell colSpan={6} style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--text-muted)' }}>
                     No disputes filed. All campaign traffic is within normal statistical thresholds.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 disputes.map((d) => (
-                  <tr key={d.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '14px 18px' }}>
+                  <TableRow key={d.id}>
+                    <TableCell>
                       <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{d.id}</div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'capitalize', marginTop: '2px' }}>
                         {d.scope}: {d.campaignTitle || d.placementId || 'General'}
                       </div>
-                    </td>
-                    <td style={{ padding: '14px 18px', color: 'var(--text-secondary)', fontSize: '12px' }}>
+                    </TableCell>
+                    <TableCell style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
                       {d.periodFrom} → {d.periodTo}
-                    </td>
-                    <td style={{ padding: '14px 18px', maxWidth: '300px' }}>
+                    </TableCell>
+                    <TableCell style={{ maxWidth: '300px' }}>
                       <div style={{ fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {d.reason}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
                         {d.details}
                       </div>
-                    </td>
-                    <td style={{ padding: '14px 18px' }}>
+                    </TableCell>
+                    <TableCell>
                       <span style={{
                         padding: '3px 8px',
                         borderRadius: '9999px',
@@ -257,8 +265,8 @@ export function DisputesTab({
                       }}>
                         {d.status.replace('_', ' ').toUpperCase()}
                       </span>
-                    </td>
-                    <td style={{ padding: '14px 18px' }}>
+                    </TableCell>
+                    <TableCell>
                       {d.adjustmentUsd ? (
                         <div style={{ fontWeight: 700, color: '#10B981' }}>
                           +${d.adjustmentUsd.toFixed(2)} Credited
@@ -268,29 +276,25 @@ export function DisputesTab({
                           {d.status === 'under_review' ? 'Investigation pending' : 'No adjustment'}
                         </div>
                       )}
-                    </td>
-                    <td style={{ padding: '14px 18px', textAlign: 'right' }}>
+                    </TableCell>
+                    <TableCell className="text-right">
                       <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setViewingDispute(d)}
                         style={{
-                          padding: '5px 10px',
                           fontSize: '11px',
                           fontWeight: 600,
-                          color: 'var(--text-primary)',
-                          background: 'var(--bg-secondary, #F1F5F9)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
                         }}
                       >
                         View Details
                       </Button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 

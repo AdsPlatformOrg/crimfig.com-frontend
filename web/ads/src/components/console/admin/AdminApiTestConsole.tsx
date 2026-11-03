@@ -22,6 +22,14 @@ import {
 } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
 import { Button } from '../../ui/button';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../../ui/table';
 
 interface ApiEndpointTest {
   id: string;
@@ -376,27 +384,26 @@ export function AdminApiTestConsole() {
       </div>
 
       {/* Endpoints Table */}
-      <div style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>
-              <th style={{ padding: '12px 16px' }}>Endpoint</th>
-              <th style={{ padding: '12px 16px' }}>Method</th>
-              <th style={{ padding: '12px 16px' }}>Auth Guard</th>
-              <th style={{ padding: '12px 16px' }}>Safety Invariant</th>
-              <th style={{ padding: '12px 16px' }}>Status</th>
-              <th style={{ padding: '12px 16px', textAlign: 'right' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead style={{ width: '30%' }}>Endpoint</TableHead>
+            <TableHead style={{ width: '10%' }}>Method</TableHead>
+            <TableHead style={{ width: '18%' }}>Auth Guard</TableHead>
+            <TableHead style={{ width: '18%' }}>Safety Invariant</TableHead>
+            <TableHead style={{ width: '12%' }}>Status</TableHead>
+            <TableHead className="text-right" style={{ width: '12%' }}>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
             {filteredTests.map((test) => {
               const isLocked = test.isSensitiveSession && !allowSensitiveSessionTests;
               const isExpanded = expandedResponseId === test.id;
 
               return (
                 <React.Fragment key={test.id}>
-                  <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '14px 16px' }}>
+                  <TableRow>
+                    <TableCell>
                       <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{test.name}</div>
                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '2px' }}>
                         {test.route}
@@ -406,9 +413,9 @@ export function AdminApiTestConsole() {
                           Error: {test.errorMessage}
                         </div>
                       )}
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '14px 16px' }}>
+                    <TableCell>
                       <span
                         style={{
                           fontSize: '11px',
@@ -421,13 +428,13 @@ export function AdminApiTestConsole() {
                       >
                         {test.method}
                       </span>
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>
+                    <TableCell style={{ color: 'var(--text-secondary)' }}>
                       {test.authGuard}
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '14px 16px' }}>
+                    <TableCell>
                       {test.isSensitiveSession ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-warning)', fontWeight: 600, fontSize: '11px' }}>
                           <AlertTriangle size={13} />
@@ -439,9 +446,9 @@ export function AdminApiTestConsole() {
                           <span>Non-Destructive</span>
                         </span>
                       )}
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '14px 16px' }}>
+                    <TableCell>
                       {isLocked ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
                           <Lock size={12} />
@@ -465,9 +472,9 @@ export function AdminApiTestConsole() {
                       ) : (
                         <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ready</span>
                       )}
-                    </td>
+                    </TableCell>
 
-                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                    <TableCell className="text-right">
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         {test.responsePreview && (
                           <Button
@@ -490,25 +497,24 @@ export function AdminApiTestConsole() {
                           Run
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
 
                   {/* Response Payload Inspector Drawer */}
                   {isExpanded && test.responsePreview && (
-                    <tr style={{ backgroundColor: 'var(--bg-surface)' }}>
-                      <td colSpan={6} style={{ padding: '12px 16px' }}>
+                    <TableRow style={{ backgroundColor: 'var(--bg-surface)' }}>
+                      <TableCell colSpan={6} style={{ padding: '12px 16px' }}>
                         <pre style={{ margin: 0, padding: '12px', backgroundColor: 'var(--bg-elevated)', borderRadius: '8px', fontSize: '11px', fontFamily: 'monospace', color: 'var(--text-primary)', overflowX: 'auto', maxHeight: '180px' }}>
                           {test.responsePreview}
                         </pre>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </React.Fragment>
+            );
+          })}
+        </TableBody>
+      </Table>
 
       {/* Admin Unit Test Settings Modal with Session Protection Override */}
       {showSettingsModal && (

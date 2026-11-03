@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 
-import { ReadinessOperations, StaffCampaignLookup } from '../../../../../components/console/DeliveryReadinessPanel';
+import { StaffCampaignsDataTable } from '../../../../../components/console/StaffCampaignsDataTable';
+import { ReadinessOperations } from '../../../../../components/console/DeliveryReadinessPanel';
 
 export default function AdminCampaignReadinessPage() {
   return (
@@ -8,10 +9,18 @@ export default function AdminCampaignReadinessPage() {
       <header>
         <p className="cf-mod-eyebrow">Advertising operations</p>
         <h1>Campaign Readiness</h1>
-        <p>Look up any campaign to see which paid-delivery checks pass, who owns each blocker and when it was observed.</p>
+        <p>
+          Inspect paid-delivery checks and blocker ownership across all active and pending advertiser campaigns.
+        </p>
       </header>
-      <StaffCampaignLookup />
-      <ReadinessOperations />
+
+      {/* Paginated Staff Campaigns Data Table */}
+      <StaffCampaignsDataTable />
+
+      {/* Global operations health snapshot */}
+      <div style={{ marginTop: '40px' }}>
+        <ReadinessOperations />
+      </div>
     </section>
   );
 }

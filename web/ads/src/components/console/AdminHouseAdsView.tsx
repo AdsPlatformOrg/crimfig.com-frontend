@@ -5,6 +5,15 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Textarea } from "../ui/textarea";
 import { Button, Input } from "../ui";
 import { sessionFetch } from "@/lib/session";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "../ui/table";
+import { Badge } from "../ui/badge";
 
 type Creative = {
   id: string;
@@ -284,49 +293,108 @@ export function AdminHouseAdsView() {
           <p>Add a creative to get started.</p>
         </div>
       )}
-      {items?.map((c) => (
-        <article key={c.id} className="cf-report-panel cf-report-row">
-          <div>
-            <h2>{c.title}</h2>
-            <p>
-              {c.adType} · {c.format} · {c.width} × {c.height} · Priority{" "}
-              {c.priority} · {c.isActive ? "Active" : "Paused"}
-            </p>
-            <p>{c.headline}</p>
-            <p>{c.bodyText}</p>
-          </div>
-          <div className="cf-report-actions">
-            <Link href={`/admin/house-ads/${c.id}/performance`}>
-              View performance
-            </Link>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditing(c.id);
-                setForm({
-                  ...defaults,
-                  ...c,
-                  imageUrl: c.imageUrl || "",
-                  videoUrl: c.videoUrl || "",
-                });
-                setFormError("");
-                setOpen(true);
-              }}
-            >
-              Edit / Preview
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setFormError("");
-                setArchive(c);
-              }}
-            >
-              Archive
-            </Button>
-          </div>
-        </article>
-      ))}
+      {items && items.length > 0 && (
+        <div style={{ marginTop: '16px' }}>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: '32%' }}>Creative & Copy</TableHead>
+                <TableHead style={{ width: '18%' }}>Format & Dimensions</TableHead>
+                <TableHead style={{ width: '15%' }}>Priority & Status</TableHead>
+                <TableHead className="text-right" style={{ width: '35%' }}>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.title}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-crimson)', marginTop: '2px' }}>
+                      {c.headline}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', maxWidth: '360px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.bodyText}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ textTransform: 'capitalize', fontWeight: 500 }}>
+                      {c.adType} · {c.format}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {c.width} × {c.height} px
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <Badge
+                        variant="outline"
+                        style={{
+                          width: 'fit-content',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          backgroundColor: c.isActive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: c.isActive ? 'var(--color-success, #10B981)' : 'var(--color-error, #EF4444)',
+                        }}
+                      >
+                        {c.isActive ? 'ACTIVE' : 'PAUSED'}
+                      </Badge>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        Priority: {c.priority}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                      <Link
+                        href={`/admin/house-ads/${c.id}/performance`}
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: 'var(--text-secondary)',
+                          textDecoration: 'none',
+                          padding: '5px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--border-subtle)',
+                          backgroundColor: 'var(--bg-surface)',
+                        }}
+                      >
+                        Performance
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditing(c.id);
+                          setForm({
+                            ...defaults,
+                            ...c,
+                            imageUrl: c.imageUrl || "",
+                            videoUrl: c.videoUrl || "",
+                          });
+                          setFormError("");
+                          setOpen(true);
+                        }}
+                      >
+                        Edit / Preview
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormError("");
+                          setArchive(c);
+                        }}
+                      >
+                        Archive
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
       <div className="cf-report-actions">
         <Button
           variant="outline"

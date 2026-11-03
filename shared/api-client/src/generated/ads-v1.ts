@@ -335,6 +335,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/admin/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["Campaigns_staffCampaignPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/admin/{id}/delivery-readiness": {
         parameters: {
             query?: never;
@@ -2991,6 +3007,37 @@ export interface components {
                 title: string;
                 touchesCount?: number;
                 updatedAt?: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Campaigns_staffCampaignPageResponse: {
+            data: {
+                items: ({
+                    advertiserEmail?: string | null;
+                    advertiserId: string;
+                    budgetUsd?: number;
+                    budgetUsdCents?: number | null;
+                    createdAt?: string;
+                    dailyBudgetUsd?: number | null;
+                    dailyBudgetUsdCents?: number | null;
+                    format?: string | null;
+                    id: string;
+                    moderationStatus: string;
+                    pricingModel?: string | null;
+                    remainingBudgetUsd?: number;
+                    remainingBudgetUsdCents?: number | null;
+                    status: string;
+                    title: string;
+                    updatedAt?: string;
+                } & {
+                    [key: string]: unknown;
+                })[];
+                page: number;
+                pageSize: number;
+                total: number;
             } & {
                 [key: string]: unknown;
             };
@@ -8634,6 +8681,119 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Campaigns_createCampaignResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_staffCampaignPage: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_staffCampaignPageResponse"];
                 };
             };
             /** @description Sanitized API error */
