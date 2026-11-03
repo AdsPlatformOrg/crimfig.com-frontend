@@ -134,16 +134,27 @@ type AuctionRecord = {
 export function SlotAuctionEvidence({ slotTagId }: { slotTagId: string }) {
   const [snapshot, setSnapshot] = useState<AuctionRecord[]>();
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle');
+  const [errorDetail, setErrorDetail] = useState<string>();
+
   useEffect(() => {
     if (state !== 'loading') return;
     let active = true;
+    setErrorDetail(undefined);
     void sessionFetch('/api/v1/adstation/admin/auction-decisions?limit=10&slotTagId=' + encodeURIComponent(slotTagId))
       .then(async response => {
-        if (!response.ok) throw Error('Unavailable');
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.message || `HTTP ${response.status}`);
+        }
         const data = (await response.json()).data;
-        if (!Array.isArray(data)) throw Error('Unavailable');
+        if (!Array.isArray(data)) throw new Error('Invalid response structure');
         if (active) { setSnapshot(data.slice(0, 10)); setState('idle'); }
-      }).catch(() => { if (active) setState('failed'); });
+      }).catch((err) => {
+        if (active) {
+          setErrorDetail(err instanceof Error ? err.message : 'Unknown error');
+          setState('failed');
+        }
+      });
     return () => { active = false; };
   }, [state, slotTagId]);
   const paid = snapshot?.filter(row => row.inventoryClass === 'paid').length ?? 0;
@@ -154,15 +165,15 @@ export function SlotAuctionEvidence({ slotTagId }: { slotTagId: string }) {
     <Button variant="outline" disabled={state === 'loading'} onClick={() => { setSnapshot(undefined); setState('loading'); }}>
       {state === 'loading' ? 'Loading decisions…' : 'Load latest decisions'}
     </Button>
-    {state === 'failed' && <p role="alert">Auction evidence is unavailable. Try loading it again.</p>}
-    {snapshot?.length === 0 && <p>No decision records found in this sample.</p>}
+    {state === 'failed' && <p role="alert" className="text-sm text-red-600 mt-2">Auction evidence is unavailable ({errorDetail}). Try loading it again.</p>}
+    {snapshot?.length === 0 && <p className="text-sm text-[var(--color-text-muted)] mt-2">No decision records found in this sample.</p>}
     {!!snapshot?.length && <>
-      <p>{snapshot.length} decisions sampled · {paid} paid · {noFill} no fill</p>
-      <ul>
-        {snapshot.map(row => <li key={row.requestId}>
+      <p className="mt-2 text-sm font-medium">{snapshot.length} decisions sampled · {paid} paid · {noFill} no fill</p>
+      <ul className="space-y-2 mt-2">
+        {snapshot.map(row => <li key={row.requestId} className="p-2 border border-[var(--border-subtle)] rounded text-xs">
           <strong>{row.inventoryClass.replaceAll('_', ' ')}</strong> · {new Date(row.createdAt).toLocaleString()} · {row.candidateCount} candidates
-          <p className="cf-muted">Request {row.requestId}</p>
-          {!!row.excludedCandidates?.length && <p className="cf-muted">Exclusion codes {[
+          <p className="cf-muted font-mono mt-0.5">Request: {row.requestId}</p>
+          {!!row.excludedCandidates?.length && <p className="cf-muted mt-0.5">Exclusion codes: {[
             ...new Set(row.excludedCandidates.map(item => item.reasonCode).filter(Boolean)),
           ].slice(0, 8).join(', ')}</p>}
         </li>)}

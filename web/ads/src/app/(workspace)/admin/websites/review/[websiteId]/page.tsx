@@ -34,6 +34,36 @@ export default function AdminWebsiteDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshCount, setRefreshCount] = useState(0);
+  const [checkingSlotId, setCheckingSlotId] = useState<string | null>(null);
+  const [slotCheckMessage, setSlotCheckMessage] = useState<{ id: string; text: string; ok: boolean } | null>(null);
+
+  async function handleCheckSlot(slotId: string) {
+    setCheckingSlotId(slotId);
+    setSlotCheckMessage(null);
+    try {
+      const res = await sessionFetch(`/api/v1/adstation/admin/slots/${slotId}/check-installation`, {
+        method: 'POST',
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message || `Check failed with HTTP ${res.status}`);
+      }
+      setSlotCheckMessage({
+        id: slotId,
+        text: json.data?.diagnostic || `Status: ${json.data?.installationStatus}`,
+        ok: json.data?.isInstalled === true || json.data?.installationStatus === 'verified',
+      });
+      setRefreshCount((v) => v + 1);
+    } catch (err) {
+      setSlotCheckMessage({
+        id: slotId,
+        text: err instanceof Error ? err.message : 'Failed to verify slot installation',
+        ok: false,
+      });
+    } finally {
+      setCheckingSlotId(null);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -287,7 +317,16 @@ export default function AdminWebsiteDetailPage({
                   <TableCell>
                     <span style={{ fontSize: '12px', textTransform: 'capitalize' }}>{slot.lifecycleStatus}</span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={checkingSlotId === slot.id}
+                      onClick={() => handleCheckSlot(slot.id)}
+                      style={{ fontSize: '11px', height: '28px', padding: '0 8px' }}
+                    >
+                      {checkingSlotId === slot.id ? 'Checking...' : 'Check Install'}
+                    </Button>
                     <Link
                       href={`/admin/ad-slots/${slot.id}`}
                       style={{
@@ -308,6 +347,21 @@ export default function AdminWebsiteDetailPage({
               ))}
             </TableBody>
           </Table>
+        )}
+        {slotCheckMessage && (
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '10px 14px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              backgroundColor: slotCheckMessage.ok ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+              border: `1px solid ${slotCheckMessage.ok ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+              color: slotCheckMessage.ok ? 'var(--color-success)' : 'var(--color-danger, #ef4444)',
+            }}
+          >
+            <strong>Slot Verification Result:</strong> {slotCheckMessage.text}
+          </div>
         )}
       </div>
 
@@ -363,3 +417,4 @@ export default function AdminWebsiteDetailPage({
     </section>
   );
 }
+

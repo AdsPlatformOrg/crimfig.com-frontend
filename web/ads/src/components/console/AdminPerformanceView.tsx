@@ -28,6 +28,8 @@ import {
   CheckCircle2,
   Clock,
   Filter,
+  CheckCheck,
+  AlertCircle,
 } from "lucide-react";
 import { sessionFetch } from "@/lib/session";
 import { DeliveryReadinessPanel, ReadinessOperations, SlotAuctionEvidence, StaffCampaignLookup, type Readiness } from "./DeliveryReadinessPanel";
@@ -151,6 +153,37 @@ export function AdminPerformanceView({
       }
     })();
   }, [ready, kind, id, query, refresh]);
+
+  const [checkingInstall, setCheckingInstall] = useState(false);
+  const [installResult, setInstallResult] = useState<{
+    status: string;
+    diagnostic?: string;
+    serveCount?: number;
+    renderBeaconCount?: number;
+    lastServedAt?: string | null;
+  } | null>(null);
+  const [installError, setInstallError] = useState<string | null>(null);
+
+  async function handleStaffCheckInstallation(slotId: string) {
+    setCheckingInstall(true);
+    setInstallResult(null);
+    setInstallError(null);
+    try {
+      const res = await sessionFetch(`/api/v1/adstation/admin/slots/${slotId}/check-installation`, {
+        method: "POST",
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message || `Check failed with HTTP ${res.status}`);
+      }
+      setInstallResult(json.data);
+      setRefresh((v) => v + 1);
+    } catch (err) {
+      setInstallError(err instanceof Error ? err.message : "Failed to verify slot installation");
+    } finally {
+      setCheckingInstall(false);
+    }
+  }
 
   const qs = new URLSearchParams(query);
   function filter(name: string, value: string) {
@@ -410,6 +443,80 @@ export function AdminPerformanceView({
           )}
 
           {data.readiness && !loading && !error && <DeliveryReadinessPanel report={data.readiness} />}
+
+          {kind === "slot" && id && (
+            <Card className="border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+              <CardHeader className="p-4 pb-2 border-b border-[var(--border-subtle)]">
+                <CardTitle className="text-base font-semibold flex items-center justify-between">
+                  <span>Slot Installation & Delivery Status</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={checkingInstall}
+                    onClick={() => handleStaffCheckInstallation(id)}
+                    className="flex items-center gap-1.5"
+                  >
+                    <RefreshCw size={14} className={checkingInstall ? "animate-spin" : ""} />
+                    <span>{checkingInstall ? "Verifying..." : "Check Installation Evidence"}</span>
+                  </Button>
+                </CardTitle>
+                <CardDescription className="text-xs text-[var(--color-text-muted)]">
+                  Inspects actual server-recorded telemetry (ad serves and render beacons) to certify slot embed on publisher site.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-[var(--color-text-muted)]">Installation status:</span>
+                  <Badge
+                    variant={
+                      data.subject?.slotId?.installationStatus === "verified"
+                        ? "default"
+                        : "outline"
+                    }
+                    className="font-medium uppercase tracking-wider"
+                  >
+                    {String(data.subject?.slotId?.installationStatus || "UNCHECKED")}
+                  </Badge>
+                  {Boolean(data.subject?.slotId?.installationCheckedAt) && (
+                    <span className="text-[var(--color-text-muted)]">
+                      · Last evaluated {new Date(String(data.subject?.slotId?.installationCheckedAt)).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+
+                {installResult && (
+                  <div
+                    className={`p-3 rounded-md text-xs border ${
+                      installResult.status === "verified" || installResult.serveCount
+                        ? "bg-emerald-50/50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/20 dark:border-emerald-800 dark:text-emerald-300"
+                        : "bg-amber-50/50 border-amber-200 text-amber-900 dark:bg-amber-950/20 dark:border-amber-800 dark:text-amber-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold mb-1">
+                      {installResult.status === "verified" ? (
+                        <CheckCheck size={14} />
+                      ) : (
+                        <AlertCircle size={14} />
+                      )}
+                      <span>Result: {installResult.status.toUpperCase()}</span>
+                    </div>
+                    <p className="mt-0.5">{installResult.diagnostic}</p>
+                    <div className="mt-2 text-[11px] opacity-80">
+                      Serves (24h): {installResult.serveCount ?? 0} · Render/Impression beacons (24h):{" "}
+                      {installResult.renderBeaconCount ?? 0}
+                    </div>
+                  </div>
+                )}
+
+                {installError && (
+                  <div className="p-3 bg-red-50/50 border border-red-200 text-red-800 dark:bg-red-950/20 dark:border-red-800 dark:text-red-300 rounded-md text-xs">
+                    <p className="font-semibold">Check Failed</p>
+                    <p className="mt-0.5">{installError}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {kind === "websites" && <><StaffCampaignLookup /><ReadinessOperations /></>}
           {kind === "slot" && typeof data.subject?.slotId?.slotTagId === "string" &&
