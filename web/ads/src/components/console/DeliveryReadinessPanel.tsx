@@ -170,13 +170,45 @@ export function SlotAuctionEvidence({ slotTagId }: { slotTagId: string }) {
     {!!snapshot?.length && <>
       <p className="mt-2 text-sm font-medium">{snapshot.length} decisions sampled · {paid} paid · {noFill} no fill</p>
       <ul className="space-y-2 mt-2">
-        {snapshot.map(row => <li key={row.requestId} className="p-2 border border-[var(--border-subtle)] rounded text-xs">
-          <strong>{row.inventoryClass.replaceAll('_', ' ')}</strong> · {new Date(row.createdAt).toLocaleString()} · {row.candidateCount} candidates
-          <p className="cf-muted font-mono mt-0.5">Request: {row.requestId}</p>
-          {!!row.excludedCandidates?.length && <p className="cf-muted mt-0.5">Exclusion codes: {[
-            ...new Set(row.excludedCandidates.map(item => item.reasonCode).filter(Boolean)),
-          ].slice(0, 8).join(', ')}</p>}
-        </li>)}
+        {snapshot.map(row => {
+          const exclusions = Array.isArray(row.excludedCandidates) ? row.excludedCandidates : [];
+          const primaryReason = exclusions[0]?.reasonCode || (row.inventoryClass === 'house' ? 'HOUSE_FALLBACK' : 'NONE');
+          const stage = (exclusions[0] as any)?.stage || (row.candidateCount === 0 ? 'pre_auction' : 'auction');
+          const isHouse = row.inventoryClass === 'house';
+          const isPaid = row.inventoryClass === 'paid';
+
+          return (
+            <li key={row.requestId} className="p-3 border border-[var(--border-subtle)] rounded-lg text-xs bg-[var(--bg-card)]">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
+                    isPaid ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                    isHouse ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                    'bg-slate-100 text-slate-800'
+                  }`}>
+                    ● {row.inventoryClass.replaceAll('_', ' ')}
+                  </span>
+                  <span className="font-semibold text-[var(--text-primary)]">
+                    Gate: {stage.replaceAll('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-[var(--text-muted)]">{new Date(row.createdAt).toLocaleString()}</span>
+              </div>
+
+              <div className="mt-2 text-xs">
+                <span className="text-[var(--text-muted)]">Primary Fallback Code: </span>
+                <span className="font-mono font-semibold text-[var(--color-crimson)]">{primaryReason}</span>
+              </div>
+
+              <p className="cf-muted font-mono mt-1 text-[11px]">Request ID: {row.requestId}</p>
+
+              <div className="mt-2 pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                <span>Evaluated Candidates: <strong>{row.candidateCount}</strong></span>
+                <span>Policy Version: <code>{(row as any).policyVersion || 'v1'}</code></span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </>}
   </section>;
