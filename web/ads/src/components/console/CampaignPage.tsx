@@ -290,6 +290,70 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         </div>
       </Card>
 
+      {/* Campaign Targeting & Delivery Details */}
+      <Card style={{ padding: '24px', borderRadius: '12px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Targeting & Delivery Rules</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+          <div>
+            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Geo Mode & Locations</span>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+              {campaign.geoMode === 'targeted' ? 'Targeted Geographic Locations' : 'Global (All Countries)'}
+            </div>
+            {campaign.geoLocations && campaign.geoLocations.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                {campaign.geoLocations.map((loc: any, idx: number) => (
+                  <Badge key={typeof loc?.id === 'string' ? loc.id : String(idx)} variant="outline" style={{ fontSize: '12px' }}>
+                    {loc?.name || loc?.id || 'Location'}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                {campaign.geoMode === 'targeted' ? 'No specific locations selected (Restricted)' : 'Delivers to all visitors worldwide'}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Target Devices</span>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+              {Array.isArray(campaign.targetDevices) && campaign.targetDevices.length > 0
+                ? campaign.targetDevices.map((d: string) => d.toUpperCase()).join(', ')
+                : typeof campaign.targetDevices === 'string' && campaign.targetDevices
+                  ? campaign.targetDevices.toUpperCase()
+                  : 'All Devices (Desktop & Mobile)'}
+            </div>
+            <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+              {(Array.isArray(campaign.targetDevices) && campaign.targetDevices.length > 0) || (typeof campaign.targetDevices === 'string' && campaign.targetDevices)
+                ? 'Only serves on matching user agent devices'
+                : 'Desktop, Android, and iOS eligible'}
+            </p>
+          </div>
+
+          <div>
+            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Schedule & Active Hours</span>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+              {campaign.targetHours && campaign.targetHours.length > 0 && campaign.targetHours.length < 24
+                ? `${campaign.targetHours.length} Active Hours / Day`
+                : '24 / 7 Delivery'}
+            </div>
+            <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+              {campaign.schedule?.mode === 'custom' ? 'Custom daily time windows configured' : 'Active around the clock within campaign dates'}
+            </p>
+          </div>
+
+          <div>
+            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Delivery Limits & Pacing</span>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+              {campaign.frequencyCapPerDay ? `${campaign.frequencyCapPerDay} views / user / day` : 'No Frequency Cap'}
+            </div>
+            <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+              Pricing: {campaign.pricingModel?.toUpperCase()} · Bid: ${campaign.costPerClickUsdCents ? (campaign.costPerClickUsdCents / 100).toFixed(2) : (campaign.costPerImpressionUsdCents ? (campaign.costPerImpressionUsdCents / 100).toFixed(2) : '0.10')}
+            </p>
+          </div>
+        </div>
+      </Card>
+
       {/* Ad Stacks Table */}
       <Card style={{ overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
