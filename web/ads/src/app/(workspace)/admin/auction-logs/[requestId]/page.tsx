@@ -339,7 +339,7 @@ export default function AuctionDecisionDetailPage({
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Eligible Groups: </span>
-              <strong>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.eligibleGroupCount}</strong>
+              <strong>{billingFallback ? 'Not recorded for paid auction' : primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : decision.eligibleGroupCount}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Grouping Mode: </span>
@@ -368,12 +368,12 @@ export default function AuctionDecisionDetailPage({
                   <code>{decision.winnerCampaignId.slice(0, 12)}… (Inspect Readiness)</code>
                 </Link>
               ) : (
-                <span style={{ color: 'var(--text-muted)' }}>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : 'None (Fallback triggered)'}</span>
+                <span style={{ color: 'var(--text-muted)' }}>{billingFallback?.campaignId ? `${billingFallback.campaignId} (selected before fallback)` : primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : 'None (Fallback triggered)'}</span>
               )}
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Clearing Price: </span>
-              <strong>{primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : `$${(decision.clearingPriceMicros / 1000000).toFixed(4)}`}</strong>
+              <strong>{billingFallback ? 'Not recorded for paid auction' : primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : `$${(decision.clearingPriceMicros / 1000000).toFixed(4)}`}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
