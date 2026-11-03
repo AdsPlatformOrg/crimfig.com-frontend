@@ -71,7 +71,7 @@ export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { re
     <section className="cf-section" aria-label="Paid delivery readiness">
       <h2 className="cf-section-title">Paid delivery readiness</h2>
       <p className="cf-muted">Checked {new Date(report.evaluatedAt).toLocaleString()}</p>
-      {report.gates.map(gate => (
+      {report.gates.filter(gate => canAct ? gate.owner === 'Advertiser' || gate.owner === 'Moderation' : true).map(gate => (
         <Card key={gate.gateCode} className="cf-dialog-section">
           <Badge variant="outline">{statuses[gate.status] ?? 'Unknown'}</Badge>
           <p>{gate.explanation}</p>
