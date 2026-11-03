@@ -204,7 +204,7 @@ export default function AuctionDecisionDetailPage({
             {decision.website && (
               <div>
                 <span style={{ color: 'var(--text-muted)' }}>Registered Domain: </span>
-                <strong>{decision.website.domain}</strong> (Policy: {decision.website.policyStatus})
+                <strong>{decision.website.domain}</strong> (Policy: {decision.website.policyStatus}, Ownership: {decision.website.verificationStatus})
               </div>
             )}
             {decision.slot && (
@@ -223,6 +223,51 @@ export default function AuctionDecisionDetailPage({
               <span style={{ color: 'var(--text-muted)' }}>Traffic Risk: </span>
               <Badge variant="outline">{decision.trafficRiskStatus}</Badge>
             </div>
+
+            {/* Platform Paid Delivery Diagnostics Breakdown */}
+            {decision.platformDiagnostics && (
+              <div
+                style={{
+                  marginTop: '8px',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--bg-surface-elevated, rgba(0, 0, 0, 0.03))',
+                  border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))',
+                  fontSize: '11px',
+                }}
+              >
+                <div style={{ fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                  Platform Paid Delivery Gates:
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Paid Serving Enabled (ADS_PAID_SERVING_ENABLED):</span>
+                    <strong>{decision.platformDiagnostics.checks?.servingRequested ? '✓ Enabled' : '✗ Disabled'}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Paid Release Approved (ADS_PAID_RELEASE_ENABLED):</span>
+                    <strong>{decision.platformDiagnostics.checks?.releaseApproved ? '✓ Approved' : '✗ Approval Required'}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Auction Policy Approval (ADS_AUCTION_POLICY_APPROVAL):</span>
+                    <strong>{decision.platformDiagnostics.checks?.policyApproved ? '✓ Valid' : '✗ Missing / Invalid JSON'}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Billing Authority (INTERNAL_ECOSYSTEM_KEY & URL):</span>
+                    <strong>{decision.platformDiagnostics.checks?.billingAuthorityConfigured ? '✓ Configured' : '✗ Unset / Incomplete'}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Evidence Key Secret (ADS_EVIDENCE_HASH_SECRET ≥32B):</span>
+                    <strong>{decision.platformDiagnostics.checks?.evidenceKeyConfigured ? '✓ Configured' : '✗ Invalid / <32 Bytes'}</strong>
+                  </div>
+                </div>
+                {decision.platformDiagnostics.blockers && decision.platformDiagnostics.blockers.length > 0 && (
+                  <div style={{ marginTop: '6px', color: 'var(--color-crimson)', fontWeight: 600 }}>
+                    Active Platform Blockers: {decision.platformDiagnostics.blockers.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </Card>
 
