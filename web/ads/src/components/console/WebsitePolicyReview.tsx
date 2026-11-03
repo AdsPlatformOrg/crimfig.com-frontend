@@ -20,7 +20,7 @@ export function WebsitePolicyReview({ websiteId, currentPolicy, onSaved }: {
     if (busy.current || !valid) return;
     busy.current = true; setPending(true); setError(""); setMessage("");
     try {
-      const response = await sessionFetch(`/api/v1/adstation/admin/websites/${websiteId}/policy`, {
+      const response = await sessionFetch(`/api/v1/admin/ads/websites/${websiteId}/policy`, {
         method: "POST", body: JSON.stringify({ decision, reason: reason.trim() }),
         headers: { "Content-Type": "application/json" },
       });

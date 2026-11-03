@@ -39,7 +39,7 @@ export default function AuctionDecisionDetailPage({
     setLoading(true);
     setError(null);
 
-    sessionFetch(`/api/v1/adstation/admin/auction-decisions/${encodeURIComponent(requestId)}`)
+    sessionFetch(`/api/v1/admin/ads/auction-decisions/${encodeURIComponent(requestId)}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();

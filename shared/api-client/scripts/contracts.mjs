@@ -17,7 +17,8 @@ if (!['generate', 'check'].includes(mode)) throw new Error('Use generate or chec
 const result = await exportContract();
 const sourceHash = crypto.createHash('sha256');
 for (const relative of ['api/ads-api/src/contracts/ads-contract.ts', 'api/ads-api/src/contracts/api-configuration.ts',
-  ...['campaigns', 'uploads', 'moderation'].map(name => `api/ads-api/src/modules/${name}/${name}.controller.ts`)]) {
+  'api/ads-api/src/modules/publisher-inventory/create-setup-check.dto.ts',
+  ...['campaigns', 'uploads', 'moderation', 'publisher-inventory', 'ads-operations'].map(name => `api/ads-api/src/modules/${name}/${name}.controller.ts`)]) {
   sourceHash.update(relative).update(contractText(fs.readFileSync(path.join(backend, relative),'utf8')));
 }
 const manifest = JSON.stringify({ ...result.manifest, sourceSha256: sourceHash.digest('hex'), generator: 'openapi-typescript@7.13.0' }, null, 2) + '\n';

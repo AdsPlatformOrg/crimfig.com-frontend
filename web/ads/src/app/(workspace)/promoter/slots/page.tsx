@@ -53,7 +53,7 @@ interface PromoterWebsite {
   isVerified?: boolean;
 }
 
-interface AdstationSlot {
+interface PublisherSlot {
   id: string;
   websiteId: string;
   name: string;
@@ -90,13 +90,13 @@ interface InstallationStatus {
 export default function PromoterSlotsPage() {
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [selectedWebsite, setSelectedWebsite] = useState<PromoterWebsite | null>(null);
-  const [slots, setSlots] = useState<AdstationSlot[]>([]);
+  const [slots, setSlots] = useState<PublisherSlot[]>([]);
   const [isLoadingWebsites, setIsLoadingWebsites] = useState(true);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   // Modals & Panels
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedSlotForInstall, setSelectedSlotForInstall] = useState<AdstationSlot | null>(null);
+  const [selectedSlotForInstall, setSelectedSlotForInstall] = useState<PublisherSlot | null>(null);
   const [embedSnippet, setEmbedSnippet] = useState<EmbedSnippet | null>(null);
   const [isLoadingEmbed, setIsLoadingEmbed] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState<'html' | 'react' | 'sdk' | null>(null);
@@ -108,6 +108,7 @@ export default function PromoterSlotsPage() {
 
   // Form State
   const [newSlotName, setNewSlotName] = useState('');
+  const [newSlotType, setNewSlotType] = useState<PublisherSlot['slotType']>('network');
   const [newSlotFormat, setNewSlotFormat] = useState('auto');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -140,7 +141,7 @@ export default function PromoterSlotsPage() {
   const loadSlots = useCallback(async (websiteId: string) => {
     try {
       setIsLoadingSlots(true);
-      const res = await sessionFetch(`/api/v1/adstation/websites/${websiteId}/slots`);
+      const res = await sessionFetch(`/api/v1/publisher/websites/${websiteId}/slots`);
       if (res.ok) {
         const json = await res.json();
         setSlots(Array.isArray(json?.data) ? json.data : []);
@@ -227,13 +228,13 @@ export default function PromoterSlotsPage() {
         slotFormat = 'interstitial';
       }
 
-      const res = await sessionFetch('/api/v1/adstation/slots', {
+      const res = await sessionFetch('/api/v1/publisher/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           websiteId: selectedWebsite.id,
           name: newSlotName.trim(),
-          slotType: 'network', // CrimFig Publisher Network slot
+          slotType: newSlotType,
           format: slotFormat,
           width: slotWidth,
           height: slotHeight,
@@ -258,13 +259,13 @@ export default function PromoterSlotsPage() {
   };
 
   // Load Embed Instructions
-  const handleOpenInstall = async (slot: AdstationSlot) => {
+  const handleOpenInstall = async (slot: PublisherSlot) => {
     setSelectedSlotForInstall(slot);
     setEmbedSnippet(null);
     setIsLoadingEmbed(true);
 
     try {
-      const res = await sessionFetch(`/api/v1/adstation/slots/${slot.id}/embed`);
+      const res = await sessionFetch(`/api/v1/publisher/slots/${slot.id}/embed`);
       if (res.ok) {
         const json = await res.json();
         setEmbedSnippet(json.data);
@@ -280,7 +281,7 @@ export default function PromoterSlotsPage() {
   const handleCheckInstallation = async (slotId: string) => {
     setCheckingSlotId(slotId);
     try {
-      const res = await sessionFetch(`/api/v1/adstation/slots/${slotId}/check-installation`, {
+      const res = await sessionFetch(`/api/v1/publisher/slots/${slotId}/check-installation`, {
         method: 'POST',
       });
       const json = await res.json();
@@ -558,7 +559,7 @@ export default function PromoterSlotsPage() {
               Create CrimFig Ad Slot
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-              Bind a new canonical slot to <strong style={{ color: 'var(--text-primary)' }}>{selectedWebsite?.domain}</strong> to display network ads.
+              Bind a new canonical slot to <strong style={{ color: 'var(--text-primary)' }}>{selectedWebsite?.domain}</strong>.
             </p>
 
             {formError && (
@@ -568,6 +569,15 @@ export default function PromoterSlotsPage() {
             )}
 
             <form onSubmit={handleCreateSlot} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <label>
+                Slot type
+                <select value={newSlotType} onChange={(event) => setNewSlotType(event.target.value as PublisherSlot['slotType'])}>
+                  <option value="network">Network</option>
+                  <option value="consideration">Consideration</option>
+                  <option value="direct">Direct</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+              </label>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                   Slot Name

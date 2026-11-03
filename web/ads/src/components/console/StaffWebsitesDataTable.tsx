@@ -57,7 +57,7 @@ export function StaffWebsitesDataTable() {
       ...(verificationStatus !== 'all' ? { verificationStatus } : {}),
     });
 
-    sessionFetch(`/api/v1/adstation/admin/websites?${query.toString()}`)
+    sessionFetch(`/api/v1/admin/ads/websites?${query.toString()}`)
       .then(async res => {
         if (!res.ok) throw new Error('Failed to load websites directory.');
         const body = await res.json();

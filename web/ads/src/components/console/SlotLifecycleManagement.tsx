@@ -45,7 +45,7 @@ export function SlotLifecycleManagement({
     setSuccessMessage(null);
 
     try {
-      const res = await sessionFetch(`/api/v1/adstation/admin/slots/${slotId}/lifecycle`, {
+      const res = await sessionFetch(`/api/v1/admin/ads/slots/${slotId}/lifecycle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

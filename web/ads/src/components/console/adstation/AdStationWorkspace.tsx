@@ -60,11 +60,6 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
 
   // Modal / Form states
-  const [showCreateSlot, setShowCreateSlot] = useState(false);
-  const [newSlotName, setNewSlotName] = useState('');
-  const [newSlotType, setNewSlotType] = useState<'consideration' | 'direct' | 'network' | 'hybrid'>('direct');
-  const [newSlotFormat, setNewSlotFormat] = useState('banner');
-
   const [showCreateDeal, setShowCreateDeal] = useState(false);
   const [dealClientName, setDealClientName] = useState('');
   const [dealTitle, setDealTitle] = useState('');
@@ -77,7 +72,7 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
     if (!websiteId) return;
     try {
       setIsLoading(true);
-      const res = await sessionFetch(`/api/v1/adstation/websites/${websiteId}/slots`);
+      const res = await sessionFetch(`/api/v1/publisher/websites/${websiteId}/slots`);
       const data = await res.json();
       if (data.status === 'success') {
         setSlots(data.data || []);
@@ -108,35 +103,6 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
       loadDirectCampaigns();
     }
   }, [websiteId, loadSlots, loadDirectCampaigns]);
-
-  const handleCreateSlot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!websiteId) return;
-
-    try {
-      const res = await sessionFetch('/api/v1/adstation/slots', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          websiteId,
-          name: newSlotName,
-          slotType: newSlotType,
-          format: newSlotFormat,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotification({ type: 'success', message: 'Slot created successfully!' });
-        setShowCreateSlot(false);
-        setNewSlotName('');
-        loadSlots();
-      } else {
-        setNotification({ type: 'error', message: data.message || 'Failed to create slot.' });
-      }
-    } catch {
-      setNotification({ type: 'error', message: 'Network error creating slot.' });
-    }
-  };
 
   const handleVerifyConsideration = async (slotId: string) => {
     if (!websiteId) return;
@@ -290,12 +256,7 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
         <div className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Configured Website Slots</h3>
-            <Button
-              onClick={() => setShowCreateSlot(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#D4143A] text-white hover:bg-[#A80F32] transition"
-            >
-              <Plus className="w-3.5 h-3.5" /> Create Ad Slot
-            </Button>
+            <a className="text-sm underline" href="/promoter/slots">Manage CrimFig Ads Slots</a>
           </div>
 
           {slots.length === 0 ? (
@@ -481,79 +442,6 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
                 <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-snug">{option.desc}</div>
               </Button>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Create Slot */}
-      {showCreateSlot && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1E2337] rounded-xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-800">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Create New Ad Slot</h3>
-            <form onSubmit={handleCreateSlot} className="space-y-4">
-              <div>
-                <label htmlFor="adstation-slot-name" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Slot Name</label>
-                <Input
-                  id="adstation-slot-name"
-                  type="text"
-                  required
-                  placeholder="e.g. Header Leaderboard, Sidebar Sticky"
-                  value={newSlotName}
-                  onChange={(e) => setNewSlotName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Slot Type</label>
-                <select
-                  value={newSlotType}
-                  onChange={(e) => setNewSlotType(e.target.value as any)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value="direct">Direct Deal Slot (0% CF Commission)</option>
-                  <option value="consideration">Consideration Slot (Required for AdStation)</option>
-                  <option value="network">Network Monetization Slot (55% Publisher cut)</option>
-                  <option value="hybrid">Hybrid Co-existence Slot</option>
-                </select>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Note: Consideration Slots serve exclusively CrimFig network ads and cannot run direct deals.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Format</label>
-                <select
-                  value={newSlotFormat}
-                  onChange={(e) => setNewSlotFormat(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value="banner">Banner (Leaderboard / MREC)</option>
-                  <option value="card">Card / Feed placement</option>
-                  <option value="video">Outstream Video</option>
-                  <option value="interstitial">Interstitial</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowCreateSlot(false)}
-                  variant="outline"
-                  size="sm"
-                  className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="px-4 py-1.5 text-xs rounded-lg bg-[#D4143A] text-white font-semibold hover:bg-[#A80F32]"
-                >
-                  Create Slot
-                </Button>
-              </div>
-            </form>
           </div>
         </div>
       )}

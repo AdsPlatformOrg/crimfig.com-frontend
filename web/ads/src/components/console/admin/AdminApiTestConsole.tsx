@@ -114,13 +114,13 @@ export function AdminApiTestConsole() {
       status: 'idle',
     },
 
-    // AdStation & Delivery Endpoints
+    // Publisher inventory, AdStation Direct Ads and public delivery
     {
-      id: 'adstation-websites',
-      name: 'AdStation Verified Domain Inventory',
-      category: 'adstation',
+      id: 'publisher-websites',
+      name: 'Publisher Website Inventory',
+      category: 'ads',
       method: 'GET',
-      route: '/api/v1/adstation/websites',
+      route: '/api/v1/admin/ads/websites',
       authGuard: 'CrimfigAuthGuard',
       isSensitiveSession: false,
       status: 'idle',
@@ -136,9 +136,9 @@ export function AdminApiTestConsole() {
       status: 'idle',
     },
     {
-      id: 'adstation-public-serve',
+      id: 'public-delivery-health',
       name: 'Public Delivery CORS Creative Route',
-      category: 'adstation',
+      category: 'ads',
       method: 'GET',
       route: '/api/v1/delivery/adstation/health',
       authGuard: 'Public Wildcard (No Cookies)',
@@ -378,7 +378,7 @@ export function AdminApiTestConsole() {
             variant={selectedCategory === cat ? 'default' : 'ghost'}
             size="sm"
           >
-            {cat === 'all' ? 'All Endpoints' : cat === 'ads' ? 'Ads Platform' : cat === 'adstation' ? 'AdStation & Delivery' : cat === 'billing' ? 'Billing & Escrow' : 'Auth & Security'}
+            {cat === 'all' ? 'All Endpoints' : cat === 'ads' ? 'Ads Platform' : cat === 'adstation' ? 'AdStation Direct Ads' : cat === 'billing' ? 'Billing & Escrow' : 'Auth & Security'}
           </Button>
         ))}
       </div>

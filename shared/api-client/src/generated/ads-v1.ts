@@ -1,4 +1,36 @@
 export interface paths {
+    "/api/v1/admin/ads/auction-decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_listAuctionDecisions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/auction-decisions/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_getAuctionDecision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/ads/moderation/campaigns/{id}/change-audit": {
         parameters: {
             query?: never;
@@ -319,6 +351,262 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/ads/slots/{id}/check-installation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_adminCheckSlotInstallation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/slots/{id}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_adminUpdateSlotLifecycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/websites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_adminListWebsites"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/websites/{websiteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_adminGetWebsite"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/websites/{websiteId}/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_reviewWebsitePolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/websites/{websiteId}/reinstate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_reinstateWebsite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/websites/{websiteId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_suspendWebsite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/auction-decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_listAuctionDecisions_legacy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/auction-decisions/{requestId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_getAuctionDecision_legacy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/slots/{id}/check-installation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_adminCheckSlotInstallation_legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/slots/{id}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_adminUpdateSlotLifecycle_legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/websites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_adminListWebsites_legacy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/websites/{websiteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdsOperations_adminGetWebsite_legacy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/websites/{websiteId}/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_reviewWebsitePolicy_legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/websites/{websiteId}/reinstate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_reinstateWebsite_legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/websites/{websiteId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_suspendWebsite_legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns": {
         parameters: {
             query?: never;
@@ -607,6 +895,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/publisher/setup-checks/{checkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublisherInventory_getSetupCheck"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublisherInventory_createSlot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/slots/{slotId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["PublisherInventory_updateSlot"];
+        trace?: never;
+    };
+    "/api/v1/publisher/slots/{slotId}/check-installation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublisherInventory_checkSlotInstallation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/slots/{slotId}/diagnostics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublisherInventory_getSlotDiagnostics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/slots/{slotId}/embed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublisherInventory_getSlotEmbed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/websites/{websiteId}/setup-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublisherInventory_createSetupCheck"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/websites/{websiteId}/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublisherInventory_getSlots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/uploads/assets/{assetId}": {
         parameters: {
             query?: never;
@@ -804,6 +1220,69 @@ export interface components {
             status: "error";
             statusCode: number;
             timestamp?: string;
+        };
+        AdsOperations_adminCheckSlotInstallationResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_adminGetWebsiteResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_adminListWebsitesResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_adminUpdateSlotLifecycleResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_getAuctionDecisionResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_listAuctionDecisionsResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_reinstateWebsiteResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_reviewWebsitePolicyResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_suspendWebsiteResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
         };
         BeginEditDto: {
             expectedRevision: number;
@@ -3122,6 +3601,24 @@ export interface components {
             targetHours?: number[] | null;
             targetStates?: string[] | null;
             title: string;
+        };
+        CreateSetupCheckDto: {
+            pagePath?: string | null;
+            /** Format: uuid */
+            requestId: string;
+        };
+        CreateSlotDto: {
+            allowedAdTypes?: string[] | null;
+            allowedPresetIds?: string[] | null;
+            format?: string | null;
+            height?: number | null;
+            name: string;
+            responsive?: boolean | null;
+            slotDeliveryPreference?: string | null;
+            /** @enum {string} */
+            slotType: "consideration" | "direct" | "network" | "hybrid";
+            websiteId: string;
+            width?: number | null;
         };
         CreateStackDto: {
             expectedRevision: number;
@@ -5897,6 +6394,74 @@ export interface components {
             fileName: string;
             sha256?: string | null;
         };
+        PublisherInventory_checkSlotInstallationResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        PublisherInventory_createSetupCheckResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        PublisherInventory_createSlotResponse: {
+            data: {
+                id: string;
+                name: string;
+                slotTagId: string;
+                /** @enum {string} */
+                slotType: "network" | "consideration" | "direct" | "hybrid";
+                websiteId: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        PublisherInventory_getSetupCheckResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        PublisherInventory_getSlotDiagnosticsResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        PublisherInventory_getSlotEmbedResponse: {
+            data: {
+                htmlSnippet: string;
+                nextJsSnippet: string;
+                sdkSnippet: string;
+                slotSnippet: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        PublisherInventory_getSlotsResponse: {
+            data: ({
+                id: string;
+                name: string;
+                slotTagId: string;
+                /** @enum {string} */
+                slotType: "network" | "consideration" | "direct" | "hybrid";
+                websiteId: string;
+            } & {
+                [key: string]: unknown;
+            })[];
+            /** @enum {string} */
+            status: "success";
+        };
         ReplaceCreativeDto: {
             /** @enum {string|null} */
             adFormat?: "banner" | "card" | "video" | "interstitial" | null;
@@ -6150,6 +6715,234 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    AdsOperations_listAuctionDecisions: {
+        parameters: {
+            query: {
+                limit: number;
+                page: number;
+                pageSize: number;
+                slotTagId: string;
+                requestId: string;
+                search: string;
+                inventoryClass: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_listAuctionDecisionsResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_getAuctionDecision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_getAuctionDecisionResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     Moderation_changeAudit: {
         parameters: {
             query?: {
@@ -8551,6 +9344,1796 @@ export interface operations {
             };
         };
     };
+    AdsOperations_adminCheckSlotInstallation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminCheckSlotInstallationResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminUpdateSlotLifecycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminUpdateSlotLifecycleResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminListWebsites: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                search?: string;
+                policyStatus?: string;
+                verificationStatus?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminListWebsitesResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminGetWebsite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminGetWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_reviewWebsitePolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_reviewWebsitePolicyResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_reinstateWebsite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_reinstateWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_suspendWebsite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_suspendWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_listAuctionDecisions_legacy: {
+        parameters: {
+            query: {
+                limit: number;
+                page: number;
+                pageSize: number;
+                slotTagId: string;
+                requestId: string;
+                search: string;
+                inventoryClass: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_listAuctionDecisionsResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_getAuctionDecision_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                requestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_getAuctionDecisionResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminCheckSlotInstallation_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminCheckSlotInstallationResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminUpdateSlotLifecycle_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminUpdateSlotLifecycleResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminListWebsites_legacy: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                search?: string;
+                policyStatus?: string;
+                verificationStatus?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminListWebsitesResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_adminGetWebsite_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminGetWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_reviewWebsitePolicy_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_reviewWebsitePolicyResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_reinstateWebsite_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_reinstateWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_suspendWebsite_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_suspendWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     Campaigns_getAdvertiserCampaigns: {
         parameters: {
             query?: {
@@ -10841,6 +13424,900 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Campaigns_createCampaignResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_getSetupCheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                checkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_getSetupCheckResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_createSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSlotDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_createSlotResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_updateSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_createSlotResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_checkSlotInstallation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_checkSlotInstallationResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_getSlotDiagnostics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_getSlotDiagnosticsResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_getSlotEmbed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_getSlotEmbedResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_createSetupCheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSetupCheckDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_createSetupCheckResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_getSlots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_getSlotsResponse"];
                 };
             };
             /** @description Sanitized API error */

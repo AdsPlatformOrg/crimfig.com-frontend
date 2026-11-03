@@ -80,7 +80,7 @@ export function SetupGuide({ website, slots }: { website: { id: string; domain: 
 
   const refresh = useCallback(async (id: string): Promise<SetupCheckStatus | null> => {
     try {
-      const res = await sessionFetch(`/api/v1/adstation/setup-checks/${id}`);
+      const res = await sessionFetch(`/api/v1/publisher/setup-checks/${id}`);
       if (res.status === 404) {
         localStorage.removeItem(storageKey);
         setCreated(null);
@@ -128,7 +128,7 @@ export function SetupGuide({ website, slots }: { website: { id: string; domain: 
     setMessage(null);
     try {
       requestId.current = requestId.current ?? crypto.randomUUID();
-      const res = await sessionFetch(`/api/v1/adstation/websites/${website.id}/setup-checks`, {
+      const res = await sessionFetch(`/api/v1/publisher/websites/${website.id}/setup-checks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId: requestId.current, pagePath: pagePath.trim() || undefined }),
@@ -151,7 +151,7 @@ export function SetupGuide({ website, slots }: { website: { id: string; domain: 
     setSlotCode(null);
     if (!id) return;
     try {
-      const res = await sessionFetch(`/api/v1/adstation/slots/${id}/embed`);
+      const res = await sessionFetch(`/api/v1/publisher/slots/${id}/embed`);
       const json = await res.json();
       if (!res.ok) throw new Error();
       // Slot-only: the SDK is installed once above, so omit the per-slot loader tag.

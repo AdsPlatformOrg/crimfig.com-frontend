@@ -49,7 +49,7 @@ export default function AdminAuctionLogsPage() {
       if (search.trim()) params.set('search', search.trim());
       if (inventoryClass && inventoryClass !== 'all') params.set('inventoryClass', inventoryClass);
 
-      const res = await sessionFetch(`/api/v1/adstation/admin/auction-decisions?${params.toString()}`);
+      const res = await sessionFetch(`/api/v1/admin/ads/auction-decisions?${params.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.status !== 'success' || !json.data) throw new Error('Invalid response structure');

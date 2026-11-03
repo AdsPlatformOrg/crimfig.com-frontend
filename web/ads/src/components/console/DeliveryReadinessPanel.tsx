@@ -192,7 +192,7 @@ export function SlotAuctionEvidence({ slotTagId }: { slotTagId: string }) {
     if (state !== 'loading') return;
     let active = true;
     setErrorDetail(undefined);
-    void sessionFetch('/api/v1/adstation/admin/auction-decisions?limit=10&slotTagId=' + encodeURIComponent(slotTagId))
+    void sessionFetch('/api/v1/admin/ads/auction-decisions?limit=10&slotTagId=' + encodeURIComponent(slotTagId))
       .then(async response => {
         if (!response.ok) {
           const body = await response.json().catch(() => null);

@@ -19,7 +19,7 @@ test('offline export loads real controller metadata, no business/DB modules or l
   try {
     const one = await exportContract(), two = await exportContract();
     assert.equal(one.text, two.text); assert.deepEqual(one.document, artifact);
-    assert.equal(one.manifest.operations.length, 52);
+    assert.equal(one.manifest.operations.length, 78);
     assert.equal(one.document.paths['/api/v1/campaigns/catalog'].get.security.length, 0);
     assert.deepEqual(one.document.paths['/api/v1/campaigns'].post.security, [{ bearer: [] }]);
     assert.deepEqual(one.document.paths['/api/v1/admin/ads/moderation/campaigns/{id}/manager-approval'].post['x-ads-roles'], ['ads_manager','ads_admin','super_admin']);
@@ -39,6 +39,19 @@ test('request DTO metadata documents real required fields, nullable optional, en
   assert.deepEqual(schemas.SaveCampaignDto.required.sort(), ['expectedRevision', 'requestId']);
   assert.deepEqual(artifact.paths['/api/v1/campaigns/{id}/status'].put.requestBody.content['application/json'].schema.properties.status.enum, ['active', 'paused', 'trash']);
 });
+test('publisher inventory and staff compatibility routes retain their access contracts', () => {
+  const publisher = artifact.paths['/api/v1/publisher/slots'].post;
+  assert.deepEqual(publisher.security, [{ bearer: [] }]);
+  assert.deepEqual(artifact.components.schemas.CreateSlotDto.properties.slotType.enum, ['consideration', 'direct', 'network', 'hybrid']);
+  for (const [route, method] of [['websites/{websiteId}/policy', 'post'], ['auction-decisions', 'get'], ['slots/{id}/lifecycle', 'post']]) {
+    const canonical = artifact.paths[`/api/v1/admin/ads/${route}`][method];
+    const legacy = artifact.paths[`/api/v1/adstation/admin/${route}`][method];
+    assert.deepEqual(canonical.security, legacy.security);
+    assert.ok(canonical['x-ads-roles'].length > 0);
+    assert.deepEqual(canonical['x-ads-roles'], legacy['x-ads-roles']);
+    assert.deepEqual(canonical.responses, legacy.responses);
+  }
+});
 test('all documented operations have distinct IDs, success/error schema and appropriate multipart/binary contracts', () => {
   const ids = [];
   for (const item of Object.values(artifact.paths)) for (const operation of Object.values(item)) {
@@ -46,7 +59,7 @@ test('all documented operations have distinct IDs, success/error schema and appr
     assert.ok(operation.responses['400']); assert.ok(operation.responses['503']);
     assert.ok(Object.keys(operation.responses).some(code => /^2\d\d$/.test(code)));
   }
-  assert.equal(new Set(ids).size, 52);
+  assert.equal(new Set(ids).size, 78);
   assert.ok(artifact.paths['/api/v1/uploads/prepared'].post.requestBody.content['multipart/form-data']);
   assert.ok(artifact.paths['/api/v1/uploads/media/{storageKey}'].get.responses['206'].content['application/octet-stream']);
   assert.equal(artifact.paths['/api/v1/uploads/media/{storageKey}'].get.security.length, 0);

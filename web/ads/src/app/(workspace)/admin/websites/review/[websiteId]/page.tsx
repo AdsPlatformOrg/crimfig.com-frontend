@@ -41,7 +41,7 @@ export default function AdminWebsiteDetailPage({
     setCheckingSlotId(slotId);
     setSlotCheckMessage(null);
     try {
-      const res = await sessionFetch(`/api/v1/adstation/admin/slots/${slotId}/check-installation`, {
+      const res = await sessionFetch(`/api/v1/admin/ads/slots/${slotId}/check-installation`, {
         method: 'POST',
       });
       const json = await res.json();
@@ -70,7 +70,7 @@ export default function AdminWebsiteDetailPage({
     setLoading(true);
     setError(null);
 
-    sessionFetch(`/api/v1/adstation/admin/websites/${websiteId}`)
+    sessionFetch(`/api/v1/admin/ads/websites/${websiteId}`)
       .then(async res => {
         if (!res.ok) throw new Error(`Failed to load website inspection data (HTTP ${res.status}).`);
         const json = await res.json();

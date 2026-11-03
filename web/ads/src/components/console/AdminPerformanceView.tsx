@@ -170,7 +170,7 @@ export function AdminPerformanceView({
     setInstallResult(null);
     setInstallError(null);
     try {
-      const res = await sessionFetch(`/api/v1/adstation/admin/slots/${slotId}/check-installation`, {
+      const res = await sessionFetch(`/api/v1/admin/ads/slots/${slotId}/check-installation`, {
         method: "POST",
       });
       const json = await res.json();
