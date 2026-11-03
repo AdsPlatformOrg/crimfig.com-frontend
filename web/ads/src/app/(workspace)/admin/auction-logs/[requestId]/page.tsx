@@ -92,6 +92,10 @@ export default function AuctionDecisionDetailPage({
   const primaryReason = exclusions[0]?.reasonCode || (isHouse ? 'HOUSE_FALLBACK' : 'PAID_WINNER_SELECTED');
   const terminationStage = (exclusions[0] as any)?.stage || (isHouse ? 'unknown' : 'auction');
   const admission = (exclusions[0] as { admission?: Record<string, unknown> } | undefined)?.admission;
+  const billingFallback = exclusions.find((item: any) => item.stage === 'billing_reserve' || item.stage === 'billing_issue') as {
+    campaignId?: string; parentOpportunityId?: string; transportRequestId?: string; upstreamStatus?: number;
+    reasonCode?: string; billingHandoff?: { reserve: string; issue: string; elapsedMs: number };
+  } | undefined;
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -393,10 +397,26 @@ export default function AuctionDecisionDetailPage({
         </Card>
       </div>
 
+      {billingFallback && (
+        <Card style={{ padding: '20px' }}>
+          <h3>Billing Handoff</h3>
+          <dl>
+            <dt>Selected campaign</dt><dd>{billingFallback.campaignId ?? 'Unknown'}</dd>
+            <dt>Reservation</dt><dd>{billingFallback.billingHandoff?.reserve ?? 'Unknown'}</dd>
+            <dt>Issuance</dt><dd>{billingFallback.billingHandoff?.issue ?? 'Unknown'}</dd>
+            <dt>Reason</dt><dd>{billingFallback.reasonCode ?? 'Unknown'}</dd>
+            <dt>Billing HTTP status</dt><dd>{billingFallback.upstreamStatus ?? 'Not recorded'}</dd>
+            <dt>Elapsed time</dt><dd>{billingFallback.billingHandoff ? `${billingFallback.billingHandoff.elapsedMs} ms` : 'Not recorded'}</dd>
+            <dt>Parent opportunity</dt><dd>{billingFallback.parentOpportunityId ?? 'Not recorded'}</dd>
+            <dt>Transport request</dt><dd>{billingFallback.transportRequestId ?? 'Not recorded'}</dd>
+          </dl>
+        </Card>
+      )}
+
       {/* Detailed Exclusion List */}
       <Card style={{ padding: '20px', borderRadius: '12px' }}>
         <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 12px 0' }}>
-          Candidate Exclusion & Disqualification Audit ({exclusions.length})
+          Candidate Exclusions and Fallback Evidence ({exclusions.length})
         </h3>
         {exclusions.length === 0 ? (
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
@@ -428,6 +448,9 @@ export default function AuctionDecisionDetailPage({
                     <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
                       (Stage: {item.stage})
                     </span>
+                  )}
+                  {typeof item.upstreamStatus === 'number' && (
+                    <span style={{ marginLeft: '8px' }}>Billing HTTP {item.upstreamStatus}</span>
                   )}
                   {item.campaignId && (
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
