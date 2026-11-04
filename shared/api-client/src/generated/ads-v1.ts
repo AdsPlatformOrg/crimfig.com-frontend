@@ -1250,9 +1250,32 @@ export interface components {
             status: "success";
         };
         AdsOperations_getAuctionDecisionResponse: {
-            data: {
+            data: (({
+                pricingBreakdown?: ({
+                    batchStatus: string | null;
+                    bidUsdCents: number | null;
+                    /** @enum {string|null} */
+                    billingUnit: "eligible click" | "eligible viewable impression" | null;
+                    claimId: string | null;
+                    claimPriceNanos: string | null;
+                    /** @enum {string|null} */
+                    clearingBasis: "single_group_reserve" | "runner_up_with_floor" | null;
+                    pctrBasisPoints: string | null;
+                    publisherClearanceStatus: string | null;
+                    publisherEarningsCents: string | null;
+                    reservationId: string;
+                    reservationSettledAt: string | null;
+                    reservationState: string;
+                    reservedNanos: string;
+                    secondPriceMicros: string | null;
+                    settledDebitCents: string | null;
+                    winnerScoreMicros: string | null;
+                } & {
+                    [key: string]: unknown;
+                }) | null;
+            } & {
                 [key: string]: unknown;
-            };
+            }) | null) | null;
             /** @enum {string} */
             status: "success";
         };

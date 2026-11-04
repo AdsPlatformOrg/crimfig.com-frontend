@@ -4,6 +4,7 @@ import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { sessionFetch } from '@/lib/session';
+import { formatAuctionUsd } from '@/lib/auction-pricing';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -126,6 +127,10 @@ export default function AuctionDecisionDetailPage({
     BILLING_DEADLINE_INVALID: ['Ads and Billing engineering', 'Check the request deadline and service timing.'],
   };
   const billingAction = billingActions[billingFallback?.reasonCode ?? ''];
+  const pricing = decision.pricingBreakdown;
+  const clearingEcpm = formatAuctionUsd(decision.clearingPriceMicros, 6);
+  const eventPrice = formatAuctionUsd(decision.billingPriceNanos, 9);
+  const eventUnit = decision.pricingModel === 'cpc' ? 'eligible click' : decision.pricingModel === 'cpm' ? 'eligible viewable impression' : null;
 
   return (
     <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -402,8 +407,8 @@ export default function AuctionDecisionDetailPage({
               )}
             </div>
             <div>
-              <span style={{ color: 'var(--text-muted)' }}>Clearing Price: </span>
-              <strong>{billingFallback ? 'Not recorded for paid auction' : primaryReason === 'DELIVERY_DEADLINE_EXCEEDED' ? 'Incomplete' : terminationStage === 'unknown' ? 'Unknown' : terminationStage === 'consent_validation' || terminationStage === 'supply_admission' || terminationStage === 'pre_auction' ? 'Not evaluated' : `$${(decision.clearingPriceMicros / 1000000).toFixed(4)}`}</strong>
+              <span style={{ color: 'var(--text-muted)' }}>Clearing eCPM: </span>
+              <strong>{billingFallback ? 'Not recorded for paid auction' : isPaid ? clearingEcpm ? `${clearingEcpm} per 1,000 impressions` : 'Not recorded' : 'Not applicable'}</strong>
             </div>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
@@ -426,6 +431,24 @@ export default function AuctionDecisionDetailPage({
           </div>
         </Card>
       </div>
+
+      {isPaid && (
+        <Card style={{ padding: '20px' }}>
+          <h3>Auction Pricing Breakdown</h3>
+          <dl>
+            <dt>Advertiser bid</dt><dd>{pricing?.bidUsdCents != null ? `${formatAuctionUsd(pricing.bidUsdCents, 2)} ${decision.pricingModel?.toUpperCase()}` : 'Not recorded'}</dd>
+            <dt>Predicted click rate</dt><dd>{decision.pricingModel === 'cpc' && pricing?.pctrBasisPoints != null ? `${Number(pricing.pctrBasisPoints) / 100}%` : 'Not recorded or not applicable'}</dd>
+            <dt>Winning bid eCPM</dt><dd>{formatAuctionUsd(pricing?.winnerScoreMicros, 6) ?? 'Not recorded'}</dd>
+            <dt>Clearing basis</dt><dd>{pricing?.clearingBasis === 'single_group_reserve' ? 'One advertiser group. Reserve floor applied.' : pricing?.clearingBasis === 'runner_up_with_floor' ? 'Runner-up score with reserve floor and winner bid cap' : 'Not recorded'}</dd>
+            <dt>Reserve or second-price input eCPM</dt><dd>{formatAuctionUsd(pricing?.secondPriceMicros, 6) ?? 'Not recorded'}</dd>
+            <dt>Price per billable event</dt><dd>{eventPrice && eventUnit ? `${eventPrice} per ${eventUnit}` : 'Not recorded'}</dd>
+            <dt>Recorded reservation amount</dt><dd>{formatAuctionUsd(pricing?.reservedNanos, 9) ?? 'Not recorded'}{pricing?.reservationState ? ` (${pricing.reservationState})` : ''}</dd>
+            <dt>Settlement claim</dt><dd>{pricing?.claimId ? pricing.batchStatus ?? 'Recorded' : 'No correlated claim recorded'}</dd>
+            <dt>Recorded advertiser debit</dt><dd>{formatAuctionUsd(pricing?.settledDebitCents, 2) ?? 'No correlated debit recorded'}</dd>
+            <dt>Recorded publisher earnings</dt><dd>{formatAuctionUsd(pricing?.publisherEarningsCents, 2) ?? 'No correlated earnings recorded'}{pricing?.publisherClearanceStatus ? ` (${pricing.publisherClearanceStatus})` : ''}</dd>
+          </dl>
+        </Card>
+      )}
 
       {billingFallback && (
         <Card style={{ padding: '20px' }}>
