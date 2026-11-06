@@ -12,8 +12,6 @@ interface LandingNavbarProps {
 const links = [
   { href: '#what-we-do', label: 'What We Do' },
   { href: '#partners', label: 'Publishers & Promoters' },
-  { href: '#calculator', label: 'Earnings Calculator' },
-  { href: '#technology', label: 'Technology' },
 ];
 
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {

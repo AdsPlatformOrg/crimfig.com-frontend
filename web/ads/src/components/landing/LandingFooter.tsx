@@ -3,7 +3,7 @@
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
-import { ExternalLink, ShieldCheck, Heart } from 'lucide-react';
+import { ExternalLink, Heart } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
 
@@ -38,7 +38,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               style={{ marginBottom: '14px' }}
             />
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 16px' }}>
-              Built on love and human dignity. An ethical advertising ecosystem empowering independent website publishers, creator communities, and purposeful businesses.
+              Campaign tools for advertisers, publishers and creators.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ThemeSwitcher showLabel labelPrefix="Theme:" />
@@ -126,8 +126,8 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                 </Button>
               </li>
               <li>
-                <a href="#calculator" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
-                  Earnings Calculator
+                <a href="#partners" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+                  Publishing Options
                 </a>
               </li>
             </ul>
@@ -185,13 +185,6 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span>Device Care: &lt;12KB</span>
-            <span>•</span>
-            <span>Honest Attribution: 100% Verified</span>
-            <span>•</span>
-            <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>Transparent Operations</span>
-          </div>
         </div>
       </div>
     </footer>

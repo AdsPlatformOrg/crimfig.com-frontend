@@ -34,7 +34,7 @@ export function LandingFAQ() {
     <section
       id="faq"
       style={{
-        padding: '96px 24px',
+        padding: '64px 24px',
         backgroundColor: 'var(--bg-page)',
         borderBottom: '1px solid var(--border-subtle)',
       }}
@@ -101,13 +101,17 @@ export function LandingFAQ() {
                     justifyContent: 'space-between',
                     gap: '16px',
                     textAlign: 'left',
+                    whiteSpace: 'normal',
+                    height: 'auto',
+                    minHeight: '56px',
+                    lineHeight: 1.5,
                   }}
                 >
-                  <span>{faq.q}</span>
+                  <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{faq.q}</span>
                   {isOpen ? (
-                    <ChevronUp style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
+                    <ChevronUp style={{ width: 18, height: 18, flexShrink: 0, color: 'var(--color-crimson)' }} />
                   ) : (
-                    <ChevronDown style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+                    <ChevronDown style={{ width: 18, height: 18, flexShrink: 0, color: 'var(--text-muted)' }} />
                   )}
                 </Button>
 

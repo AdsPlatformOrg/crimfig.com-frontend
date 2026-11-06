@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, KeyRound, Lock, Users, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
 
 export function LandingHero() {
   return (
@@ -10,7 +10,7 @@ export function LandingHero() {
       style={{
         position: 'relative',
         overflow: 'hidden',
-        padding: '72px 24px 96px',
+        padding: '64px 24px',
         backgroundColor: 'var(--bg-page)',
         borderBottom: '1px solid var(--border-subtle)',
       }}
@@ -56,7 +56,7 @@ export function LandingHero() {
             }}
           >
             <ShieldCheck style={{ width: 15, height: 15, color: 'var(--color-crimson)' }} />
-            <span>Digital Sanctuary • Sovereign Identity &amp; Human Dignity</span>
+            <span>CrimFig Account</span>
           </div>
 
           {/* Heading */}
@@ -70,7 +70,7 @@ export function LandingHero() {
               marginBottom: '24px',
             }}
           >
-            Your sovereign identity.{' '}
+            One account.{' '}
             <span
               style={{
                 background: 'var(--gradient-crimson)',
@@ -78,7 +78,7 @@ export function LandingHero() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Protected with care
+              Connected
             </span>{' '}
             across CrimFig.
           </h1>
@@ -93,7 +93,7 @@ export function LandingHero() {
               margin: '0 auto 40px',
             }}
           >
-            We treat your personal data as a sacred trust, not an asset to monetize. Access <strong>Ads</strong>, <strong>Billing</strong>, and creator workspaces with cryptographic passkeys, zero third-party tracking, and instant device sovereignty.
+            Sign in to Ads and Billing, manage your account security, and work with your team.
           </p>
 
           {/* CTAs */}
@@ -104,7 +104,7 @@ export function LandingHero() {
               justifyContent: 'center',
               gap: '16px',
               flexWrap: 'wrap',
-              marginBottom: '60px',
+              marginBottom: '0',
             }}
           >
             <Link
@@ -150,73 +150,6 @@ export function LandingHero() {
             </Link>
           </div>
 
-          {/* Key Value Pillars */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '20px',
-              textAlign: 'left',
-              marginTop: '48px',
-            }}
-          >
-            <div
-              style={{
-                padding: '20px',
-                borderRadius: '14px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
-                <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Bank-Grade Protection
-                </span>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Advanced password encryption keeping your credentials confidential and safe.
-              </p>
-            </div>
-
-            <div
-              style={{
-                padding: '20px',
-                borderRadius: '14px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
-                <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Two-Step Verification
-                </span>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Compatible with Google Authenticator, Apple, Authy & printable recovery backup keys.
-              </p>
-            </div>
-
-            <div
-              style={{
-                padding: '20px',
-                borderRadius: '14px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                <CheckCircle2 style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
-                <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Team & Agency Workspaces
-                </span>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Seamless collaboration with custom roles for brands, agencies, and marketing teams.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>

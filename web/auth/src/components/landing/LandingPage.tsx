@@ -4,7 +4,6 @@ import React from 'react';
 import { LandingNavbar } from './LandingNavbar';
 import { LandingHero } from './LandingHero';
 import { LandingFeatures } from './LandingFeatures';
-import { LandingSecurityDemo } from './LandingSecurityDemo';
 import { LandingFAQ } from './LandingFAQ';
 import { LandingFooter } from './LandingFooter';
 
@@ -26,7 +25,6 @@ export function AuthLandingPage() {
       <main style={{ flex: 1 }}>
         <LandingHero />
         <LandingFeatures />
-        <LandingSecurityDemo />
         <LandingFAQ />
       </main>
 

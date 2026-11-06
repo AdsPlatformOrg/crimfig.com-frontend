@@ -5,7 +5,6 @@ import { LandingNavbar } from './LandingNavbar';
 import { LandingHero } from './LandingHero';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingPartners } from './LandingPartners';
-import { LandingCalculator } from './LandingCalculator';
 import { LandingFooter } from './LandingFooter';
 
 interface LandingPageProps {
@@ -38,9 +37,6 @@ export function LandingPage({ onLaunchConsole }: LandingPageProps) {
           onJoinAsPromoter={(type) => onLaunchConsole('promoter', type)}
         />
 
-        <LandingCalculator
-          onStartEarning={() => onLaunchConsole('promoter')}
-        />
       </main>
 
       <LandingFooter onLaunchConsole={(role) => onLaunchConsole(role)} />

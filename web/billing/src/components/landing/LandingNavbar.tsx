@@ -11,9 +11,8 @@ interface LandingNavbarProps {
 
 const links = [
   { href: '#features', label: 'Features' },
-  { href: '#rewards', label: 'Rewards & Cashback', icon: Gift },
-  { href: '#calculator', label: 'FX Calculator' },
-  { href: '#security', label: 'Security & Rails' },
+  { href: '#rewards', label: 'Rewards Status', icon: Gift },
+  { href: '#security', label: 'Security' },
 ];
 
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {

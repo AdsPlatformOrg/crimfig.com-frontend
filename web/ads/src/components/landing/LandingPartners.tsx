@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Globe, Smartphone, UserCheck, CheckCircle2, ArrowRight, Code2, ShieldAlert, Sparkles } from 'lucide-react';
+import { Globe, Smartphone, UserCheck, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 
@@ -15,48 +15,30 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
       id: 'websites' as const,
       icon: Globe,
       title: 'Websites & Independent Publishers',
-      subtitle: 'Monetize with dignity • Sub-12KB embeds',
+      subtitle: 'Website ad placements',
       badge: '55% Revenue Share',
       description:
-        'Display non-intrusive, adaptive banners and cards that respect user reading flow. Validate domain ownership via DNS TXT or HTML meta tags with full creative veto power.',
-      features: [
-        'Responsive, device-caring ad units (728x90, 300x250, 160x600)',
-        'Guaranteed 55% publisher revenue share',
-        'Independent DNS/Meta verification without credential risks',
-        'Complete control over displayed ad categories',
-      ],
+        'Verify your website, choose ad categories and manage placements from the promoter console.',
       ctaText: 'Partner Your Website',
     },
     {
       id: 'mobile_apps' as const,
       icon: Smartphone,
       title: 'Mobile App Developers',
-      subtitle: 'Native SDK monetization in development',
-      badge: 'Transparent Payouts',
+      subtitle: 'Native app monetization',
+      badge: 'In development',
       description:
-        'Monetize your iOS and Android mobile games, utilities, and applications with native, privacy-preserving card and rewarded video placements.',
-      features: [
-        'Lightweight, battery-efficient SDK architecture',
-        'Rewarded video & high-engagement respectful interstitials',
-        'Transparent clearance timelines without surprise chargebacks',
-        'Honest reporting without simulated engagement data',
-      ],
+        'Native app monetization is in development. Explore the mobile app workspace for setup and availability.',
       ctaText: 'Explore Mobile SDK',
     },
     {
       id: 'individuals' as const,
       icon: UserCheck,
       title: 'Creators & Village Voices',
-      subtitle: 'Monetize your audience with genuine care',
+      subtitle: 'Creator share links',
       badge: 'Performance Share Pool',
       description:
-        'Share verified HMAC-signed recommendations across Reels, bios, and communities. Zero spam—recommend products you believe in and earn from the 55% performance pool plus milestone rewards.',
-      features: [
-        'Cryptographically signed tamper-proof promoter share links',
-        '1-Click consent for verified CrimFig Reels integration',
-        'Real-time earnings tracking with transparent fees',
-        'Direct creator advocacy and compassionate support',
-      ],
+        'Manage your promoter links and follow attributed activity from your creator workspace.',
       ctaText: 'Join as a Creator',
     },
   ];
@@ -65,13 +47,13 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
     <section
       id="partners"
       style={{
-        padding: '96px 24px',
+        padding: '64px 24px',
         backgroundColor: 'var(--bg-page)',
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', maxWidth: '760px', margin: '0 auto 64px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '760px', margin: '0 auto 36px' }}>
           <div
             style={{
               display: 'inline-flex',
@@ -97,17 +79,17 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
               margin: '0 0 16px',
             }}
           >
-            People Over Transactions: 3 Ways to Partner
+            Find your way to partner
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Whether you run an independent blog, publish an indie utility, or speak to a dedicated creator audience, CrimFig honors your work with radical transparency and dignified rewards.
+            Explore publishing options for your website, app or creator audience.
           </p>
         </div>
 
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
             gap: '32px',
           }}
         >
@@ -157,7 +139,7 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
                     </div>
                     <span
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: 700,
                         padding: '4px 10px',
                         borderRadius: '9999px',
@@ -180,14 +162,6 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
                     {tier.description}
                   </p>
 
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {tier.features.map((feat, fIdx) => (
-                      <li key={fIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--color-success)', flexShrink: 0, marginTop: '2px' }} />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
 
                 <Button

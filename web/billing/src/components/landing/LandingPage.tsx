@@ -5,7 +5,6 @@ import { LandingNavbar } from './LandingNavbar';
 import { LandingHero } from './LandingHero';
 import { LandingFeatures } from './LandingFeatures';
 import { LandingRewards } from './LandingRewards';
-import { LandingCalculator } from './LandingCalculator';
 import { LandingPartners } from './LandingPartners';
 import { LandingFooter } from './LandingFooter';
 
@@ -34,7 +33,6 @@ export function LandingPage({ onLaunchConsole }: LandingPageProps) {
 
         <LandingRewards onExploreRewards={() => onLaunchConsole('rewards')} />
 
-        <LandingCalculator onCalculate={() => onLaunchConsole('overview')} />
 
         <LandingPartners />
       </main>

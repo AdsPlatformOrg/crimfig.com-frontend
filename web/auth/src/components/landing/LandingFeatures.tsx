@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, Key, Lock, Users, Smartphone, RefreshCw, Cpu, Database } from 'lucide-react';
+import { Lock, Users, Smartphone, RefreshCw, Cpu, Database } from 'lucide-react';
 
 export function LandingFeatures() {
   const features = [
@@ -37,9 +37,9 @@ export function LandingFeatures() {
     },
     {
       icon: <Database style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Strict Privacy & Data Protection',
+      title: 'Privacy & Data Protection',
       description:
-        'Fully compliant with the Nigerian Data Protection Act (NDPA) and global privacy standards. Sensitive personal records remain confidential with zero third-party data sharing.',
+        'Review how your information is handled in our Privacy Policy.',
     },
   ];
 
@@ -47,7 +47,7 @@ export function LandingFeatures() {
     <section
       id="features"
       style={{
-        padding: '96px 24px',
+        padding: '64px 24px',
         backgroundColor: 'var(--bg-page)',
         borderBottom: '1px solid var(--border-subtle)',
       }}
@@ -63,17 +63,17 @@ export function LandingFeatures() {
               marginBottom: '16px',
             }}
           >
-            Digital Sanctuary &amp; Sovereign Stewardship
+            Your account, under your control
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            Built for individuals who cherish privacy and teams that value structural clarity, psychological safety, and absolute zero data exploitation.
+            Manage sign-in, security and team access from your CrimFig account.
           </p>
         </div>
 
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '28px',
           }}
         >

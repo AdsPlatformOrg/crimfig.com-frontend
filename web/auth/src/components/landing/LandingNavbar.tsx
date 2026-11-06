@@ -10,8 +10,6 @@ import { publicHeaderActions } from '../../lib/public-header';
 
 const links = [
   { href: '#features', label: 'Capabilities' },
-  { href: '#security', label: 'Security & 2FA' },
-  { href: '#security', label: 'Team Workspaces' },
   { href: '#faq', label: 'FAQ' },
 ];
 

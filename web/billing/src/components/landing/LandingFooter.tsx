@@ -55,9 +55,8 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               Platform
             </div>
             <a href="#features" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Dual-Currency Escrow</a>
-            <a href="#rewards" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards &amp; Cashback</a>
-            <a href="#calculator" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>FX Rate Calculator</a>
-            <a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Commercial Bank Rails</a>
+            <a href="#rewards" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards Status</a>
+            <a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Account Security</a>
             <Button
               type="button"
               onClick={() => onLaunchConsole('overview')}
@@ -92,20 +91,9 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               <span>Auth &amp; SSO Identity</span>
               <ExternalLink style={{ width: 12, height: 12 }} />
             </a>
-            <span style={{ color: 'var(--text-muted)' }}>Stream &amp; Social (Live Tips)</span>
-            <span style={{ color: 'var(--text-muted)' }}>Chat Enterprise</span>
           </div>
 
-          {/* Column 3: Legal & Regulatory */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Compliance &amp; Terms
-            </div>
-            <span style={{ color: 'var(--text-secondary)' }}>Provider and rollout checks pending</span>
-            <span style={{ color: 'var(--text-secondary)' }}>Escrow &amp; Dispute Policy</span>
-            <span style={{ color: 'var(--text-secondary)' }}>Bank Account Availability</span>
-            <span style={{ color: 'var(--text-secondary)' }}>Privacy &amp; Data Security</span>
-          </div>
+
         </div>
 
         {/* Bottom bar */}
@@ -133,7 +121,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               variant="link"
               size="sm"
             >
-              Explore Rewards Program &rarr;
+              View Rewards Status &rarr;
             </Button>
 
             <ThemeSwitcher showLabel labelPrefix="Theme:" />

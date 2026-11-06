@@ -2,57 +2,13 @@
 
 import React from 'react';
 import { Card } from '../ui/card';
-import {
-  Wallet,
-  CreditCard,
-  Building2,
-  Sparkles,
-  ShieldCheck,
-  Zap,
-  RefreshCw,
-  Coins,
-  FileText,
-  Lock
-} from 'lucide-react';
+import { Wallet, CreditCard, FileText } from 'lucide-react';
 
 export function LandingFeatures() {
   const features = [
-    {
-      icon: Wallet,
-      title: 'Atomic Multi-App Escrow',
-      description: 'Your funds are secured within strict atomic transactions with explicit timeouts. Transparent dual-currency balances (USD & NGN) with zero hidden currency spreads.',
-      badge: 'Atomic Locks'
-    },
-    {
-      icon: CreditCard,
-      title: 'Tokenized Card Security',
-      description: 'Bank-grade PCI tokenization through Paystack with explicit user consent. We never store raw card numbers, CVVs, or unverified authorization credentials.',
-      badge: 'Zero Storage Risk'
-    },
-    {
-      icon: Building2,
-      title: 'Transparent Bank Verification',
-      description: 'Real-time account name resolution before any withdrawal attempt. Full pre-transaction disclosure of CBN statutory stamp charges and provider switch fees.',
-      badge: 'Fee Disclosed Upfront'
-    },
-    {
-      icon: Coins,
-      title: 'Fund-Backed Rewards Utility',
-      description: 'Ground all platform points in verifiable platform reserves. We reject speculative tokens and artificial pump-and-dump loops.',
-      badge: 'Zero Speculation'
-    },
-    {
-      icon: Sparkles,
-      title: 'Fair Subscription Management',
-      description: 'Transparent billing cycles with instant self-service cancellation. Zero deceptive renewal traps or hidden auto-debit loops.',
-      badge: 'Human Autonomy'
-    },
-    {
-      icon: FileText,
-      title: 'Immutable Audit Accounting',
-      description: 'Integer-cent precision ledger ensures mathematical accuracy. Every debit, credit, fee, and escrow release is tied to an immutable audit receipt.',
-      badge: 'Mathematical Truth'
-    }
+    { icon: Wallet, title: 'Campaign Escrow', description: 'Review funds allocated to your advertising campaigns.', badge: 'Campaign funds' },
+    { icon: CreditCard, title: 'Wallet Funding', description: 'Review provider-confirmed funding quotes and checkout details in your dashboard.', badge: 'Funding quotes' },
+    { icon: FileText, title: 'Transaction History', description: 'Follow wallet activity, charges and transaction references in one place.', badge: 'Account records' },
   ];
 
   return (
@@ -77,14 +33,14 @@ export function LandingFeatures() {
               backgroundColor: 'rgba(212, 20, 58, 0.08)',
               border: '1px solid rgba(212, 20, 58, 0.2)',
               color: 'var(--color-crimson)',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
               marginBottom: '12px'
             }}
           >
-              Financial Stewardship &amp; Integrity
+              Your account
           </div>
           <h2
             style={{
@@ -95,10 +51,10 @@ export function LandingFeatures() {
               margin: '0 0 16px',
             }}
           >
-            Engineered for Creator Dignity &amp; Absolute Truth
+            Keep your finances in view
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Every naira and dollar is stewarded with care. Atomic transactions, pre-disclosed bank transfer fees, and verifiable multi-signature reserves protect your work and capital.
+            Funding, campaign balances and transaction records, together in your billing workspace.
           </p>
         </div>
 
@@ -106,7 +62,7 @@ export function LandingFeatures() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
             gap: '24px',
           }}
         >
@@ -154,7 +110,7 @@ export function LandingFeatures() {
 
                   <span
                     style={{
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
                       padding: '3px 8px',
                       borderRadius: '9999px',

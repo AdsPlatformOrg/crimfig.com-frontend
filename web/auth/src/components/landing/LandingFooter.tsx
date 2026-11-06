@@ -88,18 +88,7 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Security & Compliance */}
-          <div>
-            <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>
-              Security & Trust
-            </h4>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-muted)' }}>
-              <li>• Enterprise Single Sign-On</li>
-              <li>• Two-Step Verification (2FA)</li>
-              <li>• Encrypted Data Protection</li>
-              <li>• NDPA 2023 Privacy Compliant</li>
-            </ul>
-          </div>
+
         </div>
 
         {/* Bottom Bar */}
@@ -120,7 +109,6 @@ export function LandingFooter() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <Link href="/privacy" style={{ color: "inherit", textDecoration: "none" }}>Privacy Policy</Link>
             <Link href="/terms" style={{ color: "inherit", textDecoration: "none" }}>Terms of Service</Link>
-            <span>Security Whitepaper</span>
             <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>
         </div>

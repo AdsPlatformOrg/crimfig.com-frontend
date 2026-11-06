@@ -1,65 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Layers, ShieldCheck, Zap, BarChart3, Eye, MousePointer, Hand, Sparkles } from 'lucide-react';
+import { Layers, ShieldCheck, BarChart3, Sparkles } from 'lucide-react';
 
 export function LandingFeatures() {
   const features = [
-    {
-      icon: Layers,
-      title: 'Dignified Creative Formats',
-      description:
-        'Upload high-definition JPG/PNG creatives, animated GIFs, or MP4 video reels. Non-coercive, elegant ad units designed to enhance, rather than disrupt, user reading flow.',
-      tag: 'Images • GIFs • Video Reels',
-    },
-    {
-      icon: Zap,
-      title: 'Ultra-Lightweight Embed Runtimes',
-      description:
-        'Sub-12KB embed script engineered with deep care for publisher websites and user devices. Zero memory leaks, zero battery drain, and zero intrusive surveillance tracking.',
-      tag: '<12KB • Device Respect',
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Ethical Ownership Verification',
-      description:
-        'Verified via transparent DNS TXT records or HTML meta proofs. Respects publisher sovereignty without demanding sensitive credentials or intrusive server access.',
-      tag: 'Publisher Sovereignty',
-    },
-    {
-      icon: BarChart3,
-      title: 'Absolute Transparency & Honest Metrics',
-      description:
-        'Zero fabricated clicks or bot surges. Track impressions, clicks, hovers, touches, and exact spend in real-time. Unadorned truth in every report.',
-      tag: 'Zero Fake Traffic • Real People',
-    },
-    {
-      icon: Eye,
-      title: 'Ethical Niche Matching',
-      description:
-        'Publishers maintain full autonomy over ad categories displayed on their properties. Advertisers connect with genuine, receptive audiences who share common passions.',
-      tag: 'Partner Autonomy',
-    },
-    {
-      icon: Hand,
-      title: 'Atomic Escrow & Payout Dignity',
-      description:
-        'Pre-funded advertiser escrows protect promoter earnings. 55% direct performance share to promoters, 30% CrimFig platform base, and 15% dynamic growth & rewards fund—with prompt 72-hour clearance schedules.',
-      tag: '55% Promoters • 30% CrimFig • 15% Growth',
-    },
+    { icon: Layers, title: 'Flexible Ad Formats', description: 'Use images, GIFs and video creatives for your campaigns.', tag: 'Images • GIFs • Video' },
+    { icon: ShieldCheck, title: 'Verified Publishers', description: 'Verify website ownership with DNS or HTML meta tags, then choose the categories you accept.', tag: 'Publisher controls' },
+    { icon: BarChart3, title: 'Campaign Reporting', description: 'Review impressions, clicks and spend from your campaign dashboard.', tag: 'Performance in one place' },
   ];
 
   return (
     <section
       id="what-we-do"
       style={{
-        padding: '96px 24px',
+        padding: '64px 24px',
         backgroundColor: 'var(--bg-surface)',
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 64px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 36px' }}>
           <div
             style={{
               display: 'inline-flex',
@@ -74,7 +35,7 @@ export function LandingFeatures() {
             }}
           >
             <Sparkles style={{ width: 14, height: 14 }} />
-            <span>Built on Love &amp; Mutual Dignity</span>
+            <span>Campaign tools</span>
           </div>
           <h2
             style={{
@@ -85,17 +46,17 @@ export function LandingFeatures() {
               margin: '0 0 16px',
             }}
           >
-            Ethical Tools for Meaningful Reach
+            From creative to campaign
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Everything you need to connect with genuine human audiences or sustainably monetize your digital properties with respect, transparency, and care.
+            Create your ads, choose your audience and follow the results.
           </p>
         </div>
 
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '24px',
           }}
         >

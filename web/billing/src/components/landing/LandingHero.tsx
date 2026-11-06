@@ -1,20 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import {
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  TrendingUp,
-  Wallet,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Coins,
-  Sparkles,
-  Building2,
-  CheckCircle2,
-  RefreshCw
-} from 'lucide-react';
+import React from 'react';
+import { ArrowRight, ShieldCheck, Zap, Wallet, Coins, Building2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 
@@ -23,8 +10,6 @@ interface LandingHeroProps {
 }
 
 export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
-  const [demoAmount, setDemoAmount] = useState<number>(100);
-  const fxRate = 1550;
 
   return (
     <section
@@ -68,7 +53,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               }}
             >
               <Zap style={{ width: 14, height: 14 }} />
-              Protected by Atomic Escrow • Zero Hidden Spreads
+              CrimFig Billing
             </span>
           </div>
 
@@ -83,7 +68,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               margin: 0,
             }}
           >
-            Financial peace of mind.{' '}
+            Your CrimFig wallet.{' '}
             <span
               style={{
                 background: 'var(--gradient-crimson)',
@@ -91,9 +76,9 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Atomic escrow
+              Funding, escrow
             </span>{' '}
-            &amp; absolute transparency.
+            &amp; transaction history.
           </h1>
 
           {/* Subheading */}
@@ -106,7 +91,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               maxWidth: '640px',
             }}
           >
-            CrimFig Billing protects buyers, sellers, advertisers, and creators with atomic transactional integrity. Every fee is disclosed upfront, every transfer is verified, and genuine zero balances are honored honestly with zero hidden charges.
+            Manage wallet funding, campaign escrow and transaction history. Check current payment availability and funding quotes in your dashboard.
           </p>
 
           {/* CTAs */}
@@ -154,7 +139,7 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
               }}
             >
               <Coins style={{ width: 18, height: 18, color: 'var(--color-crimson)' }} />
-              <span>Explore Rewards &amp; Cashback</span>
+              <span>Rewards Status</span>
             </a>
           </div>
 
@@ -186,189 +171,12 @@ export function LandingHero({ onLaunchConsole }: LandingHeroProps) {
           </div>
         </div>
 
-        {/* Right Column: Interactive Financial Showcase Card */}
-        <div style={{ width: '100%' }}>
-          <Card
-            className="theme-card"
-            style={{
-              borderRadius: '24px',
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              padding: '32px',
-              boxShadow: 'var(--shadow-xl)',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Top decorative gradient glow */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '4px',
-                background: 'var(--gradient-crimson)',
-              }}
-            />
-
-            {/* Header: Status & Live Rate */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--badge-bg)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--color-crimson)',
-                  }}
-                >
-                  <Wallet style={{ width: 16, height: 16 }} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Universal Wallet
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    Illustrative Wallet Preview
-                  </div>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 10px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'var(--color-success-bg)',
-                  color: 'var(--color-success)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <CheckCircle2 style={{ width: 12, height: 12 }} />
-                <span>Example Rate: ₦{fxRate.toLocaleString()}/$</span>
-              </div>
-            </div>
-
-            {/* Dual Balance Display */}
-            <div
-              style={{
-                padding: '20px',
-                borderRadius: '16px',
-                backgroundColor: 'var(--bg-page)',
-                border: '1px solid var(--border-subtle)',
-                marginBottom: '20px',
-              }}
-            >
-              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Simulated Balance
-              </div>
-              <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                ${demoAmount.toFixed(2)}{' '}
-                <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>USD</span>
-              </div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-crimson)', marginTop: '2px' }}>
-                ≈ ₦{(demoAmount * fxRate).toLocaleString()} NGN
-              </div>
-
-              {/* Slider for Interactive Feel */}
-              <div style={{ marginTop: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  <span>Quick Test Amount</span>
-                  <span>Drag to simulate: <strong>${demoAmount} USD</strong></span>
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="1000"
-                  step="20"
-                  value={demoAmount}
-                  onChange={(e) => setDemoAmount(Number(e.target.value))}
-                  style={{
-                    width: '100%',
-                    accentColor: 'var(--color-crimson)',
-                    cursor: 'pointer',
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Integrated Features Preview */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-              <div
-                style={{
-                  padding: '14px',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--bg-page)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                  <Zap style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
-                  <span>Illustrative NGN Value</span>
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Illustrative conversion only. Bank withdrawals are unavailable.
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: '14px',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--bg-page)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                  <Sparkles style={{ width: 14, height: 14, color: '#F59E0B' }} />
-                  <span>Rewards Engine</span>
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Example only. Rewards issuance and redemption are not available.
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <Button
-                type="button"
-                onClick={() => onLaunchConsole('overview')}
-                style={{ flex: 1 }}
-                size="sm"
-              >
-                <ArrowDownLeft style={{ width: 15, height: 15 }} />
-                <span>Deposit Funds</span>
-              </Button>
-
-              <Button
-                type="button"
-                onClick={() => onLaunchConsole('overview')}
-                variant="outline"
-                style={{ flex: 1 }}
-                size="sm"
-              >
-                <ArrowUpRight style={{ width: 15, height: 15 }} />
-                <span>Check Withdrawal Availability</span>
-              </Button>
-            </div>
-          </Card>
-        </div>
+        <Card style={{ padding: '32px', borderRadius: '20px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+          <Wallet size={28} style={{ color: 'var(--color-crimson)', marginBottom: '20px' }} aria-hidden="true" />
+          <h2 style={{ fontSize: '22px', margin: '0 0 16px', color: 'var(--text-primary)' }}>Before you get started</h2>
+          <p style={{ fontSize: '16px', lineHeight: 1.6, color: 'var(--text-secondary)', margin: '0 0 16px' }}>Sign in to view your balance, funding options and transaction history.</p>
+          <p style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>Bank withdrawals and rewards redemption are currently unavailable. Review provider-confirmed quotes before funding your wallet.</p>
+        </Card>
       </div>
 
       <style jsx>{`
