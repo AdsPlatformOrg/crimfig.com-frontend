@@ -1,0 +1,37 @@
+{
+  "evaluatedCandidates": [],
+  "excludedCandidates": [
+    {
+      "count": 1,
+      "stage": "creative_compatibility",
+      "reasonCode": "CREATIVE_RENDITION_INCOMPATIBLE",
+      "deliveryEvaluation": {
+        "counts": {
+          "discovered": 1,
+          "auctionEntered": 0,
+          "eligibleGroups": 0,
+          "targetingEligible": 1,
+          "creativeCompatible": 0
+        },
+        "device": "android",
+        "deviceSource": "user_agent",
+        "auctionPolicyVersion": "plan0096-fixture",
+        "preAuctionExclusions": [
+          {
+            "stage": "creative_compatibility",
+            "campaignId": "3bac575b-3211-42a2-9d08-cf6d2c7566ae",
+            "creativeId": "1f7c0e34-c766-4899-84f0-a24672964bc0",
+            "reasonCode": "CREATIVE_FORMAT_MISMATCH"
+          }
+        ],
+        "omittedPreAuctionExclusions": 0
+      }
+    },
+    {
+      "stage": "creative_compatibility",
+      "campaignId": "3bac575b-3211-42a2-9d08-cf6d2c7566ae",
+      "creativeId": "1f7c0e34-c766-4899-84f0-a24672964bc0",
+      "reasonCode": "CREATIVE_FORMAT_MISMATCH"
+    }
+  ]
+}

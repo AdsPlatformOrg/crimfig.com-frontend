@@ -8,6 +8,7 @@ import { formatAuctionUsd } from '@/lib/auction-pricing';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { DeliveryEvaluation } from '@/components/admin/delivery-evaluation';
 import {
   ArrowLeft,
   History,
@@ -287,8 +288,8 @@ export default function AuctionDecisionDetailPage({
                 <span>{terminationStage}</span>
               </div>
               <div>
-                <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
-                <span>{decision.policyVersion || 'auction_v1'}</span>
+                <span style={{ color: 'var(--text-muted)' }}>{isHouse ? 'House fallback policy — ' : 'Recorded auction policy — '}</span>
+                <span>{decision.policyVersion || 'Unknown'}</span>
               </div>
               {admission && (
                 <dl>
@@ -381,6 +382,7 @@ export default function AuctionDecisionDetailPage({
               <code>{decision.bidderGroupingMode}</code>
             </div>
           </div>
+          <DeliveryEvaluation decision={decision} />
         </Card>
 
         {/* Stage 3: Auction Resolution */}
@@ -411,7 +413,7 @@ export default function AuctionDecisionDetailPage({
               <strong>{billingFallback ? 'Not recorded for paid auction' : isPaid ? clearingEcpm ? `${clearingEcpm} per 1,000 impressions` : 'Not recorded' : 'Not applicable'}</strong>
             </div>
             <div>
-              <span style={{ color: 'var(--text-muted)' }}>Policy Version: </span>
+              <span style={{ color: 'var(--text-muted)' }}>{isHouse ? 'House fallback policy — ' : 'Recorded auction policy — '}</span>
               <code>{decision.policyVersion}</code>
             </div>
           </div>

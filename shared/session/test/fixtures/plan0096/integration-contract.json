@@ -1,0 +1,89 @@
+[
+  {
+    "inventoryClass": "paid",
+    "evaluatedCandidates": [
+      {
+        "tieDigest": "de108f3dfc6c53d86ecf66cd603b1f9d55526470894a01ed4d29befac35312ee",
+        "campaignId": "3bac575b-3211-42a2-9d08-cf6d2c7566ae",
+        "creativeId": "1f7c0e34-c766-4899-84f0-a24672964bc0",
+        "bidUsdCents": 10,
+        "scoreMicros": 1500000,
+        "pricingModel": "cpc",
+        "bidderGroupKey": "owner:83b2ad74-d7b2-4a05-afd3-bf4f5731b87a",
+        "deliveryEvaluation": {
+          "counts": {
+            "discovered": 1,
+            "auctionEntered": 1,
+            "eligibleGroups": 1,
+            "targetingEligible": 1,
+            "creativeCompatible": 1
+          },
+          "device": "android",
+          "deviceSource": "user_agent",
+          "auctionPolicyVersion": "plan0096-fixture",
+          "preAuctionExclusions": [],
+          "omittedPreAuctionExclusions": 0
+        }
+      }
+    ],
+    "excludedCandidates": []
+  },
+  {
+    "inventoryClass": "paid",
+    "evaluatedCandidates": [
+      {
+        "tieDigest": "41e081a2b4b78790a7b994ef716fc3c36a0176562ed044948fcc319d148443f2",
+        "campaignId": "3bac575b-3211-42a2-9d08-cf6d2c7566ae",
+        "creativeId": "1f7c0e34-c766-4899-84f0-a24672964bc0",
+        "bidUsdCents": 10,
+        "scoreMicros": 1500000,
+        "pricingModel": "cpc",
+        "bidderGroupKey": "owner:83b2ad74-d7b2-4a05-afd3-bf4f5731b87a",
+        "deliveryEvaluation": {
+          "counts": {
+            "discovered": 1,
+            "auctionEntered": 1,
+            "eligibleGroups": 1,
+            "targetingEligible": 1,
+            "creativeCompatible": 1
+          },
+          "device": "ios",
+          "deviceSource": "user_agent",
+          "auctionPolicyVersion": "plan0096-fixture",
+          "preAuctionExclusions": [],
+          "omittedPreAuctionExclusions": 0
+        }
+      }
+    ],
+    "excludedCandidates": []
+  },
+  {
+    "inventoryClass": "paid",
+    "evaluatedCandidates": [
+      {
+        "tieDigest": "e619337bcf24055cfa52c0e1b86d5a23c3f7454aba13ee186eef50b9d8130bcd",
+        "campaignId": "3bac575b-3211-42a2-9d08-cf6d2c7566ae",
+        "creativeId": "1f7c0e34-c766-4899-84f0-a24672964bc0",
+        "bidUsdCents": 10,
+        "scoreMicros": 1500000,
+        "pricingModel": "cpc",
+        "bidderGroupKey": "owner:83b2ad74-d7b2-4a05-afd3-bf4f5731b87a",
+        "deliveryEvaluation": {
+          "counts": {
+            "discovered": 1,
+            "auctionEntered": 1,
+            "eligibleGroups": 1,
+            "targetingEligible": 1,
+            "creativeCompatible": 1
+          },
+          "device": "desktop",
+          "deviceSource": "user_agent",
+          "auctionPolicyVersion": "plan0096-fixture",
+          "preAuctionExclusions": [],
+          "omittedPreAuctionExclusions": 0
+        }
+      }
+    ],
+    "excludedCandidates": []
+  }
+]
