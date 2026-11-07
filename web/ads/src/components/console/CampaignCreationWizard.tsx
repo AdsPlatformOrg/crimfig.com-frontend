@@ -1362,7 +1362,7 @@ export function CampaignCreationWizard({
                 <Input
                   type="number"
                   min={50}
-                  step={5}
+                  step={1}
                   value={cpmBidCents}
                   onChange={(event) =>
                     setCpmBidCents(Number(event.target.value))
@@ -1371,7 +1371,7 @@ export function CampaignCreationWizard({
                 <span
                   style={{ fontSize: "10px", color: "var(--color-crimson)" }}
                 >
-                  ${(cpmBidCents / 100).toFixed(2)} per 1,000 views
+                  Minimum: $0.50 per 1,000 viewable impressions
                 </span>
               </label>
             ) : (
@@ -1397,7 +1397,7 @@ export function CampaignCreationWizard({
                 <span
                   style={{ fontSize: "10px", color: "var(--color-crimson)" }}
                 >
-                  ${(cpcBidCents / 100).toFixed(2)} per click
+                  Minimum: $0.10 per click
                 </span>
               </label>
             )}

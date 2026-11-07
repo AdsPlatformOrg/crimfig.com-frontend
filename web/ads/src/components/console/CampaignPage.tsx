@@ -348,7 +348,11 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               {campaign.frequencyCapPerDay ? `${campaign.frequencyCapPerDay} views / user / day` : 'No Frequency Cap'}
             </div>
             <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
-              Pricing: {campaign.pricingModel?.toUpperCase()} · Bid: ${campaign.costPerClickUsdCents ? (campaign.costPerClickUsdCents / 100).toFixed(2) : (campaign.costPerImpressionUsdCents ? (campaign.costPerImpressionUsdCents / 100).toFixed(2) : '0.10')}
+              {campaign.pricingModel === 'cpm'
+                ? <>Pricing: CPM · Bid: {campaign.costPerImpressionUsdCents == null ? 'Unavailable' : `$${(campaign.costPerImpressionUsdCents / 100).toFixed(2)} per 1,000 viewable impressions`}</>
+                : campaign.pricingModel === 'cpc'
+                  ? <>Pricing: CPC · Bid: {campaign.costPerClickUsdCents == null ? 'Unavailable' : `$${(campaign.costPerClickUsdCents / 100).toFixed(2)} per click`}</>
+                  : 'Pricing unavailable'}
             </p>
           </div>
         </div>
