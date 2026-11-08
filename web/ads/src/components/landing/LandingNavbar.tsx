@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
+import Link from 'next/link';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
 
@@ -10,8 +11,7 @@ interface LandingNavbarProps {
 }
 
 const links = [
-  { href: '/#what-we-do', label: 'Campaigns' },
-  { href: '/#partners', label: 'Promoters' },
+  { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
 ];
 
@@ -45,9 +45,9 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
 
         <nav className="cf-site-nav" aria-label="Main navigation">
           {links.map((link) => (
-            <a key={link.href} href={link.href} className="cf-site-nav-link">
+            <Link key={link.href} href={link.href} className="cf-site-nav-link">
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -78,14 +78,14 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         hidden={!mobileMenuOpen}
       >
           {links.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="cf-site-nav-link"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
-            </a>
+            </Link>
           ))}
           <Button onClick={launchConsole} className="cf-mobile-nav-cta">
             Launch Console <ArrowRight size={16} aria-hidden="true" />
