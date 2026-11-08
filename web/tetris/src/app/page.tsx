@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 export default function TetrisSplashScreen() {
   return (
     <div style={{
@@ -60,6 +62,7 @@ export default function TetrisSplashScreen() {
           🕹️
         </div>
 
+        <Image src="/img/logo-red.png" alt="" width={107} height={42} style={{ margin: "0 auto 16px" }} />
         <h1 style={{
           fontSize: '36px',
           fontWeight: '800',
