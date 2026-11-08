@@ -1001,3 +1001,39 @@ body {
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 }
+
+.cf-dropdown-content {
+  z-index: 60;
+  min-width: min(10rem, var(--radix-dropdown-menu-content-available-width, 100vw));
+  max-width: var(--radix-dropdown-menu-content-available-width, 100vw);
+  max-height: var(--radix-dropdown-menu-content-available-height, 100vh);
+  overflow: auto;
+  padding: .25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: .625rem;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-primary);
+}
+.cf-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.25rem;
+  padding: .5rem .625rem;
+  border-radius: .375rem;
+  font-size: .8125rem;
+  font-weight: 400;
+  cursor: default;
+  user-select: none;
+}
+.cf-dropdown-item--inset { padding-inline-start: 2rem; }
+.cf-dropdown-item[data-highlighted] {
+  background: var(--bg-surface);
+  outline: 2px solid var(--color-crimson);
+  outline-offset: -2px;
+}
+.cf-dropdown-item[data-disabled] { opacity: .5; pointer-events: none; }
+.cf-dropdown-label { padding: .5rem .625rem; font-size: .8125rem; font-weight: 600; }
+.cf-dropdown-separator { height: 1px; margin: .25rem 0; background: var(--border-subtle); }
