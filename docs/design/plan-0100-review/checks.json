@@ -1,0 +1,474 @@
+[
+  {
+    "page": "ads",
+    "file": "ads-375-light.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "light",
+    "width": 375,
+    "scrollWidth": 369,
+    "height": 4092,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fcreator-hero.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Flearn-ads.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 3
+  },
+  {
+    "page": "ads",
+    "file": "ads-1440-light.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "light",
+    "width": 1440,
+    "scrollWidth": 1434,
+    "height": 4184,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fcreator-hero.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Flearn-ads.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 3
+  },
+  {
+    "page": "ads",
+    "file": "ads-375-dark.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "dark",
+    "width": 375,
+    "scrollWidth": 369,
+    "height": 4092,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fcreator-hero.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Flearn-ads.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 3
+  },
+  {
+    "page": "ads",
+    "file": "ads-1440-dark.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "dark",
+    "width": 1440,
+    "scrollWidth": 1434,
+    "height": 4184,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fcreator-hero.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Flearn-ads.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 3
+  },
+  {
+    "page": "about",
+    "file": "about-375-light.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "light",
+    "width": 375,
+    "scrollWidth": 369,
+    "height": 4532,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-team.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-marketing.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-connections.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-advertisers.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-promoters.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 4
+  },
+  {
+    "page": "about",
+    "file": "about-1440-light.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "light",
+    "width": 1440,
+    "scrollWidth": 1434,
+    "height": 5909,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-team.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-marketing.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-connections.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-advertisers.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-promoters.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 4
+  },
+  {
+    "page": "about",
+    "file": "about-375-dark.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "dark",
+    "width": 375,
+    "scrollWidth": 369,
+    "height": 4532,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-team.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-marketing.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-connections.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-advertisers.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-promoters.webp&w=640&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 4
+  },
+  {
+    "page": "about",
+    "file": "about-1440-dark.jpg",
+    "headlineLines": 1,
+    "heroButtons": 0,
+    "theme": "dark",
+    "width": 1440,
+    "scrollWidth": 1434,
+    "height": 5909,
+    "images": [
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-team.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-marketing.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-connections.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-advertisers.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/_next/image?url=%2Fimg%2Fmarketing%2Fabout-promoters.webp&w=1920&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3105/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": [],
+    "revealCount": 4
+  },
+  {
+    "page": "auth",
+    "file": "auth-375-light.jpg",
+    "theme": "light",
+    "width": 375,
+    "scrollWidth": 360,
+    "height": 2420,
+    "images": [
+      {
+        "src": "http://localhost:3106/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/_next/image?url=%2Fimg%2Fmarketing%2Flagos-sunset.webp&w=384&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "auth",
+    "file": "auth-1440-light.jpg",
+    "theme": "light",
+    "width": 1440,
+    "scrollWidth": 1425,
+    "height": 2079,
+    "images": [
+      {
+        "src": "http://localhost:3106/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/_next/image?url=%2Fimg%2Fmarketing%2Flagos-sunset.webp&w=1080&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "auth",
+    "file": "auth-375-dark.jpg",
+    "theme": "dark",
+    "width": 375,
+    "scrollWidth": 360,
+    "height": 2420,
+    "images": [
+      {
+        "src": "http://localhost:3106/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/_next/image?url=%2Fimg%2Fmarketing%2Flagos-sunset.webp&w=384&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "auth",
+    "file": "auth-1440-dark.jpg",
+    "theme": "dark",
+    "width": 1440,
+    "scrollWidth": 1425,
+    "height": 2079,
+    "images": [
+      {
+        "src": "http://localhost:3106/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/_next/image?url=%2Fimg%2Fmarketing%2Flagos-sunset.webp&w=1080&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3106/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "billing",
+    "file": "billing-375-light.jpg",
+    "theme": "light",
+    "width": 375,
+    "scrollWidth": 369,
+    "height": 1856,
+    "images": [
+      {
+        "src": "http://localhost:3107/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/_next/image?url=%2Fimg%2Fmarketing%2Flagos-aerial.webp&w=384&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "billing",
+    "file": "billing-1440-light.jpg",
+    "theme": "light",
+    "width": 1440,
+    "scrollWidth": 1434,
+    "height": 1636,
+    "images": [
+      {
+        "src": "http://localhost:3107/img/logo.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/_next/image?url=%2Fimg%2Fmarketing%2Flagos-aerial.webp&w=1080&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/img/logo.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "billing",
+    "file": "billing-375-dark.jpg",
+    "theme": "dark",
+    "width": 375,
+    "scrollWidth": 369,
+    "height": 1856,
+    "images": [
+      {
+        "src": "http://localhost:3107/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/_next/image?url=%2Fimg%2Fmarketing%2Flagos-aerial.webp&w=384&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  },
+  {
+    "page": "billing",
+    "file": "billing-1440-dark.jpg",
+    "theme": "dark",
+    "width": 1440,
+    "scrollWidth": 1434,
+    "height": 1636,
+    "images": [
+      {
+        "src": "http://localhost:3107/img/logo-red.png",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/_next/image?url=%2Fimg%2Fmarketing%2Flagos-aerial.webp&w=1080&q=75",
+        "loaded": true
+      },
+      {
+        "src": "http://localhost:3107/img/logo-red.png",
+        "loaded": true
+      }
+    ],
+    "brokenAnchors": []
+  }
+]

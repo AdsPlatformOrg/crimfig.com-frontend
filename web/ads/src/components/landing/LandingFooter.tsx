@@ -74,7 +74,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                 </Button>
               </li>
               <li>
-                <a href="#what-we-do" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+                <a href="/#what-we-do" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
                   Asset Formats & Specs
                 </a>
               </li>
@@ -126,7 +126,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                 </Button>
               </li>
               <li>
-                <a href="#partners" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+                <a href="/#partners" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
                   Publishing Options
                 </a>
               </li>
@@ -139,6 +139,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               CrimFig Ecosystem
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+              <li><a href="/about" style={{ color: 'var(--text-secondary)' }}>About CrimFig</a></li>
               <li>
                 <a href="https://crimfig.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   CrimFig Hub <ExternalLink style={{ width: 12, height: 12 }} />

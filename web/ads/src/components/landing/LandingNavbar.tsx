@@ -10,8 +10,9 @@ interface LandingNavbarProps {
 }
 
 const links = [
-  { href: '#what-we-do', label: 'What We Do' },
-  { href: '#partners', label: 'Publishers & Promoters' },
+  { href: '/#what-we-do', label: 'Campaigns' },
+  { href: '/#partners', label: 'Promoters' },
+  { href: '/about', label: 'About' },
 ];
 
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {

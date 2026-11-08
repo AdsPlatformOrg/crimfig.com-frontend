@@ -1,43 +1,19 @@
 'use client';
 
-import React from 'react';
 import { LandingNavbar } from './LandingNavbar';
 import { LandingHero } from './LandingHero';
-import { LandingFeatures } from './LandingFeatures';
 import { LandingRewards } from './LandingRewards';
-import { LandingPartners } from './LandingPartners';
 import { LandingFooter } from './LandingFooter';
 
-interface LandingPageProps {
-  onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
-}
-
-export function LandingPage({ onLaunchConsole }: LandingPageProps) {
+export function LandingPage({ onLaunchConsole }: { onLaunchConsole: (tab?: 'overview' | 'rewards') => void }) {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: 'var(--bg-page)',
-        color: 'var(--text-primary)',
-        fontFamily: 'var(--font-primary)',
-      }}
-    >
-      <LandingNavbar onLaunchConsole={(tab) => onLaunchConsole(tab)} />
-
-      <main style={{ flex: 1 }}>
-        <LandingHero onLaunchConsole={(tab) => onLaunchConsole(tab)} />
-
-        <LandingFeatures />
-
+    <div className="cf-marketing">
+      <LandingNavbar onLaunchConsole={onLaunchConsole} />
+      <main>
+        <LandingHero onLaunchConsole={() => onLaunchConsole('overview')} />
         <LandingRewards onExploreRewards={() => onLaunchConsole('rewards')} />
-
-
-        <LandingPartners />
       </main>
-
-      <LandingFooter onLaunchConsole={(tab) => onLaunchConsole(tab)} />
+      <LandingFooter onLaunchConsole={onLaunchConsole} />
     </div>
   );
 }

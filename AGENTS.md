@@ -20,3 +20,9 @@ Before designing, generating, editing or reviewing **any frontend UI**, the agen
 ## Hybrid styling architecture — JED, 2026-11-02
 
 Read [STYLING.md](./STYLING.md) alongside TYPOGRAPHY.md before UI styling work. Use shared semantic `cf-` CSS for repeated patterns, Tailwind for local responsive/layout adjustments and existing Shadcn-compatible variants for accessible components. Check existing classes/variants first. Keep globals.css to framework imports/tokens/foundations and page-specific rules scoped; shared entry is shared/ui/styles/general.css. Preserve Poppins, brand/theme tokens and interaction states. No broad component overrides, duplicate resets/rules, unnecessary !important or hardcoded pattern colors. Audit actual Tailwind compiler/version/imports/layers: initial audit found no compiler; approved PLAN-0078 now supplies Ads-only Tailwind4.1.18/PostCSS with tw: prefix and no Preflight. Do not assume utility CSS is generated. Runtime extraction/package setup remains within approved plan scope; use the canonical unit→non-visual integration workflow and report browser/deployment limits honestly.
+
+## Public marketing pages
+
+CrimFig marketing pages use plain headlines, concise copy, and imagery for hierarchy. Do not use decorative badges, pills, sparkle labels, or uppercase eyebrow text above headings. Reserve badges for factual status that helps users make a decision. See [project design memory](../.agents/MEMORY.md).
+
+Use subtle animate-on-scroll (AOS) entrances on CrimFig public marketing pages. Keep content readable before JavaScript runs, reveal each section once, and skip entrance motion when prefers-reduced-motion is enabled.

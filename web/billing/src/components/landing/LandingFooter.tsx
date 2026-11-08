@@ -56,7 +56,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             </div>
             <a href="#features" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Dual-Currency Escrow</a>
             <a href="#rewards" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards Status</a>
-            <a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Account Security</a>
+            <a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Funding availability</a>
             <Button
               type="button"
               onClick={() => onLaunchConsole('overview')}

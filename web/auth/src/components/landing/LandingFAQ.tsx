@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export function LandingFAQ() {
@@ -41,25 +41,6 @@ export function LandingFAQ() {
     >
       <div style={{ maxWidth: '820px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 16px',
-              borderRadius: '9999px',
-              backgroundColor: 'var(--badge-bg)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'var(--text-secondary)',
-              marginBottom: '16px',
-            }}
-          >
-            <HelpCircle style={{ width: 14, height: 14, color: 'var(--color-crimson)' }} />
-            <span>Got Questions?</span>
-          </div>
-
           <h2
             style={{
               fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)',

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
+import '../../../../shared/ui/styles/marketing.css';
 import { PublicSessionDiscovery } from '../components/PublicSessionDiscovery';
 
 const poppins = Poppins({

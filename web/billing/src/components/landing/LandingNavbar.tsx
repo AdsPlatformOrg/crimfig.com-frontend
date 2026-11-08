@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { ArrowRight, Gift, Menu, Wallet, X } from 'lucide-react';
+import { ArrowRight, Menu, Wallet, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
 
@@ -11,8 +11,8 @@ interface LandingNavbarProps {
 
 const links = [
   { href: '#features', label: 'Features' },
-  { href: '#rewards', label: 'Rewards Status', icon: Gift },
-  { href: '#security', label: 'Security' },
+  { href: '#rewards', label: 'Rewards Status' },
+  { href: '#security', label: 'Funding availability' },
 ];
 
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
@@ -44,9 +44,8 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         />
 
         <nav className="cf-site-nav" aria-label="Main navigation">
-          {links.map(({ href, label, icon: Icon }) => (
+          {links.map(({ href, label }) => (
             <a key={href} href={href} className="cf-site-nav-link">
-              {Icon && <Icon size={15} aria-hidden="true" />}
               {label}
             </a>
           ))}
@@ -79,14 +78,13 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         aria-label="Mobile navigation"
         hidden={!mobileMenuOpen}
       >
-          {links.map(({ href, label, icon: Icon }) => (
+          {links.map(({ href, label }) => (
             <a
               key={href}
               href={href}
               className="cf-site-nav-link"
               onClick={() => setMobileMenuOpen(false)}
             >
-              {Icon && <Icon size={16} aria-hidden="true" />}
               {label}
             </a>
           ))}

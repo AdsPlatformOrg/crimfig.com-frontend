@@ -1,0 +1,192 @@
+.cf-marketing {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+}
+
+.cf-marketing-section {
+  padding: clamp(3rem, 8vw, 7rem) 1.25rem;
+  scroll-margin-top: 5rem;
+}
+
+.cf-marketing-section--surface { background: var(--bg-surface); }
+.cf-marketing-frame { max-width: 76rem; margin-inline: auto; }
+.cf-marketing-copy { max-width: 42rem; margin-inline: auto; text-align: center; }
+.cf-marketing-copy h1,
+.cf-marketing-copy h2 {
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+}
+.cf-marketing-copy h1 { font-size: clamp(2.5rem, 7vw, 5.5rem); }
+.cf-marketing-copy h2 { font-size: clamp(2rem, 5vw, 3.75rem); }
+.cf-marketing-copy p { margin: 1rem auto 0; max-width: 34rem; color: var(--text-secondary); line-height: 1.65; }
+.cf-marketing-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.cf-marketing-actions :is(a, button) { min-height: 44px; }
+.cf-marketing-visual {
+  display: block;
+  position: relative;
+  width: 100%;
+  margin: clamp(1.75rem, 5vw, 3.5rem) auto 0;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--bg-surface);
+  border-radius: clamp(.75rem, 2vw, 1.5rem);
+}
+.cf-marketing-visual img { object-fit: cover; }
+.cf-marketing-visual--capture { aspect-ratio: 1434 / 996; max-width: 64rem; border: 1px solid var(--border-subtle); }
+.cf-marketing-visual--compact { aspect-ratio: 4 / 3; max-width: 52rem; }
+@media (min-width: 48rem) {
+  .cf-marketing-visual { aspect-ratio: 2 / 1; }
+  .cf-marketing-visual--capture { aspect-ratio: 1434 / 996; }
+  .cf-marketing-visual--compact { aspect-ratio: 5 / 2; }
+}
+
+
+.cf-ads-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  min-height: calc(100svh - 73px);
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+.cf-ads-hero img { object-fit: cover; object-position: 40% top; }
+@media (max-width: 860px) {
+  .cf-ads-hero { min-height: calc(100svh - 69px); }
+}
+@media (min-width: 48rem) {
+  .cf-ads-hero img { object-position: 50% top; }
+}
+.cf-ads-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 48%, rgb(0 0 0 / 82%));
+  pointer-events: none;
+}
+.cf-ads-hero h1 {
+  z-index: 1;
+  margin: 0;
+  padding: 1.5rem 1rem clamp(2rem, 6vw, 4rem);
+  text-align: center;
+  color: var(--color-white, #fff);
+  font-size: clamp(1.75rem, 5.4vw, 3.75rem);
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+.cf-ads-dashboard {
+  max-width: 58rem;
+  margin: clamp(1.5rem, 4vw, 3rem) auto 0;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.cf-ads-dashboard figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .25rem 1rem;
+}
+.cf-ads-dashboard figcaption span,
+.cf-ads-dashboard dt,
+.cf-ads-dashboard-dates { color: var(--text-secondary); font-size: .8125rem; }
+.cf-ads-dashboard dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0;
+}
+.cf-ads-dashboard dl div { padding: .75rem; background: var(--bg-surface); border-radius: .75rem; }
+.cf-ads-dashboard dd { margin: .25rem 0 0; font-weight: 700; font-size: clamp(1.125rem, 4vw, 1.75rem); font-variant-numeric: tabular-nums; }
+.cf-ads-dashboard p { margin: 0 0 .5rem; }
+.cf-ads-dashboard svg { display: block; width: 100%; height: clamp(6rem, 18vw, 10rem); }
+.cf-ads-dashboard-dates { display: flex; justify-content: space-between; margin-top: .5rem; }
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .cf-ads-landing > .cf-site-header {
+    background: color-mix(in srgb, var(--bg-page) 70%, transparent);
+    -webkit-backdrop-filter: saturate(145%) blur(22px);
+    backdrop-filter: saturate(145%) blur(22px);
+  }
+
+  .cf-ads-landing > .cf-site-header:has(.cf-mobile-nav-panel:not([hidden])) {
+    background: var(--bg-page);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cf-ads-hero h1,
+  .cf-ads-about #who-we-are .cf-marketing-copy {
+    animation: cf-ads-headline-enter 680ms cubic-bezier(.2,.7,.25,1) 120ms both;
+  }
+}
+
+@keyframes cf-ads-headline-enter {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cf-ads-learn { padding-inline: 0; }
+.cf-ads-learn .cf-marketing-frame { max-width: none; }
+.cf-ads-learn .cf-marketing-copy { padding-inline: 1.25rem; }
+.cf-ads-learn .cf-marketing-visual { border-radius: 0; }
+
+.cf-ads-about .cf-marketing-section {
+  padding-inline: 0;
+  background: var(--bg-page);
+}
+.cf-ads-about .cf-marketing-section + .cf-marketing-section {
+  border-top: 1px solid var(--border-subtle);
+}
+.cf-ads-about #better-connections {
+  background: color-mix(in srgb, var(--bg-page) 96%, var(--color-crimson));
+}
+.cf-ads-about .cf-marketing-section:nth-child(even) { background: var(--bg-surface); }
+.cf-ads-about .cf-marketing-copy { padding-inline: 1.25rem; }
+.cf-ads-about .cf-marketing-copy h1 { font-size: clamp(1.75rem, 5.4vw, 3.75rem); }
+.cf-ads-about .cf-marketing-visual { border-radius: 0; aspect-ratio: 4 / 3; }
+.cf-ads-about #who-we-are img { object-position: center top; }
+.cf-ads-about-detail {
+  max-width: 43rem;
+  margin: clamp(1.5rem, 4vw, 3rem) auto 0;
+  padding-inline: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+@media (min-width: 48rem) {
+  .cf-ads-about .cf-marketing-visual { aspect-ratio: 2.4 / 1; max-height: 44rem; }
+}
+
+.cf-ads-about #who-we-are {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 0;
+}
+.cf-ads-about #who-we-are .cf-marketing-visual,
+.cf-ads-about #who-we-are .cf-marketing-copy {
+  grid-area: 1 / 1;
+}
+.cf-ads-about #who-we-are .cf-marketing-visual {
+  margin-top: 0;
+  min-height: 22rem;
+}
+.cf-ads-about #who-we-are .cf-marketing-visual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 25%, rgb(0 0 0 / 85%));
+}
+.cf-ads-about #who-we-are .cf-marketing-copy {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  padding-bottom: clamp(2rem, 6vw, 4rem);
+  color: #fff;
+}
+.cf-ads-about #who-we-are .cf-marketing-copy p { color: inherit; }

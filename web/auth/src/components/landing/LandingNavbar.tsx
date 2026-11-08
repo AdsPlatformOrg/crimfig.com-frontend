@@ -9,7 +9,6 @@ import { useSessionSnapshot } from '../SessionGate';
 import { publicHeaderActions } from '../../lib/public-header';
 
 const links = [
-  { href: '#features', label: 'Capabilities' },
   { href: '#faq', label: 'FAQ' },
 ];
 

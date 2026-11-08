@@ -1,0 +1,294 @@
+{
+  "version": 1,
+  "plan": "PLAN-0100",
+  "theme": [
+    "--bg-page",
+    "--bg-surface",
+    "--text-primary",
+    "--font-primary"
+  ],
+  "pages": [
+    {
+      "app": "ads",
+      "route": "/",
+      "sections": [
+        "creator hero",
+        "advertiser sample dashboard",
+        "promoter sample dashboard",
+        "learn more"
+      ]
+    },
+    {
+      "app": "ads",
+      "route": "/about",
+      "sections": [
+        "who-we-are",
+        "what-we-do",
+        "better-connections",
+        "advertisers",
+        "promoters"
+      ]
+    },
+    {
+      "app": "billing",
+      "route": "/",
+      "sections": [
+        "wallet",
+        "rewards"
+      ]
+    },
+    {
+      "app": "auth",
+      "route": "/",
+      "sections": [
+        "account",
+        "faq"
+      ]
+    },
+    {
+      "app": "ads",
+      "route": "/docs",
+      "sections": [
+        "advertiser guide",
+        "promoter guide"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "app": "billing",
+      "id": "lagos-aerial",
+      "src": "/img/marketing/lagos-aerial.webp",
+      "source": "https://www.pexels.com/photo/aerial-view-of-lagos-urban-cityscape-with-traffic-36622171/",
+      "creator": "Taiwo Samson",
+      "license": "https://www.pexels.com/license/",
+      "checked": "2026-11-08",
+      "width": 1600,
+      "height": 1200,
+      "alt": "Aerial view of Lagos streets and buildings",
+      "crop": "center; presentation crop in CSS"
+    },
+    {
+      "app": "auth",
+      "id": "lagos-sunset",
+      "src": "/img/marketing/lagos-sunset.webp",
+      "source": "https://www.pexels.com/photo/skyline-of-lagos-at-sunset-captured-from-water-36602313/",
+      "creator": "FERA",
+      "license": "https://www.pexels.com/license/",
+      "checked": "2026-11-08",
+      "width": 800,
+      "height": 1200,
+      "alt": "Lagos skyline at sunset reflected in the water",
+      "crop": "center; presentation crop in CSS"
+    },
+    {
+      "app": "ads",
+      "id": "creator-hero",
+      "src": "/img/marketing/creator-hero.webp",
+      "source": "https://www.pexels.com/photo/fashion-person-woman-camera-12432702/",
+      "creator": "Hanna Pad",
+      "license": "https://www.pexels.com/license/",
+      "checked": "2026-11-08",
+      "width": 1920,
+      "height": 1280,
+      "alt": "Smiling creator filming with a phone and ring light",
+      "crop": "Responsive center crop"
+    },
+    {
+      "app": "ads",
+      "id": "learn-ads",
+      "src": "/img/marketing/learn-ads.webp",
+      "source": "https://www.pexels.com/photo/smiling-man-working-on-laptop-23224716/",
+      "creator": "Vitaly Gariev",
+      "license": "https://www.pexels.com/license/",
+      "checked": "2026-11-08",
+      "width": 1920,
+      "height": 1080,
+      "alt": "Young man smiling while working on a laptop",
+      "crop": "Responsive center crop"
+    },
+    {
+      "app": "ads",
+      "id": "about-team",
+      "src": "/img/marketing/about-team.webp",
+      "source": "https://unsplash.com/photos/diverse-team-collaborating-on-a-project-in-an-office-PSksbOVDhWk",
+      "creator": "Vitaly Gariev",
+      "license": "https://unsplash.com/license",
+      "checked": "2026-11-08",
+      "width": 1920,
+      "height": 1080,
+      "alt": "Colleagues discussing a project around a table",
+      "crop": "Responsive cover"
+    },
+    {
+      "app": "ads",
+      "id": "about-marketing",
+      "src": "/img/marketing/about-marketing.webp",
+      "source": "https://unsplash.com/photos/woman-using-a-laptop-with-social-media-open-9Zx0ZeiJ6x4",
+      "creator": "Swello",
+      "license": "https://unsplash.com/license",
+      "checked": "2026-11-08",
+      "width": 960,
+      "height": 1440,
+      "alt": "A woman working on social media on a laptop",
+      "crop": "Responsive cover"
+    },
+    {
+      "app": "ads",
+      "id": "about-connections",
+      "src": "/img/marketing/about-connections.webp",
+      "source": "https://unsplash.com/photos/two-colleagues-collaborating-on-a-laptop-at-a-desk-tp_SwN8pC0A",
+      "creator": "Vitaly Gariev",
+      "license": "https://unsplash.com/license",
+      "checked": "2026-11-08",
+      "width": 1920,
+      "height": 1080,
+      "alt": "Two colleagues collaborating at a laptop",
+      "crop": "Responsive cover"
+    },
+    {
+      "app": "ads",
+      "id": "about-advertisers",
+      "src": "/img/marketing/about-advertisers.webp",
+      "source": "https://www.pexels.com/photo/young-woman-analyzing-data-on-laptop-at-desk-36420074/",
+      "creator": "Taiye Salawu",
+      "license": "https://www.pexels.com/license/",
+      "checked": "2026-11-08",
+      "width": 960,
+      "height": 1440,
+      "alt": "A woman reviewing data on a laptop and taking notes",
+      "crop": "Responsive cover"
+    },
+    {
+      "app": "ads",
+      "id": "about-promoters",
+      "src": "/img/marketing/about-promoters.webp",
+      "source": "https://www.pexels.com/photo/happy-young-black-woman-setting-up-smartphone-before-shooting-podcast-6954220/",
+      "creator": "George Milton",
+      "license": "https://www.pexels.com/license/",
+      "checked": "2026-11-08",
+      "width": 1920,
+      "height": 1280,
+      "alt": "A creator setting up a smartphone on a ring-light tripod",
+      "crop": "Responsive cover"
+    }
+  ],
+  "headerStates": {
+    "auth": "Existing session-aware public actions",
+    "ads": "Guarded console link",
+    "billing": "Guarded billing link"
+  },
+  "referenceScreenshots": [
+    {
+      "page": "ads",
+      "viewportWidth": 375,
+      "theme": "light",
+      "path": "plan-0100-review/ads-375-light.jpg"
+    },
+    {
+      "page": "ads",
+      "viewportWidth": 1440,
+      "theme": "light",
+      "path": "plan-0100-review/ads-1440-light.jpg"
+    },
+    {
+      "page": "ads",
+      "viewportWidth": 375,
+      "theme": "dark",
+      "path": "plan-0100-review/ads-375-dark.jpg"
+    },
+    {
+      "page": "ads",
+      "viewportWidth": 1440,
+      "theme": "dark",
+      "path": "plan-0100-review/ads-1440-dark.jpg"
+    },
+    {
+      "page": "about",
+      "viewportWidth": 375,
+      "theme": "light",
+      "path": "plan-0100-review/about-375-light.jpg"
+    },
+    {
+      "page": "about",
+      "viewportWidth": 1440,
+      "theme": "light",
+      "path": "plan-0100-review/about-1440-light.jpg"
+    },
+    {
+      "page": "about",
+      "viewportWidth": 375,
+      "theme": "dark",
+      "path": "plan-0100-review/about-375-dark.jpg"
+    },
+    {
+      "page": "about",
+      "viewportWidth": 1440,
+      "theme": "dark",
+      "path": "plan-0100-review/about-1440-dark.jpg"
+    },
+    {
+      "page": "auth",
+      "viewportWidth": 375,
+      "theme": "light",
+      "path": "plan-0100-review/auth-375-light.jpg"
+    },
+    {
+      "page": "auth",
+      "viewportWidth": 1440,
+      "theme": "light",
+      "path": "plan-0100-review/auth-1440-light.jpg"
+    },
+    {
+      "page": "auth",
+      "viewportWidth": 375,
+      "theme": "dark",
+      "path": "plan-0100-review/auth-375-dark.jpg"
+    },
+    {
+      "page": "auth",
+      "viewportWidth": 1440,
+      "theme": "dark",
+      "path": "plan-0100-review/auth-1440-dark.jpg"
+    },
+    {
+      "page": "billing",
+      "viewportWidth": 375,
+      "theme": "light",
+      "path": "plan-0100-review/billing-375-light.jpg"
+    },
+    {
+      "page": "billing",
+      "viewportWidth": 1440,
+      "theme": "light",
+      "path": "plan-0100-review/billing-1440-light.jpg"
+    },
+    {
+      "page": "billing",
+      "viewportWidth": 375,
+      "theme": "dark",
+      "path": "plan-0100-review/billing-375-dark.jpg"
+    },
+    {
+      "page": "billing",
+      "viewportWidth": 1440,
+      "theme": "dark",
+      "path": "plan-0100-review/billing-1440-dark.jpg"
+    }
+  ],
+  "review": {
+    "checked": "2026-11-08",
+    "browser": "Local headless Chrome",
+    "checks": "plan-0100-review/checks.json",
+    "limitations": [
+      "Local Auth API offline, so browser captures show neutral session actions. Existing public-header tests cover authenticated and anonymous states.",
+      "Auth and Billing retain the existing boxed dark-theme logo.",
+      "Development screenshots may show the Next.js indicator."
+    ]
+  },
+  "adsHomeReview": {
+    "scrollReveal": "Three section entrances confirmed; reduced motion skips animation",
+    "docs": "Local /docs returned HTTP 200; planned docs subdomain failed DNS",
+    "dashboardData": "Illustrative, static marketing previews"
+  }
+}
