@@ -34,7 +34,29 @@
   background: var(--bg-surface);
   border-radius: clamp(.75rem, 2vw, 1.5rem);
 }
-.cf-marketing-visual img { object-fit: cover; }
+.cf-marketing-visual img {
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(.2,.7,.25,1);
+}
+.cf-ads-hero img {
+  transform: scale(1);
+  transition: transform 280ms cubic-bezier(.2,.7,.25,1);
+}
+.cf-marketing-visual:active img,
+.cf-ads-hero:active img { transform: scale(1.025); }
+@media (hover: hover) and (pointer: fine) {
+  .cf-marketing-visual:hover img,
+  .cf-ads-hero:hover img { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-marketing-visual img,
+  .cf-ads-hero img { transition: none; }
+  .cf-marketing-visual:active img,
+  .cf-ads-hero:active img,
+  .cf-marketing-visual:hover img,
+  .cf-ads-hero:hover img { transform: none; }
+}
 .cf-marketing-visual--capture { aspect-ratio: 1434 / 996; max-width: 64rem; border: 1px solid var(--border-subtle); }
 .cf-marketing-visual--compact { aspect-ratio: 4 / 3; max-width: 52rem; }
 @media (min-width: 48rem) {
