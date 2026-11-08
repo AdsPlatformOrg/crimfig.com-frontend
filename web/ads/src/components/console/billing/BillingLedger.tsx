@@ -6,8 +6,6 @@ import React, { useState, useEffect } from 'react';
 import {
   DollarSign,
   Lock,
-  ArrowUpRight,
-  ArrowDownLeft,
   RefreshCw,
   Building2,
   CreditCard,
@@ -19,11 +17,9 @@ import {
   ShieldCheck,
   TrendingUp,
 } from 'lucide-react';
-import type { WalletBalance, EscrowAllocation, BillingTransaction, SettlementBatch } from '../../../types/billing';
+import type { WalletBalance, EscrowAllocation } from '../../../types/billing';
 import {
   fetchBillingOverview,
-  fetchSettlementBatches,
-  triggerManualSettlement,
 } from '../../../lib/billing-api';
 import { EscrowBreakdownDrawer } from './EscrowBreakdownDrawer';
 import {
@@ -32,12 +28,6 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  Table as ShadTable,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
   Badge,
   Button,
 } from '../../ui';
@@ -51,14 +41,9 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
   const [role, setRole] = useState<'advertiser' | 'promoter'>(initialRole);
   const [wallet, setWallet] = useState<WalletBalance | null>(null);
   const [escrows, setEscrows] = useState<EscrowAllocation[]>([]);
-  const [transactions] = useState<BillingTransaction[]>([]);
-  const [settlementBatches, setSettlementBatches] = useState<SettlementBatch[]>([]);
-  const [activeTab, setActiveTab] = useState<'all' | 'deposits' | 'spend' | 'earnings' | 'withdrawals'>('all');
 
   // Modals
   const [isEscrowDrawerOpen, setIsEscrowDrawerOpen] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -70,46 +55,17 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
       try {
         const overview = await fetchBillingOverview(); setWallet(overview.wallet); setEscrows(overview.escrows);
       } catch (err) { setLoadError(err instanceof Error ? err.message : 'Billing overview unavailable.'); }
-      try { setSettlementBatches(await fetchSettlementBatches()); }
-      catch (err) { setLoadError(err instanceof Error ? err.message : 'Settlement history unavailable.'); }
 
     }
     loadData();
   }, []);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
 
   const openBilling = () => {
     const base = ecosystemOrigin('billing',process.env.NEXT_PUBLIC_BILLING_WEB_URL);
     window.location.assign(new URL('/?view=console', base).href);
   };
 
-  const handleTriggerSettlement = async () => {
-    setIsSettling(true);
-    try {
-      await triggerManualSettlement();
-      showToast('30-minute deferred batch settlement completed cleanly!');
-      const updatedBatches = await fetchSettlementBatches();
-      setSettlementBatches(updatedBatches);
-    } catch {
-      showToast('Settlement could not be confirmed. Reconcile before trying again.');
-    } finally {
-      setIsSettling(false);
-    }
-  };
 
-  // Filter transactions
-  const filteredTransactions = transactions.filter((tx) => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'deposits') return tx.type === 'wallet_fund';
-    if (activeTab === 'spend') return tx.type === 'ads_spend';
-    if (activeTab === 'earnings') return tx.type === 'ads_earning';
-    if (activeTab === 'withdrawals') return tx.type === 'wallet_withdraw';
-    return true;
-  });
 
   const availableUsd = wallet ? wallet.availableUsd : 0;
   const lockedEscrowUsd = escrows.reduce((sum, e) => sum + e.remainingUsd, 0);
@@ -124,31 +80,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px', width: '100%', boxSizing: 'border-box' }}>
       {loadError && <p role="alert">{loadError}</p>}
       {/* Toast Alert */}
-      {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '84px',
-            right: '24px',
-            zIndex: 150,
-            backgroundColor: 'var(--color-fig-dark)',
-            color: '#FFFFFF',
-            padding: '12px 20px',
-            borderRadius: '12px',
-            boxShadow: 'var(--shadow-lg)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            fontSize: '13px',
-            fontWeight: 600,
-            animation: 'fadeIn 0.2s ease',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          <CheckCircle2 style={{ width: 16, height: 16, color: '#22c55e' }} />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+
 
       {/* Header & Role Switcher */}
       <div
@@ -163,10 +95,10 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
       >
         <div>
           <h2 style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Financial Ledger & Escrow Settlement
+            Billing &amp; Escrow
           </h2>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
-            Multi-currency NGN/USD wallet, campaign escrow locking, and 55/30/15 batch reconciliations
+            Check your wallet balance and campaign funds reserved for delivery.
           </p>
         </div>
 
@@ -477,198 +409,15 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             </Button>
           )}
 
-          <Button
-            type="button"
-            onClick={handleTriggerSettlement}
-            disabled={isSettling}
-            variant="outline"
-            size="lg"
-            loading={isSettling}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-surface)',
-              color: 'var(--text-secondary)',
-              fontWeight: 600,
-              fontSize: '13px',
-              cursor: isSettling ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <RefreshCw style={{ width: 14, height: 14, animation: isSettling ? 'spin 1s linear infinite' : 'none' }} />
-            <span>Run 30-Min Settlement</span>
-          </Button>
+
         </div>
 
-        {/* 55/30/15 Ratio Indicator Badge */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '12px',
-            padding: '6px 14px',
-            fontSize: '12px',
-            fontWeight: 600,
-          }}
-        >
-          <span style={{ color: 'var(--text-secondary)' }}>Revenue Split:</span>
-          <span style={{ color: 'var(--color-crimson)', fontWeight: 700 }}>55% Publisher</span>
-          <span style={{ color: 'var(--border-subtle)' }}>•</span>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>30% Platform</span>
-          <span style={{ color: 'var(--border-subtle)' }}>•</span>
-          <span style={{ color: '#3b82f6', fontWeight: 700 }}>15% Referrals</span>
-        </div>
       </div>
 
-      {/* Transaction & Settlement Table */}
-      <Card style={{ overflow: 'hidden' }}>
-        {/* Table Tabs */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--border-subtle)',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {(['all', 'deposits', 'spend', 'earnings', 'withdrawals'] as const).map((tab) => (
-              <Button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                variant={activeTab === tab ? 'secondary' : 'ghost'}
-                size="sm"
-                aria-pressed={activeTab === tab}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: activeTab === tab ? 'var(--badge-bg)' : 'transparent',
-                  color: activeTab === tab ? 'var(--color-crimson)' : 'var(--text-secondary)',
-                  fontWeight: activeTab === tab ? 700 : 500,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {tab}
-              </Button>
-            ))}
-          </div>
-
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Transaction history is available in the Billing dashboard. Showing {filteredTransactions.length} entries loaded here.
-          </span>
-        </div>
-
-        {/* Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <ShadTable style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-            <TableHeader>
-              <TableRow style={{ backgroundColor: 'var(--bg-page)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <TableHead>Type & Description</TableHead>
-                <TableHead>Amount (USD)</TableHead>
-                <TableHead>Amount (NGN)</TableHead>
-                <TableHead>Balance After</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTransactions.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    No transactions found for this filter. Full ledger history is managed in the Billing console.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredTransactions.map((tx) => {
-                  const isPositive = tx.type === 'wallet_fund' || tx.type === 'ads_earning';
-                  return (
-                    <TableRow
-                      key={tx.id}
-                      style={{
-                        borderBottom: '1px solid var(--border-subtle)',
-                        transition: 'background-color 0.1s ease',
-                      }}
-                    >
-                      <TableCell style={{ padding: '14px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div
-                            style={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '8px',
-                              backgroundColor: isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(212, 20, 58, 0.1)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: isPositive ? '#22c55e' : 'var(--color-crimson)',
-                            }}
-                          >
-                            {isPositive ? (
-                              <ArrowDownLeft style={{ width: 14, height: 14 }} />
-                            ) : (
-                              <ArrowUpRight style={{ width: 14, height: 14 }} />
-                            )}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tx.description}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
-                              {tx.type.replace('_', ' ')}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell style={{ padding: '14px 20px', fontWeight: 700, color: isPositive ? '#22c55e' : 'var(--text-primary)' }}>
-                        {isPositive ? '+' : '-'}${tx.amountUsd.toFixed(2)}
-                      </TableCell>
-
-                      <TableCell style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>
-                        {tx.amountNgn ? `₦${Math.round(tx.amountNgn).toLocaleString()}` : '—'}
-                      </TableCell>
-
-                      <TableCell style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {tx.balanceAfterUsd !== undefined ? `$${tx.balanceAfterUsd.toFixed(2)}` : '—'}
-                      </TableCell>
-
-                      <TableCell style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '12px' }}>
-                        {tx.reference}
-                      </TableCell>
-
-                      <TableCell style={{ padding: '14px 20px' }}>
-                        <Badge variant={tx.status === 'completed' ? 'secondary' : 'outline'} style={{ textTransform: 'uppercase' }}>
-                          {tx.status}
-                        </Badge>
-                      </TableCell>
-
-                      <TableCell style={{ padding: '14px 20px', color: 'var(--text-secondary)', fontSize: '12px' }}>
-                        {new Date(tx.createdAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </ShadTable>
-        </div>
+      <Card style={{ padding: 20 }}>
+        <h2>Transaction history</h2>
+        <p>View wallet deposits, charges and refunds in Billing.</p>
+        <Button type="button" variant="outline" onClick={openBilling}>Open Billing history</Button>
       </Card>
 
       {/* Modals */}

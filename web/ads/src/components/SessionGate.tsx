@@ -32,7 +32,7 @@ function WorkspaceSkeleton() {
   </div>;
 }
 
-export function SessionGate({ children }: { children: ReactNode }) {
+export function SessionGate({ children, loadingShell }: { children: ReactNode; loadingShell?: ReactNode }) {
   const { status, signOut, renewal, identityVersion } = useSessionSnapshot();
   const hasAuthenticated = useRef(false);
   const retainedContent = useRef<HTMLDivElement>(null);
@@ -41,6 +41,11 @@ export function SessionGate({ children }: { children: ReactNode }) {
   if (status === 'anonymous' || signOut) hasAuthenticated.current = false;
   const retry = useCallback(() => { void sessionClient().bootstrap().catch(() => {}); }, []);
   useEffect(() => { if (sessionClient().getSnapshot().status === 'idle') retry(); }, [retry]);
+  useEffect(() => {
+    if (signOut === 'complete' || signOut === 'remote' || (status === 'anonymous' && !signOut)) {
+      window.location.replace(loginUrl());
+    }
+  }, [status, signOut]);
   const authorized = status === 'authenticated' && !signOut;
   const retainDraft = hasAuthenticated.current && !signOut && status !== 'anonymous';
   useEffect(() => {
@@ -55,7 +60,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
     {authorized && renewal === 'connection-error' && <div role="status" style={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 60, padding: 12, border: '1px solid var(--border-subtle)', borderRadius: 8, background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
       Connection interrupted. Your current session is still valid. <Button type="button" variant="outline" onClick={retry}>Retry connection</Button>
     </div>}
-    {!authorized && (status === 'idle' || status === 'loading') && !signOut && <WorkspaceSkeleton />}
+    {!authorized && (status === 'idle' || status === 'loading') && !signOut && (loadingShell ?? <WorkspaceSkeleton />)}
     {!authorized && status !== 'idle' && status !== 'loading' && !signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <section style={{ maxWidth: 460, width: '100%' }} aria-live="polite">
         <h1>{status === 'temporary-error' ? 'Connection interrupted' : 'Sign in to continue'}</h1>

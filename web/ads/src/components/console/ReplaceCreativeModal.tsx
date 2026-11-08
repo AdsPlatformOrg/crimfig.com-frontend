@@ -5,20 +5,17 @@ import { MediaPreview } from "../MediaPreview";
 import { adsApi } from '../../lib/ads-api-client';
 import type { ReplaceCreativeInput } from '@crimfig/api-client/src/ads-operations';
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   X,
   AlertCircle,
   RefreshCw,
   CheckCircle2,
-  Type,
-  Image as ImageIcon,
-  Video,
   Loader2,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { loadCreationCapabilities, type AdType } from "../../lib/campaigns-api";
+import type { AdType } from "../../lib/campaigns-api";
 
 interface CreativeToReplace {
   id: string;
@@ -57,17 +54,9 @@ export function ReplaceCreativeModal({
   const [destinationUrl, setDestinationUrl] = useState(
     creative?.destinationUrl || "",
   );
-  const [adType, setAdType] = useState<AdType>(
-    creative?.adType ||
-      (creative?.videoUrl ? "video" : creative?.imageUrl ? "image" : "text"),
-  );
-  const [mediaAssetId, setMediaAssetId] = useState<string | undefined>(
-    creative?.mediaAssetId,
-  );
-  const [mediaUrl, setMediaUrl] = useState(
-    creative?.videoUrl || creative?.imageUrl || "",
-  );
-  const [videoEnabled, setVideoEnabled] = useState(false);
+  const isExistingImage = creative?.adType === 'image' || (!creative?.adType && Boolean(creative?.imageUrl));
+  const [mediaAssetId, setMediaAssetId] = useState<string | undefined>(isExistingImage ? creative?.mediaAssetId : undefined);
+  const [mediaUrl, setMediaUrl] = useState(isExistingImage ? creative?.imageUrl || '' : '');
   const [preparedFormat, setPreparedFormat] = useState<"card" | "banner">(
     creative?.adFormat === "banner" ? "banner" : "card",
   );
@@ -78,42 +67,6 @@ export function ReplaceCreativeModal({
   const fieldId = React.useId();
   const panel = useDialog(isOpen && Boolean(creative), onClose);
 
-  useEffect(() => {
-    let active = true;
-    void loadCreationCapabilities()
-      .then((caps) => {
-        if (active) setVideoEnabled(caps.videoAuthoringEnabled);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  async function uploadReplacement(file: File | undefined) {
-    if (!file) return;
-    const maxBytes = adType === "video" ? 20 * 1024 * 1024 : 750 * 1024;
-    if (file.size > maxBytes) {
-      setError(
-        `This file exceeds the ${adType === "video" ? "20 MB video" : "750 KB image"} limit.`,
-      );
-      return;
-    }
-    setUploading(true);
-    setError(null);
-    try {
-      const uploaded = await adsApi().uploadDirect(file);
-      if (!uploaded.assetId)
-        throw new Error("The upload response was invalid.");
-      setMediaAssetId(uploaded.assetId);
-      setMediaUrl(uploaded.cdnUrl || '');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "The upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  }
-
   if (!isOpen || !creative) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,14 +75,7 @@ export function ReplaceCreativeModal({
     setError(null);
 
     try {
-      if (adType !== "text" && !mediaAssetId && !mediaUrl) {
-        throw new Error(
-          `Upload a replacement ${adType} asset before submitting.`,
-        );
-      }
-      if (adType === "text" && !headline.trim()) {
-        throw new Error("Text ads need a headline.");
-      }
+      if (!mediaAssetId) throw new Error("Upload a prepared replacement image before submitting.");
       const payload: ReplaceCreativeInput = {
         expectedRevision: creative.expectedRevision ?? 1,
         requestId: crypto.randomUUID(),
@@ -137,15 +83,9 @@ export function ReplaceCreativeModal({
         bodyText: bodyText.trim() || undefined,
         ctaText: ctaText.trim() || undefined,
         destinationUrl,
-        adType,
-        adFormat: adType === "image" ? preparedFormat : creative.adFormat,
-        ...(adType === "text"
-          ? { imageUrl: undefined, videoUrl: undefined }
-          : mediaAssetId
-            ? { mediaAssetId }
-            : adType === "video"
-              ? { videoUrl: mediaUrl }
-              : { imageUrl: mediaUrl }),
+        adType: "image",
+        adFormat: preparedFormat,
+        mediaAssetId,
       };
 
       const updated = await adsApi().replaceCreative(creative.id, payload);
@@ -298,127 +238,16 @@ export function ReplaceCreativeModal({
 
           {/* Ad type */}
           <div>
-            <span
-              style={{
-                display: "block",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Ad content type
-            </span>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "8px",
-              }}
-              role="group"
-              aria-label="Ad content type"
-            >
-              {[
-                { type: "text" as const, label: "Text", icon: Type },
-                { type: "image" as const, label: "Image", icon: ImageIcon },
-                { type: "video" as const, label: "Video", icon: Video },
-              ].map((option) => {
-                const Icon = option.icon;
-                const disabled = option.type === "video" && !videoEnabled;
-                const active = adType === option.type;
-                return (
-                  <Button
-                    key={option.type}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => {
-                      setAdType(option.type);
-                      if (option.type !== adType) {
-                        setMediaAssetId(undefined);
-                        setMediaUrl("");
-                      }
-                    }}
-                    aria-pressed={active}
-                    title={
-                      disabled
-                        ? "Video authoring is not available yet."
-                        : undefined
-                    }
-                    style={{
-                      padding: "9px 8px",
-                      borderRadius: "8px",
-                      border: `1px solid ${active ? "var(--color-crimson)" : "var(--border-subtle)"}`,
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      cursor: disabled ? "not-allowed" : "pointer",
-                      opacity: disabled ? 0.65 : 1,
-                      backgroundColor: active
-                        ? "var(--badge-bg)"
-                        : "var(--bg-page)",
-                      color: active
-                        ? "var(--color-crimson)"
-                        : "var(--text-secondary)",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "5px",
-                    }}
-                  >
-                    <Icon size={13} aria-hidden="true" /> {option.label}
-                    {disabled ? " · Soon" : ""}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-
-          {adType !== "text" && (
-            <div>
-              <label
-                htmlFor={`${fieldId}-media`}
-                style={{
-                  display: "block",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                  marginBottom: "6px",
+              <p>Prepare replacement image</p>
+              <ImagePreparation
+                currentUrl={mediaUrl} currentSpecs={isExistingImage ? creative.imageSpecs : undefined}
+                onBusyChange={setUploading}
+                onUploaded={(asset) => {
+                  setMediaAssetId(asset.assetId);
+                  setMediaUrl(asset.cdnUrl);
+                  setPreparedFormat(asset.adFormat);
                 }}
-              >
-                {adType === "video"
-                  ? "Replacement video (MP4/WebM, max 20 MB)"
-                  : "Prepare replacement image"}
-              </label>
-              {adType === "image" ? (
-                <ImagePreparation
-                  initialLayout={preparedFormat}
-                  currentUrl={mediaUrl} currentSpecs={creative.imageSpecs}
-                  onBusyChange={setUploading}
-                  onUploaded={(asset) => {
-                    setMediaAssetId(asset.assetId);
-                    setMediaUrl(asset.cdnUrl);
-                    setPreparedFormat(asset.adFormat);
-                  }}
-                />
-              ) : (
-                <input
-                  id={`${fieldId}-media`}
-                  type="file"
-                  accept={
-                    adType === "video"
-                      ? "video/mp4,video/webm"
-                      : "image/jpeg,image/png,image/webp,image/avif"
-                  }
-                  onChange={(event) =>
-                    void uploadReplacement(event.target.files?.[0])
-                  }
-                  disabled={uploading || isSubmitting}
-                  style={{
-                    width: "100%",
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                  }}
-                />
-              )}
+              />
               {uploading && (
                 <p
                   role="status"
@@ -452,7 +281,7 @@ export function ReplaceCreativeModal({
                 </p>
               )}
             </div>
-          )}
+
 
           {/* Headline */}
           <div>
@@ -467,13 +296,12 @@ export function ReplaceCreativeModal({
               }}
             >
               Headline{" "}
-              {adType === "text" ? "(required for text ads)" : "(optional)"} ·
+              (optional) ·
               Max 100 characters
             </label>
             <Input
               id={`${fieldId}-headline`}
               type="text"
-              required={adType === "text"}
               maxLength={100}
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}

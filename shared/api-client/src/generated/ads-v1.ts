@@ -12057,6 +12057,8 @@ export interface operations {
                 status?: string;
                 page?: number;
                 pageSize?: number;
+                search?: string;
+                sort?: "newest" | "oldest" | "title";
             };
             header?: never;
             path?: never;
@@ -13319,7 +13321,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @enum {string} */
-                    status: "active" | "paused" | "trash";
+                    status: "active" | "paused" | "trash" | "draft";
                 } & {
                     [key: string]: unknown;
                 };

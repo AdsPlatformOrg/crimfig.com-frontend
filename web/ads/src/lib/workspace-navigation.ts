@@ -39,7 +39,7 @@ export function workspaceNavigation(
         },
         {
           id: "campaigns",
-          label: "Active Campaigns",
+          label: "My Ad Campaigns",
           icon: Layers,
           href: "/campaigns",
         },

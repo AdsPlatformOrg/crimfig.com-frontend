@@ -223,7 +223,7 @@ export function DisputesTab({
               {disputes.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No disputes filed. All campaign traffic is within normal statistical thresholds.
+                    No disputes filed. Report a dispute if you see traffic you believe is invalid.
                   </TableCell>
                 </TableRow>
               ) : (

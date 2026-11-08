@@ -3,8 +3,8 @@ import { cn } from '@/lib/utils';
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, style, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableElement> & { density?: 'compact' }
+>(({ className, style, density, ...props }, ref) => (
   <div
     style={{
       width: '100%',
@@ -19,7 +19,8 @@ const Table = React.forwardRef<
       style={{
         width: '100%',
         borderCollapse: 'collapse',
-        fontSize: '13px',
+        fontSize: density === 'compact' ? '0.625rem' : '13px',
+        ...(density === 'compact' ? { ['--cf-table-text-size']: '0.625rem' } : {}),
         textAlign: 'left',
         ...style,
       }}
@@ -109,7 +110,7 @@ const TableHead = React.forwardRef<
       padding: '12px 16px',
       color: 'var(--text-secondary, #475569)',
       fontWeight: 600,
-      fontSize: '12px',
+      fontSize: 'var(--cf-table-text-size, 12px)',
       letterSpacing: '0.04em',
       textTransform: 'uppercase',
       ...style,
@@ -149,7 +150,7 @@ const TableCaption = React.forwardRef<
     className={cn('mt-4 text-sm text-muted-foreground', className)}
     style={{
       marginTop: '12px',
-      fontSize: '12px',
+      fontSize: 'var(--cf-table-text-size, 12px)',
       color: 'var(--text-muted, #64748B)',
       ...style,
     }}

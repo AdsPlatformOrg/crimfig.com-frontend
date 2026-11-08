@@ -37,7 +37,7 @@ test('request DTO metadata documents real required fields, nullable optional, en
   assert.equal(schemas.CreateCampaignDto.properties.budgetUsd.minimum, 5);
   assert.equal(schemas.AddCreativeDto.properties.headline.maxLength, 100);
   assert.deepEqual(schemas.SaveCampaignDto.required.sort(), ['expectedRevision', 'requestId']);
-  assert.deepEqual(artifact.paths['/api/v1/campaigns/{id}/status'].put.requestBody.content['application/json'].schema.properties.status.enum, ['active', 'paused', 'trash']);
+  assert.deepEqual(artifact.paths['/api/v1/campaigns/{id}/status'].put.requestBody.content['application/json'].schema.properties.status.enum, ['active', 'paused', 'trash', 'draft']);
 });
 test('publisher inventory and staff compatibility routes retain their access contracts', () => {
   const publisher = artifact.paths['/api/v1/publisher/slots'].post;

@@ -36,9 +36,10 @@ export interface AdsConsoleShellProps {
   children: React.ReactNode;
   role: 'advertiser' | 'promoter' | 'admin';
   activeNavId: string;
+  pendingSession?: boolean;
 }
 
-export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShellProps) {
+export function AdsConsoleShell({ children, role, activeNavId, pendingSession = false }: AdsConsoleShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   useEffect(() => { setIsMobileNavOpen(false); }, [pathname]);
@@ -61,6 +62,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
   }, [isMobileNavOpen]);
 
   useEffect(() => {
+    if (pendingSession) return;
     let active = true;
     async function checkStaff() {
       try {
@@ -77,7 +79,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
     return () => {
       active = false;
     };
-  }, []);
+  }, [pendingSession]);
 
   const currentNavGroups=workspaceNavigation(role,staffRoles);
 
@@ -97,7 +99,7 @@ export function AdsConsoleShell({ children, role, activeNavId }: AdsConsoleShell
           <div className="cf-console-actions">
             {role==='advertiser' && pathname!=='/campaigns/new' && <Button asChild size="sm" className="cf-console-context-action"><Link href="/campaigns/new"><Plus size={16} aria-hidden="true" />New Campaign</Link></Button>}
             {role==='promoter' && <Button asChild variant="secondary" size="sm" className="cf-console-context-action"><Link href="/promoter/websites?action=new"><Plus size={16} aria-hidden="true" />Add Property</Link></Button>}
-            <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:`/settings?workspace=${role}`},{label:'Account Security',href:`${authBase}/security`}]} />
+            {!pendingSession && <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:`/settings?workspace=${role}`},{label:'Account Security',href:`${authBase}/security`}]} />}
           </div>
         </div>
       </header>

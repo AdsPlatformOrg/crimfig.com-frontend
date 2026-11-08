@@ -7,6 +7,7 @@ import { adsApi } from '../../lib/ads-api-client';
 import { type CampaignDetails } from '../../lib/campaign-editor';
 import { CampaignCreationWizard } from './CampaignCreationWizard';
 import { CampaignReadiness } from './DeliveryReadinessPanel';
+import { useCampaignTable } from './useCampaignTable';
 import { CampaignBreadcrumbs } from './CampaignBreadcrumbs';
 import { ActionHelp } from '../ActionHelp';
 import {
@@ -35,12 +36,13 @@ import {
   Play,
   Pause,
   AlertCircle,
-  RefreshCw,
   Plus,
 } from 'lucide-react';
 
 export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean }) {
   const router = useRouter();
+  const table = useCampaignTable();
+  const [stackGeo, setStackGeo] = useState('all');
   const [campaign, setCampaign] = useState<CampaignDetails | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -133,6 +135,10 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
   }
 
   const can = campaign.capabilities;
+  const stacks = table.paginate(table.rows(
+    campaign.adStacks.filter(stack => stackGeo === 'all' || stack.geoMode === stackGeo),
+    stack => stack.name,
+  ));
   const totalApprovedAds = campaign.creatives.filter((c) => c.reviewStatus === 'approved').length;
   const totalAds = campaign.creatives.length;
 
@@ -140,7 +146,6 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <CampaignBreadcrumbs items={[{ label: campaign.title || 'Campaign' }]} />
 
-      <CampaignReadiness key={id} campaignId={id} />
 
       {/* Campaign Summary Card */}
       <Card style={{ padding: '24px', borderRadius: '12px' }}>
@@ -358,6 +363,8 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         </div>
       </Card>
 
+      <CampaignReadiness key={id} campaignId={id} />
+
       {/* Ad Stacks Table */}
       <Card style={{ overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -367,18 +374,19 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               Click on any ad stack to view and manage its individual creatives.
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={load}
-            variant="outline"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <RefreshCw style={{ width: 12, height: 12 }} /> Refresh
-          </Button>
+          <div>
+            {table.controls('stacks')}
+            <label>Targeting <select value={stackGeo} onChange={event => { setStackGeo(event.target.value); table.resetPage(); }}>
+              <option value="all">All</option>
+              <option value="inherit">Inherited</option>
+              <option value="global">Global</option>
+              <option value="targeted">Targeted</option>
+            </select></label>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <ShadTable style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '600px' }}>
+          <ShadTable density="compact" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
             <TableHeader>
               <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <TableHead style={{ padding: '12px 16px' }}>Stack Name</TableHead>
@@ -389,14 +397,14 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {campaign.adStacks.length === 0 ? (
+              {stacks.items.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
                     No ad stacks created yet for this campaign.
                   </TableCell>
                 </TableRow>
               ) : (
-                campaign.adStacks.map((stack) => {
+                stacks.items.map((stack) => {
                   const stackAds = campaign.creatives.filter((c) => c.adStackId === stack.id);
                   const stackApproved = stackAds.filter((c) => c.reviewStatus === 'approved').length;
                   const isApproved = stack.reviewStatus === 'approved';
@@ -410,7 +418,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
                       <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Layers style={{ width: 16, height: 16, color: 'var(--color-crimson)', flexShrink: 0 }} />
-                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stack.name}</span>
+                          <Link href={`/campaigns/${id}/stacks/${stack.id}`}>{stack.name}</Link>
                         </div>
                       </TableCell>
 
@@ -474,6 +482,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               )}
             </TableBody>
           </ShadTable>
+          {stacks.footer}
         </div>
       </Card>
     </div>

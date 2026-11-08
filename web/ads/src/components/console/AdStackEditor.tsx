@@ -12,8 +12,6 @@ import {
   Loader2,
   Plus,
   Trash2,
-  Type,
-  Video,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -65,10 +63,10 @@ function draftKey(prefix: string): string {
 export function createAdDraft(): AdDraft {
   return {
     key: draftKey("ad"),
-    adType: "text",
+    adType: "image",
     headline: "",
     bodyText: "",
-    ctaText: "Learn More",
+    ctaText: "",
     destinationUrl: "",
   };
 }
@@ -97,16 +95,6 @@ interface AdStackEditorProps {
   onBusyChange?: (busy: boolean) => void;
 }
 
-const TYPE_OPTIONS: Array<{
-  type: AdDraftType;
-  label: string;
-  icon: typeof Type;
-}> = [
-  { type: "text", label: "Text", icon: Type },
-  { type: "image", label: "Image", icon: ImageIcon },
-  { type: "video", label: "Video", icon: Video },
-];
-
 export function AdStackEditor({
   stack,
   index,
@@ -127,7 +115,6 @@ export function AdStackEditor({
   const [error, setError] = useState("");
 
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
-  const videoEnabled = Boolean(capabilities?.videoAuthoringEnabled);
 
   function update(patch: Partial<StackDraft>) {
     onChange({ ...stack, ...patch });
@@ -153,22 +140,13 @@ export function AdStackEditor({
     update({ ads: stack.ads.filter((ad) => ad.key !== key) });
   }
 
-  function setType(ad: AdDraft, type: AdDraftType) {
-    if (type === "video" && !videoEnabled) return;
-    const nextCta =
-      type === ad.adType
-        ? ad.ctaText
-        : type === "text"
-          ? ad.ctaText || "Learn More"
-          : ad.adType === "text"
-            ? ""
-            : ad.ctaText;
+  function replaceWithImage(ad: AdDraft) {
     updateAd(ad.key, {
-      adType: type,
-      ctaText: nextCta,
-      ...(type !== ad.adType
-        ? { mediaAssetId: undefined, mediaUrl: undefined }
-        : {}),
+      adType: "image",
+      ctaText: "",
+      mediaAssetId: undefined,
+      mediaUrl: undefined,
+      imageInfo: undefined,
     });
   }
 
@@ -316,57 +294,13 @@ export function AdStackEditor({
                 flexWrap: "wrap",
               }}
             >
-              <div
-                role="group"
-                aria-label={`Ad ${adIndex + 1} content type`}
-                style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}
-              >
-                {TYPE_OPTIONS.map((option) => {
-                  const Icon = option.icon;
-                  const disabled = option.type === "video" && !videoEnabled;
-                  const active = ad.adType === option.type;
-                  return (
-                    <button
-                      key={option.type}
-                      type="button"
-                      aria-pressed={active}
-                      disabled={disabled}
-                      onClick={() => setType(ad, option.type)}
-                      title={
-                        disabled
-                          ? "Video authoring is not available yet."
-                          : undefined
-                      }
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "5px",
-                        minHeight: "36px",
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        border: `1px solid ${active ? "var(--color-crimson)" : "var(--border-subtle)"}`,
-                        background: active
-                          ? "var(--badge-bg)"
-                          : "var(--bg-surface)",
-                        color: active
-                          ? "var(--color-crimson)"
-                          : disabled
-                            ? "var(--text-muted)"
-                            : "var(--text-secondary)",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        cursor: disabled ? "not-allowed" : "pointer",
-                        opacity: disabled ? 0.65 : 1,
-                      }}
-                    >
-                      <Icon size={13} aria-hidden="true" /> {option.label}
-                      {option.type === "video" && !videoEnabled && (
-                        <span style={{ fontSize: "10px" }}>· Soon</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+              {ad.adType === "image" ? (
+                <span>Image ad</span>
+              ) : (
+                <Button type="button" variant="outline" size="sm" onClick={() => replaceWithImage(ad)}>
+                  <ImageIcon size={13} aria-hidden="true" /> Replace with image
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="ghost"
@@ -378,6 +312,7 @@ export function AdStackEditor({
               </Button>
             </div>
 
+            <fieldset disabled={ad.adType !== "image"} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             <div
               style={{
                 display: "grid",
@@ -512,7 +447,6 @@ export function AdStackEditor({
                   <>
                     {ad.adType === "image" ? (
                       <ImagePreparation
-                        initialLayout={ad.adFormat || "card"}
                         currentUrl={ad.mediaUrl}
                         currentSpecs={ad.imageInfo}
                         onBusyChange={onBusyChange}
@@ -877,6 +811,7 @@ export function AdStackEditor({
                 </div>
               )}
             </div>
+            </fieldset>
           </article>
         ))}
       </div>
@@ -982,7 +917,7 @@ export function AdStackEditor({
               >
                 <option value="inherit">Inherit campaign geography</option>
                 <option value="global">Global for this stack</option>
-                <option
+                {(capabilities?.geoTargetingEnabled || stack.geoMode === "targeted") && <option
                   value="targeted"
                   disabled={!capabilities?.geoTargetingEnabled}
                 >
@@ -990,7 +925,7 @@ export function AdStackEditor({
                   {!capabilities?.geoTargetingEnabled
                     ? " (not available yet)"
                     : ""}
-                </option>
+                </option>}
               </select>
             </label>
             <div

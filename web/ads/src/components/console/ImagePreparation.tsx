@@ -21,11 +21,11 @@ import {
 
 const RATIOS = [
   ["Original", 0],
-  ["Square - 1:1", 1],
+  ["Square - 250x250 or 300x300 (1:1)", 1],
   ["Landscape - 1.91:1", 1.91],
   ["Portrait - 4:5", 0.8],
   ["Widescreen - 16:9", 16 / 9],
-  ["Medium rectangle - 300x250", 6 / 5],
+  ["Rectangle - 300x250 or 336x280 (6:5)", 6 / 5],
   ["Half page - 300x600", 0.5],
   ["Leaderboard - 728x90", 728 / 90],
   ["Mobile banner - 320x50", 6.4],
@@ -55,13 +55,11 @@ interface SourceInfo {
 export function ImagePreparation({
   onUploaded,
   onBusyChange,
-  initialLayout = "card",
   currentUrl,
   currentSpecs,
 }: {
   onUploaded: (asset: PreparedImageAsset) => void;
   onBusyChange?: (busy: boolean) => void;
-  initialLayout?: "card" | "banner";
   currentUrl?: string;
   currentSpecs?: {
     width: number;
@@ -84,12 +82,11 @@ export function ImagePreparation({
     [source, setSource] = useState<SourceInfo | null>(null),
     [saved, setSaved] = useState<PreparedImageAsset | null>(null),
     [dragging, setDragging] = useState(false);
-  const [ratioChoice, setRatioChoice] = useState(1.91),
+  const [ratioChoice, setRatioChoice] = useState(6 / 5),
     [customW, setCustomW] = useState(1),
     [customH, setCustomH] = useState(1),
-    [rotation, setRotation] = useState(0),
-    [profile, setProfile] = useState<ImageProfile>("standard"),
-    [layout, setLayout] = useState<"card" | "banner">(initialLayout);
+    [rotation, setRotation] = useState(0);
+
   const [selection, setSelection] = useState<PercentCrop>({
       unit: "%",
       x: 5,
@@ -114,8 +111,6 @@ export function ImagePreparation({
     ratioChoice: number;
     customW: number;
     customH: number;
-    profile: ImageProfile;
-    layout: "card" | "banner";
   } | null>(null);
   const panel = useDialog(open, cancel);
   const ratio =
@@ -157,8 +152,6 @@ export function ImagePreparation({
       setRatioChoice(old.ratioChoice);
       setCustomW(old.customW);
       setCustomH(old.customH);
-      setProfile(old.profile);
-      setLayout(old.layout);
       setSelection(old.selection);
     } else {
       bitmap.current?.close();
@@ -364,6 +357,8 @@ export function ImagePreparation({
       const canvas = surface.current,
         crop = sourceCrop(selection, canvas.width, canvas.height),
         actualRatio = crop.width / crop.height;
+      const layout = actualRatio >= 3 ? 'banner' : 'card';
+      const profile: ImageProfile = layout === 'banner' ? 'compact' : 'standard';
       const outputs = [
         await encode(canvas, crop, profile, PREVIEW_EDGE, signal),
       ];
@@ -448,8 +443,6 @@ export function ImagePreparation({
           ratioChoice,
           customW,
           customH,
-          profile,
-          layout,
         };
       setOpen(false);
       setStatus("Uploaded and ready to attach to your ad.");
@@ -505,7 +498,7 @@ export function ImagePreparation({
                   <>
                     <div className="cf-crop-toolbar">
                       <label>
-                        Aspect ratio
+                        Crop ratio
                         <select
                           value={ratioChoice}
                           onChange={(e) =>
@@ -520,6 +513,7 @@ export function ImagePreparation({
                           ))}
                         </select>
                       </label>
+                      <span>Source ratio {((rotation % 180 ? source.height / source.width : source.width / source.height)).toFixed(2)}:1</span>
                       {ratioChoice === -1 && (
                         <>
                           <label>
@@ -604,39 +598,6 @@ export function ImagePreparation({
                     </div>
                     <details className="cf-crop-options">
                       <summary>Output options and image details</summary>
-                      <div className="cf-crop-toolbar">
-                        <label>
-                          Image size budget
-                          <select
-                            value={profile}
-                            onChange={(e) =>
-                              setProfile(e.target.value as ImageProfile)
-                            }
-                            disabled={working}
-                          >
-                            <option value="compact">Compact - cap 100 KB</option>
-                            <option value="standard">
-                              Standard - cap 250 KB
-                            </option>
-                            <option value="larger">
-                              Larger feed - cap 300 KB
-                            </option>
-                          </select>
-                        </label>
-                        <label>
-                          Ad layout
-                          <select
-                            value={layout}
-                            onChange={(e) =>
-                              setLayout(e.target.value as "card" | "banner")
-                            }
-                            disabled={working}
-                          >
-                            <option value="card">Card / feed</option>
-                            <option value="banner">Banner</option>
-                          </select>
-                        </label>
-                      </div>
                       <p>
                         {source.width}x{source.height}px source -{" "}
                         {(source.size / 1000000).toFixed(2)} MB. Encoder quality
@@ -644,7 +605,7 @@ export function ImagePreparation({
                         source stays in this browser.
                       </p>
                       <p>
-                        Placement eligibility also depends on layout, output
+                        Placement eligibility depends on the crop ratio, output
                         dimensions and the publisher's byte cap.
                       </p>
                     </details>

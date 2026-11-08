@@ -348,7 +348,7 @@ export function ConsoleDashboard({
               {summary.performance.impressions.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Budget-based CPM: <strong>${summary.performance.avgCpmUsd.toFixed(2)} USD</strong>
+              Budget-based CPM: <strong>{summary.performance.impressions > 0 ? `$${summary.performance.avgCpmUsd.toFixed(2)} USD` : 'Unavailable'}</strong>
             </div>
           </CardContent>
         </Card>
@@ -366,7 +366,7 @@ export function ConsoleDashboard({
               {summary.performance.clicks.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              CTR: <strong>{summary.performance.ctr.toFixed(2)}%</strong> (Budget-based CPC: ${summary.performance.avgCpcUsd.toFixed(2)})
+              CTR: <strong>{summary.performance.impressions > 0 ? `${summary.performance.ctr.toFixed(2)}%` : 'Unavailable'}</strong> · Budget-based CPC: {summary.performance.clicks > 0 ? `$${summary.performance.avgCpcUsd.toFixed(2)}` : 'Unavailable'}
             </div>
           </CardContent>
         </Card>
@@ -518,23 +518,7 @@ export function ConsoleDashboard({
             </div>
           </CardContent>
 
-          <div
-            style={{
-              padding: '16px 28px',
-              borderTop: '1px solid var(--border-subtle)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              backgroundColor: 'var(--bg-surface, #F8FAFC)',
-              borderRadius: '0 0 16px 16px',
-            }}
-          >
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Deferred Verification Cron:</span>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-success)' }} />
-              Not monitored here
-            </span>
-          </div>
+
         </Card>
       </div>
 

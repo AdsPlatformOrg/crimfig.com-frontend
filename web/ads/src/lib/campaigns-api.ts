@@ -113,8 +113,8 @@ export async function loadCampaigns(own: boolean) {
   return own ? (await adsApi().listCampaigns()).map(campaign => campaignView(campaign)) :
     (await adsApi().catalog()).map(campaign => campaignView(campaign));
 }
-export async function loadCampaignPage(status='all',page=1,pageSize=25) {
-  const result=await adsApi().campaignPage(status,page,pageSize);
+export async function loadCampaignPage(status='all',page=1,pageSize=25,search='',sort: 'newest' | 'oldest' | 'title' = 'newest') {
+  const result=await adsApi().campaignPage(status,page,pageSize,search,sort);
   return {...result,items:result.items.map(campaign=>campaignView(campaign))};
 }
 export async function loadWebsites() {
@@ -222,7 +222,7 @@ export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(St
 
 export async function setCampaignStatus(
   id: string,
-  status: "active" | "paused",
+  status: "active" | "paused" | "trash" | "draft",
 ) {
   return adsApi().status(id, status);
 }

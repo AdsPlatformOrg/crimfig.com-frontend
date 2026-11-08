@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { adsApi } from '@/lib/ads-api-client';
 import { type CampaignDetails } from '@/lib/campaign-editor';
+import { useCampaignTable } from '@/components/console/useCampaignTable';
 import { CampaignBreadcrumbs } from '@/components/console/CampaignBreadcrumbs';
 import { MediaPreview } from '@/components/MediaPreview';
 import { ReplaceCreativeModal } from '@/components/console/ReplaceCreativeModal';
@@ -26,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, ArrowLeft, RefreshCw, Layers, Image as ImageIcon, Sparkles, AlertCircle } from 'lucide-react';
+import { MoreVertical, ArrowLeft, Layers, Image as ImageIcon, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function AdStackDetailPage() {
   const params = useParams();
@@ -34,9 +35,11 @@ export default function AdStackDetailPage() {
   const id = params?.id as string;
   const stackId = params?.stackId as string;
 
+  const table = useCampaignTable();
   const [campaign, setCampaign] = useState<CampaignDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reviewFilter, setReviewFilter] = useState('all');
 
   // Creative replacement modal
   const [replacementCreative, setReplacementCreative] = useState<React.ComponentProps<typeof ReplaceCreativeModal>['creative']>(null);
@@ -78,6 +81,10 @@ export default function AdStackDetailPage() {
 
   const stack = campaign.adStacks.find((s) => s.id === stackId);
   const creatives = campaign.creatives.filter((c) => c.adStackId === stackId);
+  const adPage = table.paginate(table.rows(creatives.filter(ad =>
+    reviewFilter === 'all' || (ad.reviewStatus || 'pending') === reviewFilter,
+  ), ad => ad.headline || 'Image ad'));
+  const visibleCreatives = adPage.items;
 
   const approvedCount = creatives.filter((c) => c.reviewStatus === 'approved').length;
   const totalCount = creatives.length;
@@ -146,23 +153,26 @@ export default function AdStackDetailPage() {
       <Card style={{ overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>Stack Creatives</h2>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>Ads</h2>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
               Each ad is reviewed independently. Only approved creatives deliver when the campaign is active.
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={loadData}
-            variant="outline"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <RefreshCw style={{ width: 12, height: 12 }} /> Refresh
-          </Button>
+          {table.controls('ads')}
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+            Review status
+            <select value={reviewFilter} onChange={event => { setReviewFilter(event.target.value); table.resetPage(); }}>
+              <option value="all">All statuses</option>
+              <option value="pending">Review 1</option>
+              <option value="pending_manager_approval">Review 2</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </label>
         </div>
 
         <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <ShadTable style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '600px' }}>
+          <ShadTable density="compact" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
             <TableHeader>
               <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <TableHead style={{ width: '80px', padding: '12px 16px' }}>Preview</TableHead>
@@ -174,14 +184,14 @@ export default function AdStackDetailPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {creatives.length === 0 ? (
+              {visibleCreatives.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-                    No creatives found in this stack.
+                    {creatives.length ? 'No ads match these filters.' : 'No creatives found in this stack.'}
                   </TableCell>
                 </TableRow>
               ) : (
-                creatives.map((ad) => {
+                visibleCreatives.map((ad) => {
                   const status = String(ad.reviewStatus || 'pending');
                   const isApproved = status === 'approved';
                   const isPendingTier2 = status === 'pending_manager_approval';
@@ -216,7 +226,7 @@ export default function AdStackDetailPage() {
                       {/* Headline & Body */}
                       <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                         <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {ad.headline || 'Artwork Creative'}
+                          <Link href={`/campaigns/${id}/stacks/${stackId}/ads/${ad.id}`}>{ad.headline || 'Image ad'}</Link>
                         </div>
                         {ad.bodyText && (
                           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -350,6 +360,7 @@ export default function AdStackDetailPage() {
               )}
             </TableBody>
           </ShadTable>
+          {adPage.footer}
         </div>
       </Card>
 

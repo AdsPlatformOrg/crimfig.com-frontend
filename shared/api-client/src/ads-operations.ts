@@ -16,7 +16,7 @@ export type CreativeRecord = operations['Campaigns_replaceCreative']['responses'
 export function createAdsOperations(client: ReturnType<typeof createAdsClient>) {
   return {
     async listCampaigns(status?: string) { return dataOf(await client.GET('/api/v1/campaigns', { params: { query: { status } } })); },
-    async campaignPage(status='all',page=1,pageSize=25) { return dataOf(await client.GET('/api/v1/campaigns/page',{params:{query:{status,page,pageSize}}})); },
+    async campaignPage(status='all',page=1,pageSize=25,search='',sort: 'newest' | 'oldest' | 'title' = 'newest') { return dataOf(await client.GET('/api/v1/campaigns/page',{params:{query:{status,page,pageSize,search,sort}}})); },
     async catalog(category?: string) { return dataOf(await client.GET('/api/v1/campaigns/catalog', { params: { query: { category } } })); },
     async capabilities() { return dataOf(await client.GET('/api/v1/campaigns/creation-capabilities')); },
     async details(id: string) { return dataOf(await client.GET('/api/v1/campaigns/{id}', { params: { path: { id } } })); },
@@ -34,7 +34,7 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
     async addCreative(id: string, body: AddCreativeInput) { return dataOf(await client.POST('/api/v1/campaigns/{id}/creatives', { params: { path: { id } }, body })); },
     async replaceCreative(id: string, body: ReplaceCreativeInput) { return dataOf(await client.PUT('/api/v1/campaigns/creatives/{id}/replace', { params: { path: { id } }, body })); },
     async submit(id: string, body: MutationControl) { return dataOf(await client.POST('/api/v1/campaigns/{id}/submit-review', { body, params: { path: { id } } })); },
-    async status(id: string, status: 'active' | 'paused' | 'trash') { return dataOf(await client.PUT('/api/v1/campaigns/{id}/status', { params: { path: { id } }, body: { status } })); },
+    async status(id: string, status: 'active' | 'paused' | 'trash' | 'draft') { return dataOf(await client.PUT('/api/v1/campaigns/{id}/status', { params: { path: { id } }, body: { status } })); },
     async save(id:string,body:SaveCampaignInput) { return dataOf(await client.PATCH('/api/v1/campaigns/{id}',{body,params:{path:{id}}})); },
     async beginEdit(id:string,body:BeginEditInput) { return dataOf(await client.POST('/api/v1/campaigns/{id}/begin-edit',{body,params:{path:{id}}})); },
     async mutation(id:string,requestId:string) { return dataOf(await client.GET('/api/v1/campaigns/{id}/mutations/{requestId}',{params:{path:{id,requestId}}})); },

@@ -21,7 +21,7 @@ interface PromoterProfile {
 
 export function UserProfileView() {
   const [profile, setProfile] = useState<PromoterProfile | null>(null);
-  const [userEmail, setUserEmail] = useState<string>('');
+  const [staffRoles, setStaffRoles] = useState<string[] | null>(null);
   const [userId, setUserId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,11 +31,15 @@ export function UserProfileView() {
     async function loadIdentity() {
       try {
         setIsLoading(true);
-        // Attempt to fetch promoter profile info
-        const promoterData = await apiData<PromoterProfile>('/api/v1/promoters/profile').catch(() => null);
-        if (active && promoterData) {
+        const [identity, promoterData, staff] = await Promise.all([
+          dashboardSession().getProfile(),
+          apiData<PromoterProfile>('/api/v1/promoters/profile').catch(() => null),
+          apiData<{ isStaff: boolean; roles: string[] }>('/api/v1/ecosystem/staff-status').catch(() => null),
+        ]);
+        if (active) {
+          setUserId(identity.userId);
           setProfile(promoterData);
-          setUserId(promoterData.userId);
+          setStaffRoles(staff ? (staff.isStaff && Array.isArray(staff.roles) ? staff.roles : []) : null);
         }
       } catch (err) {
         if (active) setError(err instanceof Error ? err.message : 'Profile unavailable');
@@ -109,41 +113,15 @@ export function UserProfileView() {
           </Button>
         </div>
 
-        {/* Roles & Personas */}
-        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 12px 0' }}>
-            Ecosystem Personas & Roles
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
-            <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--color-crimson)' }}></span>
-                Advertiser Studio
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0 0' }}>
-                Create multi-format ads, set daily budgets, and target high-yield publisher placements.
-              </p>
-            </div>
-            <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--color-success)' }}></span>
-                Publisher & Promoter Hub
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0 0' }}>
-                Monetize verified websites, mobile SDK traffic, and individual social reels.
-              </p>
-            </div>
-            <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--color-info)' }}></span>
-                Financial Escrow & Billing
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 0 0' }}>
-                Fund advertiser wallets, track escrow clearances, and request bank payouts.
-              </p>
-            </div>
-          </div>
-        </div>
+        <section style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 20 }}>
+          <h2 className="cf-section-title">Account access</h2>
+          {isLoading ? <p role="status">Loading access details…</p> : (
+            <ul>
+              <li>Promoter profile {profile ? 'registered' : 'unavailable'}</li>
+              <li>Ads staff access {staffRoles === null ? 'unavailable' : staffRoles.length ? staffRoles.join(', ') : 'not assigned'}</li>
+            </ul>
+          )}
+        </section>
       </div>
 
       {/* Quick Action Navigation Grid */}

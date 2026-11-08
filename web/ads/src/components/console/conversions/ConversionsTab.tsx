@@ -297,6 +297,13 @@ window.cfq.push(['track', 'purchase', {
                 </tr>
               </thead>
               <tbody>
+                {!conversions.length && (
+                  <tr><td colSpan={7} style={{ padding: 18 }}>
+                    <p>No conversion events to show. Choose a setup method to start tracking.</p>
+                    <Button size="sm" variant="outline" onClick={() => setSubTab('pixel')}>Set up a web pixel</Button>
+                    <Button size="sm" variant="outline" onClick={() => setSubTab('postback')}>Set up a server postback</Button>
+                  </td></tr>
+                )}
                 {conversions.map((conv) => {
                   const isHoldbackActive = conv.holdbackReleaseAt && new Date(conv.holdbackReleaseAt) > new Date();
                   return (

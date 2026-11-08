@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   BarChart3,
   Plus,
@@ -41,10 +41,15 @@ import {
 type Campaign = CampaignListItem;
 export function CampaignsManager() {
   const router = useRouter();
+  const query = useSearchParams();
+  const initialSort = query.get('sort');
+  const initialPage = Number(query.get('page'));
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [page,setPage]=useState(1);
+  const [statusFilter, setStatusFilter] = useState(() => query.get('status') || 'all');
+  const [page,setPage]=useState(() => Number.isSafeInteger(initialPage) && initialPage > 0 && initialPage <= 100000 ? initialPage : 1);
+  const [search, setSearch] = useState(() => (query.get('search') ?? '').slice(0, 100));
+  const [sort, setSort] = useState<'newest' | 'oldest' | 'title'>(() => initialSort === 'title' || initialSort === 'oldest' ? initialSort : 'newest');
   const [total,setTotal]=useState(0);
   const [counts,setCounts]=useState<Record<string,number>>({});
   const generation=useRef(0);
@@ -70,15 +75,25 @@ export function CampaignsManager() {
   const [replacementCreative, setReplacementCreative] = useState<React.ComponentProps<typeof ReplaceCreativeModal>['creative']>(null);
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const options = { status: statusFilter === 'all' ? '' : statusFilter, page: page === 1 ? '' : String(page), search, sort: sort === 'newest' ? '' : sort };
+    for (const [key, value] of Object.entries(options)) {
+      if (value) url.searchParams.set(key, value);
+      else url.searchParams.delete(key);
+    }
+    if (url.href !== window.location.href) window.history.replaceState(null, '', url);
+  }, [statusFilter, page, search, sort]);
+
+  useEffect(() => {
     fetchCampaigns();
     return()=>{generation.current++;};
-  }, [page,statusFilter]);
+  }, [page,statusFilter,search,sort]);
 
   const fetchCampaigns = async () => {
     const current=++generation.current;
     try {
       setIsLoading(true);
-      const data = await loadCampaignPage(statusFilter,page,pageSize);
+      const data = await loadCampaignPage(statusFilter,page,pageSize,search,sort);
       if(current!==generation.current)return;
       if(page>1&&data.items.length===0){setPage(Math.max(1,Math.ceil(data.total/pageSize)));return;}
       setCampaigns(data.items);setTotal(data.total);setCounts(data.counts);setActionError(null);
@@ -89,14 +104,14 @@ export function CampaignsManager() {
     }
   };
 
-  const handleToggleStatus = async (campaignId: string) => {
+  const handleToggleStatus = async (campaignId: string, recoveryStatus?: "trash" | "draft") => {
     if (pendingWrites.has(campaignId)) return;
     const camp = campaigns.find((c) => c.id === campaignId);
     if (!camp) return;
 
-    const nextStatus = camp.status === 'active' ? 'paused' : 'active';
+    const nextStatus = recoveryStatus ?? (camp.status === 'active' ? 'paused' : 'active');
     const canToggle = nextStatus === 'paused' ? (camp.capabilities?.canPause ?? true) : (camp.capabilities?.canActivate ?? false);
-    if (!canToggle) return;
+    if (!recoveryStatus && !canToggle) return;
     setPendingWrites((prev) => new Set(prev).add(campaignId));
     try {
       const updated = await setCampaignStatus(campaignId, nextStatus);
@@ -141,7 +156,7 @@ export function CampaignsManager() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            Campaigns &amp; Creative Assets
+            My Ad Campaigns
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
             Filter by moderation status, customize performance columns, and manage live delivery.
@@ -168,6 +183,12 @@ export function CampaignsManager() {
 
       {/* Status Tabs */}
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+        <label>Search campaigns <input type="search" maxLength={100} value={search} onChange={event => { setPage(1); setSearch(event.target.value); }} /></label>
+        <label>Sort campaigns <select value={sort} onChange={event => { setPage(1); setSort(event.target.value === 'title' ? 'title' : event.target.value === 'oldest' ? 'oldest' : 'newest'); }}>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title">Title A to Z</option>
+        </select></label>
         {[
           { id: 'all', label: 'All Campaigns' },
           { id: 'active', label: 'Active' },
@@ -226,7 +247,7 @@ export function CampaignsManager() {
       ) : (
         <Card style={{ overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <ShadTable style={{ width: '100%', textAlign: 'left', fontSize: '13px', borderCollapse: 'collapse' }}>
+            <ShadTable density="compact">
               <TableHeader>
                 <TableRow style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface)' }}>
                   {visibleCols.map((c) => (
@@ -243,8 +264,8 @@ export function CampaignsManager() {
                       if (col.key === 'campaign') {
                         return (
                           <TableCell key={col.key}>
-                            <Link href={`/campaigns/${camp.id}`} style={{ fontWeight: 700, color: 'var(--text-primary)', textDecoration: 'none' }}>{camp.title}</Link>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{camp.headline}</div>
+                            <Link href={`/campaigns/${camp.id}`} style={{ color: 'var(--text-primary)' }}>{camp.title}</Link>
+                            {camp.headline && camp.headline !== camp.title && <div style={{ color: 'var(--text-muted)' }}>{camp.headline}</div>}
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
                               {(camp.formats && camp.formats.length > 0 ? camp.formats : [camp.format]).map((fmt) => (
                                 <Badge
@@ -427,7 +448,12 @@ export function CampaignsManager() {
                                       Edit Draft Campaign
                                     </DropdownMenuItem>
                                   )}
-                                  {camp.status !== 'rejected' && camp.status !== 'trash' && canResume && (
+                                  {camp.moderationStatus === 'draft' && (camp.status === 'draft' || camp.status === 'trash') && (
+                                    <DropdownMenuItem disabled={pendingWrites.has(camp.id)} onSelect={() => void handleToggleStatus(camp.id, camp.status === 'trash' ? 'draft' : 'trash')}>
+                                      {camp.status === 'trash' ? 'Restore to Draft' : 'Move to Trash'}
+                                    </DropdownMenuItem>
+                                  )}
+                                  {camp.status !== 'rejected'  && camp.status !== 'trash' && canResume && (
                                     <DropdownMenuItem onClick={() => handleToggleStatus(camp.id)}>
                                       {camp.status === 'active' ? 'Pause Campaign' : 'Resume Campaign'}
                                     </DropdownMenuItem>

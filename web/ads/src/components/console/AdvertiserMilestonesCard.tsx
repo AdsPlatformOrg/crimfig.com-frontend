@@ -5,7 +5,6 @@ import { Award, Shield, Sparkles, CheckCircle2, Clock, Gift, ChevronRight, Loade
 import { sessionFetch } from '../../lib/session';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
 
 interface Achievement {
   id: string;
@@ -116,9 +115,7 @@ export function AdvertiserMilestonesCard() {
                 <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>
                   Advertiser Milestones &amp; Prestige Badges
                 </CardTitle>
-                <Badge variant="outline" style={{ fontSize: '10px', color: '#D97706', borderColor: 'rgba(217, 119, 6, 0.3)' }}>
-                  PLAN-0017
-                </Badge>
+
               </div>
               <CardDescription style={{ fontSize: '12px', marginTop: '2px' }}>
                 Unlock non-cash bonus ad credits funded strictly from the promotional budget ledger.

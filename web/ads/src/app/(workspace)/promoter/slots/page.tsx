@@ -108,8 +108,9 @@ export default function PromoterSlotsPage() {
 
   // Form State
   const [newSlotName, setNewSlotName] = useState('');
-  const [newSlotType, setNewSlotType] = useState<PublisherSlot['slotType']>('network');
-  const [newSlotFormat, setNewSlotFormat] = useState('auto');
+  const [availableAdTypes, setAvailableAdTypes] = useState<Array<'text' | 'video'>>([]);
+  const [optionalAdTypes, setOptionalAdTypes] = useState<Array<'text' | 'video'>>([]);
+  const [newPresetIds, setNewPresetIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -145,6 +146,9 @@ export default function PromoterSlotsPage() {
       if (res.ok) {
         const json = await res.json();
         setSlots(Array.isArray(json?.data) ? json.data : []);
+        setAvailableAdTypes(Array.isArray(json?.availableAdTypes)
+          ? json.availableAdTypes.filter((type: unknown) => type === 'text' || type === 'video')
+          : []);
       }
     } catch {
       setSlots([]);
@@ -170,75 +174,16 @@ export default function PromoterSlotsPage() {
       setIsSubmitting(true);
       setFormError(null);
 
-      let allowedPresetIds: string[] | undefined = undefined;
-      let slotFormat = 'banner';
-      let slotWidth: number | undefined = undefined;
-      let slotHeight: number | undefined = undefined;
-
-      if (newSlotFormat === 'auto') {
-        allowedPresetIds = undefined; // Auto: any of the 9 approved sizes
-        slotFormat = 'banner';
-      } else if (newSlotFormat === 'leaderboard') {
-        allowedPresetIds = ['leaderboard'];
-        slotFormat = 'banner';
-        slotWidth = 728;
-        slotHeight = 90;
-      } else if (newSlotFormat === 'medium_rectangle') {
-        allowedPresetIds = ['medium_rectangle'];
-        slotFormat = 'card';
-        slotWidth = 300;
-        slotHeight = 250;
-      } else if (newSlotFormat === 'large_rectangle') {
-        allowedPresetIds = ['large_rectangle'];
-        slotFormat = 'card';
-        slotWidth = 336;
-        slotHeight = 280;
-      } else if (newSlotFormat === 'mobile_banner') {
-        allowedPresetIds = ['mobile_banner'];
-        slotFormat = 'banner';
-        slotWidth = 320;
-        slotHeight = 50;
-      } else if (newSlotFormat === 'large_mobile_banner') {
-        allowedPresetIds = ['large_mobile_banner'];
-        slotFormat = 'banner';
-        slotWidth = 320;
-        slotHeight = 100;
-      } else if (newSlotFormat === 'half_page') {
-        allowedPresetIds = ['half_page'];
-        slotFormat = 'banner';
-        slotWidth = 300;
-        slotHeight = 600;
-      } else if (newSlotFormat === 'billboard') {
-        allowedPresetIds = ['billboard'];
-        slotFormat = 'banner';
-        slotWidth = 970;
-        slotHeight = 250;
-      } else if (newSlotFormat === 'square') {
-        allowedPresetIds = ['square'];
-        slotFormat = 'square';
-        slotWidth = 250;
-        slotHeight = 250;
-      } else if (newSlotFormat === 'large_square') {
-        allowedPresetIds = ['large_square'];
-        slotFormat = 'square';
-        slotWidth = 300;
-        slotHeight = 300;
-      } else if (newSlotFormat === 'interstitial') {
-        allowedPresetIds = undefined;
-        slotFormat = 'interstitial';
-      }
-
       const res = await sessionFetch('/api/v1/publisher/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           websiteId: selectedWebsite.id,
           name: newSlotName.trim(),
-          slotType: newSlotType,
-          format: slotFormat,
-          width: slotWidth,
-          height: slotHeight,
-          allowedPresetIds,
+          slotType: 'network',
+          format: 'general',
+          allowedAdTypes: ['image', ...optionalAdTypes.filter(type => availableAdTypes.includes(type))],
+          allowedPresetIds: newPresetIds,
           responsive: true,
         }),
       });
@@ -250,6 +195,8 @@ export default function PromoterSlotsPage() {
 
       setShowCreateModal(false);
       setNewSlotName('');
+      setNewPresetIds([]);
+      setOptionalAdTypes([]);
       loadSlots(selectedWebsite.id);
     } catch (err: any) {
       setFormError(err.message || 'Slot creation failed.');
@@ -569,15 +516,6 @@ export default function PromoterSlotsPage() {
             )}
 
             <form onSubmit={handleCreateSlot} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <label>
-                Slot type
-                <select value={newSlotType} onChange={(event) => setNewSlotType(event.target.value as PublisherSlot['slotType'])}>
-                  <option value="network">Network</option>
-                  <option value="consideration">Consideration</option>
-                  <option value="direct">Direct</option>
-                  <option value="hybrid">Hybrid</option>
-                </select>
-              </label>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
                   Slot Name
@@ -590,13 +528,27 @@ export default function PromoterSlotsPage() {
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Image Ad Size & Compatibility
+              <fieldset>
+                <legend>Accepted ad types</legend>
+                <label><input type="checkbox" checked disabled /> Image ads</label>
+                {availableAdTypes.map(type => (
+                  <label key={type}><input type="checkbox" checked={optionalAdTypes.includes(type)}
+                    onChange={event => setOptionalAdTypes(current => event.target.checked
+                      ? [...current, type] : current.filter(item => item !== type))} />
+                    {type === 'text' ? 'Text ads' : 'Video ads'}
+                  </label>
+                ))}
+              </fieldset>
+              <details>
+                <summary>Advanced slot options</summary>
+                <label htmlFor="slot-image-size" style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Image size
                 </label>
                 <select
-                  value={newSlotFormat}
-                  onChange={(e) => setNewSlotFormat(e.target.value)}
+                  id="slot-image-size"
+                  multiple
+                  value={newPresetIds}
+                  onChange={event => setNewPresetIds(Array.from(event.target.selectedOptions, option => option.value))}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -608,7 +560,6 @@ export default function PromoterSlotsPage() {
                     fontFamily: 'Poppins, sans-serif',
                   }}
                 >
-                  <option value="auto">Automatic — any approved image size (Recommended)</option>
                   <option value="medium_rectangle">Medium Rectangle (300x250 · 6:5)</option>
                   <option value="large_rectangle">Large Rectangle (336x280 · 6:5)</option>
                   <option value="leaderboard">Leaderboard Banner (728x90 · 364:45)</option>
@@ -618,12 +569,11 @@ export default function PromoterSlotsPage() {
                   <option value="billboard">Billboard (970x250 · 97:25)</option>
                   <option value="square">Square (250x250 · 1:1)</option>
                   <option value="large_square">Large Square (300x300 · 1:1)</option>
-                  <option value="interstitial">Fluid Interstitial Card</option>
                 </select>
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                  Automatic allows all 9 approved presets that fit the usable space. Setting a specific size restricts placement delivery to that preset.
+                  Leave all sizes unselected to accept any approved size that fits. Select one or more sizes to restrict this slot.
                 </p>
-              </div>
+              </details>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                 <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)}>

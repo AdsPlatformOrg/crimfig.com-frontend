@@ -94,7 +94,8 @@ export function CampaignCreationWizard({
   const [pendingOperation,setPendingOperation]=useState<{phase:'save'|'submit';campaignId:string;expectedRevision:number;requestId:string}|null>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'save' | 'review' | null>(null);
+  const isSubmitting = pendingAction !== null;
 
   const [error, setError] = useState<string | null>(null);
 
@@ -488,8 +489,8 @@ export function CampaignCreationWizard({
 
           const label = `${stack.name}, ad ${index + 1}`;
 
-          if (ad.adType === "text" && !ad.headline.trim()) {
-            setError(`${label}: enter a headline for the text ad.`);
+          if (ad.adType !== "image") {
+            setError(`${label}: replace this legacy ad with an image.`);
             return false;
           }
 
@@ -518,13 +519,8 @@ export function CampaignCreationWizard({
             return false;
           }
 
-          if (ad.adType !== "text" && !ad.mediaAssetId) {
-            setError(`${label}: upload a ${ad.adType} asset.`);
-            return false;
-          }
-
-          if (ad.adType === "video" && !capabilities?.videoAuthoringEnabled) {
-            setError(`${label}: video authoring is not available yet.`);
+          if (!ad.mediaAssetId) {
+            setError(`${label}: upload an image.`);
             return false;
           }
         }
@@ -632,8 +628,12 @@ export function CampaignCreationWizard({
 
   async function submit(sendForReview=true) {
     if(submitBusy.current || mediaBusy || submissionUncertain || !requestId) return;
+    if (stacks.some(stack => stack.ads.some(ad => ad.adType !== "image"))) {
+      setError("Replace legacy ads with images before saving or submitting.");
+      return;
+    }
     if(sendForReview && (!validateStep(1)||!validateStep(2)||!validateStep(3)||!validateStep(4))) return;
-    submitBusy.current=true;setIsSubmitting(true);setSubmissionUncertain(true);setError(null);
+    submitBusy.current=true;setPendingAction(sendForReview ? "review" : "save");setSubmissionUncertain(true);setError(null);
     try {
       const profile=await dashboardSession().getProfile();
       if(editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision)!==draftOwner)throw new Error('Your account changed. Open the campaign again before saving.');
@@ -661,7 +661,7 @@ export function CampaignCreationWizard({
       if(cause instanceof ApiError && cause.outcome==='rejected' && cause.status!==409)setSubmissionUncertain(false);
       // A failed/unknown multi-stage save keeps its identity and local form. Never create a replacement silently.
       setError(error instanceof Error?error.message:'The outcome is unknown. Check the saved campaign before trying again.');
-    } finally {submitBusy.current=false;setIsSubmitting(false);}
+    } finally {submitBusy.current=false;setPendingAction(null);}
   }
 
   function updateStack(nextStack: StackDraft) {
@@ -962,8 +962,7 @@ export function CampaignCreationWizard({
                   color: "var(--text-secondary)",
                 }}
               >
-                Each stack needs at least one complete ad. Text, Image, and
-                Video may coexist in one stack.
+                Each stack needs at least one complete image ad.
               </p>
             </div>
 
@@ -1090,6 +1089,7 @@ export function CampaignCreationWizard({
               <Globe size={14} aria-hidden="true" /> Global
             </button>
 
+            {capabilities?.geoTargetingEnabled && (
             <button
               type="button"
               disabled={!capabilities?.geoTargetingEnabled}
@@ -1117,16 +1117,11 @@ export function CampaignCreationWizard({
             >
               <Target size={14} aria-hidden="true" /> Target locations
             </button>
+            )}
           </div>
 
-          {!capabilities?.geoTargetingEnabled && (
-            <p
-              role="status"
-              style={{ color: "var(--text-secondary)", fontSize: 13 }}
-            >
-              Global targeting is available. Specific locations will be enabled
-              later.
-            </p>
+          {!capabilities?.geoTargetingEnabled && geoMode === "targeted" && (
+            <p role="status">This campaign uses saved location targeting. Choose Global to edit it while location targeting is unavailable.</p>
           )}
 
           {geoMode === "targeted" && (
@@ -1336,7 +1331,7 @@ export function CampaignCreationWizard({
                 fontWeight: 600,
               }}
             >
-              Daily target (USD)
+              Daily budget limit (USD)
               <Input
                 type="number"
                 min={1}
@@ -1460,7 +1455,7 @@ export function CampaignCreationWizard({
               lines={[
                 `Category: ${category}`,
                 `Budget: $${budgetUsd.toFixed(2)} USD`,
-                dailyBudgetUsd != null ? `Daily target: $${dailyBudgetUsd.toFixed(2)} USD` : "Daily target: Not set",
+                dailyBudgetUsd != null ? `Daily budget limit: $${dailyBudgetUsd.toFixed(2)} USD` : "Daily budget limit: Not set",
                 `Model: ${pricingModel.toUpperCase()}`,
                 `Bid: $${((pricingModel === "cpm" ? cpmBidCents : cpcBidCents) / 100).toFixed(2)} per ${pricingModel === "cpm" ? "1,000 impressions" : "click"}`,
               ]}
@@ -1471,7 +1466,6 @@ export function CampaignCreationWizard({
               value={`${stacks.length} stack${stacks.length === 1 ? "" : "s"} Â· ${adCount} ad${adCount === 1 ? "" : "s"}`}
               lines={[
                 `Types: ${[...new Set(stacks.flatMap((stack) => stack.ads.map((ad) => ad.adType)))].join(", ")}`,
-                `Video: ${capabilities?.videoAuthoringEnabled ? "enabled" : "coming soon"}`,
               ]}
             />
 
@@ -1654,7 +1648,7 @@ export function CampaignCreationWizard({
                 lineHeight: 1.5,
               }}
             >
-              Submit the campaign for review and approval.
+              Submitting reserves the campaign budget and sends the campaign for review. Delivery starts after approval and activation.
             </p>
           </div>
         </section>
@@ -1704,7 +1698,7 @@ export function CampaignCreationWizard({
       )}
 
       <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-        <Button type="button" variant="outline" disabled={isSubmitting||mediaBusy||submissionUncertain||!requestId} onClick={()=>void submit(false)}>{isSubmitting?'Saving…':'Save Draft'}</Button>
+        <Button type="button" variant="outline" disabled={isSubmitting||mediaBusy||submissionUncertain||!requestId} onClick={()=>void submit(false)}>{pendingAction === 'save' ? 'Saving…' : 'Save Draft'}</Button>
         {(mediaBusy||submissionUncertain||!requestId)&&<ActionHelp action="Save Draft" reason={mediaBusy?'Wait for the image preparation to finish.':submissionUncertain?'Check whether the save completed before trying again.':'Wait for your draft identity to be ready.'}/>}
         {dirty&&<span style={{color:'var(--text-secondary)',fontSize:13}}>Unsaved changes are retained for this account on this device.</span>}
       </div>
@@ -1755,9 +1749,9 @@ export function CampaignCreationWizard({
               !requestId
             }
           >
-            {isSubmitting ? (
+            {pendingAction === "review" ? (
               <>
-                <Loader2 size={14} aria-hidden="true" /> Submittingâ€¦
+                <Loader2 size={14} aria-hidden="true" /> Submitting…
               </>
             ) : (
               <>

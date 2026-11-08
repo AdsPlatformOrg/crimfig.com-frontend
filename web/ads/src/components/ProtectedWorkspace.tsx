@@ -37,7 +37,7 @@ function WorkspaceContent({ children }: { children: ReactNode }) {
   // Safe Guarding: The ENTIRE /admin subtree requires AdminGuard
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
   return (
-    <SessionGate>
+    <SessionGate loadingShell={role === "admin" || isAdminPath ? undefined : <AdsConsoleShell role={role} activeNavId={activeNavId} pendingSession><p role="status">Checking your session…</p></AdsConsoleShell>}>
       {role === "admin" || isAdminPath ? (
         <AdminGuard key={pathname}>{workspace}</AdminGuard>
       ) : (
