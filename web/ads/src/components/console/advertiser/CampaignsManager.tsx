@@ -171,7 +171,7 @@ export function CampaignsManager() {
             Filter by moderation status, customize performance columns, and manage live delivery.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', minWidth: 0 }}>
           <Button
             type="button"
             variant="outline"

@@ -26,3 +26,7 @@ Read [STYLING.md](./STYLING.md) alongside TYPOGRAPHY.md before UI styling work. 
 CrimFig marketing pages use plain headlines, concise copy, and imagery for hierarchy. Do not use decorative badges, pills, sparkle labels, or uppercase eyebrow text above headings. Reserve badges for factual status that helps users make a decision. See [project design memory](../.agents/MEMORY.md).
 
 Use subtle animate-on-scroll (AOS) entrances on CrimFig public marketing pages. Keep content readable before JavaScript runs, reveal each section once, and skip entrance motion when prefers-reduced-motion is enabled.
+
+## Mobile-first frontend design — JED, 2026-11-11
+
+Start all new or updated frontend interfaces at the narrow mobile layout. Prioritize key content and actions in a single column, use touch-friendly controls and let content wrap. Add wider layouts progressively with min-width breakpoints where useful. Check affected screens at 320 and 375 CSS pixels for page-wide horizontal overflow, clipping and unreachable controls, then check desktop and keyboard use. Record browser checks actually performed.

@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Badge, Button, Card, Input } from '../ui';
+import { Button, Input } from '../ui';
+import styles from './DeliveryReadinessPanel.module.css';
 import { sessionFetch } from '../../lib/session';
 import { adsApi } from '../../lib/ads-api-client';
-import { isPassingReadinessStatus, summarizeDeliveryReadiness } from '../../lib/delivery-readiness-view';
+import { isPassingReadinessStatus } from '../../lib/delivery-readiness-view';
 
 type Gate = {
   gateCode: string;
@@ -67,84 +68,71 @@ function VerifyEmailAction({ onReload }: { onReload?: () => void }) {
   </>;
 }
 
-export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { report: Readiness; onReload?: () => void; canAct?: boolean }) {
-  const visibleGates = report.gates.filter(gate => canAct ? gate.owner === 'Advertiser' || gate.owner === 'Moderation' : true);
-  const readiness = summarizeDeliveryReadiness(visibleGates);
-  const isOverallBlocked = readiness.tone === 'blocked';
+function ReadinessCheck({ gate, canAct, onReload }: {
+  gate: Gate;
+  canAct: boolean;
+  onReload?: () => void;
+}) {
+  const name = gate.gateCode.toLowerCase().replaceAll('_', ' ');
+  const label = name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
-    <section className="cf-section" aria-label="Paid delivery readiness">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-        <div>
-          <h2 className="cf-section-title" style={{ margin: 0 }}>Paid delivery readiness</h2>
-          <p className="cf-muted" style={{ margin: '2px 0 0 0' }}>Checked {new Date(report.evaluatedAt).toLocaleString()}</p>
-        </div>
-        <div>
-          <Badge
-            variant="outline"
-            style={{
-              fontSize: '12px',
-              fontWeight: 700,
-              padding: '4px 10px',
-              backgroundColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.1)' : readiness.tone === 'passing' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
-              color: isOverallBlocked ? '#EF4444' : readiness.tone === 'passing' ? '#10B981' : 'var(--text-secondary)',
-              borderColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.3)' : readiness.tone === 'passing' ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-subtle)',
-            }}
-          >
-            {readiness.label}
-          </Badge>
-        </div>
+    <li className={styles.check}>
+      <div className={styles.checkHeading}>
+        <strong>{label}</strong>
+        <span>{statuses[gate.status] ?? 'Unknown'}</span>
       </div>
-
-      <p className="cf-muted" style={{ margin: '0 0 12px' }}>
-        {visibleGates.length === 0
-          ? 'No readiness checks are available in this view.'
-          : `${readiness.passing} passing check${readiness.passing === 1 ? '' : 's'} collapsed.`}
-        {readiness.needsAttention > 0 ? ` ${readiness.needsAttention} check${readiness.needsAttention === 1 ? '' : 's'} need attention; review the expanded details.` : ''}
+      <p>{gate.explanation}</p>
+      <p className={styles.metadata}>
+        {gate.owner} · {gate.source}
+        {gate.observedAt && <> · Observed {new Date(gate.observedAt).toLocaleString()}</>}
       </p>
+      {gate.action === 'verify_email' && canAct && <VerifyEmailAction onReload={onReload} />}
+      {gate.action === 'review_website' && <a href="#website-suitability-review">Open suitability review</a>}
+    </li>
+  );
+}
 
-      {visibleGates.map(gate => {
-        const isBlocked = gate.status === 'blocked' || gate.status === 'action_required';
-        const isEligible = isPassingReadinessStatus(gate.status);
-        return (
-          <Card
-            key={gate.gateCode}
-            className="cf-dialog-section"
-            style={{
-              borderLeft: isBlocked ? '4px solid #EF4444' : isEligible ? '4px solid #10B981' : '4px solid #64748B',
-              marginBottom: '10px',
-            }}
-          >
-            <details open={!isEligible}>
-              <summary style={{ minHeight: '44px', cursor: 'pointer' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: 'calc(100% - 16px)', verticalAlign: 'middle' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0F172A)' }}>
-                    {gate.gateCode.replace(/_/g, ' ')}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      backgroundColor: isBlocked ? 'rgba(239, 68, 68, 0.1)' : isEligible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                      color: isBlocked ? '#EF4444' : isEligible ? '#10B981' : '#64748B',
-                    }}
-                  >
-                    {statuses[gate.status] ?? 'Unknown'}
-                  </Badge>
-                </span>
-              </summary>
-              <p style={{ margin: '4px 0', fontSize: '13px', color: 'var(--text-secondary, #334155)' }}>{gate.explanation}</p>
-              <p className="cf-muted" style={{ margin: '4px 0 0 0', fontSize: '12px' }}>
-                <strong>Owner:</strong> {gate.owner} · <strong>Authority:</strong> {gate.source}
-                {gate.observedAt ? ' · Observed ' + new Date(gate.observedAt).toLocaleString() : ''}
-              </p>
-              {gate.action === 'verify_email' && canAct && <div style={{ marginTop: '8px' }}><VerifyEmailAction onReload={onReload} /></div>}
-              {gate.action === 'review_website' && <div style={{ marginTop: '8px' }}><a href="#website-suitability-review">Open suitability review</a></div>}
-            </details>
-          </Card>
-        );
-      })}
+export function DeliveryReadinessPanel({ report, error, onReload, canAct = true }: {
+  report?: Readiness;
+  error?: string;
+  onReload?: () => void;
+  canAct?: boolean;
+}) {
+  const gates = report?.gates.filter(gate => !canAct || gate.owner === 'Advertiser' || gate.owner === 'Moderation') ?? [];
+  const passing = gates.filter(gate => isPassingReadinessStatus(gate.status));
+  const attention = gates.filter(gate => !isPassingReadinessStatus(gate.status));
+  const loading = !report && !error;
+  const outcome = attention.length
+    ? `${attention.length} ${attention.length === 1 ? 'check needs' : 'checks need'} attention`
+    : passing.length
+      ? `${passing.length} ${passing.length === 1 ? 'check' : 'checks'} passed`
+      : 'No readiness checks are available in this view.';
+
+  return (
+    <section className={styles.panel} aria-label="Paid delivery readiness">
+      <div className={styles.header}>
+        <div>
+          <h2 className="cf-section-title">Paid delivery readiness</h2>
+          <p role={error ? 'alert' : 'status'}>{error ?? (loading ? 'Checking delivery readiness…' : outcome)}</p>
+        </div>
+        {(report || onReload) && <div className={styles.controls}>
+          {report && <span className={styles.metadata}>Checked {new Date(report.evaluatedAt).toLocaleString()}</span>}
+          {onReload && <Button type="button" variant="outline" size="sm" aria-disabled={loading}
+            onClick={() => { if (!loading) onReload(); }}>
+            {loading ? 'Refreshing…' : 'Refresh readiness'}
+          </Button>}
+        </div>}
+      </div>
+      {attention.length > 0 && <ul className={styles.checks} aria-label="Checks needing attention">
+        {attention.map(gate => <ReadinessCheck key={gate.gateCode} gate={gate} canAct={canAct} onReload={onReload} />)}
+      </ul>}
+      {passing.length > 0 && <details className={styles.passing}>
+        <summary>View passing checks ({passing.length})</summary>
+        <ul className={styles.checks}>
+          {passing.map(gate => <ReadinessCheck key={gate.gateCode} gate={gate} canAct={canAct} onReload={onReload} />)}
+        </ul>
+      </details>}
     </section>
   );
 }
@@ -164,11 +152,12 @@ export function CampaignReadiness({ campaignId, staff = false }: { campaignId: s
     return () => { active = false; };
   }, [endpoint, campaignId, staff, refresh]);
   const current = snapshot?.endpoint === endpoint ? snapshot : undefined;
-  return <>
-    {current?.report ? <DeliveryReadinessPanel report={current.report} canAct={!staff} onReload={() => setRefresh(value => value + 1)} />
-      : <p role={current?.error ? 'alert' : 'status'}>{current?.error ?? 'Checking delivery readiness…'}</p>}
-    <Button variant="outline" disabled={!current} onClick={() => setRefresh(value => value + 1)}>Refresh readiness</Button>
-  </>;
+  return <DeliveryReadinessPanel
+    report={current?.report}
+    error={current?.error}
+    canAct={!staff}
+    onReload={() => setRefresh(value => value + 1)}
+  />;
 }
 
 export function StaffCampaignLookup() {
