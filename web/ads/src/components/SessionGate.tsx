@@ -34,6 +34,7 @@ function WorkspaceSkeleton() {
 
 export function SessionGate({ children, loadingShell }: { children: ReactNode; loadingShell?: ReactNode }) {
   const { status, signOut, renewal, identityVersion } = useSessionSnapshot();
+  const [automaticRetryUsed, setAutomaticRetryUsed] = useState(false);
   const hasAuthenticated = useRef(false);
   const retainedContent = useRef<HTMLDivElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
@@ -41,12 +42,25 @@ export function SessionGate({ children, loadingShell }: { children: ReactNode; l
   if (status === 'anonymous' || signOut) hasAuthenticated.current = false;
   const retry = useCallback(() => { void sessionClient().bootstrap().catch(() => {}); }, []);
   useEffect(() => { if (sessionClient().getSnapshot().status === 'idle') retry(); }, [retry]);
+  const connectionError = status === 'temporary-error' || renewal === 'connection-error';
+  useEffect(() => {
+    if (signOut || status === 'anonymous' || (status === 'authenticated' && !renewal)) {
+      setAutomaticRetryUsed(false);
+    } else if (connectionError && !automaticRetryUsed) {
+      const timer = window.setTimeout(() => {
+        setAutomaticRetryUsed(true);
+        retry();
+      }, 1000);
+      return () => window.clearTimeout(timer);
+    }
+  }, [automaticRetryUsed, connectionError, renewal, retry, signOut, status]);
   useEffect(() => {
     if (signOut === 'complete' || signOut === 'remote' || (status === 'anonymous' && !signOut)) {
       window.location.replace(loginUrl());
     }
   }, [status, signOut]);
   const authorized = status === 'authenticated' && !signOut;
+  const showRecovery = status === 'temporary-error' && automaticRetryUsed;
   const retainDraft = hasAuthenticated.current && !signOut && status !== 'anonymous';
   useEffect(() => {
     if (!retainDraft) lastFocused.current = null;
@@ -57,16 +71,12 @@ export function SessionGate({ children, loadingShell }: { children: ReactNode; l
   return <>
     {/* Never unmount a live form during renewal. Locked content is hidden and unfocusable. */}
     {(authorized || retainDraft) && <div key={identityVersion ?? 0} ref={retainedContent} hidden={!authorized} onFocusCapture={(event) => { lastFocused.current = event.target as HTMLElement; }}>{children}</div>}
-    {authorized && renewal === 'connection-error' && <div role="status" style={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 60, padding: 12, border: '1px solid var(--border-subtle)', borderRadius: 8, background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
-      Connection interrupted. Your current session is still valid. <Button type="button" variant="outline" onClick={retry}>Retry connection</Button>
-    </div>}
-    {!authorized && (status === 'idle' || status === 'loading') && !signOut && (loadingShell ?? <WorkspaceSkeleton />)}
-    {!authorized && status !== 'idle' && status !== 'loading' && !signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+    {!authorized && !showRecovery && !signOut && (loadingShell ?? <WorkspaceSkeleton />)}
+    {showRecovery && !signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <section style={{ maxWidth: 460, width: '100%' }} aria-live="polite">
-        <h1>{status === 'temporary-error' ? 'Connection interrupted' : 'Sign in to continue'}</h1>
-        <p>{status === 'temporary-error' ? 'Your workspace is locked until we can verify your session. Your open form stays in this tab while you reconnect.' : 'Sign in with your CrimFig account to continue to this page.'}</p>
-        {status === 'temporary-error' && <Button type="button" onClick={retry}>Retry connection</Button>}
-        <p><a href={loginUrl()}>Sign in to continue</a></p>
+        <h1>Unable to open your workspace</h1>
+        <p>We couldn’t verify your session. Check your connection and try again.</p>
+        <Button type="button" onClick={retry}>Try again</Button>
       </section>
     </main>}
     {signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
