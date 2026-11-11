@@ -200,6 +200,8 @@ export default function AdminAuctionLogsPage() {
           </p>
         </div>
 
+        <Button asChild variant="outline"><a href="/admin/click-audit">Click Audit</a></Button>
+
         {/* Filter Pills */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           {(['all', 'paid', 'house', 'shadow'] as const).map((cls) => (

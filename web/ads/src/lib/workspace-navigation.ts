@@ -229,6 +229,7 @@ export function workspaceNavigation(
           label: "Delivery Performance",
           icon: BarChart3,
           children: [
+            { id: "click_audit", label: "Click Audit", icon: History, href: "/admin/click-audit" },
             {
               id: "admin_websites",
               label: "Websites & Promoters",

@@ -28,7 +28,7 @@ test('daily report rejects malformed or cross-workspace financial data', async (
 
 test('reports keep exact event nanos and sum campaign rows independently of posted debits', () => {
   const zeros = Object.fromEntries(['spend', 'cpmSpend', 'cpcSpend', 'posted', 'credits', 'confirmed',
-    'pending', 'adjustments', 'billableImpressions', 'billableClicks', 'impressions', 'clicks'].map(key => [key, '0']));
+    'pending', 'adjustments', 'billableImpressions', 'billableClicks', 'impressions', 'clicks', 'validClicks', 'billedClicks'].map(key => [key, '0']));
   const [campaign] = aggregateCampaigns([
     { ...zeros, campaignId: 'campaign', creativeId: 'ad', spend: '500000' },
     { ...zeros, campaignId: 'campaign', creativeId: null, posted: '10000000' },

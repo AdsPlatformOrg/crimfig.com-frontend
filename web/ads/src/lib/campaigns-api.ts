@@ -59,7 +59,7 @@ export interface CreationCapabilities {
   supportedAdTypes: AdType[];
 }
 
-export function campaignView<T extends Partial<CampaignRecord> & { id: string; title: string }>(c: T) {
+export function campaignView<T extends Partial<CampaignRecord> & { id: string; title: string; validClicksCount?: number; billedClicksCount?: number }>(c: T) {
   if (typeof c?.id !== "string" || typeof c.title !== "string")
     throw new Error("Invalid campaign response.");
   return {
@@ -78,6 +78,8 @@ export function campaignView<T extends Partial<CampaignRecord> & { id: string; t
       typeof c.clicksCount === "number",
     impressions: c.impressionsCount ?? 0,
     clicks: c.clicksCount ?? 0,
+    validClicks: c.validClicksCount,
+    billedClicks: c.billedClicksCount,
     hovers: c.hoversCount ?? 0,
     touches: c.touchesCount ?? 0,
     headline: typeof c.headline === 'string' ? c.headline : c.title,

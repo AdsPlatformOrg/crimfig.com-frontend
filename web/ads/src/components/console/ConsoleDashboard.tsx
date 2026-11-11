@@ -48,6 +48,8 @@ interface DashboardSummary {
   performance: {
     impressions: number;
     clicks: number;
+    validClicks?: number;
+    billedClicks?: number;
     hovers: number;
     touches: number;
     ctr: number;
@@ -357,7 +359,7 @@ export function ConsoleDashboard({
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Clicks & Conversion</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Observed clicks</span>
               <MousePointer style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
@@ -365,8 +367,13 @@ export function ConsoleDashboard({
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', margin: '4px 0 4px' }}>
               {summary.performance.clicks.toLocaleString()}
             </div>
+            {summary.performance.validClicks != null && summary.performance.billedClicks != null && (
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                {summary.performance.validClicks.toLocaleString()} valid · {summary.performance.billedClicks.toLocaleString()} billed
+              </div>
+            )}
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              CTR: <strong>{summary.performance.impressions > 0 ? `${summary.performance.ctr.toFixed(2)}%` : 'Unavailable'}</strong> · Budget-based CPC: {summary.performance.clicks > 0 ? `$${summary.performance.avgCpcUsd.toFixed(2)}` : 'Unavailable'}
+              Observed CTR: <strong>{summary.performance.impressions > 0 ? `${summary.performance.ctr.toFixed(2)}%` : 'Unavailable'}</strong> · Budget-based CPC: {(summary.performance.billedClicks ?? 0) > 0 ? `$${summary.performance.avgCpcUsd.toFixed(2)}` : 'Unavailable'}
             </div>
           </CardContent>
         </Card>

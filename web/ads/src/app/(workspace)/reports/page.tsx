@@ -122,8 +122,8 @@ function Summary({ report }: { report: DailyReport }) {
     ['Earnings adjustments', money(t.adjustments)],
   ] : [
     ['Event spend', money(t.spend)], ['Posted debits', money(t.posted)], ['Posted credits', money(t.credits)],
-    ['Billable impressions', count(t.billableImpressions)], ['Billable clicks', count(t.billableClicks)],
-    ['Recorded CTR', percent(ratio(t.clicks, t.impressions, 100))],
+    ['Billable impressions', count(t.billableImpressions)], ['Observed clicks', count(t.clicks)], ['Valid clicks', count(t.validClicks)], ['Billed clicks', count(t.billedClicks)], ['Billable clicks', count(t.billableClicks)],
+    ['Observed CTR', percent(ratio(t.clicks, t.impressions, 100))],
     ['Cost per billable click', cost(ratio(t.cpcSpend, t.billableClicks, 1e-9))],
     ['Cost per 1,000 billable impressions', cost(ratio(t.cpmSpend, t.billableImpressions, 1e-6))],
   ];

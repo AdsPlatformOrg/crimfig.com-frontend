@@ -1,7 +1,7 @@
 import { apiData } from './api-data';
 
 const keys = ['spend', 'cpmSpend', 'cpcSpend', 'posted', 'credits', 'confirmed', 'pending', 'adjustments',
-  'billableImpressions', 'billableClicks', 'impressions', 'clicks'] as const;
+  'billableImpressions', 'billableClicks', 'impressions', 'clicks', 'validClicks', 'billedClicks'] as const;
 export type Metrics = Record<(typeof keys)[number], string>;
 export type ReportRole = 'advertiser' | 'promoter';
 type Breakdown = Metrics & {

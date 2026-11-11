@@ -75,8 +75,8 @@ export function CampaignsManager() {
     { key: 'budget', label: 'Total Budget', visible: true, order: 3 },
     { key: 'spend', label: 'Spend', visible: true, order: 4 },
     { key: 'views', label: 'Views (Impressions)', visible: true, order: 5 },
-    { key: 'clicks', label: 'Clicks', visible: true, order: 6 },
-    { key: 'ctr', label: 'CTR (%)', visible: true, order: 7 },
+    { key: 'clicks', label: 'Observed clicks', visible: true, order: 6 },
+    { key: 'ctr', label: 'Observed CTR (%)', visible: true, order: 7 },
     { key: 'actions', label: 'Actions', visible: true, order: 8 },
   ]);
 
@@ -412,6 +412,11 @@ export function CampaignsManager() {
                       return (
                         <TableCell key={col.key} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
                           {camp.metricsLoaded ? camp.clicks.toLocaleString() : '—'}
+                          {camp.validClicks != null && camp.billedClicks != null && (
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '.75rem' }}>
+                              {camp.validClicks.toLocaleString()} valid · {camp.billedClicks.toLocaleString()} billed
+                            </div>
+                          )}
                         </TableCell>
                       );
                     }

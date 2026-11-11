@@ -47,7 +47,7 @@ test('reports clear private rows and ignore a late response when the account or 
     './reports.module.css': { default: {} },
   }).default;
   const zero = Object.fromEntries(['spend','cpmSpend','cpcSpend','posted','credits','confirmed','pending','adjustments',
-    'billableImpressions','billableClicks','impressions','clicks'].map(key => [key,'0']));
+    'billableImpressions','billableClicks','impressions','clicks','validClicks','billedClicks'].map(key => [key,'0']));
   function response(role, campaign) {
     const amounts = { ...zero, spend: '500000', billableImpressions: '1' };
     return {

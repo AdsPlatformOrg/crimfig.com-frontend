@@ -230,6 +230,7 @@ export function AdminPerformanceView({
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
             Standard delivery telemetry, viewability beacons, and placement attribution
           </p>
+          <a href="/admin/click-audit">Click Audit</a>
         </div>
         <div className="flex items-center gap-2">
           <Button
