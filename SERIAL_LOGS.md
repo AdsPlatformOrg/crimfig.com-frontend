@@ -20,3 +20,7 @@ Implemented image-led Ads and About pages and compact Billing and Auth pages. Ad
 PLAN-0100 browser review completed on 2026-11-08. Sixteen local desktop/mobile and light/dark captures passed layout width, image-load and fragment checks. Evidence and limits are in docs/design/plan-0100.json.
 
 PLAN-0100 Ads follow-up: creator photo hero with no CTA, illustrative advertiser/promoter dashboards, three reduced-motion-aware scroll reveals, and /docs entry page. Four local captures passed; /docs returned HTTP 200.
+
+## 2026-11-11 - PLAN-0102 daily Ads reports
+
+Added advertiser and promoter report pages in the protected workspace, Lagos date filters, prior-period comparison, and campaign/ad breakdowns. Six reports and session checks, Ads typecheck, and scoped PostCSS parsing passed. Browser and staging acceptance pending.

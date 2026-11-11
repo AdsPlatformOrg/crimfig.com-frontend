@@ -1,0 +1,18 @@
+.root { display: grid; gap: 1.25rem; min-width: 0; }
+.root h1, .root h2, .root p { margin: 0; }
+.root h2 { font-size: 1.125rem; }
+.secondary { color: var(--text-secondary); font-size: .875rem; }
+.filters, .sectionHeading, .pagination { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; }
+.filters label { display: grid; gap: .25rem; font-size: .875rem; }
+.filters .compare { display: flex; align-items: center; min-height: 2.75rem; }
+.root select { min-height: 2.75rem; border: 1px solid var(--border-subtle); border-radius: .5rem; padding: .45rem; background: var(--bg-elevated); color: var(--text-primary); font: inherit; }
+.cards { margin: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); }
+.surface { display: grid; gap: .65rem; border: 1px solid var(--border-subtle); border-radius: .75rem; padding: 1rem; background: var(--bg-elevated); min-width: 0; }
+.cards dt { color: var(--text-secondary); font-size: .875rem; }
+.cards dd { margin: 0; font-size: 1.25rem; font-weight: 600; overflow-wrap: anywhere; }
+.trend { display: flex; align-items: end; height: 6rem; gap: 2px; border-bottom: 1px solid var(--border-subtle); }
+.trend span { flex: 1; min-width: 0; background: var(--color-crimson); border-radius: .2rem .2rem 0 0; }
+.tableRegion { min-width: 0; font-variant-numeric: tabular-nums; }
+.rowLabel { text-align: left; padding: .65rem; font-weight: 500; min-width: 7rem; overflow-wrap: anywhere; }
+.sectionHeading { align-items: center; justify-content: space-between; }
+.pagination { align-items: center; justify-content: flex-end; }

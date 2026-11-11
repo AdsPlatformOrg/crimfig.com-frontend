@@ -54,6 +54,7 @@ export function workspaceNavigation(
     {
       title: "Performance & Traffic",
       items: [
+        { id: "reports", label: "Reports", icon: BarChart3, href: "/reports" },
         {
           id: "conversions",
           label: "Conversion Tracking",
@@ -102,6 +103,7 @@ export function workspaceNavigation(
 
   // Promoter Nav Groups
   const promoterNavGroups: NavGroup[] = [
+    { title: "Performance", items: [{ id: "promoter_reports", label: "Earnings report", icon: BarChart3, href: "/reports?workspace=promoter" }] },
     {title:"Promotional rewards",items:[{id:"promoter_cfig",label:"Virtual $cfig",icon:Sparkles,href:"/promoter/rewards"}]},
     {
       title: "Websites & Delivery",
@@ -298,6 +300,7 @@ export function resolveWorkspaceContext(
               "/notifications",
               "/support",
               "/billing",
+              "/reports",
             ].includes(path)
           ? utilityRole
           : "advertiser";
@@ -309,10 +312,10 @@ export function resolveWorkspaceContext(
   if (role === "admin" && path.startsWith("/admin/promoters/"))
     return [role, "admin_websites"];
   const selected = leaves
-    .filter(
-      (item) =>
-        item.href && (path === item.href || path.startsWith(item.href + "/")),
-    )
+    .filter((item) => {
+      const href = item.href?.split("?")[0];
+      return href && (path === href || path.startsWith(href + "/"));
+    })
     .sort((a, b) => (b.href?.length || 0) - (a.href?.length || 0))[0];
   return [
     role,
