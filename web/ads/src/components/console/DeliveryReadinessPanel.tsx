@@ -4,6 +4,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { Badge, Button, Card, Input } from '../ui';
 import { sessionFetch } from '../../lib/session';
 import { adsApi } from '../../lib/ads-api-client';
+import { isPassingReadinessStatus, summarizeDeliveryReadiness } from '../../lib/delivery-readiness-view';
 
 type Gate = {
   gateCode: string;
@@ -67,8 +68,9 @@ function VerifyEmailAction({ onReload }: { onReload?: () => void }) {
 }
 
 export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { report: Readiness; onReload?: () => void; canAct?: boolean }) {
-  const blockedGates = report.gates.filter(g => g.status === 'blocked' || g.status === 'action_required');
-  const isOverallBlocked = blockedGates.length > 0;
+  const visibleGates = report.gates.filter(gate => canAct ? gate.owner === 'Advertiser' || gate.owner === 'Moderation' : true);
+  const readiness = summarizeDeliveryReadiness(visibleGates);
+  const isOverallBlocked = readiness.tone === 'blocked';
 
   return (
     <section className="cf-section" aria-label="Paid delivery readiness">
@@ -84,19 +86,26 @@ export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { re
               fontSize: '12px',
               fontWeight: 700,
               padding: '4px 10px',
-              backgroundColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-              color: isOverallBlocked ? '#EF4444' : '#10B981',
-              borderColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)',
+              backgroundColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.1)' : readiness.tone === 'passing' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-surface)',
+              color: isOverallBlocked ? '#EF4444' : readiness.tone === 'passing' ? '#10B981' : 'var(--text-secondary)',
+              borderColor: isOverallBlocked ? 'rgba(239, 68, 68, 0.3)' : readiness.tone === 'passing' ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-subtle)',
             }}
           >
-            {isOverallBlocked ? `DELIVERY BLOCKED (${blockedGates.length} Gate${blockedGates.length === 1 ? '' : 's'})` : 'ALL EVALUATED GATES PASS'}
+            {readiness.label}
           </Badge>
         </div>
       </div>
 
-      {report.gates.filter(gate => canAct ? gate.owner === 'Advertiser' || gate.owner === 'Moderation' : true).map(gate => {
+      <p className="cf-muted" style={{ margin: '0 0 12px' }}>
+        {visibleGates.length === 0
+          ? 'No readiness checks are available in this view.'
+          : `${readiness.passing} passing check${readiness.passing === 1 ? '' : 's'} collapsed.`}
+        {readiness.needsAttention > 0 ? ` ${readiness.needsAttention} check${readiness.needsAttention === 1 ? '' : 's'} need attention; review the expanded details.` : ''}
+      </p>
+
+      {visibleGates.map(gate => {
         const isBlocked = gate.status === 'blocked' || gate.status === 'action_required';
-        const isEligible = gate.status === 'eligible' || gate.status === 'observed';
+        const isEligible = isPassingReadinessStatus(gate.status);
         return (
           <Card
             key={gate.gateCode}
@@ -106,29 +115,33 @@ export function DeliveryReadinessPanel({ report, onReload, canAct = true }: { re
               marginBottom: '10px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0F172A)' }}>
-                {gate.gateCode.replace(/_/g, ' ')}
-              </span>
-              <Badge
-                variant="outline"
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  backgroundColor: isBlocked ? 'rgba(239, 68, 68, 0.1)' : isEligible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-                  color: isBlocked ? '#EF4444' : isEligible ? '#10B981' : '#64748B',
-                }}
-              >
-                {statuses[gate.status] ?? 'Unknown'}
-              </Badge>
-            </div>
-            <p style={{ margin: '4px 0', fontSize: '13px', color: 'var(--text-secondary, #334155)' }}>{gate.explanation}</p>
-            <p className="cf-muted" style={{ margin: '4px 0 0 0', fontSize: '11px' }}>
-              <strong>Owner:</strong> {gate.owner} · <strong>Authority:</strong> {gate.source}
-              {gate.observedAt ? ' · Observed ' + new Date(gate.observedAt).toLocaleString() : ''}
-            </p>
-            {gate.action === 'verify_email' && canAct && <div style={{ marginTop: '8px' }}><VerifyEmailAction onReload={onReload} /></div>}
-            {gate.action === 'review_website' && <div style={{ marginTop: '8px' }}><a href="#website-suitability-review">Open suitability review</a></div>}
+            <details open={!isEligible}>
+              <summary style={{ minHeight: '44px', cursor: 'pointer' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: 'calc(100% - 16px)', verticalAlign: 'middle' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0F172A)' }}>
+                    {gate.gateCode.replace(/_/g, ' ')}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      backgroundColor: isBlocked ? 'rgba(239, 68, 68, 0.1)' : isEligible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                      color: isBlocked ? '#EF4444' : isEligible ? '#10B981' : '#64748B',
+                    }}
+                  >
+                    {statuses[gate.status] ?? 'Unknown'}
+                  </Badge>
+                </span>
+              </summary>
+              <p style={{ margin: '4px 0', fontSize: '13px', color: 'var(--text-secondary, #334155)' }}>{gate.explanation}</p>
+              <p className="cf-muted" style={{ margin: '4px 0 0 0', fontSize: '12px' }}>
+                <strong>Owner:</strong> {gate.owner} · <strong>Authority:</strong> {gate.source}
+                {gate.observedAt ? ' · Observed ' + new Date(gate.observedAt).toLocaleString() : ''}
+              </p>
+              {gate.action === 'verify_email' && canAct && <div style={{ marginTop: '8px' }}><VerifyEmailAction onReload={onReload} /></div>}
+              {gate.action === 'review_website' && <div style={{ marginTop: '8px' }}><a href="#website-suitability-review">Open suitability review</a></div>}
+            </details>
           </Card>
         );
       })}

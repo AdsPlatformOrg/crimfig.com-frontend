@@ -2,19 +2,12 @@
 
 import { ecosystemOrigin } from '../../../../../../shared/ui/origins';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DollarSign,
   Lock,
   RefreshCw,
-  Building2,
   CreditCard,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Layers,
-  ChevronRight,
-  ShieldCheck,
   TrendingUp,
 } from 'lucide-react';
 import type { WalletBalance, EscrowAllocation } from '../../../types/billing';
@@ -22,33 +15,15 @@ import {
   fetchBillingOverview,
 } from '../../../lib/billing-api';
 import { EscrowBreakdownDrawer } from './EscrowBreakdownDrawer';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  Badge,
-  Button,
-} from '../../ui';
+import { Card, Button } from '../../ui';
 
-interface BillingLedgerProps {
-  initialRole?: 'advertiser' | 'promoter';
-  onRoleChange?: (role: 'advertiser' | 'promoter') => void;
-}
-
-export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: BillingLedgerProps) {
-  const [role, setRole] = useState<'advertiser' | 'promoter'>(initialRole);
+export function BillingLedger() {
   const [wallet, setWallet] = useState<WalletBalance | null>(null);
   const [escrows, setEscrows] = useState<EscrowAllocation[]>([]);
 
   // Modals
   const [isEscrowDrawerOpen, setIsEscrowDrawerOpen] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setRole(initialRole);
-  }, [initialRole]);
 
   useEffect(() => {
     async function loadData() {
@@ -79,10 +54,6 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px', width: '100%', boxSizing: 'border-box' }}>
       {loadError && <p role="alert">{loadError}</p>}
-      {/* Toast Alert */}
-
-
-      {/* Header & Role Switcher */}
       <div
         style={{
           display: 'flex',
@@ -102,64 +73,6 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           </p>
         </div>
 
-        {/* View Toggle */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '4px',
-            borderRadius: '12px',
-            backgroundColor: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-          }}
-        >
-          <Button
-            type="button"
-            onClick={() => {
-              setRole('advertiser');
-              onRoleChange?.('advertiser');
-            }}
-            variant={role === 'advertiser' ? 'default' : 'ghost'}
-            size="sm"
-            aria-pressed={role === 'advertiser'}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '13px',
-              backgroundColor: role === 'advertiser' ? 'var(--color-fig-dark)' : 'transparent',
-              color: role === 'advertiser' ? '#FFFFFF' : 'var(--text-secondary)',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            Advertiser View
-          </Button>
-          <Button
-            type="button"
-            onClick={() => {
-              setRole('promoter');
-              onRoleChange?.('promoter');
-            }}
-            variant={role === 'promoter' ? 'default' : 'ghost'}
-            size="sm"
-            aria-pressed={role === 'promoter'}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '13px',
-              backgroundColor: role === 'promoter' ? 'var(--color-crimson)' : 'transparent',
-              color: role === 'promoter' ? '#FFFFFF' : 'var(--text-secondary)',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            Promoter View
-          </Button>
-        </div>
       </div>
 
       {/* KPI Cards Grid */}
@@ -208,7 +121,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           </div>
         </div>
 
-        {/* KPI 2: Role-aware Locked / Accrued */}
+        {/* KPI 2: Campaign escrow */}
         <div
           style={{
             backgroundColor: 'var(--bg-surface)',
@@ -220,7 +133,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {role === 'advertiser' ? 'Locked Campaign Escrow' : 'Accrued Batch Share (55%)'}
+              Locked Campaign Escrow
             </span>
             <div
               style={{
@@ -238,12 +151,10 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             </div>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--color-crimson)', marginBottom: '4px' }}>
-            ${role === 'advertiser' ? lockedEscrowUsd.toFixed(2) : (wallet ? (wallet.availableUsd * 0.55).toFixed(2) : '0.00')}
+            ${lockedEscrowUsd.toFixed(2)}
           </div>
           <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            {role === 'advertiser'
-              ? `${escrows.length} Active Campaigns Reserved`
-              : 'Verified 55% platform publisher share'}
+            {escrows.length} Active Campaign Escrows
           </div>
         </div>
 
@@ -259,7 +170,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {role === 'advertiser' ? 'Total Ad Spend Burned' : 'Total Bank Disbursements'}
+              Total Ad Spend Burned
             </span>
             <div
               style={{
@@ -277,12 +188,10 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
             </div>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>
-            {role === 'advertiser'
-              ? `$${escrows.reduce((sum, e) => sum + (e.consumedUsd || 0), 0).toFixed(2)}`
-              : '$0.00'}
+            ${escrows.reduce((sum, e) => sum + (e.consumedUsd || 0), 0).toFixed(2)}
           </div>
           <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            {role === 'advertiser' ? 'Calculated from campaign escrows' : 'Transferred to verified NUBAN'}
+            Calculated from campaign escrow activity
           </div>
         </div>
 
@@ -298,7 +207,7 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Live FX Exchange Rate
+              Reference Exchange Rate
             </span>
             <div
               style={{
@@ -318,9 +227,8 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>
             ₦{exchangeRate.toFixed(2)}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>
-            <CheckCircle2 style={{ width: 12, height: 12 }} />
-            <span>Paystack Feed Active</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            <span>Estimate only; see Billing for final charges.</span>
           </div>
         </div>
       </div>
@@ -336,79 +244,51 @@ export function BillingLedger({ initialRole = 'advertiser', onRoleChange }: Bill
           marginBottom: '24px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {role === 'advertiser' ? (
-            <>
-              <Button
-                type="button"
-                onClick={openBilling}
-                size="lg"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'var(--gradient-crimson)',
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  boxShadow: 'var(--shadow-crimson)',
-                }}
-              >
-                <CreditCard style={{ width: 16, height: 16 }} />
-                <span>Fund Wallet (Paystack)</span>
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setIsEscrowDrawerOpen(true)}
-                variant="outline"
-                size="lg"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-surface)',
-                  color: 'var(--text-primary)',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                }}
-              >
-                <Lock style={{ width: 15, height: 15 }} />
-                <span>Campaign Escrows ({escrows.length})</span>
-              </Button>
-            </>
-          ) : (
-            <Button
-              type="button"
-              onClick={openBilling}
-              variant="secondary"
-              size="lg"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                borderRadius: '12px',
-                border: 'none',
-                backgroundColor: 'var(--color-fig-dark)',
-                color: '#FFFFFF',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              <Building2 style={{ width: 16, height: 16 }} />
-              <span>Withdraw to Nigerian Bank</span>
-            </Button>
-          )}
-
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <Button
+            type="button"
+            onClick={openBilling}
+            size="lg"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'var(--gradient-crimson)',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-crimson)',
+            }}
+          >
+            <CreditCard style={{ width: 16, height: 16 }} />
+            <span>Fund Wallet</span>
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setIsEscrowDrawerOpen(true)}
+            variant="outline"
+            size="lg"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              border: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--bg-surface)',
+              color: 'var(--text-primary)',
+              fontWeight: 600,
+              fontSize: '13px',
+              cursor: 'pointer',
+            }}
+          >
+            <Lock style={{ width: 15, height: 15 }} />
+            <span>Campaign Escrows ({escrows.length})</span>
+          </Button>
 
         </div>
 

@@ -9,7 +9,7 @@ export interface BreadcrumbItem {
   href?: string;
 }
 
-export function CampaignBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
+export function CampaignBreadcrumbs({ items, campaignsHref = '/campaigns' }: { items: BreadcrumbItem[]; campaignsHref?: string }) {
   return (
     <nav
       aria-label="Breadcrumb"
@@ -24,7 +24,7 @@ export function CampaignBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
       }}
     >
       <Link
-        href="/campaigns"
+        href={campaignsHref}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -35,7 +35,7 @@ export function CampaignBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
         }}
       >
         <Home style={{ width: 14, height: 14 }} />
-        <span>Campaigns</span>
+        <span>My Ad Campaigns</span>
       </Link>
 
       {items.map((item, idx) => {
@@ -79,4 +79,3 @@ export function CampaignBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
     </nav>
   );
 }
-

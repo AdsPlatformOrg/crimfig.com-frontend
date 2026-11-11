@@ -573,6 +573,14 @@ export function ImagePreparation({
                         Reset
                       </Button>
                     </div>
+                    <p className="cf-crop-placement-hint" aria-live="polite">
+                      {validRatio
+                        ? ratio >= 3
+                          ? "Crops at 3:1 or wider are prepared as banner media, including mobile banner and leaderboard presets."
+                          : "Crops below 3:1 are prepared as card/feed media, including square, portrait, landscape and rectangle presets."
+                        : "Enter a valid crop ratio to see matching placement types."}{" "}
+                      Publisher slots can restrict which image sizes they accept.
+                    </p>
                     {!validRatio && (
                       <p role="alert">
                         Enter a positive width and height with a ratio no
@@ -605,8 +613,8 @@ export function ImagePreparation({
                         source stays in this browser.
                       </p>
                       <p>
-                        Placement eligibility depends on the crop ratio, output
-                        dimensions and the publisher's byte cap.
+                        Placement eligibility also depends on output dimensions
+                        and the publisher's byte cap.
                       </p>
                     </details>
                   </>

@@ -129,7 +129,7 @@ export function CampaignCreationWizard({
 
   const [draftOwner, setDraftOwner] = useState<string | null>(null);
 
-  const [draftNotice, setDraftNotice] = useState("Checking for a saved draftâ€¦");
+  const [draftNotice, setDraftNotice] = useState("Checking for a saved draft…");
 
   const [requestId, setRequestId] = useState("");
 
@@ -693,6 +693,14 @@ export function CampaignCreationWizard({
       stack.schedule.mode !== "inherit",
   ).length;
 
+  const stepCopy = [
+    { title: "Campaign details", description: "Name the campaign and describe what you are promoting." },
+    { title: "Build your ad stacks", description: "Add at least one complete image ad and organize creatives for delivery." },
+    { title: "Choose targeting", description: "Choose the audience, locations, and devices for your ads." },
+    { title: "Set your budget", description: "Set delivery dates and the amount available for the campaign." },
+    { title: "Review campaign", description: "Review your campaign details before saving or submitting it for review." },
+  ][currentStep - 1];
+
   return (
     <div
       ref={form}
@@ -735,7 +743,7 @@ export function CampaignCreationWizard({
             color: "var(--text-primary)",
           }}
         >
-          Build your ad stacks
+          {stepCopy.title}
         </h2>
 
         <p
@@ -746,8 +754,7 @@ export function CampaignCreationWizard({
             lineHeight: 1.5,
           }}
         >
-          Add your ads, choose when they run, set a budget, and submit for
-          review.
+          {stepCopy.description}
         </p>
       </header>
 
@@ -869,12 +876,15 @@ export function CampaignCreationWizard({
               fontWeight: 600,
             }}
           >
-            Campaign title{" "}
-            <span style={{ color: "var(--color-crimson)" }}>*</span>
+            <span>
+              Campaign title <span aria-hidden="true" style={{ color: "var(--color-crimson)" }}>*</span>
+            </span>
             <Input
               id="campaign-title"
               value={title}
               maxLength={255}
+              required
+              aria-required="true"
               onChange={(event) => setTitle(event.target.value)}
               placeholder="e.g. Spring product launch"
             />
@@ -1011,13 +1021,13 @@ export function CampaignCreationWizard({
               {stackCount === 1 ? "" : "s"}
             </span>
 
-            <span>Â·</span>
+            <span>·</span>
 
             <span>
               {adCount} ad{adCount === 1 ? "" : "s"}
             </span>
 
-            <span>Â·</span>
+            <span>·</span>
 
             <span>{effectiveCount} with stack overrides</span>
           </div>
@@ -1412,8 +1422,8 @@ export function CampaignCreationWizard({
               Bid-based estimate (not guaranteed):
             </strong>{" "}
             {pricingModel === "cpm"
-              ? `${bidEstimate(budgetUsd, cpmBidCents, "cpm")?.toLocaleString() ?? "â€”"} impressions`
-              : `${bidEstimate(budgetUsd, cpcBidCents, "cpc")?.toLocaleString() ?? "â€”"} clicks`}
+              ? `${bidEstimate(budgetUsd, cpmBidCents, "cpm")?.toLocaleString() ?? "—"} impressions`
+              : `${bidEstimate(budgetUsd, cpcBidCents, "cpc")?.toLocaleString() ?? "—"} clicks`}
           </div>
         </section>
       )}
@@ -1463,7 +1473,7 @@ export function CampaignCreationWizard({
 
             <SummaryCard
               label="Creative"
-              value={`${stacks.length} stack${stacks.length === 1 ? "" : "s"} Â· ${adCount} ad${adCount === 1 ? "" : "s"}`}
+              value={`${stacks.length} stack${stacks.length === 1 ? "" : "s"} · ${adCount} ad${adCount === 1 ? "" : "s"}`}
               lines={[
                 `Types: ${[...new Set(stacks.flatMap((stack) => stack.ads.map((ad) => ad.adType)))].join(", ")}`,
               ]}
@@ -1536,11 +1546,11 @@ export function CampaignCreationWizard({
               </div>
 
               <p style={{ fontSize: 13 }}>
-                {stack.schedule.mode === "inherit" ? "Inherited" : "Override"} Â·{" "}
+                {stack.schedule.mode === "inherit" ? "Inherited" : "Override"} ·{" "}
                 {scheduleText(
                   stack.schedule.mode === "inherit" ? schedule : stack.schedule,
                 )}{" "}
-                Â· {SCHEDULE_LABEL}
+                · {SCHEDULE_LABEL}
               </p>
 
               <ul
@@ -1572,7 +1582,7 @@ export function CampaignCreationWizard({
                       </p>
                       {ad.imageInfo && (
                         <p>
-                          {ad.imageInfo.width}Ã—{ad.imageInfo.height}px Â·{" "}
+                          {ad.imageInfo.width}×{ad.imageInfo.height}px ·{" "}
                           {(ad.imageInfo.bytes / 1000).toFixed(1)} KB
                         </p>
                       )}
@@ -1613,11 +1623,11 @@ export function CampaignCreationWizard({
                   : "Geography: inherited"}
 
                 {stack.targetDevices.length > 0
-                  ? ` Â· Devices: ${stack.targetDevices.join(", ")}`
+                  ? ` · Devices: ${stack.targetDevices.join(", ")}`
                   : ""}
 
                 {stack.schedule.mode !== "inherit"
-                  ? ` Â· Hours: ${stack.targetHours.join(", ")}`
+                  ? ` · Hours: ${stack.targetHours.join(", ")}`
                   : ""}
               </div>
             </article>

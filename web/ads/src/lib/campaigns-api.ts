@@ -2,7 +2,7 @@ import { ApiError } from '@crimfig/api-client';
 import { allDay, inherited, type DailySchedule } from "./daily-schedule";
 import { apiData, arrayData, jsonBody } from "./api-data";
 import { adsApi } from './ads-api-client';
-import type { CampaignRecord, AddCreativeInput } from '@crimfig/api-client/src/ads-operations';
+import type { CampaignRecord, AddCreativeInput, CampaignListSort } from '@crimfig/api-client/src/ads-operations';
 
 export type AdType = "text" | "image" | "video";
 
@@ -113,7 +113,7 @@ export async function loadCampaigns(own: boolean) {
   return own ? (await adsApi().listCampaigns()).map(campaign => campaignView(campaign)) :
     (await adsApi().catalog()).map(campaign => campaignView(campaign));
 }
-export async function loadCampaignPage(status='all',page=1,pageSize=25,search='',sort: 'newest' | 'oldest' | 'title' = 'newest') {
+export async function loadCampaignPage(status='all',page=1,pageSize=25,search='',sort: CampaignListSort = 'newest') {
   const result=await adsApi().campaignPage(status,page,pageSize,search,sort);
   return {...result,items:result.items.map(campaign=>campaignView(campaign))};
 }

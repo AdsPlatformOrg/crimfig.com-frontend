@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { adsApi } from '../../lib/ads-api-client';
 import { type CampaignDetails } from '../../lib/campaign-editor';
 import { CampaignCreationWizard } from './CampaignCreationWizard';
 import { CampaignReadiness } from './DeliveryReadinessPanel';
 import { useCampaignTable } from './useCampaignTable';
 import { CampaignBreadcrumbs } from './CampaignBreadcrumbs';
+import { campaignsReturnHref, withCampaignReturnTo } from '../../lib/campaign-navigation';
 import { ActionHelp } from '../ActionHelp';
 import {
   Card,
@@ -41,8 +42,12 @@ import {
 
 export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = campaignsReturnHref(searchParams.get('returnTo'));
+  const campaignsHref = returnTo;
   const table = useCampaignTable();
   const [stackGeo, setStackGeo] = useState('all');
+  const [stackReview, setStackReview] = useState('all');
   const [campaign, setCampaign] = useState<CampaignDetails | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -86,7 +91,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
       });
       await load();
       setConfirmEdit(false);
-      router.push(`/campaigns/${id}/edit`);
+      router.push(withCampaignReturnTo(`/campaigns/${id}/edit`, returnTo));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Editing could not be confirmed. Reload the campaign.');
     } finally {
@@ -114,7 +119,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         <p style={{ color: 'var(--color-error)' }}>{error}</p>
         <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
           <Button onClick={() => void load()}>Retry</Button>
-          <Button variant="outline" onClick={() => router.push('/campaigns')}>Back to campaigns</Button>
+          <Button variant="outline" onClick={() => router.push(campaignsHref)}>Back to campaigns</Button>
         </div>
       </div>
     );
@@ -128,23 +133,35 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
     return (
       <CampaignCreationWizard
         campaign={campaign}
-        onCancel={() => router.push(`/campaigns/${id}`)}
-        onSuccess={() => router.push(`/campaigns/${id}`)}
+        onCancel={() => router.push(withCampaignReturnTo(`/campaigns/${id}`, returnTo))}
+        onSuccess={() => router.push(withCampaignReturnTo(`/campaigns/${id}`, returnTo))}
       />
     );
   }
 
   const can = campaign.capabilities;
+  const reviewStatuses = [...new Set(campaign.adStacks.map(stack => String(stack.reviewStatus ?? 'pending')))].sort();
+  const stackCounts = new Map<string, { total: number; approved: number }>();
+  for (const stack of campaign.adStacks) {
+    const ads = campaign.creatives.filter(creative => creative.adStackId === stack.id);
+    stackCounts.set(stack.id, { total: ads.length, approved: ads.filter(creative => creative.reviewStatus === 'approved').length });
+  }
   const stacks = table.paginate(table.rows(
-    campaign.adStacks.filter(stack => stackGeo === 'all' || stack.geoMode === stackGeo),
+    campaign.adStacks.filter(stack => (stackGeo === 'all' || stack.geoMode === stackGeo) &&
+      (stackReview === 'all' || (String(stack.reviewStatus ?? 'pending')) === stackReview)),
     stack => stack.name,
+    {
+      geo: stack => String(stack.geoMode ?? ''),
+      approved: stack => stackCounts.get(stack.id)?.approved ?? 0,
+      review: stack => String(stack.reviewStatus ?? 'pending'),
+    },
   ));
   const totalApprovedAds = campaign.creatives.filter((c) => c.reviewStatus === 'approved').length;
   const totalAds = campaign.creatives.length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <CampaignBreadcrumbs items={[{ label: campaign.title || 'Campaign' }]} />
+      <CampaignBreadcrumbs items={[{ label: campaign.title || 'Campaign' }]} campaignsHref={campaignsHref} />
 
 
       {/* Campaign Summary Card */}
@@ -206,7 +223,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
             </Badge>
 
             {can?.canEdit ? (
-              <Button onClick={() => router.push(`/campaigns/${id}/edit`)}>Continue editing draft</Button>
+              <Button onClick={() => router.push(withCampaignReturnTo(`/campaigns/${id}/edit`, returnTo))}>Continue editing draft</Button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Button disabled={!can?.canBeginEdit || busy} onClick={() => setConfirmEdit(true)}>
@@ -382,6 +399,10 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               <option value="global">Global</option>
               <option value="targeted">Targeted</option>
             </select></label>
+            <label>Review status <select value={stackReview} onChange={event => { setStackReview(event.target.value); table.resetPage(); }}>
+              <option value="all">All statuses</option>
+              {reviewStatuses.map(status => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
+            </select></label>
           </div>
         </div>
 
@@ -389,10 +410,10 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
           <ShadTable density="compact" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
             <TableHeader>
               <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
-                <TableHead style={{ padding: '12px 16px' }}>Stack Name</TableHead>
-                <TableHead style={{ padding: '12px 16px' }}>Geo Mode</TableHead>
-                <TableHead style={{ padding: '12px 16px' }}>Approved Ads</TableHead>
-                <TableHead style={{ padding: '12px 16px' }}>Review Status</TableHead>
+                <TableHead aria-sort={table.sortDirection('title')} style={{ padding: '12px 16px' }}>{table.sortButton('title', 'Stack Name')}</TableHead>
+                <TableHead aria-sort={table.sortDirection('geo')} style={{ padding: '12px 16px' }}>{table.sortButton('geo', 'Geo Mode')}</TableHead>
+                <TableHead aria-sort={table.sortDirection('approved')} style={{ padding: '12px 16px' }}>{table.sortButton('approved', 'Approved Ads')}</TableHead>
+                <TableHead aria-sort={table.sortDirection('review')} style={{ padding: '12px 16px' }}>{table.sortButton('review', 'Review Status')}</TableHead>
                 <TableHead style={{ padding: '12px 16px', width: '60px', textAlign: 'right' }}>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -400,25 +421,21 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               {stacks.items.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-                    No ad stacks created yet for this campaign.
+                    {campaign.adStacks.length ? "No ad stacks match these filters." : "No ad stacks created yet for this campaign."}
                   </TableCell>
                 </TableRow>
               ) : (
                 stacks.items.map((stack) => {
-                  const stackAds = campaign.creatives.filter((c) => c.adStackId === stack.id);
-                  const stackApproved = stackAds.filter((c) => c.reviewStatus === 'approved').length;
+                  const stackCount = stackCounts.get(stack.id) ?? { total: 0, approved: 0 };
+                  const stackApproved = stackCount.approved;
                   const isApproved = stack.reviewStatus === 'approved';
 
                   return (
-                    <TableRow
-                      key={stack.id}
-                      style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer' }}
-                      onClick={() => router.push(`/campaigns/${campaign.id}/stacks/${stack.id}`)}
-                    >
+                    <TableRow key={stack.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                       <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Layers style={{ width: 16, height: 16, color: 'var(--color-crimson)', flexShrink: 0 }} />
-                          <Link href={`/campaigns/${id}/stacks/${stack.id}`}>{stack.name}</Link>
+                          <Link href={withCampaignReturnTo(`/campaigns/${id}/stacks/${stack.id}`, returnTo)}>{stack.name}</Link>
                         </div>
                       </TableCell>
 
@@ -435,7 +452,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
                             color: stackApproved > 0 ? 'var(--color-success)' : 'var(--color-error)',
                           }}
                         >
-                          {stackApproved}/{stackAds.length} Ads
+                          {stackApproved}/{stackCount.total} Ads
                         </span>
                       </TableCell>
 
@@ -454,7 +471,6 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
 
                       <TableCell
                         style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -463,10 +479,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/campaigns/${campaign.id}/stacks/${stack.id}`)}>
-                              View Creatives Table
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => router.push(`/campaigns/${campaign.id}/edit`)}>
+                            <DropdownMenuItem onClick={() => router.push(withCampaignReturnTo(`/campaigns/${campaign.id}/edit`, returnTo))}>
                               Edit in Editor
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />

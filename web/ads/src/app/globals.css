@@ -905,6 +905,16 @@ body {
   background: var(--bg-elevated);
   color: var(--text-primary);
 }
+.cf-crop-placement-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-crimson);
+  border-radius: 4px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
 .cf-crop-workspace {
   display: flex;
   justify-content: center;

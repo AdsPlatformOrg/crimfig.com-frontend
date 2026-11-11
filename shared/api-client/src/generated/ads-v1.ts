@@ -12058,7 +12058,7 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
                 search?: string;
-                sort?: "newest" | "oldest" | "title";
+                sort?: "newest" | "oldest" | "title" | "title_desc" | "status" | "status_desc" | "budget" | "budget_desc" | "spend" | "spend_desc" | "creatives" | "creatives_desc" | "views" | "views_desc" | "clicks" | "clicks_desc" | "ctr" | "ctr_desc";
             };
             header?: never;
             path?: never;

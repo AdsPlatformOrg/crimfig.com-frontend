@@ -11,12 +11,13 @@ export type ClaimInput=components['schemas']['ModerationClaimDto'];
 export type ReviewInput = components['schemas']['ReviewDecisionDto'];
 export type CampaignRecord = operations['Campaigns_getAdvertiserCampaigns']['responses'][200]['content']['application/json']['data'][number];
 export type CreativeRecord = operations['Campaigns_replaceCreative']['responses'][200]['content']['application/json']['data'];
+export type CampaignListSort = NonNullable<NonNullable<operations['Campaigns_campaignPage']['parameters']['query']>['sort']>;
 
 /** The only handwritten endpoint calls in migrated domain flows; every call is schema-typed. */
 export function createAdsOperations(client: ReturnType<typeof createAdsClient>) {
   return {
     async listCampaigns(status?: string) { return dataOf(await client.GET('/api/v1/campaigns', { params: { query: { status } } })); },
-    async campaignPage(status='all',page=1,pageSize=25,search='',sort: 'newest' | 'oldest' | 'title' = 'newest') { return dataOf(await client.GET('/api/v1/campaigns/page',{params:{query:{status,page,pageSize,search,sort}}})); },
+    async campaignPage(status='all',page=1,pageSize=25,search='',sort: CampaignListSort = 'newest') { return dataOf(await client.GET('/api/v1/campaigns/page',{params:{query:{status,page,pageSize,search,sort}}})); },
     async catalog(category?: string) { return dataOf(await client.GET('/api/v1/campaigns/catalog', { params: { query: { category } } })); },
     async capabilities() { return dataOf(await client.GET('/api/v1/campaigns/creation-capabilities')); },
     async details(id: string) { return dataOf(await client.GET('/api/v1/campaigns/{id}', { params: { path: { id } } })); },

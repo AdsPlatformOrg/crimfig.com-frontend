@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { CampaignBreadcrumbs } from '@/components/console/CampaignBreadcrumbs';
+import { campaignsReturnHref, withCampaignReturnTo } from '@/lib/campaign-navigation';
 import { MediaPreview } from '@/components/MediaPreview';
 import { Button, Card } from '@/components/ui';
 import { adsApi } from '@/lib/ads-api-client';
@@ -10,6 +11,8 @@ import type { CampaignDetails } from '@/lib/campaign-editor';
 
 export default function CampaignAdDetails() {
   const { id, stackId, adId } = useParams<{ id: string; stackId: string; adId: string }>();
+  const searchParams = useSearchParams();
+  const returnTo = campaignsReturnHref(searchParams.get('returnTo'));
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{ key: string; campaign?: CampaignDetails; error?: string }>();
   const key = JSON.stringify([id, stackId, adId, attempt]);
@@ -35,10 +38,10 @@ export default function CampaignAdDetails() {
   return (
     <section>
       <CampaignBreadcrumbs items={[
-        { label: campaign.title, href: `/campaigns/${id}` },
-        { label: stack.name, href: `/campaigns/${id}/stacks/${stackId}` },
+        { label: campaign.title, href: withCampaignReturnTo(`/campaigns/${id}`, returnTo) },
+        { label: stack.name, href: withCampaignReturnTo(`/campaigns/${id}/stacks/${stackId}`, returnTo) },
         { label: title },
-      ]} />
+      ]} campaignsHref={returnTo} />
       <h1 className="cf-page-title">{title}</h1>
       <Card>
         {ad.imageUrl && <MediaPreview source={ad.imageUrl} />}

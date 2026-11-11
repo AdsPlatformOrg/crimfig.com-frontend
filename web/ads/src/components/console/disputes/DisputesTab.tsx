@@ -107,6 +107,7 @@ export function DisputesTab({
     <p>{loadError}</p>
     <Button onClick={() => setLoadAttempt(value => value + 1)}>Retry loading</Button>
   </div>;
+  if (isLoading) return <p role="status" style={{ padding: 24, color: 'var(--text-secondary)' }}>Loading traffic disputes…</p>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

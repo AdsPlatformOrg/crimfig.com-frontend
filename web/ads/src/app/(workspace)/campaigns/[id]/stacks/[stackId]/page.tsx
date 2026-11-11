@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { adsApi } from '@/lib/ads-api-client';
 import { type CampaignDetails } from '@/lib/campaign-editor';
 import { useCampaignTable } from '@/components/console/useCampaignTable';
 import { CampaignBreadcrumbs } from '@/components/console/CampaignBreadcrumbs';
+import { campaignsReturnHref, withCampaignReturnTo } from '@/lib/campaign-navigation';
 import { MediaPreview } from '@/components/MediaPreview';
 import { ReplaceCreativeModal } from '@/components/console/ReplaceCreativeModal';
 import {
@@ -32,6 +33,8 @@ import { MoreVertical, ArrowLeft, Layers, Image as ImageIcon, Sparkles, AlertCir
 export default function AdStackDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = campaignsReturnHref(searchParams.get('returnTo'));
   const id = params?.id as string;
   const stackId = params?.stackId as string;
 
@@ -83,7 +86,11 @@ export default function AdStackDetailPage() {
   const creatives = campaign.creatives.filter((c) => c.adStackId === stackId);
   const adPage = table.paginate(table.rows(creatives.filter(ad =>
     reviewFilter === 'all' || (ad.reviewStatus || 'pending') === reviewFilter,
-  ), ad => ad.headline || 'Image ad'));
+  ), ad => ad.headline || 'Image ad', {
+    format: ad => String(ad.adFormat ?? ad.adType ?? ''),
+    review: ad => String(ad.reviewStatus ?? 'pending'),
+    destination: ad => String(ad.destinationUrl ?? ''),
+  }));
   const visibleCreatives = adPage.items;
 
   const approvedCount = creatives.filter((c) => c.reviewStatus === 'approved').length;
@@ -92,9 +99,10 @@ export default function AdStackDetailPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <CampaignBreadcrumbs
+        campaignsHref={returnTo}
         items={[
-          { label: campaign.title || 'Campaign', href: `/campaigns/${campaign.id}` },
-          { label: stack?.name || 'Ad Stack', href: `/campaigns/${campaign.id}` },
+          { label: campaign.title || 'Campaign', href: withCampaignReturnTo(`/campaigns/${campaign.id}`, returnTo) },
+          { label: stack?.name || 'Ad Stack', href: withCampaignReturnTo(`/campaigns/${campaign.id}`, returnTo) },
           { label: 'Ads (Creatives)' },
         ]}
       />
@@ -140,7 +148,7 @@ export default function AdStackDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push(`/campaigns/${campaign.id}`)}
+              onClick={() => router.push(withCampaignReturnTo(`/campaigns/${campaign.id}`, returnTo))}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <ArrowLeft style={{ width: 14, height: 14 }} /> Back to Stacks
@@ -176,10 +184,10 @@ export default function AdStackDetailPage() {
             <TableHeader>
               <TableRow style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <TableHead style={{ width: '80px', padding: '12px 16px' }}>Preview</TableHead>
-                <TableHead style={{ padding: '12px 16px' }}>Headline & Body</TableHead>
-                <TableHead style={{ width: '110px', padding: '12px 16px' }}>Format</TableHead>
-                <TableHead style={{ width: '150px', padding: '12px 16px' }}>Review Status</TableHead>
-                <TableHead style={{ width: '180px', padding: '12px 16px' }}>Destination</TableHead>
+                <TableHead aria-sort={table.sortDirection('title')} style={{ padding: '12px 16px' }}>{table.sortButton('title', 'Headline & Body')}</TableHead>
+                <TableHead aria-sort={table.sortDirection('format')} style={{ width: '110px', padding: '12px 16px' }}>{table.sortButton('format', 'Format')}</TableHead>
+                <TableHead aria-sort={table.sortDirection('review')} style={{ width: '150px', padding: '12px 16px' }}>{table.sortButton('review', 'Review Status')}</TableHead>
+                <TableHead aria-sort={table.sortDirection('destination')} style={{ width: '180px', padding: '12px 16px' }}>{table.sortButton('destination', 'Destination')}</TableHead>
                 <TableHead style={{ width: '60px', padding: '12px 16px', textAlign: 'right' }}>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -226,7 +234,7 @@ export default function AdStackDetailPage() {
                       {/* Headline & Body */}
                       <TableCell style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                         <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                          <Link href={`/campaigns/${id}/stacks/${stackId}/ads/${ad.id}`}>{ad.headline || 'Image ad'}</Link>
+                          <Link href={withCampaignReturnTo(`/campaigns/${id}/stacks/${stackId}/ads/${ad.id}`, returnTo)}>{ad.headline || 'Image ad'}</Link>
                         </div>
                         {ad.bodyText && (
                           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
