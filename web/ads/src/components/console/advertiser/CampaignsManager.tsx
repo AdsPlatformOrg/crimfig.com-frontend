@@ -539,12 +539,16 @@ export function CampaignsManager() {
         </div>
       </Card>
       {!isLoading && (
-        <nav aria-label="Campaign pages" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-          {page === 1 && <ActionHelp action="Previous page" reason="You are on the first page." />}
+        <nav aria-label="Campaign pages" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+            {page === 1 && <ActionHelp action="Previous page" reason="You are on the first page." />}
+          </div>
           <span aria-live="polite">Page {page} of {Math.max(1, Math.ceil(total / pageSize))} · {total} campaigns</span>
-          <Button variant="outline" disabled={page * pageSize >= total} onClick={() => setPage(p => p + 1)}>Next</Button>
-          {page * pageSize >= total && <ActionHelp action="Next page" reason="There are no more campaign pages in this filter." />}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Button variant="outline" disabled={page * pageSize >= total} onClick={() => setPage(p => p + 1)}>Next</Button>
+            {page * pageSize >= total && <ActionHelp action="Next page" reason="There are no more campaign pages in this filter." />}
+          </div>
         </nav>
       )}
       {/* Table Preferences Modal */}
