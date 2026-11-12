@@ -170,7 +170,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: '1.125rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{campaign.title}</h1>
+              <h1 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{campaign.title}</h1>
               <Badge
                 variant={campaign.status === 'active' ? 'secondary' : 'outline'}
                 style={{
@@ -300,22 +300,22 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         <div style={{ display: 'flex', gap: '24px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <div>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Total Budget</span>
-            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>${(campaign.budgetUsdCents / 100).toFixed(2)} USD</div>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>${(campaign.budgetUsdCents / 100).toFixed(2)} USD</div>
           </div>
           <div>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Remaining Budget</span>
-            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-crimson)' }}>${(campaign.remainingBudgetUsdCents / 100).toFixed(2)} USD</div>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-crimson)' }}>${(campaign.remainingBudgetUsdCents / 100).toFixed(2)} USD</div>
           </div>
           <div>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Pricing</span>
-            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>{campaign.pricingModel?.toUpperCase()}</div>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>{campaign.pricingModel?.toUpperCase()}</div>
           </div>
         </div>
       </Card>
 
       {/* Campaign Targeting & Delivery Details */}
       <Card style={{ padding: '24px', borderRadius: '12px' }}>
-        <h2 style={{ fontSize: '0.875rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Targeting & Delivery Rules</h2>
+        <h2 style={{ fontSize: '0.8125rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Targeting & Delivery Rules</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '20px' }}>
           <div>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Geo Mode & Locations</span>
@@ -387,7 +387,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
       <Card style={{ overflow: 'hidden' }}>
         <div className={styles.stackToolbar}>
           <div>
-            <h2 style={{ fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>Ad Stacks</h2>
+            <h2 style={{ fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>Ad Stacks</h2>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
               Click on any ad stack to view and manage its individual creatives.
             </p>
