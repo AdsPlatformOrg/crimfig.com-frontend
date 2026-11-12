@@ -76,18 +76,20 @@ function ReadinessCheck({ gate, canAct, onReload }: {
 }) {
   const name = gate.gateCode.toLowerCase().replaceAll('_', ' ');
   const label = name.charAt(0).toUpperCase() + name.slice(1);
+  const passed = gate.status === 'eligible';
 
   return (
-    <li className={styles.check}>
+    <li className={styles.check} data-passed={passed}>
       <div className={styles.checkHeading}>
+        {passed && <Check size={14} className={styles.checkMark} role="img" aria-label="Passed" />}
         <strong>{label}</strong>
-        <span>{statuses[gate.status] ?? 'Unknown'}</span>
+        {!passed && <span>{statuses[gate.status] ?? 'Unknown'}</span>}
       </div>
       <p>{gate.explanation}</p>
-      <p className={styles.metadata}>
+      {(!passed || canAct === false) && <p className={styles.metadata}>
         {gate.owner} · {gate.source}
         {gate.observedAt && <> · Observed {new Date(gate.observedAt).toLocaleString()}</>}
-      </p>
+      </p>}
       {gate.action === 'verify_email' && canAct && <VerifyEmailAction onReload={onReload} />}
       {gate.action === 'review_website' && <a href="#website-suitability-review">Open suitability review</a>}
     </li>
