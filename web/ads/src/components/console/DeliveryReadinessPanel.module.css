@@ -1,13 +1,17 @@
 .panel {
+  --readiness-accent: var(--text-secondary);
   display: grid;
   gap: 0.75rem;
   min-width: 0;
   padding: 0.875rem;
   border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
-  background: var(--bg-surface);
+  border-radius: 1rem;
+  background: var(--bg-elevated);
   overflow-wrap: anywhere;
 }
+
+.panel[data-tone='passing'] { --readiness-accent: var(--color-success); }
+.panel[data-tone='attention'] { --readiness-accent: var(--color-warning); }
 
 .header, .controls {
   display: flex;
@@ -16,9 +20,34 @@
   gap: 0.5rem 0.75rem;
 }
 
-.header { align-items: flex-start; flex-direction: column; }
+.header {
+  align-items: flex-start;
+  flex-direction: column;
+  margin: -0.875rem -0.875rem 0;
+  padding: 1rem 0.875rem;
+  border-radius: 1rem 1rem 0 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--readiness-accent) 10%, var(--bg-elevated)), var(--bg-elevated) 75%);
+}
+
+.identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.statusIcon {
+  display: grid;
+  place-items: center;
+  width: 2.625rem;
+  height: 2.625rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--readiness-accent) 15%, var(--bg-elevated));
+  color: color-mix(in srgb, var(--readiness-accent) 62%, var(--text-primary));
+}
 .header h2, .header p, .check p { margin: 0; }
-.header p { margin-top: 0.25rem; }
+.header p { margin-top: 0.2rem; color: var(--text-secondary); }
 .controls button, .check button { min-height: 44px; }
 
 .metadata {
@@ -33,11 +62,12 @@
   margin: 0;
 }
 
+.check + .check { border-top: 1px solid var(--border-subtle); }
+
 .check {
   display: grid;
   gap: 0.25rem;
   padding: 0.625rem 0;
-  border-top: 1px solid var(--border-subtle);
 }
 
 .checkHeading {
@@ -52,16 +82,28 @@
 .check button { justify-self: start; }
 
 .passing {
-  border-top: 1px solid var(--border-subtle);
+  padding-inline: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.625rem;
+  background: var(--bg-surface);
 }
 
 .passing summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   box-sizing: border-box;
   min-height: 44px;
   padding: 0.75rem 0;
   cursor: pointer;
   font-weight: 600;
 }
+
+.passing summary::-webkit-details-marker { display: none; }
+.passing summary svg { flex: none; }
+.passing[open] summary svg { transform: rotate(180deg); }
+.passing[open] summary { border-bottom: 1px solid var(--border-subtle); }
 
 .passing summary:focus-visible {
   outline: 2px solid var(--color-crimson);

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import { Check, ChevronDown, CircleAlert, RefreshCw, Shield } from 'lucide-react';
 import { Button, Input } from '../ui';
 import styles from './DeliveryReadinessPanel.module.css';
 import { sessionFetch } from '../../lib/session';
@@ -103,6 +104,8 @@ export function DeliveryReadinessPanel({ report, error, onReload, canAct = true 
   const passing = gates.filter(gate => isPassingReadinessStatus(gate.status));
   const attention = gates.filter(gate => !isPassingReadinessStatus(gate.status));
   const loading = !report && !error;
+  const tone = error || attention.length ? 'attention' : passing.length ? 'passing' : 'neutral';
+  const StatusIcon = tone === 'passing' ? Check : tone === 'attention' ? CircleAlert : Shield;
   const outcome = attention.length
     ? `${attention.length} ${attention.length === 1 ? 'check needs' : 'checks need'} attention`
     : passing.length
@@ -110,16 +113,20 @@ export function DeliveryReadinessPanel({ report, error, onReload, canAct = true 
       : 'No readiness checks are available in this view.';
 
   return (
-    <section className={styles.panel} aria-label="Paid delivery readiness">
+    <section className={styles.panel} data-tone={tone} aria-label="Paid delivery readiness">
       <div className={styles.header}>
-        <div>
-          <h2 className="cf-section-title">Paid delivery readiness</h2>
-          <p role={error ? 'alert' : 'status'}>{error ?? (loading ? 'Checking delivery readiness…' : outcome)}</p>
+        <div className={styles.identity}>
+          <span className={styles.statusIcon}><StatusIcon size={20} aria-hidden="true" /></span>
+          <div>
+            <h2 className="cf-section-title">Paid delivery readiness</h2>
+            <p role={error ? 'alert' : 'status'}>{error ?? (loading ? 'Checking delivery readiness…' : outcome)}</p>
+          </div>
         </div>
         {(report || onReload) && <div className={styles.controls}>
           {report && <span className={styles.metadata}>Checked {new Date(report.evaluatedAt).toLocaleString()}</span>}
           {onReload && <Button type="button" variant="outline" size="sm" aria-disabled={loading}
             onClick={() => { if (!loading) onReload(); }}>
+            <RefreshCw size={15} aria-hidden="true" />
             {loading ? 'Refreshing…' : 'Refresh readiness'}
           </Button>}
         </div>}
@@ -128,7 +135,7 @@ export function DeliveryReadinessPanel({ report, error, onReload, canAct = true 
         {attention.map(gate => <ReadinessCheck key={gate.gateCode} gate={gate} canAct={canAct} onReload={onReload} />)}
       </ul>}
       {passing.length > 0 && <details className={styles.passing}>
-        <summary>View passing checks ({passing.length})</summary>
+        <summary>View passing checks ({passing.length}) <ChevronDown size={16} aria-hidden="true" /></summary>
         <ul className={styles.checks}>
           {passing.map(gate => <ReadinessCheck key={gate.gateCode} gate={gate} canAct={canAct} onReload={onReload} />)}
         </ul>
