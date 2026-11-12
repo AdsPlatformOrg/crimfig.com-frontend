@@ -1,0 +1,57 @@
+.detail {
+  --cf-campaign-breadcrumb-size: 0.75rem;
+  min-width: 0;
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.detail :global(.cf-button) { font-size: 0.8125rem; }
+.detail th :global(.cf-button) { font-size: 0.75rem; }
+.detail section[aria-label='Paid delivery readiness'] h2 { font-size: 0.875rem; }
+.detail section[aria-label='Paid delivery readiness'] summary { font-size: 0.8125rem; }
+
+.stackToolbar {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.stackFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+
+.stackFilters label {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 0.75rem;
+}
+
+.stackFilters input,
+.stackFilters select {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.375rem;
+  padding-inline: 0.5rem;
+}
+
+@media (min-width: 64rem) {
+  .stackToolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

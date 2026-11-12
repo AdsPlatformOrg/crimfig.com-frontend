@@ -17,7 +17,7 @@ export function CampaignBreadcrumbs({ items, campaignsHref = '/campaigns' }: { i
         display: 'flex',
         alignItems: 'center',
         gap: '6px',
-        fontSize: '13px',
+        fontSize: 'var(--cf-campaign-breadcrumb-size, 13px)',
         color: 'var(--text-muted, #64748B)',
         marginBottom: '16px',
         flexWrap: 'wrap',

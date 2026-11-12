@@ -1,5 +1,6 @@
 'use client';
 
+import styles from './CampaignPage.module.css';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -160,7 +161,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
   const totalAds = campaign.creatives.length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className={styles.detail} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <CampaignBreadcrumbs items={[{ label: campaign.title || 'Campaign' }]} campaignsHref={campaignsHref} />
 
 
@@ -169,7 +170,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{campaign.title}</h1>
+              <h1 style={{ fontSize: '1.125rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{campaign.title}</h1>
               <Badge
                 variant={campaign.status === 'active' ? 'secondary' : 'outline'}
                 style={{
@@ -202,7 +203,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               </Badge>
             </div>
 
-            <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+            <p style={{ margin: '8px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               Revision {campaign.contentRevision} · Category: {campaign.category || 'General'} · Pricing: {campaign.pricingModel?.toUpperCase()} · Last updated: {campaign.updatedAt ? new Date(campaign.updatedAt).toLocaleString() : 'Time unavailable'}
             </p>
           </div>
@@ -211,7 +212,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
             <Badge
               variant="outline"
               style={{
-                fontSize: '13px',
+                fontSize: '0.75rem',
                 padding: '6px 12px',
                 fontWeight: 700,
                 backgroundColor: totalApprovedAds > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
@@ -250,7 +251,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               border: '1px solid var(--border-subtle)',
             }}
           >
-            <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+            <p style={{ margin: '0 0 12px 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               Beginning an edit withdraws the current review and stops new ad delivery. Resubmitting starts a fresh review. Existing funding is retained.
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -270,7 +271,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
               border: '1px solid rgba(245, 158, 11, 0.3)',
             }}
           >
-            <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#B45309' }}>
+            <p style={{ margin: '0 0 12px 0', fontSize: '0.75rem', color: '#B45309' }}>
               A submission needs funding confirmation. Check its status before changing this campaign.
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -298,27 +299,27 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         {/* Budget Row */}
         <div style={{ display: 'flex', gap: '24px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Total Budget</span>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>${(campaign.budgetUsdCents / 100).toFixed(2)} USD</div>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Total Budget</span>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>${(campaign.budgetUsdCents / 100).toFixed(2)} USD</div>
           </div>
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Remaining Budget</span>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-crimson)' }}>${(campaign.remainingBudgetUsdCents / 100).toFixed(2)} USD</div>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Remaining Budget</span>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-crimson)' }}>${(campaign.remainingBudgetUsdCents / 100).toFixed(2)} USD</div>
           </div>
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Pricing</span>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{campaign.pricingModel?.toUpperCase()}</div>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Pricing</span>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>{campaign.pricingModel?.toUpperCase()}</div>
           </div>
         </div>
       </Card>
 
       {/* Campaign Targeting & Delivery Details */}
       <Card style={{ padding: '24px', borderRadius: '12px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Targeting & Delivery Rules</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+        <h2 style={{ fontSize: '0.875rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary)' }}>Targeting & Delivery Rules</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '20px' }}>
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Geo Mode & Locations</span>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Geo Mode & Locations</span>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
               {campaign.geoMode === 'targeted' ? 'Targeted Geographic Locations' : 'Global (All Countries)'}
             </div>
             {campaign.geoLocations && campaign.geoLocations.length > 0 ? (
@@ -337,8 +338,8 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
           </div>
 
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Target Devices</span>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Target Devices</span>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
               {Array.isArray(campaign.targetDevices) && campaign.targetDevices.length > 0
                 ? campaign.targetDevices.map((d: string) => d.toUpperCase()).join(', ')
                 : typeof campaign.targetDevices === 'string' && campaign.targetDevices
@@ -353,8 +354,8 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
           </div>
 
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Schedule & Active Hours</span>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Schedule & Active Hours</span>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
               {campaign.targetHours && campaign.targetHours.length > 0 && campaign.targetHours.length < 24
                 ? `${campaign.targetHours.length} Active Hours / Day`
                 : '24 / 7 Delivery'}
@@ -365,8 +366,8 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
           </div>
 
           <div>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Delivery Limits & Pacing</span>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Delivery Limits & Pacing</span>
+            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
               {campaign.frequencyCapPerDay ? `${campaign.frequencyCapPerDay} views / user / day` : 'No Frequency Cap'}
             </div>
             <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -384,14 +385,14 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
 
       {/* Ad Stacks Table */}
       <Card style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className={styles.stackToolbar}>
           <div>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Ad Stacks</h2>
+            <h2 style={{ fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>Ad Stacks</h2>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
               Click on any ad stack to view and manage its individual creatives.
             </p>
           </div>
-          <div>
+          <div className={styles.stackFilters}>
             {table.controls('stacks')}
             <label>Targeting <select value={stackGeo} onChange={event => { setStackGeo(event.target.value); table.resetPage(); }}>
               <option value="all">All</option>
