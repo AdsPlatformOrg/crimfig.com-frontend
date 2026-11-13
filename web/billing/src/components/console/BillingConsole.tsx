@@ -193,6 +193,21 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
   const [operationError, setOperationError] = useState<string | null>(null);
   const [supportedBanks, setSupportedBanks] = useState<Array<{ code: string; name: string }>>([]);
+  const [bankDirectoryStatus, setBankDirectoryStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const loadBankDirectory = useCallback(async () => {
+    setBankDirectoryStatus('loading');
+    try {
+      const banks = await billingData('/api/v1/bank-accounts/banks');
+      if (!Array.isArray(banks) || !banks.length || banks.some(bank => !bank || typeof bank.code !== 'string' || !bank.code.trim() || typeof bank.name !== 'string' || !bank.name.trim())) {
+        throw new Error('Invalid bank directory');
+      }
+      setSupportedBanks(banks);
+      setBankDirectoryStatus('ready');
+    } catch {
+      setSupportedBanks([]);
+      setBankDirectoryStatus('unavailable');
+    }
+  }, []);
   const [resolvedIdentity, setResolvedIdentity] = useState<{ accountNumber: string; bankCode: string } | null>(null);
   const [savingBank, setSavingBank] = useState(false);
   const resolutionGeneration = useRef(0);
@@ -346,16 +361,19 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
     void (async () => {
       try {
-        const [catalog, subs, banks] = await Promise.all([billingData('/api/v1/subscriptions/catalog'), billingData('/api/v1/subscriptions'), billingData('/api/v1/bank-accounts/banks')]);
-        if (!catalog || typeof catalog !== 'object' || !Array.isArray(subs) || !Array.isArray(banks)) throw new Error('Invalid account/catalog data.');
+        const [catalog, subs] = await Promise.all([billingData('/api/v1/subscriptions/catalog'), billingData('/api/v1/subscriptions')]);
+        if (!catalog || typeof catalog !== 'object' || !Array.isArray(subs)) throw new Error('Invalid account/catalog data.');
         const plans = Object.values(catalog).flat() as any[];
         setAppPlans(plans);
         setSubscriptions(subs.map((item: any) => ({ ...item, priceUsd: item.priceUsdCents / 100, planName: plans.find(plan => plan.id === item.plan)?.name || item.plan, nextBillingDate: item.nextBillingDate || '' })));
-        setSupportedBanks(banks);
-      } catch { setLoadError('Subscription or bank-directory data could not be loaded.'); }
+      } catch { setLoadError('Subscription data could not be loaded.'); }
     })();
     loadBillingData();
   }, []);
+
+  useEffect(() => {
+    if (isAddBankOpen && bankDirectoryStatus === 'idle') void loadBankDirectory();
+  }, [isAddBankOpen, bankDirectoryStatus, loadBankDirectory]);
 
   const handleResolveBank = async () => {
     const generation = ++resolutionGeneration.current;
@@ -407,8 +425,18 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     }catch(error){
       if(lifecycle!==lifecycleGeneration.current)return;
       const uncertain=error instanceof FundingStartError?error.uncertain:true;
-      setFundAttemptUncertain(uncertain);if(!uncertain)fundingIntent.current=null;
-      setRequestRecovery({phase:uncertain?'unavailable':'missing',id:saved.requestId,url:null});
+      setFundAttemptUncertain(uncertain);
+      if (!uncertain) {
+        fundingIntent.current = null;
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('funding_request') === saved.requestId) {
+          url.searchParams.delete('funding_request');
+          window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+        }
+        setRequestRecovery({ phase: 'none', id: null, url: null });
+      } else {
+        setRequestRecovery({ phase: 'unavailable', id: saved.requestId, url: null });
+      }
       setPaymentError(error instanceof Error?error.message:'Payment initialization could not be confirmed.');
       if(error instanceof FundingStartError&&error.reference){saved.reference=error.reference;void checkFunding(error.reference);}
     }finally{fundingBusy.current=false;if(lifecycle===lifecycleGeneration.current)setIsProcessingPayment(false);}
@@ -1227,11 +1255,18 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
                 <label htmlFor="billing-bank-code" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: '6px' }}>Select Bank</label>
                 <select id="billing-bank-code" className="cf-input"
                   value={newBankCode}
+                  disabled={bankDirectoryStatus !== 'ready'}
                   onChange={(e) => { setNewBankCode(e.target.value); setResolvedAccountName(null); }}
                 >
-                  <option value="">Choose a supported bank</option>
+                  <option value="">{bankDirectoryStatus === 'loading' ? 'Loading banks…' : 'Choose a supported bank'}</option>
                   {supportedBanks.map(bank => <option key={bank.code} value={bank.code}>{bank.name}</option>)}
                 </select>
+                {bankDirectoryStatus === 'unavailable' && (
+                  <div role="alert">
+                    <p>Bank directory is temporarily unavailable.</p>
+                    <Button type="button" variant="outline" onClick={() => void loadBankDirectory()}>Retry bank list</Button>
+                  </div>
+                )}
               </div>
 
               <div>

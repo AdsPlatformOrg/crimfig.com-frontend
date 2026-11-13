@@ -32,7 +32,11 @@ function WorkspaceSkeleton() {
   </div>;
 }
 
-export function SessionGate({ children, loadingShell }: { children: ReactNode; loadingShell?: ReactNode }) {
+export function SessionGate({ children, loadingShell, recoveryShell }: {
+  children: ReactNode;
+  loadingShell?: ReactNode;
+  recoveryShell?: (content: ReactNode) => ReactNode;
+}) {
   const { status, signOut, renewal, identityVersion } = useSessionSnapshot();
   const [automaticRetryUsed, setAutomaticRetryUsed] = useState(false);
   const hasAuthenticated = useRef(false);
@@ -68,17 +72,22 @@ export function SessionGate({ children, loadingShell }: { children: ReactNode; l
       lastFocused.current.focus({ preventScroll: true });
     }
   }, [authorized, retainDraft, identityVersion]);
+  const recovery = showRecovery && !signOut ? (
+    <section style={{ maxWidth: 460, width: '100%' }} aria-live="polite">
+      <h1>Unable to open your workspace</h1>
+      <p>Check your connection and try again.</p>
+      <Button type="button" onClick={retry}>Try again</Button>
+    </section>
+  ) : null;
   return <>
     {/* Never unmount a live form during renewal. Locked content is hidden and unfocusable. */}
     {(authorized || retainDraft) && <div key={identityVersion ?? 0} ref={retainedContent} hidden={!authorized} onFocusCapture={(event) => { lastFocused.current = event.target as HTMLElement; }}>{children}</div>}
     {!authorized && !showRecovery && !signOut && (loadingShell ?? <WorkspaceSkeleton />)}
-    {showRecovery && !signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
-      <section style={{ maxWidth: 460, width: '100%' }} aria-live="polite">
-        <h1>Unable to open your workspace</h1>
-        <p>We couldn’t verify your session. Check your connection and try again.</p>
-        <Button type="button" onClick={retry}>Try again</Button>
-      </section>
-    </main>}
+    {recovery && (recoveryShell ? recoveryShell(recovery) : (
+      <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+        {recovery}
+      </main>
+    ))}
     {signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
       <section aria-live="polite"><h1>{signOut === 'pending' ? 'Signing out…' : signOut === 'failed' ? 'Sign-out could not be confirmed' : 'You have been signed out'}</h1>
       <p>{signOut === 'failed' ? 'This workspace is locked, but your server session may still be active. Sign in again to continue safely.' : signOut === 'remote' ? 'Your account was signed out in another tab.' : 'Your private workspace is locked.'}</p>

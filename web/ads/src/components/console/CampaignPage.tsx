@@ -12,6 +12,7 @@ import { useCampaignTable } from './useCampaignTable';
 import { CampaignBreadcrumbs } from './CampaignBreadcrumbs';
 import { campaignsReturnHref, withCampaignReturnTo } from '../../lib/campaign-navigation';
 import { ActionHelp } from '../ActionHelp';
+import { ConsequentialConfirmDialog } from './ConsequentialConfirmDialog';
 import {
   Card,
   Table as ShadTable,
@@ -241,25 +242,23 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
           </div>
         </div>
 
-        {confirmEdit && (
-          <div
-            style={{
-              marginTop: '16px',
-              padding: '16px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <p style={{ margin: '0 0 12px 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Beginning an edit withdraws the current review and stops new ad delivery. Resubmitting starts a fresh review. Existing funding is retained.
-            </p>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Button disabled={busy} onClick={() => void begin()}>Begin editing</Button>
-              <Button variant="outline" disabled={busy} onClick={() => setConfirmEdit(false)}>Keep current submission</Button>
-            </div>
-          </div>
-        )}
+        <ConsequentialConfirmDialog
+          open={confirmEdit}
+          onOpenChange={setConfirmEdit}
+          title="Stop delivery and begin editing?"
+          description={
+            <>
+              New ad delivery for <strong>{campaign.title || 'this campaign'}</strong> will stop immediately. The current submission will be withdrawn, and you’ll need to submit the campaign for a fresh review.
+            </>
+          }
+          consequenceSummary="Existing escrow funding stays in place and will be preserved for the revised campaign."
+          confirmLabel="Stop delivery and begin editing"
+          cancelLabel="Keep current submission"
+          confirmVariant="default"
+          isPending={busy}
+          onConfirm={() => void begin()}
+          onCancel={() => setConfirmEdit(false)}
+        />
 
         {campaign.submissionIntentId && (
           <div

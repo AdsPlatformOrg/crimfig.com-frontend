@@ -25,6 +25,7 @@ import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
 import { TablePreferencesModal, type ColumnConfig } from '../TablePreferencesModal';
 import { ReplaceCreativeModal } from '../ReplaceCreativeModal';
+import { ConsequentialConfirmDialog } from '../ConsequentialConfirmDialog';
 import { ActionHelp } from '../../ActionHelp';
 import { withCampaignReturnTo } from '../../../lib/campaign-navigation';
 import { campaignListStatus } from '../../../lib/campaign-list-status';
@@ -82,6 +83,15 @@ export function CampaignsManager() {
 
   // Inline Creative Replacement Modal
   const [replacementCreative, setReplacementCreative] = useState<React.ComponentProps<typeof ReplaceCreativeModal>['creative']>(null);
+
+  // Consequential confirmation state
+  const [consequentialAction, setConsequentialAction] = useState<{
+    campaignId: string;
+    actionType: 'activate' | 'pause' | 'trash';
+    campaignTitle: string;
+    budget?: number;
+    currency?: string;
+  } | null>(null);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -467,12 +477,38 @@ export function CampaignsManager() {
                                   </DropdownMenuItem>
                                 )}
                                 {camp.moderationStatus === 'draft' && (camp.status === 'draft' || camp.status === 'trash') && (
-                                  <DropdownMenuItem disabled={pendingWrites.has(camp.id)} onSelect={() => void handleToggleStatus(camp.id, camp.status === 'trash' ? 'draft' : 'trash')}>
+                                  <DropdownMenuItem
+                                    disabled={pendingWrites.has(camp.id)}
+                                    onSelect={() => {
+                                      if (camp.status === 'draft') {
+                                        setConsequentialAction({
+                                          campaignId: camp.id,
+                                          actionType: 'trash',
+                                          campaignTitle: camp.title,
+                                        });
+                                      } else {
+                                        void handleToggleStatus(camp.id, 'draft');
+                                      }
+                                    }}
+                                  >
                                     {camp.status === 'trash' ? 'Restore to Draft' : 'Move to Trash'}
                                   </DropdownMenuItem>
                                 )}
                                 {deliveryAction && (
-                                  <DropdownMenuItem onClick={() => handleToggleStatus(camp.id)}>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (deliveryAction === 'resume') {
+                                        setConsequentialAction({
+                                          campaignId: camp.id,
+                                          actionType: 'activate',
+                                          campaignTitle: camp.title,
+                                          budget: typeof camp.budgetUsd === 'number' ? camp.budgetUsd : undefined,
+                                        });
+                                      } else {
+                                        void handleToggleStatus(camp.id);
+                                      }
+                                    }}
+                                  >
                                     {deliveryAction === 'pause' ? 'Pause Campaign' : 'Resume Campaign'}
                                   </DropdownMenuItem>
                                 )}
@@ -569,6 +605,65 @@ export function CampaignsManager() {
             setReplacementCreative(null);
             fetchCampaigns();
           }}
+        />
+      )}
+
+      {/* Consequential Action Confirmation Dialog */}
+      {consequentialAction && (
+        <ConsequentialConfirmDialog
+          open={!!consequentialAction}
+          onOpenChange={(open) => { if (!open) setConsequentialAction(null); }}
+          title={
+            consequentialAction.actionType === 'activate'
+              ? 'Resume ad delivery?'
+              : consequentialAction.actionType === 'pause'
+              ? 'Pause ad delivery?'
+              : 'Move campaign to Trash?'
+          }
+          description={
+            consequentialAction.actionType === 'activate' ? (
+              <>
+                Live ad delivery for <strong>{consequentialAction.campaignTitle}</strong> will resume on eligible publisher slots and begin participating in paid auctions.
+              </>
+            ) : consequentialAction.actionType === 'pause' ? (
+              <>
+                Live ad delivery for <strong>{consequentialAction.campaignTitle}</strong> will be paused immediately. Impressions and spend will cease until resumed.
+              </>
+            ) : (
+              <>
+                <strong>{consequentialAction.campaignTitle}</strong> will be moved to the Trash. You can restore it to draft status at any time.
+              </>
+            )
+          }
+          consequenceSummary={
+            consequentialAction.actionType === 'activate' && consequentialAction.budget ? (
+              <div>
+                <strong>Active Budget:</strong> ${consequentialAction.budget.toFixed(2)} USD. Campaigns participate in GSP auctions up to available budget.
+              </div>
+            ) : consequentialAction.actionType === 'pause' ? (
+              <div>Existing escrow funding remains secure and untouched while delivery is paused.</div>
+            ) : undefined
+          }
+          confirmLabel={
+            consequentialAction.actionType === 'activate'
+              ? 'Resume delivery'
+              : consequentialAction.actionType === 'pause'
+              ? 'Pause delivery'
+              : 'Move to Trash'
+          }
+          cancelLabel="Keep current status"
+          confirmVariant={consequentialAction.actionType === 'trash' ? 'destructive' : 'default'}
+          isPending={pendingWrites.has(consequentialAction.campaignId)}
+          onConfirm={async () => {
+            const { campaignId, actionType } = consequentialAction;
+            setConsequentialAction(null);
+            if (actionType === 'trash') {
+              await handleToggleStatus(campaignId, 'trash');
+            } else {
+              await handleToggleStatus(campaignId);
+            }
+          }}
+          onCancel={() => setConsequentialAction(null)}
         />
       )}
     </div>

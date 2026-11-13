@@ -35,9 +35,9 @@ class FundingStartError extends Error{constructor(message,uncertain,reference){s
 const id='12345678-1234-4234-8234-123456789099';
 
 const button=(app,label)=>app.nodes().find(n=>typeof n.props.onClick==='function'&&text(n).trim()===label);
-function billing(overrides={},search=''){
+function billing(overrides={},search='',bankDirectory,initialTab){
  const sends=[],checks=[];const funding={fundingReturn:()=>({kind:'none'}),fundingRequest:()=>search?{kind:'valid',requestId:id}:{kind:'none'},recoverFundingRequest:async()=>{throw Error('lookup unavailable');},verifyFundingReference:async reference=>{checks.push(reference);return {status:'pending',reference};},startFunding:async(amount,save,requestId)=>{sends.push({amount,save,requestId});return {kind:'checkout',requestId,reference:'crimfig-fund-new',amountUsd:amount,url:'https://checkout.paystack.com/unit-test'};},FundingStartError,loadTransactions:async()=>[],...overrides};
- const app=mount('billing/src/components/console/BillingConsole.tsx',{'../../lib/session':{dashboardSession:()=>({}),sessionFetch:async()=>Response.json({data:[]})},'../../../../../shared/ui/origins':{ecosystemOrigin:app=>`https://staging-${app}.crimfig.com`},'../../lib/use-dialog':{useDialog:()=>({current:null})},'../../lib/wallet-view':{walletView:()=>({availableUsd:0,lockedUsd:0,totalUsd:0,rate:1500,rateSource:'unit fixture',lastUpdated:'12:00'})},'../../lib/billing-api':{billingData:async path=>path==='/api/v1/subscriptions/catalog'?{}:path==='/api/v1/wallet'?{}:[],resolveBank:async()=>{},saveBank:async()=>{}},'../../lib/funding-api':funding},{search});
+ const app=mount('billing/src/components/console/BillingConsole.tsx',{'../../lib/session':{dashboardSession:()=>({}),sessionFetch:async()=>Response.json({data:[]})},'../../../../../shared/ui/origins':{ecosystemOrigin:app=>`https://staging-${app}.crimfig.com`},'../../lib/use-dialog':{useDialog:()=>({current:null})},'../../lib/wallet-view':{walletView:()=>({availableUsd:0,lockedUsd:0,totalUsd:0,rate:1500,rateSource:'unit fixture',lastUpdated:'12:00'})},'../../lib/billing-api':{billingData:async path=>path==='/api/v1/bank-accounts/banks'&&bankDirectory?bankDirectory():path==='/api/v1/subscriptions/catalog'?{}:path==='/api/v1/wallet'?{}:[],resolveBank:async()=>{},saveBank:async()=>{}},'../../lib/funding-api':funding},{search,initialTab});
  return {app,sends,checks,funding};
 }
 async function ready(app){app.render();await app.settle();await app.settle();}
@@ -74,4 +74,31 @@ test('pending automatic checks stop after six follow-ups and never initialize an
 
 test('closing an active checkout form does not redirect later or cancel the stored request',async()=>{
  let resolve;const f=billing({startFunding:async(amount,save,requestId)=>new Promise(r=>resolve=()=>r({kind:'checkout',requestId,reference:'ref',amountUsd:amount,url:'https://checkout.paystack.com/late-checkout'}))});await ready(f.app);deposit(f.app).props.onClick();f.app.render();button(f.app,'Pay $50.00 USD').props.onClick();f.app.render();const close=f.app.nodes().find(n=>n.props['aria-label']==='Close Deposit to CrimFig Wallet');close.props.onClick();f.app.render();resolve();await ready(f.app);assert.equal(f.app.history().includes('https://checkout.paystack.com/late-checkout'),false);assert.ok(button(f.app,'Resume existing checkout'));assert.equal(f.sends.length,0);f.app.unmount();
+});
+
+test('bank directory failure is local to bank setup and retry can load options',async()=>{
+ let calls=0;
+ const {app}=billing({},'',async()=>{if(++calls===1)throw Error('gateway unavailable');return [{name:'Fixture Bank',code:'001'}];},'bank_accounts');
+ await ready(app);
+ assert.equal(calls,0);
+ button(app,'Add Bank Account').props.onClick();
+ await ready(app);
+ assert.match(app.nodes().filter(n=>n.props.role==='alert').map(text).join(' '),/Bank directory is temporarily unavailable/);
+ button(app,'Retry bank list').props.onClick();
+ await ready(app);
+ assert.equal(calls,2);
+ assert.equal(app.nodes().find(n=>n.props.id==='billing-bank-code').props.disabled,false);
+ assert.ok(app.nodes().some(n=>n.type==='option'&&n.props.value==='001'));
+ app.unmount();
+});
+test('known checkout preflight failure clears the recovery prompt and permits a fresh request',async()=>{
+ const sends=[];
+ const {app}=billing({startFunding:async(_amount,_save,requestId)=>{sends.push(requestId);throw new FundingStartError('Checkout is not configured',false);}});
+ await ready(app);deposit(app).props.onClick();app.render();
+ button(app,'Pay $50.00 USD').props.onClick();await ready(app);
+ assert.equal(button(app,'Find existing payment'),undefined);
+ assert.equal(button(app,'Pay $50.00 USD').props.disabled,false);
+ button(app,'Pay $50.00 USD').props.onClick();await ready(app);
+ assert.notEqual(sends[0],sends[1]);
+ app.unmount();
 });
