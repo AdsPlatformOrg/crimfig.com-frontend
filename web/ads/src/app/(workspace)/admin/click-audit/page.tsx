@@ -21,6 +21,7 @@ type Row = {
   campaign: string; domain: string | null; slot: string | null; valid: boolean | null; billed: boolean;
   reason: string | null; request_id: string | null; reservation_state: string | null;
   event_deadline: string | null; claim_event_id: string | null; settled_at: string | null;
+  visitor_history?: "unknown" | "established" | null; release_reason?: string | null;
   settlement_claim_id: string | null; assessment: string | null; assessment_reasons: string[] | null;
   debit_id: string | null; billed_usd_cents: number | null;
   has_journal: boolean;
@@ -154,6 +155,8 @@ function AuditRow({ row, open, toggle }: { row: Row; open: boolean; toggle: () =
         <section><h3>Assessment</h3><p>{row.assessment ?? 'No final assessment'}</p>
           {row.assessment_reasons?.length ? <p>{row.assessment_reasons.join(', ')}</p> : null}</section>
         <section><h3>Billing</h3><p>Reservation: {row.reservation_state ?? 'Unavailable'}</p>
+          {row.visitor_history && <p>Visitor continuity: {row.visitor_history === 'unknown' ? 'Unknown' : 'Established'}</p>}
+          {row.release_reason === 'CPC_VISITOR_90_DAY_LIMIT' && <p>90-day paid click limit reached</p>}
           <p>Event deadline: {stamp(row.event_deadline)}</p>
           <p>Claim: {row.settlement_claim_id ?? row.claim_event_id ?? 'None'}</p>
           {row.debit_id && <p>Billing receipt: {row.debit_id}</p>}
