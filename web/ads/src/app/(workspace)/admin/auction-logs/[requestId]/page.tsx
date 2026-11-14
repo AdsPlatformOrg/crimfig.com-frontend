@@ -96,6 +96,19 @@ export default function AuctionDecisionDetailPage({
   const admission = (exclusions[0] as { admission?: Record<string, unknown> } | undefined)?.admission;
   const billingFallback = exclusions.find((item: any) => item.stage === 'billing_reserve' || item.stage === 'billing_issue') as {
     campaignId?: string; creativeId?: string; parentOpportunityId?: string; transportRequestId?: string; upstreamStatus?: number;
+    capacityDetails?: {
+      limitType?: 'reservable_escrow' | 'daily_budget' | 'hourly_pacing' | 'frequency_cap';
+      unit?: 'usd_nanos' | 'impressions_per_day';
+      allowanceNanos?: string;
+      usedOrReservedNanos?: string;
+      requestedNanos?: string;
+      availableNanos?: string;
+      allowanceCount?: number;
+      usedCount?: number;
+      requestedCount?: number;
+      availableCount?: number;
+      decision?: string;
+    };
     creativeCompatibility?: { stackId?: string; format?: string; type?: string; status?: string; approval?: string; stackArchived?: boolean; slotId?: string; slotFormat?: string; allowedTypeSource?: string; allowedTypes?: string[]; submissionId?: string; contentRevision?: number };
     reasonCode?: string; billingHandoff?: { reserve: string; issue: string; elapsedMs: number };
   } | undefined;
@@ -120,7 +133,11 @@ export default function AuctionDecisionDetailPage({
     BILLING_ESCROW_INACTIVE: ['Billing operations', 'Inspect the campaign escrow and its funding status.'],
     BILLING_FUNDING_PROOF_INVALID: ['Billing operations', 'Reconcile the funding receipt with the escrow.'],
     BILLING_FUNDING_PROOF_UNAVAILABLE: ['Billing operations', 'Locate and verify the escrow funding receipt.'],
-    BILLING_CAPACITY_UNAVAILABLE: ['Billing operations', 'Check reservable budget, pacing and frequency limits.'],
+    BILLING_CAPACITY_UNAVAILABLE: ['Billing operations', 'Legacy combined capacity rejection; correlate Billing reservation logs by parent opportunity ID.'],
+    INSUFFICIENT_RESERVABLE_ESCROW: ['Billing operations', 'Remaining campaign escrow is held by outstanding reservations or carries; wait for settlement/expiry or top up escrow.'],
+    DAILY_BUDGET_EXHAUSTED: ['Campaign pacing', 'Daily campaign spending allowance is exhausted for the current WAT day.'],
+    HOURLY_PACING_EXHAUSTED: ['Campaign pacing', 'Hourly spending allowance is exhausted or held by active reservations in this UTC hour.'],
+    FREQUENCY_CAP_REACHED: ['Campaign pacing', 'Visitor reached the configured daily frequency cap for this campaign.'],
     BILLING_QUOTE_INVALID: ['Ads and Billing engineering', 'Compare the clearing quote with the funded pricing contract.'],
     BILLING_DECISION_POLICY_MISMATCH: ['Ads and Billing engineering', 'Compare the auction policy and pricing inputs.'],
     BILLING_DECISION_BINDING_MISMATCH: ['Ads and Billing engineering', 'Compare the decision and reservation binding.'],
@@ -467,6 +484,25 @@ export default function AuctionDecisionDetailPage({
             <dt>Parent opportunity</dt><dd>{billingFallback.parentOpportunityId ?? 'Not recorded'}</dd>
             <dt>Transport request</dt><dd>{billingFallback.transportRequestId ?? 'Not recorded'}</dd>
           </dl>
+          {billingFallback.capacityDetails && (
+            <>
+              <h4>Capacity Rejection Breakdown</h4>
+              <dl>
+                <dt>Rejection</dt>
+                <dd>{billingFallback.reasonCode ?? billingFallback.capacityDetails.limitType}</dd>
+                <dt>{billingFallback.capacityDetails.limitType === 'hourly_pacing' ? 'Hourly allowance' : billingFallback.capacityDetails.limitType === 'daily_budget' ? 'Daily allowance' : billingFallback.capacityDetails.limitType === 'frequency_cap' ? 'Daily frequency cap' : 'Reservable escrow'}</dt>
+                <dd>{billingFallback.capacityDetails.unit === 'impressions_per_day' ? `${billingFallback.capacityDetails.allowanceCount ?? 0} per day` : formatAuctionUsd(billingFallback.capacityDetails.allowanceNanos, 9) ?? 'Not recorded'}</dd>
+                <dt>Used or reserved</dt>
+                <dd>{billingFallback.capacityDetails.unit === 'impressions_per_day' ? `${billingFallback.capacityDetails.usedCount ?? 0}` : formatAuctionUsd(billingFallback.capacityDetails.usedOrReservedNanos, 9) ?? 'Not recorded'}</dd>
+                <dt>New reservation requested</dt>
+                <dd>{billingFallback.capacityDetails.unit === 'impressions_per_day' ? `${billingFallback.capacityDetails.requestedCount ?? 1}` : formatAuctionUsd(billingFallback.capacityDetails.requestedNanos, 9) ?? 'Not recorded'}</dd>
+                <dt>Available for reservation</dt>
+                <dd>{billingFallback.capacityDetails.unit === 'impressions_per_day' ? `${billingFallback.capacityDetails.availableCount ?? 0}` : formatAuctionUsd(billingFallback.capacityDetails.availableNanos, 9) ?? 'Not recorded'}</dd>
+                <dt>Decision</dt>
+                <dd>Rejected; House Ad selected</dd>
+              </dl>
+            </>
+          )}
           <h4>Selected Creative &amp; Compatibility</h4>
           <dl>
             <dt>Creative ID</dt><dd>{billingFallback.creativeId ?? 'Not recorded'}</dd>
