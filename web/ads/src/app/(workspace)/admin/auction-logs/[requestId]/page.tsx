@@ -107,6 +107,10 @@ export default function AuctionDecisionDetailPage({
       usedCount?: number;
       requestedCount?: number;
       availableCount?: number;
+      pacingMode?: 'adaptive' | 'fixed';
+      baseHourlyAllowanceNanos?: string;
+      watHour?: number;
+      remainingWatHours?: number;
       decision?: string;
     };
     creativeCompatibility?: { stackId?: string; format?: string; type?: string; status?: string; approval?: string; stackArchived?: boolean; slotId?: string; slotFormat?: string; allowedTypeSource?: string; allowedTypes?: string[]; submissionId?: string; contentRevision?: number };
@@ -136,7 +140,7 @@ export default function AuctionDecisionDetailPage({
     BILLING_CAPACITY_UNAVAILABLE: ['Billing operations', 'Legacy combined capacity rejection; correlate Billing reservation logs by parent opportunity ID.'],
     INSUFFICIENT_RESERVABLE_ESCROW: ['Billing operations', 'Remaining campaign escrow is held by outstanding reservations or carries; wait for settlement/expiry or top up escrow.'],
     DAILY_BUDGET_EXHAUSTED: ['Campaign pacing', 'Daily campaign spending allowance is exhausted for the current WAT day.'],
-    HOURLY_PACING_EXHAUSTED: ['Campaign pacing', 'Hourly spending allowance is exhausted or held by active reservations in this UTC hour.'],
+    HOURLY_PACING_EXHAUSTED: ['Campaign pacing', 'Hourly spending allowance is exhausted or held by active reservations in the current hour.'],
     FREQUENCY_CAP_REACHED: ['Campaign pacing', 'Visitor reached the configured daily frequency cap for this campaign.'],
     BILLING_QUOTE_INVALID: ['Ads and Billing engineering', 'Compare the clearing quote with the funded pricing contract.'],
     BILLING_DECISION_POLICY_MISMATCH: ['Ads and Billing engineering', 'Compare the auction policy and pricing inputs.'],
@@ -490,8 +494,20 @@ export default function AuctionDecisionDetailPage({
               <dl>
                 <dt>Rejection</dt>
                 <dd>{billingFallback.reasonCode ?? billingFallback.capacityDetails.limitType}</dd>
-                <dt>{billingFallback.capacityDetails.limitType === 'hourly_pacing' ? 'Hourly allowance' : billingFallback.capacityDetails.limitType === 'daily_budget' ? 'Daily allowance' : billingFallback.capacityDetails.limitType === 'frequency_cap' ? 'Daily frequency cap' : 'Reservable escrow'}</dt>
+                <dt>{billingFallback.capacityDetails.limitType === 'hourly_pacing' ? (billingFallback.capacityDetails.pacingMode === 'adaptive' ? 'Effective hourly allowance (WAT adaptive)' : 'Hourly allowance') : billingFallback.capacityDetails.limitType === 'daily_budget' ? 'Daily allowance' : billingFallback.capacityDetails.limitType === 'frequency_cap' ? 'Daily frequency cap' : 'Reservable escrow'}</dt>
                 <dd>{billingFallback.capacityDetails.unit === 'impressions_per_day' ? `${billingFallback.capacityDetails.allowanceCount ?? 0} per day` : formatAuctionUsd(billingFallback.capacityDetails.allowanceNanos, 9) ?? 'Not recorded'}</dd>
+                {billingFallback.capacityDetails.limitType === 'hourly_pacing' && billingFallback.capacityDetails.pacingMode === 'adaptive' && (
+                  <>
+                    <dt>Base hourly schedule</dt>
+                    <dd>{formatAuctionUsd(billingFallback.capacityDetails.baseHourlyAllowanceNanos, 9) ?? 'Not recorded'}</dd>
+                    <dt>Adaptive pacing window</dt>
+                    <dd>
+                      {typeof billingFallback.capacityDetails.watHour === 'number'
+                        ? `Hour ${String(billingFallback.capacityDetails.watHour).padStart(2, '0')}:00 WAT (${billingFallback.capacityDetails.remainingWatHours ?? 24 - billingFallback.capacityDetails.watHour}h remaining; redistributed within daily budget cap)`
+                        : 'WAT adaptive redistribution within daily budget cap'}
+                    </dd>
+                  </>
+                )}
                 <dt>Used or reserved</dt>
                 <dd>{billingFallback.capacityDetails.unit === 'impressions_per_day' ? `${billingFallback.capacityDetails.usedCount ?? 0}` : formatAuctionUsd(billingFallback.capacityDetails.usedOrReservedNanos, 9) ?? 'Not recorded'}</dd>
                 <dt>New reservation requested</dt>

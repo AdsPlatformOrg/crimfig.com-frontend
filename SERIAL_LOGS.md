@@ -40,3 +40,13 @@ PLAN-0099 staging recheck: Under Review returned one row still labeled Paused, w
 Added advertiser and promoter report pages in the protected workspace, Lagos date filters, prior-period comparison, and campaign/ad breakdowns. Six reports and session checks, Ads typecheck, and scoped PostCSS parsing passed. Browser and staging acceptance pending.
 
 - PLAN-0104 staging release. Ads frontend 4828c6e deployed and the Click Audit web route returned 200. Authenticated desktop and mobile visual acceptance remains open because browser automation could not initialize. See ../docs/reviews/plan-0104/staging-release.md.
+
+## 2026-11-13 - PLAN-0109 internal UI/UX audit preparation
+Created draft plan, route coverage manifest and preliminary source findings for sign-in, Advertiser Studio and Promoter Hub. AdStation navigation exists in source; live discoverability remains unverified. Browser selection/access pending; no screenshots or application edits/tests/builds. UI and skill/rule changes await owner review. Evidence: ../docs/reviews/plan-0109/README.md.
+
+## 2026-11-14 - PLAN-0104 Click Audit visitor continuity sync
+Fast-forwarded local `frontend` `dev` (`a3a162b` -> `d14950a`, syncing `origin/dev` commit `"Show CPC visitor continuity in Click Audit (PLAN-0104)"` for `web/ads/src/app/(workspace)/admin/click-audit/page.tsx`) alongside backend PLAN-0104 `d5ff0a4`. Visual review remains skipped at owner request; live deployment remains separate.
+
+## 2026-11-15 - PLAN-0113 adaptive hourly pacing breakdown and dev release cleanup
+Updated `web/ads/src/app/(workspace)/admin/auction-logs/[requestId]/page.tsx` to display `pacingMode`, `baseHourlyAllowanceNanos`, `watHour`, and `remainingWatHours` in Capacity Rejection Breakdown for adaptive WAT pacing exclusions and removed hardcoded UTC wording in `HOURLY_PACING_EXHAUSTED`. Fixed `shared/api-client/test/consumers.test.cjs` CSS module resolution with `shared/api-client/test/css-module-stub.d.ts`, and added `web/ads/test/plan0113-auction-trace.test.cjs`. Verified `pnpm --filter @crimfig/api-client test` (44/44 passed), `node --test web/ads/test/*.test.cjs` (34/34 passed), `pnpm --filter @crimfig/web-ads typecheck` (0 errors), and `pnpm --filter @crimfig/web-ads build` (49/49 routes built cleanly). Cleaned orphaned unused marketing `.webp` assets and committed pending `docs/reviews/plan-0099/` evidence prior to `dev -> production` release.
+

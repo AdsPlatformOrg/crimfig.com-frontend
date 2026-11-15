@@ -62,7 +62,7 @@ export function LandingPage({ onLaunchConsole }: LandingPageProps) {
         <section id="what-we-do" className="cf-marketing-section cf-marketing-section--surface">
           <div className="cf-marketing-frame" data-ads-reveal>
             <div className="cf-marketing-copy">
-              <h2>Campaigns in focus.</h2>
+              <h2>Your Ads Performance first.</h2>
               <p>See how your ads perform and where your budget goes.</p>
               <div className="cf-marketing-actions">
                 <Button onClick={() => onLaunchConsole('advertiser')}>Start advertising</Button>

@@ -36,7 +36,8 @@ test('changed component call boundaries agree with generated/domain DTOs (compon
     jsx: ts.JsxEmit.ReactJSX, strict: true, esModuleInterop: true, resolveJsonModule: true, skipLibCheck: true, noEmit: true };
   const host = ts.createCompilerHost(options);
   host.resolveModuleNames = (names, containing) => names.map(name => name === 'next/navigation' ? {resolvedFileName:path.join(root,'test/navigation-stub.d.ts'),extension:ts.Extension.Dts} : name.endsWith('/session') && path.normalize(containing).toLowerCase().includes(`${path.sep}web${path.sep}ads${path.sep}`) ?
-    { resolvedFileName: path.join(root, 'test/session-stub.d.ts'), extension: ts.Extension.Dts } : ts.resolveModuleName(name, containing, options, host).resolvedModule);
+    { resolvedFileName: path.join(root, 'test/session-stub.d.ts'), extension: ts.Extension.Dts } : (name.endsWith('.module.css') || name.endsWith('.css')) ?
+    { resolvedFileName: path.join(root, 'test/css-module-stub.d.ts'), extension: ts.Extension.Dts } : ts.resolveModuleName(name, containing, options, host).resolvedModule);
   const program = ts.createProgram(roots, options, host);
   const selected = new Set(roots.map(name => path.normalize(name)));
   const diagnostics = ts.getPreEmitDiagnostics(program).filter(d => !d.file || selected.has(path.normalize(d.file.fileName)));

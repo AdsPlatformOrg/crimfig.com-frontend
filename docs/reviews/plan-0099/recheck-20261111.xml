@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="CPM and CPC estimates use cents without an artificial dollar floor" time="0.124716" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="draft reads are account-scoped, bounded and expired drafts are not restored" time="0.016409" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="fixed crop is re-rendered from source at 1.00 while dimensions automatically reach each cap" time="0.084740" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="unsupported WebP encoder PNG fallback is checked by actual bytes and MIME" time="0.040707" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="cancellation aborts before allocating an encoding surface" time="0.029317" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="source headers reject mime mismatch, excessive pixels and files above 100 MB" time="0.027739" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="server and browser share the exact daily schedule contract" time="0.000797" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\session\test\campaign-preparation.test.cjs"/>
+	<testcase name="campaign list return path retains its query and rejects external or unrelated routes" time="0.003117" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-navigation.test.cjs"/>
+	<testcase name="campaign detail links safely carry the validated list return path" time="0.000600" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-navigation.test.cjs"/>
+	<testcase name="invalid return destinations are not propagated into detail links" time="0.000236" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-navigation.test.cjs"/>
+	<testcase name="only eligible and observed readiness checks are treated as passing" time="0.001097" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-readiness.test.cjs"/>
+	<testcase name="empty or unresolved readiness results never claim that all checks pass" time="0.002362" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-readiness.test.cjs"/>
+	<testcase name="successful checks are counted, while blocking checks take precedence in the summary" time="0.000332" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-readiness.test.cjs"/>
+	<testcase name="missing or unrelated moderation does not invent a review status" time="0.001590" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-status.test.cjs"/>
+	<testcase name="pending review rows match the API review category instead of claiming paused or active" time="0.000287" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-status.test.cjs"/>
+	<testcase name="approved active and paused campaigns retain their delivery labels" time="0.000252" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-status.test.cjs"/>
+	<testcase name="unmatched search produces no rows and no pagination without mutating input" time="0.150389" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="shrinking results clamps a later page to the last available page" time="0.036986" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="numeric column sorting covers the entire result before pagination and toggles direction" time="0.020011" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="changing a column resets pagination and starts ascending" time="0.017139" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="search trims whitespace, ignores case, and resets pagination" time="0.052300" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<!-- tests 21 -->
+	<!-- suites 0 -->
+	<!-- pass 21 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 869.7355 -->
+</testsuites>

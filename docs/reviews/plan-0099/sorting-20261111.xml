@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="campaign sort HTTP denial is surfaced without retries or synthetic results" time="0.049122" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\api-client\test\plan0099-sort.test.cjs"/>
+	<testcase name="typed campaign sorts preserve filters and pagination on the versioned request" time="0.271668" classname="test" file="C:\laragon\www\crimfig.com\frontend\shared\api-client\test\plan0099-sort.test.cjs"/>
+	<testcase name="invalid URL sorts fall back safely and actions are never sortable" time="0.004993" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-list-sort.test.cjs"/>
+	<testcase name="each data column toggles ascending and descending and restores from URL" time="0.001218" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-list-sort.test.cjs"/>
+	<testcase name="all selector options match the generated API sort contract" time="0.023942" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-list-sort.test.cjs"/>
+	<testcase name="campaign list return path retains its query and rejects external or unrelated routes" time="0.002908" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-navigation.test.cjs"/>
+	<testcase name="campaign detail links safely carry the validated list return path" time="0.000631" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-navigation.test.cjs"/>
+	<testcase name="invalid return destinations are not propagated into detail links" time="0.002314" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-navigation.test.cjs"/>
+	<testcase name="only eligible and observed readiness checks are treated as passing" time="0.002063" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-readiness.test.cjs"/>
+	<testcase name="empty or unresolved readiness results never claim that all checks pass" time="0.002934" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-readiness.test.cjs"/>
+	<testcase name="successful checks are counted, while blocking checks take precedence in the summary" time="0.000380" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-readiness.test.cjs"/>
+	<testcase name="missing or unrelated moderation does not invent a review status" time="0.002042" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-status.test.cjs"/>
+	<testcase name="pending review rows match the API review category instead of claiming paused or active" time="0.000401" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-status.test.cjs"/>
+	<testcase name="approved active and paused campaigns retain their delivery labels" time="0.000291" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-status.test.cjs"/>
+	<testcase name="unmatched search produces no rows and no pagination without mutating input" time="0.237296" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="shrinking results clamps a later page to the last available page" time="0.052181" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="numeric column sorting covers the entire result before pagination and toggles direction" time="0.045896" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="changing a column resets pagination and starts ascending" time="0.039264" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<testcase name="search trims whitespace, ignores case, and resets pagination" time="0.060879" classname="test" file="C:\laragon\www\crimfig.com\frontend\web\ads\test\plan0099-table.test.cjs"/>
+	<!-- tests 19 -->
+	<!-- suites 0 -->
+	<!-- pass 19 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 1918.4327 -->
+</testsuites>
