@@ -56,13 +56,13 @@ export function LandingPage({ onLaunchConsole }: LandingPageProps) {
       <MarketingReveal>
         <section className="cf-ads-hero">
           <Image src="/img/marketing/creator-hero.webp" alt="Smiling creator filming with a phone and ring light" fill sizes="100vw" priority />
-          <h1>Make your mark.</h1>
+          <h1>Advertise with precision.</h1>
         </section>
 
         <section id="what-we-do" className="cf-marketing-section cf-marketing-section--surface">
           <div className="cf-marketing-frame" data-ads-reveal>
             <div className="cf-marketing-copy">
-              <h2>Your Ads Performance first.</h2>
+              <h2>Performance That Delivers.</h2>
               <p>See how your ads perform and where your budget goes.</p>
               <div className="cf-marketing-actions">
                 <Button onClick={() => onLaunchConsole('advertiser')}>Start advertising</Button>
@@ -75,7 +75,7 @@ export function LandingPage({ onLaunchConsole }: LandingPageProps) {
         <section id="partners" className="cf-marketing-section">
           <div className="cf-marketing-frame" data-ads-reveal>
             <div className="cf-marketing-copy">
-              <h2>Be a Promoter.</h2>
+              <h2>Join the promoter network.</h2>
               <p>Place ads on your site or share tracked links with your audience.</p>
               <div className="cf-marketing-actions">
                 <Button variant="outline" onClick={() => onLaunchConsole('promoter')}>Open Promoter Hub</Button>
