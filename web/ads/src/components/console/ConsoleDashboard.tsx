@@ -116,7 +116,7 @@ export function ConsoleDashboard({
       if (active) { setSummary(result.summary); setTimeseries(result.timeseries); setChannelData(result.channels); setAlerts(result.alerts); }
     }).catch(err => { if (active) setError(err instanceof Error ? err.message : 'Analytics unavailable.'); })
       .finally(() => { if (active) setIsLoading(false); });
-  return () => { active = false; };
+    return () => { active = false; };
   }, [period, attempt]);
 
   // Compute SVG coordinates for the area chart
@@ -330,9 +330,6 @@ export function ConsoleDashboard({
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
               ${(summary.financials.netSettledSpendUsd ?? summary.financials.totalSpentUsd).toFixed(2)}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Authoritative net settled spend ({period})
-            </div>
           </CardContent>
         </Card>
 
@@ -348,9 +345,6 @@ export function ConsoleDashboard({
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
               {summary.performance.impressions.toLocaleString()}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Valid impressions only
-            </div>
           </CardContent>
         </Card>
 
@@ -365,9 +359,6 @@ export function ConsoleDashboard({
           <CardContent style={{ padding: '0 24px 20px 24px' }}>
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', margin: '4px 0 4px' }}>
               {(summary.performance.validClicks ?? 0).toLocaleString()}
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Finally valid clicks only
             </div>
           </CardContent>
         </Card>
@@ -439,209 +430,209 @@ export function ConsoleDashboard({
           </Card>
         </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-        {/* Left: Engagement Area Chart */}
-        <Card style={{ gridColumn: 'span 2' }}>
-          <CardHeader style={{ padding: '24px 28px 20px 28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
-                  Engagement Timeseries
-                </CardTitle>
-                <CardDescription style={{ fontSize: '12px', margin: 0 }}>
-                  Daily recorded impression volume and interaction pacing ({period.toUpperCase()})
-                </CardDescription>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', fontWeight: 600 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-crimson)' }} />
-                  <span>Impressions</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+          {/* Left: Engagement Area Chart */}
+          <Card style={{ gridColumn: 'span 2' }}>
+            <CardHeader style={{ padding: '24px 28px 20px 28px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
+                    Engagement Timeseries
+                  </CardTitle>
+                  <CardDescription style={{ fontSize: '12px', margin: 0 }}>
+                    Daily recorded impression volume and interaction pacing ({period.toUpperCase()})
+                  </CardDescription>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-fig-dark)' }} />
-                  <span>Estimated spend ($)</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', fontWeight: 600 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-crimson)' }} />
+                    <span>Impressions</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-fig-dark)' }} />
+                    <span>Estimated spend ($)</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent style={{ padding: '0 28px 28px 28px' }}>
+            </CardHeader>
+            <CardContent style={{ padding: '0 28px 28px 28px' }}>
 
 
-          {/* SVG Smooth Curve Area Chart */}
-          <div style={{ width: '100%', overflowX: 'auto' }}>
-            <svg
-              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-              style={{ width: '100%', height: '180px', overflow: 'visible' }}
-            >
-              <defs>
-                <linearGradient id="crimsonAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D4143A" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#D4143A" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
+              {/* SVG Smooth Curve Area Chart */}
+              <div style={{ width: '100%', overflowX: 'auto' }}>
+                <svg
+                  viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                  style={{ width: '100%', height: '180px', overflow: 'visible' }}
+                >
+                  <defs>
+                    <linearGradient id="crimsonAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#D4143A" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#D4143A" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
 
-              {/* Grid guide lines */}
-              <line x1="0" y1={chartHeight * 0.25} x2={chartWidth} y2={chartHeight * 0.25} stroke="var(--border-subtle)" strokeDasharray="4 4" />
-              <line x1="0" y1={chartHeight * 0.5} x2={chartWidth} y2={chartHeight * 0.5} stroke="var(--border-subtle)" strokeDasharray="4 4" />
-              <line x1="0" y1={chartHeight * 0.75} x2={chartWidth} y2={chartHeight * 0.75} stroke="var(--border-subtle)" strokeDasharray="4 4" />
+                  {/* Grid guide lines */}
+                  <line x1="0" y1={chartHeight * 0.25} x2={chartWidth} y2={chartHeight * 0.25} stroke="var(--border-subtle)" strokeDasharray="4 4" />
+                  <line x1="0" y1={chartHeight * 0.5} x2={chartWidth} y2={chartHeight * 0.5} stroke="var(--border-subtle)" strokeDasharray="4 4" />
+                  <line x1="0" y1={chartHeight * 0.75} x2={chartWidth} y2={chartHeight * 0.75} stroke="var(--border-subtle)" strokeDasharray="4 4" />
 
-              {/* Shaded Area */}
-              <polygon points={areaString} fill="url(#crimsonAreaGrad)" />
+                  {/* Shaded Area */}
+                  <polygon points={areaString} fill="url(#crimsonAreaGrad)" />
 
-              {/* Top Trend Line */}
-              <polyline
-                points={pointsString}
-                fill="none"
-                stroke="var(--color-crimson)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              {/* Data points dots */}
-              {timeseries.filter((_, i) => i % (period === '90d' ? 6 : 2) === 0).map((pt, idx) => {
-                const x = (timeseries.indexOf(pt) / (timeseries.length - 1 || 1)) * chartWidth;
-                const y = chartHeight - (pt.impressions / maxImp) * (chartHeight - 20) - 10;
-                return (
-                  <circle
-                    key={idx}
-                    cx={x}
-                    cy={y}
-                    r="4"
-                    fill="#FFFFFF"
+                  {/* Top Trend Line */}
+                  <polyline
+                    points={pointsString}
+                    fill="none"
                     stroke="var(--color-crimson)"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
-                );
-              })}
-            </svg>
-          </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-            <span>{timeseries[0]?.date}</span>
-            <span>{timeseries[Math.floor(timeseries.length / 2)]?.date}</span>
-            <span>{timeseries[timeseries.length - 1]?.date}</span>
-          </div>
-          </CardContent>
-        </Card>
+                  {/* Data points dots */}
+                  {timeseries.filter((_, i) => i % (period === '90d' ? 6 : 2) === 0).map((pt, idx) => {
+                    const x = (timeseries.indexOf(pt) / (timeseries.length - 1 || 1)) * chartWidth;
+                    const y = chartHeight - (pt.impressions / maxImp) * (chartHeight - 20) - 10;
+                    return (
+                      <circle
+                        key={idx}
+                        cx={x}
+                        cy={y}
+                        r="4"
+                        fill="#FFFFFF"
+                        stroke="var(--color-crimson)"
+                        strokeWidth="2"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
 
-        {/* Right: Channel Breakdown */}
-        <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <CardHeader style={{ padding: '24px 28px 12px 28px' }}>
-            <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
-              Channel Attribution
-            </CardTitle>
-            <CardDescription style={{ fontSize: '12px', margin: 0 }}>
-              Audience acquisition distribution across network surfaces
-            </CardDescription>
-          </CardHeader>
-          <CardContent style={{ padding: '0 28px 24px 28px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {channelData.map((ch, idx) => (
-                <div key={idx}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                    <span style={{ color: 'var(--text-primary)' }}>{ch.channel}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                <span>{timeseries[0]?.date}</span>
+                <span>{timeseries[Math.floor(timeseries.length / 2)]?.date}</span>
+                <span>{timeseries[timeseries.length - 1]?.date}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-                    <span style={{ color: 'var(--color-crimson)' }}>{ch.percentage}%</span>
+          {/* Right: Channel Breakdown */}
+          <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <CardHeader style={{ padding: '24px 28px 12px 28px' }}>
+              <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
+                Channel Attribution
+              </CardTitle>
+              <CardDescription style={{ fontSize: '12px', margin: 0 }}>
+                Audience acquisition distribution across network surfaces
+              </CardDescription>
+            </CardHeader>
+            <CardContent style={{ padding: '0 28px 24px 28px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {channelData.map((ch, idx) => (
+                  <div key={idx}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                      <span style={{ color: 'var(--text-primary)' }}>{ch.channel}</span>
+
+                      <span style={{ color: 'var(--color-crimson)' }}>{ch.percentage}%</span>
+                    </div>
+                    <div style={{ height: '8px', borderRadius: '9999px', backgroundColor: 'var(--badge-bg)', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${ch.percentage}%`,
+                          backgroundColor: idx === 0 ? 'var(--color-crimson)' : idx === 1 ? 'var(--color-fig-dark)' : '#3B82F6',
+                          borderRadius: '9999px',
+                        }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      <span>{ch.impressions.toLocaleString()} views</span>
+                      <span>{ch.clicks.toLocaleString()} clicks</span>
+                    </div>
                   </div>
-                  <div style={{ height: '8px', borderRadius: '9999px', backgroundColor: 'var(--badge-bg)', overflow: 'hidden' }}>
-                    <div
-                      style={{
-                        height: '100%',
-                        width: `${ch.percentage}%`,
-                        backgroundColor: idx === 0 ? 'var(--color-crimson)' : idx === 1 ? 'var(--color-fig-dark)' : '#3B82F6',
-                        borderRadius: '9999px',
-                      }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    <span>{ch.impressions.toLocaleString()} views</span>
-                    <span>{ch.clicks.toLocaleString()} clicks</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
+                ))}
+              </div>
+            </CardContent>
 
 
-        </Card>
-      </div>
+          </Card>
+        </div>
 
 
-      {/* ──────────────────────────────────────────────────────────────────────────
+        {/* ──────────────────────────────────────────────────────────────────────────
           5. QUICK ACTIONS & STATUS DIRECTORY
           ────────────────────────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px',
-        }}
-      >
-        <Card
+        <div
           style={{
-            padding: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '20px',
           }}
-          onClick={() => onNavigateToCampaigns()}
         >
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Manage Campaigns</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              View performance tables, pause, or update creatives
+          <Card
+            style={{
+              padding: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            onClick={() => onNavigateToCampaigns()}
+          >
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Manage Campaigns</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                View performance tables, pause, or update creatives
+              </div>
             </div>
-          </div>
-          <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-        </Card>
+            <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+          </Card>
 
-        <Card
-          style={{
-            padding: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          onClick={() => onNavigateToPromoterHub('websites')}
-        >
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Promoter Channels</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              Website embed codes, Mobile SDKs & Reels consent
+          <Card
+            style={{
+              padding: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            onClick={() => onNavigateToPromoterHub('websites')}
+          >
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Promoter Channels</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Website embed codes, Mobile SDKs & Reels consent
+              </div>
             </div>
-          </div>
-          <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-        </Card>
+            <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+          </Card>
 
-        <Card
-          style={{
-            padding: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          onClick={() => onNavigateToPromoterHub('marketplace')}
-        >
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Ad Marketplace</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-               Browse active sponsor campaigns by category
+          <Card
+            style={{
+              padding: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            onClick={() => onNavigateToPromoterHub('marketplace')}
+          >
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)' }}>Ad Marketplace</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Browse active sponsor campaigns by category
+              </div>
             </div>
-          </div>
-          <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-        </Card>
-      </div>
+            <ChevronRight style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+          </Card>
+        </div>
 
 
-      {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
-      <AdvertiserMilestonesCard />
+        {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
+        <AdvertiserMilestonesCard />
       </section>
     </div>
   );
