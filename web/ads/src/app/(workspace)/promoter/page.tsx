@@ -1,13 +1,7 @@
 'use client';
 
-import { PromoterWebsitesView } from '../../../components/console/promoter/PromoterWebsitesView';
+import { PromoterDashboard } from '../../../components/console/promoter/PromoterDashboard';
 
 export default function PromoterOverviewPage() {
-  return (
-    <>
-      <>
-        <PromoterWebsitesView />
-      </>
-    </>
-  );
+  return <PromoterDashboard />;
 }

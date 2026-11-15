@@ -43,6 +43,7 @@ interface DashboardSummary {
   financials: {
     totalBudgetUsd: number;
     totalSpentUsd: number;
+    netSettledSpendUsd?: number;
     remainingBudgetUsd: number;
   };
   performance: {
@@ -308,40 +309,38 @@ export function ConsoleDashboard({
       )}
 
       {/* ──────────────────────────────────────────────────────────────────────────
-          3. PRIMARY KPI SUMMARY CARDS (shadcn/ui Enhanced)
+          3. PRIMARY KPI SUMMARY CARDS (3 Headline Metrics)
           ────────────────────────────────────────────────────────────────────────── */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
           gap: '20px',
         }}
       >
-        {/* Card 1: Campaign budget used (lifetime) */}
+        {/* Card 1: Ad Spend */}
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Campaign budget used (lifetime)</span>
-              <Badge variant="secondary" style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
-                Lifetime
-              </Badge>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Ad Spend</span>
+              <DollarSign style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
           <CardContent style={{ padding: '0 24px 20px 24px' }}>
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
-              ${summary.financials.totalSpentUsd.toFixed(2)}
+              ${(summary.financials.netSettledSpendUsd ?? summary.financials.totalSpentUsd).toFixed(2)}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Remaining campaign budget: <strong style={{ color: 'var(--color-success)' }}>${summary.financials.remainingBudgetUsd.toFixed(2)}</strong>
+              Authoritative net settled spend ({period})
             </div>
           </CardContent>
         </Card>
 
-        {/* Card 2: Impressions / Views */}
+        {/* Card 2: Impressions (Valid only) */}
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Recorded Impressions</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Impressions</span>
               <Eye style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
@@ -350,58 +349,97 @@ export function ConsoleDashboard({
               {summary.performance.impressions.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Budget-based CPM: <strong>{summary.performance.impressions > 0 ? `$${summary.performance.avgCpmUsd.toFixed(2)} USD` : 'Unavailable'}</strong>
+              Valid impressions only
             </div>
           </CardContent>
         </Card>
 
-        {/* Card 3: Clicks & CTR */}
+        {/* Card 3: Clicks (Finally valid only) */}
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Observed clicks</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Clicks</span>
               <MousePointer style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
           <CardContent style={{ padding: '0 24px 20px 24px' }}>
             <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', margin: '4px 0 4px' }}>
-              {summary.performance.clicks.toLocaleString()}
-            </div>
-            {summary.performance.validClicks != null && summary.performance.billedClicks != null && (
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                {summary.performance.validClicks.toLocaleString()} valid · {summary.performance.billedClicks.toLocaleString()} billed
-              </div>
-            )}
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Observed CTR: <strong>{summary.performance.impressions > 0 ? `${summary.performance.ctr.toFixed(2)}%` : 'Unavailable'}</strong> · Budget-based CPC: {(summary.performance.billedClicks ?? 0) > 0 ? `$${summary.performance.avgCpcUsd.toFixed(2)}` : 'Unavailable'}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 4: Hovers & Touches (Granular Attribution) */}
-        <Card>
-          <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Hovers & Touches</span>
-              <Hand style={{ width: 16, height: 16, color: '#3B82F6' }} />
-            </div>
-          </CardHeader>
-          <CardContent style={{ padding: '0 24px 20px 24px' }}>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
-              {(summary.performance.hovers + summary.performance.touches).toLocaleString()}
+              {(summary.performance.validClicks ?? 0).toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {summary.performance.hovers.toLocaleString()} Desktop • {summary.performance.touches.toLocaleString()} Mobile Touch
+              Finally valid clicks only
             </div>
           </CardContent>
         </Card>
       </div>
 
-
       {/* ──────────────────────────────────────────────────────────────────────────
-          4. TIMESERIES AREA CHART & CHANNEL BREAKDOWN (shadcn/ui Enhanced)
+          4. ADDITIONAL DETAILS (Supporting Metrics, Timeseries & Breakdowns)
           ────────────────────────────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+      <section aria-label="Additional Details" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Additional Details
+          </h2>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            Budget balances, observed vs. billed events, rates, and engagement breakdowns
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          <Card>
+            <CardContent style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Remaining Campaign Budget</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+                ${summary.financials.remainingBudgetUsd.toFixed(2)}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                of ${summary.financials.totalBudgetUsd.toFixed(2)} allocated
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Observed &amp; Billed Clicks</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+                {summary.performance.clicks.toLocaleString()} observed
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                {(summary.performance.billedClicks ?? 0).toLocaleString()} financially billed
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CTR / Avg CPC / Eff. CPM</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+                {summary.performance.impressions > 0 ? `${summary.performance.ctr.toFixed(2)}%` : 'Unavailable'}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                CPC: {(summary.performance.billedClicks ?? 0) > 0 ? `$${summary.performance.avgCpcUsd.toFixed(2)}` : 'Unavailable'} · CPM: {summary.performance.impressions > 0 ? `$${summary.performance.avgCpmUsd.toFixed(2)}` : 'Unavailable'}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Hovers, Touches &amp; Campaigns</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
+                {(summary.performance.hovers + summary.performance.touches).toLocaleString()} interactions
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                {summary.campaignCounts.active} active · {summary.campaignCounts.paused} paused · {summary.campaignCounts.underReview} review
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
         {/* Left: Engagement Area Chart */}
         <Card style={{ gridColumn: 'span 2' }}>
           <CardHeader style={{ padding: '24px 28px 20px 28px' }}>
@@ -604,6 +642,7 @@ export function ConsoleDashboard({
 
       {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
       <AdvertiserMilestonesCard />
+      </section>
     </div>
   );
 }

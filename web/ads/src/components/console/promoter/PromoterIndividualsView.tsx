@@ -76,6 +76,19 @@ export function PromoterIndividualsView() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Plain-Language Affiliate Terms & Governance Gate */}
+      <div className="theme-card" style={{ padding: '20px 24px', background: 'var(--bg-surface)', borderLeft: '4px solid var(--color-crimson)' }}>
+        <h2 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          Affiliate &amp; Creator Link Rules
+        </h2>
+        <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          Only verified, non-duplicate, human interactions count toward earnings. Approved promoter earnings undergo a standard <strong>72-hour clearance hold</strong> before becoming withdrawable.
+        </p>
+        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
+          Affiliate Links V2 new link issuance and unapproved CPC/CPA/commission rates are currently gated and disabled until governance approval is activated. Existing approved placements remain listed below.
+        </p>
+      </div>
+
       {/* Reels Sync Card */}
       <div className="theme-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>

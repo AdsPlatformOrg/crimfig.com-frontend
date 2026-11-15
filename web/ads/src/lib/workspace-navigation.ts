@@ -29,11 +29,11 @@ export function workspaceNavigation(
   // Advertiser Nav Groups
   const advertiserNavGroups: NavGroup[] = [
     {
-      title: "Campaign Management",
+      title: "Ads Console",
       items: [
         {
-          id: "overview_dash",
-          label: "Overview Dashboard",
+          id: "dashboard",
+          label: "Dashboard",
           icon: BarChart3,
           href: "/dashboard",
         },
@@ -42,12 +42,6 @@ export function workspaceNavigation(
           label: "My Ad Campaigns",
           icon: Layers,
           href: "/campaigns",
-        },
-        {
-          id: "new_campaign",
-          label: "Create Campaign",
-          icon: Plus,
-          href: "/campaigns/new",
         },
       ],
     },
@@ -103,50 +97,79 @@ export function workspaceNavigation(
 
   // Promoter Nav Groups
   const promoterNavGroups: NavGroup[] = [
-    { title: "Performance", items: [{ id: "promoter_reports", label: "Earnings report", icon: BarChart3, href: "/reports?workspace=promoter" }] },
-    {title:"Promotional rewards",items:[{id:"promoter_cfig",label:"Virtual $cfig",icon:Sparkles,href:"/promoter/rewards"}]},
     {
-      title: "Websites & Delivery",
+      title: "Promoter Hub",
       items: [
         {
-          id: "websites",
-          label: "Websites",
-          icon: Globe,
-          href: "/promoter/websites",
-        },
-        {
-          id: "slots",
-          label: "CrimFig Ads Slots",
-          icon: Layers,
-          href: "/promoter/slots",
+          id: "promoter_dashboard",
+          label: "Dashboard",
+          icon: BarChart3,
+          href: "/promoter",
         },
       ],
     },
     {
-      title: "Direct Advertising",
+      title: "CrimFig Ad Network",
+      items: [
+        {
+          id: "ad_network_dashboard",
+          label: "Dashboard",
+          icon: Globe,
+          href: "/promoter/ad-network",
+        },
+        {
+          id: "ad_network_get_started",
+          label: "Get Started",
+          icon: Sparkles,
+          children: [
+            {
+              id: "ad_network_overview_guide",
+              label: "Setup Guide",
+              icon: Sparkles,
+              href: "/promoter/ad-network/get-started",
+            },
+            {
+              id: "websites",
+              label: "On Website",
+              icon: Globe,
+              href: "/promoter/websites",
+            },
+            {
+              id: "mobile_apps",
+              label: "On Mobile App",
+              icon: Smartphone,
+              href: "/promoter/mobile-apps",
+            },
+            {
+              id: "individuals",
+              label: "Affiliate Link",
+              icon: Share2,
+              href: "/promoter/individuals",
+            },
+          ],
+        },
+        {
+          id: "promoter_reports",
+          label: "Reports",
+          icon: BarChart3,
+          href: "/reports?workspace=promoter",
+        },
+      ],
+    },
+    {
+      title: "AdStation",
       items: [
         {
           id: "adstation",
-          label: "AdStation Direct Ads",
+          label: "Dashboard",
           icon: Share2,
           href: "/promoter/adstation",
         },
-      ],
-    },
-    {
-      title: "Distribution Channels",
-      items: [
         {
-          id: "individuals",
-          label: "Links & Reels Social",
-          icon: Share2,
-          href: "/promoter/individuals",
-        },
-        {
-          id: "mobile_apps",
-          label: "Mobile Apps SDK",
-          icon: Smartphone,
-          href: "/promoter/mobile-apps",
+          id: "adstation_setup",
+          label: "Setup a Direct Ad Slot",
+          icon: Plus,
+          href: "/promoter/adstation/setup",
         },
       ],
     },
@@ -164,6 +187,12 @@ export function workspaceNavigation(
           label: "Quality & Trust Score",
           icon: ShieldCheck,
           href: "/promoter/quality",
+        },
+        {
+          id: "promoter_cfig",
+          label: "Virtual $cfig",
+          icon: Sparkles,
+          href: "/promoter/rewards",
         },
       ],
     },
@@ -318,13 +347,15 @@ export function resolveWorkspaceContext(
       return href && (path === href || path.startsWith(href + "/"));
     })
     .sort((a, b) => (b.href?.length || 0) - (a.href?.length || 0))[0];
+  if (role === "promoter" && path === "/promoter/slots")
+    return [role, "websites"];
   return [
     role,
     selected?.id ||
       (role === "admin"
         ? "admin_overview"
         : role === "promoter"
-          ? "websites"
-          : "overview_dash"),
+          ? "promoter_dashboard"
+          : "dashboard"),
   ];
 }

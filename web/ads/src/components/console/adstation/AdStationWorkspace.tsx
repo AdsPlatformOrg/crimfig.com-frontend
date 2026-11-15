@@ -26,12 +26,27 @@ interface AdstationSlot {
   name: string;
   slotType: 'consideration' | 'direct' | 'network' | 'hybrid';
   format: string;
+  lifecycleStatus?: string;
   isConsiderationSlot: boolean;
   isConsiderationVerified: boolean;
   slotTagId: string;
   slotDeliveryPreference?: string;
   isActive: boolean;
   createdAt: string;
+  adstationReadiness?: {
+    networkActiveOnWebsite: boolean;
+    manualReviewApprovedOnCurrentRevision: boolean;
+    liveEligible: boolean;
+    displayStatus:
+      | 'Draft'
+      | 'Published — Pending Review'
+      | 'Approved — Network Not Active'
+      | 'Ready to Go Live'
+      | 'Live'
+      | 'Paused'
+      | 'Rejected';
+    blockerReasons: string[];
+  };
 }
 
 interface DirectCampaign {
@@ -119,6 +134,42 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
       }
     } catch {
       setNotification({ type: 'error', message: 'Network error verifying slot.' });
+    }
+  };
+
+  const handleSubmitDirectReview = async (slotId: string) => {
+    try {
+      const res = await sessionFetch(`/api/v1/adstation/slots/${slotId}/submit-review`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotification({ type: 'success', message: 'Direct Ad Slot submitted for manual review.' });
+        loadSlots();
+      } else {
+        setNotification({ type: 'error', message: data.message || 'Failed to submit for review.' });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Network error submitting slot for review.' });
+    }
+  };
+
+  const handleGoLiveDirectSlot = async (slotId: string) => {
+    try {
+      const res = await sessionFetch(`/api/v1/publisher/slots/${slotId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lifecycleStatus: 'active' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotification({ type: 'success', message: 'Direct Ad Slot is now Live!' });
+        loadSlots();
+      } else {
+        setNotification({ type: 'error', message: data.message || 'Slot cannot go live yet.' });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Network error activating direct slot.' });
     }
   };
 
@@ -254,9 +305,16 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
       {/* Slots Tab */}
       {activeTab === 'slots' && (
         <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Configured Website Slots</h3>
-            <a className="text-sm underline" href="/promoter/slots">Manage CrimFig Ads Slots</a>
+            <div className="flex items-center gap-3">
+              <a className="text-sm underline" href="/promoter/adstation/setup">+ Setup a Direct Ad Slot</a>
+              <a className="text-sm underline" href="/promoter/websites">Manage CrimFig Ad Network Slots</a>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/20 text-xs text-amber-900 dark:text-amber-200">
+            <strong>Direct Ad Slot LIVE Requirements:</strong> A Direct Ad Slot can only go <strong>Live</strong> when <strong>both</strong> (1) an active, verified CrimFig Ad Network integration is operational on this same website, and (2) manual review approval is granted on the current revision.
           </div>
 
           {slots.length === 0 ? (
@@ -292,12 +350,58 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
                         <ShieldCheck className="w-3 h-3" />
                         {slot.isConsiderationVerified ? 'Consideration Verified' : 'Consideration Pending'}
                       </span>
+                    ) : slot.slotType === 'direct' && slot.adstationReadiness ? (
+                      <span
+                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${
+                          slot.adstationReadiness.displayStatus === 'Live'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400'
+                            : slot.adstationReadiness.displayStatus === 'Rejected'
+                              ? 'bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400'
+                              : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400'
+                        }`}
+                      >
+                        {slot.adstationReadiness.displayStatus}
+                      </span>
                     ) : (
                       <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 capitalize">
                         {slot.slotType} Slot
                       </span>
                     )}
                   </div>
+
+                  {slot.slotType === 'direct' && slot.adstationReadiness && (
+                    <div className="text-[11px] space-y-1 p-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <span>Same-Website Ad Network:</span>
+                        <strong>{slot.adstationReadiness.networkActiveOnWebsite ? 'Active' : 'Not Active'}</strong>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Manual Review (Current Revision):</span>
+                        <strong>{slot.adstationReadiness.manualReviewApprovedOnCurrentRevision ? 'Approved' : 'Pending / Required'}</strong>
+                      </div>
+                      {slot.adstationReadiness.blockerReasons.length > 0 && (
+                        <p className="text-amber-700 dark:text-amber-300 pt-1">
+                          {slot.adstationReadiness.blockerReasons.join(' ')}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 pt-1.5">
+                        {!slot.adstationReadiness.manualReviewApprovedOnCurrentRevision && (
+                          <Button size="sm" variant="outline" onClick={() => void handleSubmitDirectReview(slot.id)}>
+                            Submit for Review
+                          </Button>
+                        )}
+                        {slot.adstationReadiness.displayStatus !== 'Live' && (
+                          <Button
+                            size="sm"
+                            disabled={!slot.adstationReadiness.liveEligible}
+                            onClick={() => void handleGoLiveDirectSlot(slot.id)}
+                          >
+                            Go Live
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
                     <span className="font-mono text-[11px] truncate mr-2">{slot.slotTagId}</span>

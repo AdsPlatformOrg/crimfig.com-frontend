@@ -13,15 +13,17 @@ import {
 } from "../lib/workspace-navigation";
 import { Suspense } from "react";
 
-function WorkspaceLoading({ dashboard = false }: { dashboard?: boolean }) {
+function WorkspaceLoading({ cardCount = 0 }: { cardCount?: number }) {
   return (
     <div className={styles.loading}>
       <span role="status" className={styles.announcement}>Loading workspace…</span>
       <div aria-hidden="true" className={styles.placeholder}>
         <div className={styles.heading} />
-        {dashboard && (
+        {cardCount > 0 && (
           <div className={styles.cards}>
-            {[0, 1, 2, 3].map((card) => <div key={card} className={styles.card} />)}
+            {Array.from({ length: cardCount }, (_, card) => (
+              <div key={card} className={styles.card} />
+            ))}
           </div>
         )}
         <div className={styles.chart} />
@@ -61,10 +63,11 @@ function WorkspaceContent({ children }: { children: ReactNode }) {
       {content}
     </AdsConsoleShell>
   );
+  const skeletonCards = pathname === "/dashboard" ? 3 : pathname === "/promoter" ? 4 : 0;
   return (
     <SessionGate
       loadingShell={showPublicShell
-        ? renderPendingShell(<WorkspaceLoading dashboard={pathname === "/dashboard"} />)
+        ? renderPendingShell(<WorkspaceLoading cardCount={skeletonCards} />)
         : <WorkspaceLoading />}
       recoveryShell={showPublicShell ? renderPendingShell : undefined}
     >

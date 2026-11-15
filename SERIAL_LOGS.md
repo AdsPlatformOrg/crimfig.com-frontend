@@ -2,6 +2,10 @@
 
 Prior historical entries up to 2026-11-03 are archived in `frontend/SERIAL_LOGS_ARCHIVE_20261103.md`.
 
+## 2026-11-15 - PLAN-0115 Workspace Navigation Alignment, Compact Sidebar & Dashboards
+
+Updated `workspace-navigation.ts`, `DashboardSidebar.tsx`, and `ProtectedWorkspace.tsx` to align **Advertiser Studio** (`Ads Console` -> `Dashboard`, `My Ad Campaigns`; removed `Create Campaign` from sidebar) and **Promoter Hub** (`Dashboard`, `CrimFig Ad Network` -> `Dashboard`, `Get Started` [`Setup Guide`, `On Website`, `On Mobile App`, `Affiliate Link`], `Reports`; `AdStation` -> `Dashboard`, `Setup a Direct Ad Slot`) with compact desktop sizing (`12px` items, `12px`/`2px` gaps, `34px` desktop / `44px` mobile touch targets). Updated `ConsoleDashboard.tsx` to 3 headline KPI cards (`Ad Spend`, valid `Impressions`, finally valid `Clicks`) with supporting metrics under `Additional Details`; replaced `/promoter` landing with 4-card `PromoterDashboard.tsx`; added `/promoter/ad-network`, `/promoter/ad-network/get-started`, and `/promoter/adstation/setup`; updated `AdStationWorkspace.tsx` and `PromoterIndividualsView.tsx` for explicit gating & lifecycle statuses. Verification: `tsc --noEmit` (0 errors), `node --test web/ads/test/*.test.cjs` (41/41 passed).
+
 ## 2026-11-06 - PLAN-0096 recorded candidate evaluation
 
 Added safe recorded device/provenance, attempted paid policy, stage counts and rejection details to the auction inspector. House fallback policy is separately labeled and legacy missing data stays unknown. Real React server-rendered component/contract tests consume portable snapshots from the actual isolated backend runs. Seven component/contract/pricing checks passed. Visual testing and deployment remain deferred. Evidence is in workspace docs/reviews/plan-0096/frontend-tests.xml.
