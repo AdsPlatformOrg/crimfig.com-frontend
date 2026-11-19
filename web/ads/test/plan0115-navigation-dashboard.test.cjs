@@ -55,7 +55,8 @@ test('Advertiser Studio uses Ads Console nomenclature with Dashboard and My Ad C
   assert.ok(adsConsole, 'Ads Console group should exist');
   assert.deepEqual(
     Array.from(adsConsole.items, (i) => i.label),
-    ['Dashboard', 'My Ad Campaigns', 'Advertiser Rewards'],
+    ['Dashboard', 'My Ad Campaigns', 'Advertiser Rewards', 'Reports', 'Conversion Tracking',
+      'Invalid Traffic Audits', 'Billing & Wallet', 'User Profile', 'Settings', 'Notifications', 'Help & Support'],
   );
 
   assert.deepEqual(Array.from(resolveWorkspaceContext('/dashboard')), ['advertiser', 'dashboard']);
@@ -98,10 +99,10 @@ test('Promoter Hub hierarchy contains Dashboard, CrimFig Ad Network, and AdStati
   assert.deepEqual(Array.from(resolveWorkspaceContext('/promoter/adstation/setup')), ['promoter', 'adstation_setup']);
 });
 
-test('Advertiser navigation has one heading and one Billing & Wallet entry', () => {
+test('Advertiser navigation uses one group with regular spacing and one Billing & Wallet entry', () => {
   const { workspaceNavigation } = loadWorkspaceNavigation();
   const groups = workspaceNavigation('advertiser');
-  assert.deepEqual(Array.from(groups, group => group.title).filter(Boolean), ['Ads Console']);
+  assert.deepEqual(Array.from(groups, group => group.title), ['Ads Console']);
   const billing = groups.flatMap(group => group.items).filter(item => item.href === '/billing');
   assert.equal(billing.length, 1);
   assert.equal(billing[0].label, 'Billing & Wallet');

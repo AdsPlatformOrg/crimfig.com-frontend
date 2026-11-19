@@ -50,11 +50,6 @@ export function workspaceNavigation(
           icon: Trophy,
           href: "/advertiser/rewards",
         },
-      ],
-    },
-    {
-      title: "",
-      items: [
         { id: "reports", label: "Reports", icon: BarChart3, href: "/reports" },
         {
           id: "conversions",
@@ -68,11 +63,6 @@ export function workspaceNavigation(
           icon: ShieldCheck,
           href: "/disputes",
         },
-      ],
-    },
-    {
-      title: "",
-      items: [
         {
           id: "billing_escrow",
           label: "Billing & Wallet",
