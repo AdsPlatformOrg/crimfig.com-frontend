@@ -60,3 +60,4 @@ Restyled the Clicks count, simplified the dashboard details, and moved trophies 
 
 ## 2026-11-19 - PLAN-0117 advertiser sidebar and Ads wallet return
 Rebuilt Ads navigation with a shadcn Dialog drawer and desktop icon rail. Fund Wallet starts Billing in a separate tab. The Ads return is bound to the current funding reference and runs after Billing confirms it. Local Ads and Billing checks passed 72/72. See ../docs/reviews/plan-0117/local-verification.json for the simulated DOM and provider boundaries.
+2026-11-19 | PLAN-0118 | IN_PROGRESS | Implemented Ads wallet labels, owner-scoped campaign titles, authenticated recent history preview, and full-history navigation. Three focused frontend checks passed.

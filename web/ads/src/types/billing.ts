@@ -17,7 +17,7 @@ export interface WalletBalance {
 export interface EscrowAllocation {
   id: string;
   campaignId: string;
-  campaignTitle?: string;
+  campaignTitle?: string | null;
   allocatedUsd: number;
   consumedUsd: number;
   remainingUsd: number;

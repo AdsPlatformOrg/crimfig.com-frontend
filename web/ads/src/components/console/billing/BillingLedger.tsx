@@ -15,6 +15,7 @@ import {
   fetchBillingOverview,
 } from '../../../lib/billing-api';
 import { EscrowBreakdownDrawer } from './EscrowBreakdownDrawer';
+import { RecentBillingTransactions } from './RecentBillingTransactions';
 import { Card, Button } from '../../ui';
 
 export function BillingLedger() {
@@ -288,7 +289,7 @@ export function BillingLedger() {
             }}
           >
             <Lock style={{ width: 15, height: 15 }} />
-            <span>Campaign Escrows ({escrows.length})</span>
+            <span>Ads Campaign Escrows ({escrows.length})</span>
           </Button>
 
         </div>
@@ -296,9 +297,12 @@ export function BillingLedger() {
       </div>
 
       <Card style={{ padding: 20 }}>
-        <h2>Transaction history</h2>
+        <h2>Billing - Transaction History</h2>
         <p>View wallet deposits, charges and refunds in Billing.</p>
-        <Button type="button" variant="outline" onClick={openBilling}>Open Billing history</Button>
+        <RecentBillingTransactions />
+        <div className="tw:mt-4">
+          <Button type="button" variant="outline" onClick={() => window.location.assign(new URL('/transactions', billingBase).href)}>View All Transactions</Button>
+        </div>
       </Card>
 
       {/* Modals */}

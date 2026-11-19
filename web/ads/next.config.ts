@@ -1,4 +1,5 @@
 import { backendOrigin } from '../../shared/ui/backend-origin';
+import { billingBackends } from '../billing/src/lib/backend-origins';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -16,6 +17,10 @@ const nextConfig: NextConfig = {
     ].map(([source, path]) => ({ source, destination: `${backendUrl}${path}` })) : [];
 
     return [
+      {
+        source: '/api/v1/ads/billing/recent-transactions',
+        destination: billingBackends(process.env).billing + '/api/v1/transactions?limit=5',
+      },
       {
         source: '/api/v1/auth/:path*',
         destination: `${authUrl}/api/v1/auth/:path*`,

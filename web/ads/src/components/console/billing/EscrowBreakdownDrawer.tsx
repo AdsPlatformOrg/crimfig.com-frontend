@@ -72,7 +72,7 @@ export function EscrowBreakdownDrawer({
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                Campaign Escrow Ledger
+                Ads Campaign Escrows
               </h3>
               <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>
                 Locked advertiser budgets reserved for batch settlements
@@ -113,7 +113,7 @@ export function EscrowBreakdownDrawer({
           </div>
           <div>
             <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-              Consumed Burn
+              Spent
             </span>
             <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-crimson)' }}>
               ${totalConsumed.toFixed(2)}
@@ -121,7 +121,7 @@ export function EscrowBreakdownDrawer({
           </div>
           <div>
             <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-              Locked Remaining
+              Remaining
             </span>
             <span style={{ fontSize: '16px', fontWeight: 800, color: '#22c55e' }}>
               ${totalRemaining.toFixed(2)}
@@ -131,7 +131,7 @@ export function EscrowBreakdownDrawer({
 
         {/* Campaign Escrows List */}
         <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-          Active Campaign Reservations ({escrows.length})
+          Active Reservations ({escrows.length})
         </h4>
 
         {escrows.length === 0 ? (
@@ -161,8 +161,8 @@ export function EscrowBreakdownDrawer({
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <h5 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {e.campaignTitle || `Campaign ${e.campaignId.slice(0, 8)}`}
+                  <h5 style={{ margin: 0, minWidth: 0, overflowWrap: 'anywhere', marginRight: 8, fontSize: (e.campaignTitle?.length ?? 0) > 28 ? '12px' : '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {e.campaignTitle?.trim() ? `Campaign (${e.campaignTitle.trim()})` : 'Campaign'}
                   </h5>
                   <span
                     style={{
@@ -191,7 +191,7 @@ export function EscrowBreakdownDrawer({
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  <span>Consumed: ${e.consumedUsd.toFixed(2)} ({e.burnPercent}%)</span>
+                  <span>Spent: ${e.consumedUsd.toFixed(2)} ({e.burnPercent}%)</span>
                   <span>Remaining: <strong style={{ color: 'var(--text-primary)' }}>${e.remainingUsd.toFixed(2)}</strong></span>
                 </div>
 
