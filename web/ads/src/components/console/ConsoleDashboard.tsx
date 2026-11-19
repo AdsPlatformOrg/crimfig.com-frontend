@@ -20,7 +20,6 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
-import { AdvertiserMilestonesCard } from './AdvertiserMilestonesCard';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -29,13 +28,6 @@ interface DashboardSummary {
   period: string;
   startDate: string;
   endDate: string;
-  campaignCounts: {
-    total: number;
-    active: number;
-    paused: number;
-    underReview: number;
-    draft: number;
-  };
   creativeAlertCounts: {
     rejected: number;
     pendingReview: number;
@@ -48,14 +40,9 @@ interface DashboardSummary {
   };
   performance: {
     impressions: number;
-    clicks: number;
     validClicks?: number;
     billedClicks?: number;
-    hovers: number;
-    touches: number;
     ctr: number;
-    avgCpmUsd: number;
-    avgCpcUsd: number;
   };
 }
 
@@ -134,7 +121,7 @@ export function ConsoleDashboard({
 
   const areaString = `0,${chartHeight} ${pointsString} ${chartWidth},${chartHeight}`;
 
-  if (isLoading) return <div role="status" className="theme-card" style={{ padding: 24 }}>Loading account analytics…</div>;
+  if (isLoading) return <div role="status" className="theme-card" style={{ padding: 24 }}>Loading account analyticsâ€¦</div>;
   if (error || !summary) return <div role="alert" className="theme-card" style={{ padding: 24 }}>
     <p>{error || 'Account analytics unavailable.'}</p><Button type="button" onClick={() => setAttempt(value => value + 1)} variant="outline" size="sm">Retry analytics</Button>
   </div>;
@@ -142,9 +129,9 @@ export function ConsoleDashboard({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-      {/* ──────────────────────────────────────────────────────────────────────────
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           1. HEADER & WORKING TIMEFRAME FILTER BAR
-          ────────────────────────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div
         style={{
           display: 'flex',
@@ -240,9 +227,9 @@ export function ConsoleDashboard({
         </div>
       </div>
 
-      {/* ──────────────────────────────────────────────────────────────────────────
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           2. ACTIONABLE ALERTS STREAM
-          ────────────────────────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {alerts.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {alerts.map((alert) => (
@@ -308,9 +295,9 @@ export function ConsoleDashboard({
         </div>
       )}
 
-      {/* ──────────────────────────────────────────────────────────────────────────
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           3. PRIMARY KPI SUMMARY CARDS (3 Headline Metrics)
-          ────────────────────────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div
         style={{
           display: 'grid',
@@ -357,23 +344,23 @@ export function ConsoleDashboard({
             </div>
           </CardHeader>
           <CardContent style={{ padding: '0 24px 20px 24px' }}>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-crimson)', margin: '4px 0 4px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 4px' }}>
               {(summary.performance.validClicks ?? 0).toLocaleString()}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* ──────────────────────────────────────────────────────────────────────────
+      {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           4. ADDITIONAL DETAILS (Supporting Metrics, Timeseries & Breakdowns)
-          ────────────────────────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section aria-label="Additional Details" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
           <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
             Additional Details
           </h2>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            Budget balances, observed vs. billed events, rates, and engagement breakdowns
+            Budget, billed click rates, and channel performance
           </span>
         </div>
 
@@ -397,34 +384,12 @@ export function ConsoleDashboard({
           </Card>
           <Card>
             <CardContent style={{ padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Observed &amp; Billed Clicks</div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
-                {summary.performance.clicks.toLocaleString()} observed
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                {(summary.performance.billedClicks ?? 0).toLocaleString()} financially billed
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent style={{ padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>CTR / Avg CPC / Eff. CPM</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Billed CTR</div>
               <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
                 {summary.performance.impressions > 0 ? `${summary.performance.ctr.toFixed(2)}%` : 'Unavailable'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                CPC: {(summary.performance.billedClicks ?? 0) > 0 ? `$${summary.performance.avgCpcUsd.toFixed(2)}` : 'Unavailable'} · CPM: {summary.performance.impressions > 0 ? `$${summary.performance.avgCpmUsd.toFixed(2)}` : 'Unavailable'}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent style={{ padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Hovers, Touches &amp; Campaigns</div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
-                {(summary.performance.hovers + summary.performance.touches).toLocaleString()} interactions
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                {summary.campaignCounts.active} active · {summary.campaignCounts.paused} paused · {summary.campaignCounts.underReview} review
+                {(summary.performance.billedClicks ?? 0).toLocaleString()} billed clicks
               </div>
             </CardContent>
           </Card>
@@ -559,9 +524,9 @@ export function ConsoleDashboard({
         </div>
 
 
-        {/* ──────────────────────────────────────────────────────────────────────────
+        {/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           5. QUICK ACTIONS & STATUS DIRECTORY
-          ────────────────────────────────────────────────────────────────────────── */}
+          â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div
           style={{
             display: 'grid',
@@ -631,8 +596,6 @@ export function ConsoleDashboard({
         </div>
 
 
-        {/* Advertiser Milestones & Bonus Credits (PLAN-0017) */}
-        <AdvertiserMilestonesCard />
       </section>
     </div>
   );

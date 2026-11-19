@@ -55,11 +55,13 @@ test('Advertiser Studio uses Ads Console nomenclature with Dashboard and My Ad C
   assert.ok(adsConsole, 'Ads Console group should exist');
   assert.deepEqual(
     Array.from(adsConsole.items, (i) => i.label),
-    ['Dashboard', 'My Ad Campaigns'],
+    ['Dashboard', 'My Ad Campaigns', 'Advertiser Rewards'],
   );
 
   assert.deepEqual(Array.from(resolveWorkspaceContext('/dashboard')), ['advertiser', 'dashboard']);
   assert.deepEqual(Array.from(resolveWorkspaceContext('/campaigns')), ['advertiser', 'campaigns']);
+  assert.deepEqual(Array.from(resolveWorkspaceContext('/advertiser/rewards', 'promoter')), ['advertiser', 'advertiser_rewards']);
+  assert.equal(workspaceNavigation('promoter').flatMap((group) => group.items).some((item) => item.id === 'advertiser_rewards'), false);
 });
 
 test('Promoter Hub hierarchy contains Dashboard, CrimFig Ad Network, and AdStation', () => {
@@ -117,6 +119,8 @@ test('Advertiser ConsoleDashboard renders 3 headline KPI cards with validClicks 
   assert.match(dashSource, /Clicks/);
   assert.match(dashSource, /validClicks/);
   assert.match(dashSource, /Additional Details/);
+  assert.doesNotMatch(dashSource, /AdvertiserMilestonesCard|Hovers, Touches|Observed &amp; Billed Clicks/);
+  assert.match(dashSource, /Billed CTR/);
   assert.equal(/Observed clicks<\/span>/.test(dashSource), false);
 });
 

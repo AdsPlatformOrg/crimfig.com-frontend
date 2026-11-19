@@ -20,6 +20,7 @@ import {
   User,
   Settings,
   History,
+  Trophy,
 } from "lucide-react";
 export type WorkspaceRole = "advertiser" | "promoter" | "admin";
 export function workspaceNavigation(
@@ -42,6 +43,12 @@ export function workspaceNavigation(
           label: "My Ad Campaigns",
           icon: Layers,
           href: "/campaigns",
+        },
+        {
+          id: "advertiser_rewards",
+          label: "Advertiser Rewards",
+          icon: Trophy,
+          href: "/advertiser/rewards",
         },
       ],
     },
