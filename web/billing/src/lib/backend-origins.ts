@@ -1,5 +1,8 @@
 /** Server-only Next rewrite configuration. No staging fallback may point at production. */
-export function billingBackends(env:Record<string,string|undefined>){
+type BackendEnv = Record<string, string | undefined>;
+export function billingBackends(env: BackendEnv): { billing: string; auth: string };
+export function billingBackends(env: BackendEnv, optionalBilling: true): { billing: string | undefined; auth: string };
+export function billingBackends(env: BackendEnv, optionalBilling = false){
  const stageHint=[env.NEXT_PUBLIC_AUTH_WEB_URL,env.NEXT_PUBLIC_BILLING_WEB_URL,env.NEXT_PUBLIC_ADS_WEB_URL].some(value=>/\/\/staging-|\.staging\./i.test(value||''));
  if(env.RAILWAY_ENVIRONMENT_NAME==='production'&&stageHint)throw Error('Billing deployment origins conflict: production environment has staging public origins.');
  const localHint=[env.NEXT_PUBLIC_AUTH_WEB_URL,env.NEXT_PUBLIC_BILLING_WEB_URL].some(value=>/^http:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(value||''));
@@ -15,6 +18,7 @@ export function billingBackends(env:Record<string,string|undefined>){
   if((staging||production)&&url.protocol==='http:'&&!url.hostname.endsWith('.railway.internal'))throw Error(`${service} API backend origin requires HTTPS or private Railway transport.`);
   return url.origin;
  }
- return {billing:resolve(env.BILLING_API_BACKEND_URL||env.NEXT_PUBLIC_BILLING_API_URL,'Billing',production?'https://billing-api-production-bb4c.up.railway.app':'http://127.0.0.1:3008'),
+ const billingOrigin = env.BILLING_API_BACKEND_URL || env.NEXT_PUBLIC_BILLING_API_URL;
+ return {billing:optionalBilling && staging && !billingOrigin ? undefined : resolve(billingOrigin,'Billing',production?'https://billing-api-production-bb4c.up.railway.app':'http://127.0.0.1:3008'),
   auth:resolve(env.AUTH_API_BACKEND_URL||env.AUTH_API_URL||env.NEXT_PUBLIC_AUTH_API_URL||env.NEXT_PUBLIC_API_URL,'Auth',production?'https://auth-api-production-8e03.up.railway.app':'http://127.0.0.1:4000')};
 }

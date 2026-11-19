@@ -16,11 +16,12 @@ const nextConfig: NextConfig = {
       ['/api/v1/admin/ads/slots/:id/lifecycle', '/api/v1/adstation/admin/slots/:id/lifecycle'],
     ].map(([source, path]) => ({ source, destination: `${backendUrl}${path}` })) : [];
 
+    const billingUrl = billingBackends({ ...process.env, AUTH_API_BACKEND_URL: authUrl }, true).billing;
     return [
-      {
+      ...(billingUrl ? [{
         source: '/api/v1/ads/billing/recent-transactions',
-        destination: billingBackends(process.env).billing + '/api/v1/transactions?limit=5',
-      },
+        destination: billingUrl + '/api/v1/transactions?limit=5',
+      }] : []),
       {
         source: '/api/v1/auth/:path*',
         destination: `${authUrl}/api/v1/auth/:path*`,

@@ -68,7 +68,7 @@ test('Ads rewrites only the preview path to the Billing transaction list with a 
     AUTH_API_BACKEND_URL: 'https://auth-api-staging.up.railway.app',
     BILLING_API_BACKEND_URL: 'https://billing-api-staging.up.railway.app',
   };
-  const previous = new Map(Object.keys(environment).map(key => [key, process.env[key]]));
+  const previous = new Map([...Object.keys(environment), 'NEXT_PUBLIC_BILLING_API_URL'].map(key => [key, process.env[key]]));
   Object.assign(process.env, environment);
   require.extensions['.ts'] = (module, filename) => module._compile(
     ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, filename);
@@ -77,6 +77,13 @@ test('Ads rewrites only the preview path to the Billing transaction list with a 
     const preview = rules.findIndex(rule => rule.source === '/api/v1/ads/billing/recent-transactions');
     assert.ok(preview >= 0 && preview < rules.findIndex(rule => rule.source === '/api/:path*'));
     assert.equal(rules[preview].destination, environment.BILLING_API_BACKEND_URL + '/api/v1/transactions?limit=5');
+    delete process.env.BILLING_API_BACKEND_URL;
+    delete process.env.NEXT_PUBLIC_BILLING_API_URL;
+    const fallback = await require('../next.config.ts').default.rewrites();
+    assert.equal(fallback.some(rule => rule.source === rules[preview].source), false);
+    assert.ok(fallback.some(rule => rule.source === '/api/:path*'));
+    process.env.BILLING_API_BACKEND_URL = 'https://billing-api-production-bb4c.up.railway.app';
+    await assert.rejects(require('../next.config.ts').default.rewrites(), /points to production/);
   } finally {
     if (previousTs) require.extensions['.ts'] = previousTs;
     else delete require.extensions['.ts'];
