@@ -67,7 +67,7 @@ export function BillingLedger() {
       >
         <div>
           <h2 style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Billing &amp; Escrow
+            Wallet
           </h2>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
             Check your wallet balance and campaign funds reserved for delivery.

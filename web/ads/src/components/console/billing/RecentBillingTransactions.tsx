@@ -32,9 +32,9 @@ export function RecentBillingTransactions() {
     return () => request.abort();
   }, []);
 
-  if (unavailable) return <p role="status">Recent transactions are unavailable.</p>;
-  if (!rows) return <p role="status">Loading recent transactions…</p>;
-  if (rows.length === 0) return <p>No transactions yet.</p>;
+  const message = unavailable ? 'Recent transactions are unavailable.'
+    : !rows ? 'Loading recent transactions…'
+    : rows.length === 0 ? 'No transactions yet.' : null;
 
   return (
     <Table aria-label="Five latest Billing transactions">
@@ -44,7 +44,13 @@ export function RecentBillingTransactions() {
         <TableHead scope="col">Amount</TableHead>
         <TableHead scope="col">Status</TableHead>
       </TableRow></TableHeader>
-      <TableBody>{rows.map(row => (
+      <TableBody>
+        {message && (
+          <TableRow>
+            <TableCell colSpan={4}><span role="status">{message}</span></TableCell>
+          </TableRow>
+        )}
+        {rows?.map(row => (
         <TableRow key={row.id}>
           <TableCell><time dateTime={row.createdAt}>{new Date(row.createdAt).toLocaleDateString()}</time></TableCell>
           <TableCell>{row.type.replaceAll('_', ' ')}</TableCell>

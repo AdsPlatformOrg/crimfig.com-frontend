@@ -36,9 +36,11 @@ test('recent Billing preview handles unavailable, empty and five-row responses',
     };
     await render('unavailable', async () => { throw Error('offline'); });
     assert.match(document.querySelector('main').textContent, /unavailable/);
-    assert.equal(document.querySelector('table'), null);
+    assert.equal(document.querySelector('tbody td').colSpan, 4);
+    assert.equal(document.querySelectorAll('th[scope="col"]').length, 4);
     await render('empty', async () => ({items: []}));
-    assert.match(document.querySelector('main').textContent, /No transactions yet/);
+    assert.match(document.querySelector('tbody td').textContent, /No transactions yet/);
+    assert.equal(document.querySelector('tbody td').colSpan, 4);
     await render('rows', async () => ({items: Array.from({length: 5}, (_, i) => ({
       id: String(i), type: 'wallet_fund', status: 'completed', amountUsdCents: i * 100, createdAt: '2026-11-19T12:00:00Z',
     }))}));
