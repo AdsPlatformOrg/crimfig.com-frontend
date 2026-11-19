@@ -35,9 +35,9 @@ export function BillingLedger() {
     loadData();
   }, []);
 
+  const billingBase = ecosystemOrigin('billing', process.env.NEXT_PUBLIC_BILLING_WEB_URL);
   const openBilling = () => {
-    const base = ecosystemOrigin('billing',process.env.NEXT_PUBLIC_BILLING_WEB_URL);
-    window.location.assign(new URL('/?view=console', base).href);
+    window.location.assign(new URL('/?view=console', billingBase).href);
   };
 
 
@@ -246,8 +246,7 @@ export function BillingLedger() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <Button
-            type="button"
-            onClick={openBilling}
+            asChild
             size="lg"
             style={{
               display: 'flex',
@@ -264,8 +263,10 @@ export function BillingLedger() {
               boxShadow: 'var(--shadow-crimson)',
             }}
           >
-            <CreditCard style={{ width: 16, height: 16 }} />
-            <span>Fund Wallet</span>
+            <a href={new URL('/dashboard?funding_source=ads', billingBase).href} target="_blank" rel="noopener noreferrer">
+              <CreditCard style={{ width: 16, height: 16 }} aria-hidden="true" />
+              <span>Fund Wallet</span>
+            </a>
           </Button>
           <Button
             type="button"

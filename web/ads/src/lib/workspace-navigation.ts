@@ -53,7 +53,7 @@ export function workspaceNavigation(
       ],
     },
     {
-      title: "Performance & Traffic",
+      title: "",
       items: [
         { id: "reports", label: "Reports", icon: BarChart3, href: "/reports" },
         {
@@ -71,11 +71,11 @@ export function workspaceNavigation(
       ],
     },
     {
-      title: "Finance & Account",
+      title: "",
       items: [
         {
           id: "billing_escrow",
-          label: "Billing & Escrow",
+          label: "Billing & Wallet",
           icon: CreditCard,
           href: "/billing",
         },

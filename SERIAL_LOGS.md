@@ -57,3 +57,6 @@ Updated `web/ads/src/app/(workspace)/admin/auction-logs/[requestId]/page.tsx` to
 
 ## 2026-11-19 - PLAN-0115 dashboard follow-up and Advertiser Rewards
 Restyled the Clicks count, simplified the dashboard details, and moved trophies to /advertiser/rewards. Rewards reads recorded achievements and balance on page load, defaults to Joined on a successful empty response, and surfaces loading and request failures. Code-only Ads suite: 41 passed, 0 failed or skipped (7.26s). Browser and staging verification remain deferred.
+
+## 2026-11-19 - PLAN-0117 advertiser sidebar and Ads wallet return
+Rebuilt Ads navigation with a shadcn Dialog drawer and desktop icon rail. Fund Wallet starts Billing in a separate tab. The Ads return is bound to the current funding reference and runs after Billing confirms it. Local Ads and Billing checks passed 72/72. See ../docs/reviews/plan-0117/local-verification.json for the simulated DOM and provider boundaries.

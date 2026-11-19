@@ -98,15 +98,31 @@ test('Promoter Hub hierarchy contains Dashboard, CrimFig Ad Network, and AdStati
   assert.deepEqual(Array.from(resolveWorkspaceContext('/promoter/adstation/setup')), ['promoter', 'adstation_setup']);
 });
 
-test('Sidebar compact typography and spacing preserve 44px mobile touch targets', () => {
-  const sidebarSource = fs.readFileSync(
-    path.resolve(__dirname, '../src/components/DashboardSidebar.tsx'),
-    'utf8',
-  );
-  assert.match(sidebarSource, /fontSize:\s*'12px'/);
-  assert.match(sidebarSource, /gap:\s*'12px'/);
-  assert.match(sidebarSource, /gap:\s*'2px'/);
-  assert.match(sidebarSource, /targetMinHeight\s*=\s*isMobileOpen\s*\?\s*44\s*:\s*34/);
+test('Advertiser navigation has one heading and one Billing & Wallet entry', () => {
+  const { workspaceNavigation } = loadWorkspaceNavigation();
+  const groups = workspaceNavigation('advertiser');
+  assert.deepEqual(Array.from(groups, group => group.title).filter(Boolean), ['Ads Console']);
+  const billing = groups.flatMap(group => group.items).filter(item => item.href === '/billing');
+  assert.equal(billing.length, 1);
+  assert.equal(billing[0].label, 'Billing & Wallet');
+});
+
+test('Sidebar uses a separate mobile dialog and preserves compact desktop touch sizing', () => {
+  const shell = fs.readFileSync(path.resolve(__dirname, '../src/components/console/AdsConsoleShell.tsx'), 'utf8');
+  const sidebar = fs.readFileSync(path.resolve(__dirname, '../src/components/DashboardSidebar.tsx'), 'utf8');
+  const styles = fs.readFileSync(path.resolve(__dirname, '../src/components/DashboardSidebar.module.css'), 'utf8');
+  assert.doesNotMatch(sidebar, /document\.body\.style|>Collapse Sidebar</);
+  assert.doesNotMatch(shell, /switchAppLink/);
+  assert.match(shell, /<DialogTrigger asChild>/);
+  assert.match(shell, /<DialogPanel/);
+  assert.match(sidebar, /<DialogClose asChild>/);
+  assert.match(styles, /min-height: 44px/);
+  assert.match(styles, /min-height: 34px/);
+});
+
+test('Ads Fund Wallet opens a separate Billing tab with an explicit Ads entry marker', () => {
+  const ledger = fs.readFileSync(path.resolve(__dirname, '../src/components/console/billing/BillingLedger.tsx'), 'utf8');
+  assert.match(ledger, /<a href=\{new URL\('\/dashboard\?funding_source=ads', billingBase\)\.href\} target="_blank" rel="noopener noreferrer">[^]*?<span>Fund Wallet<\/span>/);
 });
 
 test('Advertiser ConsoleDashboard renders 3 headline KPI cards with validClicks and Additional Details', () => {

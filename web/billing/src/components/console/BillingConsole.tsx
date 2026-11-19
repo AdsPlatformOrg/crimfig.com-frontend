@@ -7,6 +7,7 @@ import { RewardsHub } from './RewardsHub';
 import { BillingSupportHub } from './BillingSupportHub';
 import { billingData, resolveBank, saveBank } from '../../lib/billing-api';
 import { fundingReturn, fundingRequest, recoverFundingRequest, verifyFundingReference, startFunding, FundingStartError, loadTransactions } from '../../lib/funding-api';
+import { isAdsFundingContext, isAdsFundingEntry, readAdsFunding, saveAdsFunding, shouldReturnToAds } from '../../lib/ads-funding-return';
 import { walletView } from '../../lib/wallet-view';
 import { sessionFetch } from '../../lib/session';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -129,6 +130,8 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const authBase = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
   const adsBase = ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, authBase);
+  const adsBillingUrl = new URL('/billing', adsBase).href;
+  const [showAdsReturn, setShowAdsReturn] = useState(false);
   useEffect(() => {
     if (!isMobileNavOpen) return;
     const handleEscape = (event: KeyboardEvent) => {
@@ -254,11 +257,15 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     try {
       const result = await request.promise;
       if (generation !== verificationGeneration.current) return;
+      if (shouldReturnToAds(result.status, reference, readAdsFunding(window.sessionStorage))) {
+        window.location.replace(adsBillingUrl);
+        return;
+      }
       setFundingCheck({ phase: result.status, reference });
       if (result.status === 'confirmed') { if(fundingIntent.current?.reference===reference){setFundAttemptUncertain(false);fundingIntent.current=null;} await refreshAccountData(); }
     } catch { if (generation === verificationGeneration.current) setFundingCheck({ phase: 'unavailable', reference }); }
     finally { if (inFlightVerification.current === request) inFlightVerification.current = null; }
-  }, [refreshAccountData]);
+  }, [adsBillingUrl, refreshAccountData]);
   useEffect(()=>{
     if(fundingCheck.phase!=='pending'||!fundingCheck.reference)return;
     if(fundingPoll.current.reference!==fundingCheck.reference)fundingPoll.current={reference:fundingCheck.reference,attempts:0};
@@ -276,6 +283,10 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       if (generation !== recoveryGeneration.current) return;
       if (attempt.kind === 'missing') { setFundingCheck({ phase: 'idle', reference: null }); setRequestRecovery({ phase: 'missing', id: requestId, url: null }); return; }
       if (expectedReference && attempt.reference !== expectedReference) throw new Error('Request/reference mismatch');
+      const adsFunding = readAdsFunding(window.sessionStorage);
+      if (adsFunding?.requestId === attempt.requestId) {
+        saveAdsFunding(window.sessionStorage, { requestId: attempt.requestId, reference: attempt.reference });
+      }
       // Optional recovery never overwrites a separately edited deposit amount.
       const url = new URL(window.location.href); url.searchParams.delete('trxref'); url.searchParams.set('reference', attempt.reference); url.searchParams.set('view', 'console');
       window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
@@ -289,6 +300,13 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     void refreshAccountData();
     if (new URLSearchParams(window.location.search).has('withdrawal_request')) setIsWithdrawOpen(true);
     if (new URLSearchParams(window.location.search).has('subscription_request')) { setActiveTab('subscriptions'); return invalidateRequests; }
+    const adsEntry = isAdsFundingEntry(window.location.search);
+    const adsFunding = readAdsFunding(window.sessionStorage);
+    setShowAdsReturn(isAdsFundingContext(window.location.search, adsFunding));
+    if (adsEntry) {
+      saveAdsFunding(window.sessionStorage, { requestId: null, reference: null });
+      setIsFundOpen(true);
+    }
     const returned = fundingReturn(window.location.search);
     const request = fundingRequest(window.location.search);
     if(returned.kind==='invalid'){setFundingCheck({phase:'invalid',reference:null});return invalidateRequests;}
@@ -416,9 +434,11 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
     try{
       const url=new URL(window.location.href);url.searchParams.delete('reference');url.searchParams.delete('trxref');url.searchParams.set('funding_request',saved.requestId);url.searchParams.set('view','console');
       window.history.replaceState(window.history.state,'',`${url.pathname}${url.search}${url.hash}`);
+      if (showAdsReturn) saveAdsFunding(window.sessionStorage, { requestId: saved.requestId, reference: null });
       setRequestRecovery({phase:'loading',id:saved.requestId,url:null});
       const checkout=await startFunding(saved.amountUsd,saved.saveCard,saved.requestId);
       if(lifecycle!==lifecycleGeneration.current)return;
+      if (showAdsReturn) saveAdsFunding(window.sessionStorage, { requestId: saved.requestId, reference: checkout.reference });
       saved.reference=checkout.reference;setFundAttemptUncertain(false);
       if(checkout.kind==='checkout'){if(dialogEpoch===fundDialogEpoch.current)window.location.assign(checkout.url!);else setRequestRecovery({phase:'ready',id:checkout.requestId,url:checkout.url!});}
       else{setIsFundOpen(false);setRequestRecovery({phase:'pending',id:checkout.requestId,url:null});void checkFunding(checkout.reference);}
@@ -438,7 +458,11 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
         setRequestRecovery({ phase: 'unavailable', id: saved.requestId, url: null });
       }
       setPaymentError(error instanceof Error?error.message:'Payment initialization could not be confirmed.');
-      if(error instanceof FundingStartError&&error.reference){saved.reference=error.reference;void checkFunding(error.reference);}
+      if (error instanceof FundingStartError && error.reference) {
+        saved.reference = error.reference;
+        if (showAdsReturn) saveAdsFunding(window.sessionStorage, { requestId: saved.requestId, reference: error.reference });
+        void checkFunding(error.reference);
+      }
     }finally{fundingBusy.current=false;if(lifecycle===lifecycleGeneration.current)setIsProcessingPayment(false);}
   };
 
@@ -555,7 +579,10 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
         <DashboardSidebar
           app="billing"
-          groups={[{title:'Workspaces',items:[{id:'workspace_wallet',label:'Wallet',icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:'Payouts',icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:'Rewards',icon:Gift,href:'/rewards'}]},...currentBillingNavGroups]}
+          groups={[{title:'Workspaces',items:[{id:'workspace_wallet',label:'Wallet',icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:'Payouts',icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:'Rewards',icon:Gift,href:'/rewards'}]}, ...currentBillingNavGroups, ...(showAdsReturn ? [{
+            title: '',
+            items: [{ id: 'back_to_ads_billing', label: 'Back to Ads Billing & Wallet', icon: ArrowLeft, href: adsBillingUrl }],
+          }] : [])]}
           activeId={activeTab}
           onSelect={(id) => {
             if (id === 'overview') router.push('/dashboard');
