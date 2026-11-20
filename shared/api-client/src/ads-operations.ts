@@ -21,11 +21,18 @@ export function createAdsOperations(client: ReturnType<typeof createAdsClient>) 
     async catalog(category?: string) { return dataOf(await client.GET('/api/v1/campaigns/catalog', { params: { query: { category } } })); },
     async capabilities() { return dataOf(await client.GET('/api/v1/campaigns/creation-capabilities')); },
     async details(id: string) { return dataOf(await client.GET('/api/v1/campaigns/{id}', { params: { path: { id } } })); },
+    async liveSettings(id: string, body: SaveCampaignInput) { return dataOf(await client.PATCH('/api/v1/campaigns/{id}/live-settings', {params:{path:{id}},body})); },
+    async liveStackSettings(id: string, stackId: string, body: UpdateStackInput) { return dataOf(await client.PATCH('/api/v1/campaigns/{id}/ad-stacks/{stackId}/live-settings', {params:{path:{id,stackId}},body})); },
+    async liveArchiveStack(id: string, stackId: string, body: MutationControl) { return dataOf(await client.DELETE('/api/v1/campaigns/{id}/ad-stacks/{stackId}/live', {params:{path:{id,stackId}},body})); },
+    async liveCreateStack(id: string, name: string, control: MutationControl) { return dataOf(await client.POST('/api/v1/campaigns/{id}/ad-stacks/live', {params:{path:{id}},body:{name,...control}})); },
+    async liveCreativeAddition(id: string, body: AddCreativeInput) { return dataOf(await client.POST('/api/v1/campaigns/{id}/creatives/submit-addition', {params:{path:{id}},body})); },
+    async liveCreativeReplacement(id: string, creativeId: string, body: ReplaceCreativeInput) { return dataOf(await client.PUT('/api/v1/campaigns/{id}/creatives/{creativeId}/submit-replacement', {params:{path:{id,creativeId}},body})); },
+    async liveCreativeStatus(id: string, creativeId: string, body: components['schemas']['LiveCreativeStatusDto']) { return dataOf(await client.PATCH('/api/v1/campaigns/{id}/creatives/{creativeId}/status', {params:{path:{id,creativeId}},body})); },
     async deliveryReadiness(id: string, staff = false) {
       const params = { path: { id } };
       return staff
-        ? dataOf(await client.GET('/api/v1/campaigns/admin/{id}/delivery-readiness', { params }))
-        : dataOf(await client.GET('/api/v1/campaigns/{id}/delivery-readiness', { params }));
+        ? dataOf(await client.GET('/api/v1/campaigns/admin/{id}/delivery-readiness', { params, cache: 'no-store' }))
+        : dataOf(await client.GET('/api/v1/campaigns/{id}/delivery-readiness', { params, cache: 'no-store' }));
     },
     async creation(requestId: string) { return dataOf(await client.GET('/api/v1/campaigns/creation-request/{requestId}', { params: { path: { requestId } } })); },
     async create(body: CreateCampaignInput) { return dataOf(await client.POST('/api/v1/campaigns', { body })); },

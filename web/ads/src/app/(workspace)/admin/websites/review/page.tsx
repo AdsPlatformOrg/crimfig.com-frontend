@@ -19,7 +19,7 @@ export default function AdminWebsitesReviewPage() {
 
       {/* Global operations health snapshot */}
       <div style={{ marginTop: '40px' }}>
-        <ReadinessOperations />
+        <ReadinessOperations compact />
       </div>
     </section>
   );

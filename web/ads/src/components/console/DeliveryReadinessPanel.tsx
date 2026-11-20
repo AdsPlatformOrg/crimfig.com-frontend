@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Check, ChevronDown, CircleAlert, RefreshCw, Shield } from 'lucide-react';
-import { Button, Input } from '../ui';
+import { Button, Card, Input } from '../ui';
 import styles from './DeliveryReadinessPanel.module.css';
 import { sessionFetch } from '../../lib/session';
 import { adsApi } from '../../lib/ads-api-client';
@@ -96,9 +96,10 @@ function ReadinessCheck({ gate, canAct, onReload }: {
   );
 }
 
-export function DeliveryReadinessPanel({ report, error, onReload, canAct = true }: {
+export function DeliveryReadinessPanel({ report, error, refreshing = false, onReload, canAct = true }: {
   report?: Readiness;
   error?: string;
+  refreshing?: boolean;
   onReload?: () => void;
   canAct?: boolean;
 }) {
@@ -126,10 +127,10 @@ export function DeliveryReadinessPanel({ report, error, onReload, canAct = true 
         </div>
         {(report || onReload) && <div className={styles.controls}>
           {report && <span className={styles.metadata}>Checked {new Date(report.evaluatedAt).toLocaleString()}</span>}
-          {onReload && <Button type="button" variant="outline" size="sm" aria-disabled={loading}
-            onClick={() => { if (!loading) onReload(); }}>
+          {onReload && <Button type="button" variant="outline" size="sm" disabled={loading || refreshing}
+            onClick={onReload}>
             <RefreshCw size={15} aria-hidden="true" />
-            {loading ? 'Refreshing…' : 'Refresh readiness'}
+            {loading || refreshing ? 'Refreshing…' : 'Refresh readiness'}
           </Button>}
         </div>}
       </div>
@@ -149,21 +150,29 @@ export function CampaignReadiness({ campaignId, staff = false }: { campaignId: s
   const endpoint = '/api/v1/campaigns/' + (staff ? 'admin/' : '') + encodeURIComponent(campaignId) + '/delivery-readiness';
   const [snapshot, setSnapshot] = useState<{ endpoint: string; report?: Readiness; error?: string }>();
   const [refresh, setRefresh] = useState(0);
+  const [pendingEndpoint, setPendingEndpoint] = useState<string>();
   useEffect(() => {
     let active = true;
-    setSnapshot(undefined);
+    setPendingEndpoint(endpoint);
     void Promise.resolve().then(() => adsApi().deliveryReadiness(campaignId, staff)).then(result => {
       if (result?.version !== 1 || !Array.isArray(result.gates)) throw Error('Readiness response is unavailable.');
       if (active) setSnapshot({ endpoint, report: result });
     }).catch(() => {
-      if (active) setSnapshot({ endpoint, error: 'Readiness is unavailable. Try refreshing the checks.' });
-    });
+      if (active) setSnapshot(previous => ({
+        endpoint,
+        report: previous?.endpoint === endpoint ? previous.report : undefined,
+        error: previous?.endpoint === endpoint && previous.report
+          ? 'Readiness refresh failed. The last checked results are shown. Try again.'
+          : 'Readiness is unavailable. Try refreshing the checks.',
+      }));
+    }).finally(() => { if (active) setPendingEndpoint(undefined); });
     return () => { active = false; };
   }, [endpoint, campaignId, staff, refresh]);
   const current = snapshot?.endpoint === endpoint ? snapshot : undefined;
   return <DeliveryReadinessPanel
     report={current?.report}
     error={current?.error}
+    refreshing={pendingEndpoint === endpoint}
     canAct={!staff}
     onReload={() => setRefresh(value => value + 1)}
   />;
@@ -288,7 +297,7 @@ type OperationsSnapshot = {
   evaluatedAt: string;
 };
 
-export function ReadinessOperations() {
+export function ReadinessOperations({ compact = false }: { compact?: boolean } = {}) {
   const [result, setResult] = useState<OperationsSnapshot>();
   const [state, setState] = useState<'idle' | 'loading' | 'failed'>('idle');
   useEffect(() => {
@@ -302,6 +311,42 @@ export function ReadinessOperations() {
     }).catch(() => { if (active) setState('failed'); });
     return () => { active = false; };
   }, [state]);
+  if (compact) {
+    const formatCount = (value: number) => Number.isInteger(value) ? value.toLocaleString() : 'Unavailable';
+    const formatDate = (value: string | null) => {
+      if (!value) return 'No timestamp observed';
+      const date = new Date(value);
+      return Number.isFinite(date.getTime()) ? date.toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'medium', timeStyle: 'short' }) + ' WAT' : 'Unavailable';
+    };
+    const metrics = result ? [
+      { label: 'Campaigns sampled', value: formatCount(result.campaigns), detail: 'Up to 100 newest active or in-review campaigns' },
+      { label: 'Campaigns with inactive advertiser accounts', value: formatCount(result.inactiveAccountCampaigns) },
+      { label: 'Distinct unverified advertisers', value: formatCount(result.unverifiedAdvertisers) },
+      { label: 'Campaigns awaiting manager approval', value: formatCount(result.managerReviewCampaigns) },
+      { label: 'Oldest submission still in review', value: formatDate(result.oldestPendingSubmissionAt) },
+      { label: 'Stale installations', value: `${formatCount(result.staleInstallations)} of ${formatCount(result.slots)}`, detail: 'Recently updated active, previously verified slots. Checks older than 24 hours or missing timestamps count as stale.' },
+    ] : [];
+    return (
+      <Card className={styles.operations} role="region" aria-label="Operations snapshot">
+        <header className={styles.operationsHeader}>
+          <h2 className="cf-section-title">Operations snapshot</h2>
+          <Button type="button" variant="outline" size="sm" disabled={state === 'loading'} onClick={() => setState('loading')}>
+            {state === 'loading' ? 'Loading…' : result ? 'Refresh' : 'Load snapshot'}
+          </Button>
+        </header>
+        {state === 'failed' && <p role="alert">{result ? 'Refresh failed. Showing the previous snapshot.' : 'Operations snapshot is unavailable.'}</p>}
+        {result && <>
+          <dl className={styles.operationsMetrics} aria-busy={state === 'loading'}>
+            {metrics.map(metric => <div key={metric.label}>
+              <dt>{metric.label}</dt>
+              <dd>{metric.value}{metric.detail && <small>{metric.detail}</small>}</dd>
+            </div>)}
+          </dl>
+          <p className={styles.operationsChecked}>Snapshot checked {formatDate(result.evaluatedAt)}</p>
+        </>}
+      </Card>
+    );
+  }
   return <section className="cf-section" aria-label="Readiness operations">
     <h2 className="cf-section-title">Operations snapshot</h2>
     <Button variant="outline" disabled={state === 'loading'} onClick={() => { setResult(undefined); setState('loading'); }}>

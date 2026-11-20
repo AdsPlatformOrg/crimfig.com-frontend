@@ -1,12 +1,14 @@
 'use client';
 
 import styles from './CampaignPage.module.css';
+import { legacySchedule, scheduleText } from '../../lib/daily-schedule';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { adsApi } from '../../lib/ads-api-client';
 import { type CampaignDetails } from '../../lib/campaign-editor';
 import { CampaignCreationWizard } from './CampaignCreationWizard';
+import { CampaignLiveSettings } from './CampaignLiveSettings';
 import { CampaignReadiness } from './DeliveryReadinessPanel';
 import { useCampaignTable } from './useCampaignTable';
 import { CampaignBreadcrumbs } from './CampaignBreadcrumbs';
@@ -53,6 +55,7 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
   const [campaign, setCampaign] = useState<CampaignDetails | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [newStackName,setNewStackName] = useState('');
   const [confirmEdit, setConfirmEdit] = useState(false);
   const [reconcile, setReconcile] = useState<{ requestId: string; expectedRevision: number } | null>(null);
 
@@ -160,6 +163,8 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
   ));
   const totalApprovedAds = campaign.creatives.filter((c) => c.reviewStatus === 'approved').length;
   const totalAds = campaign.creatives.length;
+
+  const dailySchedule = campaign.schedule ?? legacySchedule(campaign.targetHours);
 
   return (
     <div className={styles.detail} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -355,12 +360,10 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
           <div>
             <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Schedule & Active Hours</span>
             <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
-              {campaign.targetHours && campaign.targetHours.length > 0 && campaign.targetHours.length < 24
-                ? `${campaign.targetHours.length} Active Hours / Day`
-                : '24 / 7 Delivery'}
+              {dailySchedule.mode === 'custom' ? 'Custom daily schedule' : 'All hours of the day'}
             </div>
             <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
-              {campaign.schedule?.mode === 'custom' ? 'Custom daily time windows configured' : 'Active around the clock within campaign dates'}
+              {dailySchedule.mode === 'custom' ? `Custom daily time windows configured · ${scheduleText(dailySchedule)}` : 'Active around the clock within campaign dates'}
             </p>
           </div>
 
@@ -380,6 +383,20 @@ export function CampaignPage({ id, edit = false }: { id: string; edit?: boolean 
         </div>
       </Card>
 
+      {campaign.moderationStatus === 'approved' && ['active','paused'].includes(campaign.status) &&
+        <Card style={{padding:16}}><CampaignLiveSettings key={campaign.updatedAt} campaign={campaign} onSaved={load} /></Card>}
+      {campaign.moderationStatus === 'approved' && ['active','paused'].includes(campaign.status) &&
+        <form style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'end'}} onSubmit={async event=>{
+          event.preventDefault();if(busy)return;setBusy(true);
+          try {
+            await adsApi().liveCreateStack(id,newStackName,{requestId:crypto.randomUUID(),expectedRevision:campaign.contentRevision??1,expectedUpdatedAt:campaign.updatedAt});
+            setNewStackName('');await load();
+          } catch(failure) {setError(failure instanceof Error?failure.message:'Stack creation could not be confirmed.');}
+          finally {setBusy(false);}
+        }}>
+          <label style={{display:'grid',gap:4}}>New stack name<input required maxLength={100} value={newStackName} onChange={event=>setNewStackName(event.target.value)} style={{minHeight:44}} /></label>
+          <Button type="submit" disabled={busy}>Add stack for review</Button>
+        </form>}
       <CampaignReadiness key={id} campaignId={id} />
 
       {/* Ad Stacks Table */}

@@ -9,6 +9,8 @@ import { useCampaignTable } from '@/components/console/useCampaignTable';
 import { CampaignBreadcrumbs } from '@/components/console/CampaignBreadcrumbs';
 import { campaignsReturnHref, withCampaignReturnTo } from '@/lib/campaign-navigation';
 import { MediaPreview } from '@/components/MediaPreview';
+import { ConsequentialConfirmDialog } from '@/components/console/ConsequentialConfirmDialog';
+import { StackLiveSettings } from '@/components/console/StackLiveSettings';
 import { ReplaceCreativeModal } from '@/components/console/ReplaceCreativeModal';
 import {
   Card,
@@ -43,6 +45,21 @@ export default function AdStackDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reviewFilter, setReviewFilter] = useState('all');
+  const [archiveTarget,setArchiveTarget] = useState<string|null>(null);
+  const [actionPending,setActionPending] = useState(false);
+  async function changeCreative(creativeId:string,status:'active'|'paused'|'archived',targetStack?:string) {
+    if(!campaign || actionPending)return;
+    setActionPending(true);
+    try {
+      await adsApi().liveCreativeStatus(id,creativeId,{
+        status,adStackId:targetStack,requestId:crypto.randomUUID(),expectedRevision:campaign.contentRevision??1,expectedUpdatedAt:campaign.updatedAt,
+      });
+      setArchiveTarget(null);
+      await loadData();
+    } catch(failure) {setError(failure instanceof Error?failure.message:'Creative status could not be confirmed.');}
+    finally {setActionPending(false);}
+  }
+
 
   // Creative replacement modal
   const [replacementCreative, setReplacementCreative] = useState<React.ComponentProps<typeof ReplaceCreativeModal>['creative']>(null);
@@ -93,6 +110,7 @@ export default function AdStackDetailPage() {
   }));
   const visibleCreatives = adPage.items;
 
+  const live = campaign.moderationStatus === 'approved' && ['active','paused'].includes(campaign.status);
   const approvedCount = creatives.filter((c) => c.reviewStatus === 'approved').length;
   const totalCount = creatives.length;
 
@@ -107,6 +125,7 @@ export default function AdStackDetailPage() {
         ]}
       />
 
+      {live && stack && <Card style={{padding:16}}><StackLiveSettings key={campaign.updatedAt} campaign={campaign} stackId={stackId} onSaved={loadData} /></Card>}
       {/* Header Overview Card */}
       <Card style={{ padding: '20px', borderRadius: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
@@ -145,6 +164,11 @@ export default function AdStackDetailPage() {
               {approvedCount}/{totalCount} Ads Approved
             </Badge>
 
+            {live && stack?.position !== 1 && <Button variant="outline" disabled={actionPending} onClick={()=>setArchiveTarget('stack')}>Archive stack</Button>}
+            {live && <Button onClick={()=>setReplacementCreative({
+              id:'new',campaignId:id,expectedRevision:campaign.contentRevision??1,expectedUpdatedAt:campaign.updatedAt,
+              createInStack:stackId,destinationUrl:'',adType:'image',
+            })}>Add creative</Button>}
             <Button
               variant="outline"
               size="sm"
@@ -314,13 +338,14 @@ export default function AdStackDetailPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {isRejected && (
+                            {(isRejected || live) && (
                               <DropdownMenuItem
                                 onClick={() => {
                                   const specs = ad.imageSpecs;
                                   setReplacementCreative({
                                     ...ad,
                                     expectedRevision: campaign.contentRevision ?? 1,
+                                    expectedUpdatedAt: campaign.updatedAt, live,
                                     imageUrl: ad.imageUrl ?? undefined,
                                     videoUrl: ad.videoUrl ?? undefined,
                                     mediaFormat: ad.mediaFormat ?? undefined,
@@ -351,6 +376,17 @@ export default function AdStackDetailPage() {
                             >
                               Edit in Campaign Editor
                             </DropdownMenuItem>
+                            {live && ad.reviewStatus === 'approved' && <>
+                              <DropdownMenuItem disabled={actionPending} onClick={()=>void changeCreative(ad.id,ad.status==='active'?'paused':'active')}>
+                                {ad.status==='active'?'Pause creative':'Resume creative'}
+                              </DropdownMenuItem>
+                              {campaign.adStacks.filter(row=>row.id!==stackId && row.reviewStatus==='approved').map(target=>
+                                <DropdownMenuItem key={target.id} disabled={actionPending} onClick={()=>void changeCreative(ad.id,ad.status==='paused'?'paused':'active',target.id)}>
+                                  Move to {target.name}
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem disabled={actionPending} onClick={()=>setArchiveTarget(ad.id)}>Archive creative</DropdownMenuItem>
+                            </>}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => {
@@ -373,6 +409,19 @@ export default function AdStackDetailPage() {
       </Card>
 
       {/* Replacement Modal if active */}
+      <ConsequentialConfirmDialog open={archiveTarget!==null} onOpenChange={open=>{if(!open)setArchiveTarget(null);}}
+        title={archiveTarget==='stack'?"Archive stack?":"Archive creative?"} description="Archived items stop serving. A campaign with no approved active creatives will have no eligible ad to deliver."
+        confirmLabel="Archive creative" isPending={actionPending}
+        onConfirm={async()=>{
+          if(!archiveTarget || actionPending)return;
+          if(archiveTarget!=='stack') {await changeCreative(archiveTarget,'archived');return;}
+          setActionPending(true);
+          try {
+            await adsApi().liveArchiveStack(id,stackId,{requestId:crypto.randomUUID(),expectedRevision:campaign.contentRevision??1,expectedUpdatedAt:campaign.updatedAt});
+            router.push(withCampaignReturnTo(`/campaigns/${id}`,returnTo));
+          } catch(failure) {setArchiveTarget(null);setError(failure instanceof Error?failure.message:'Stack archive could not be confirmed.');}
+          finally {setActionPending(false);}
+        }} />
       {replacementCreative && (
         <ReplaceCreativeModal
           creative={replacementCreative}

@@ -17,6 +17,7 @@ export interface SessionSnapshot {
 export interface UserProfile {
   userId: string;
   email: string;
+  preferredLocale?: string;
   avatar: {
     kind: 'default' | 'preset';
     presetId: string;
@@ -274,6 +275,21 @@ export function createSessionClient(options: SessionOptions) {
     }
   }
 
+  async function updatePreferredLocale(preferredLocale:string):Promise<void> {
+    const bearer=await accessToken(),started=generation;
+    const response=await fetcher(`${authOrigin}/api/v1/auth/profile/locale`,{
+      method:'PATCH',headers:{Authorization:`Bearer ${bearer}`,'Content-Type':'application/json'},
+      body:JSON.stringify({preferredLocale}),credentials:'omit',redirect:'error',signal:AbortSignal.timeout(timeoutMs),
+    });
+    if(started!==generation||signOut)throw new SessionError('cancelled','Session changed');
+    if(!response.ok)throw new SessionError('temporary','Language preference could not be saved');
+    const data=await response.json();
+    if(started!==generation||signOut)throw new SessionError('cancelled','Session changed');
+    if(data?.preferredLocale!==preferredLocale)throw new SessionError('temporary','Invalid language preference response');
+    profileCache=null;
+    if(typeof window!=='undefined')window.dispatchEvent(new Event('crimfig-profile-updated'));
+  }
+
   async function request(input: string | URL, init: RequestInit = {}): Promise<Response> {
     const url = new URL(input);
     if (url.username || url.password || !apiOrigins.has(url.origin)) {
@@ -378,6 +394,7 @@ export function createSessionClient(options: SessionOptions) {
     },
     request,
     getProfile,
+    updatePreferredLocale,
     logout,
     clearSession,
     dispose() {

@@ -21,6 +21,9 @@ interface CreativeToReplace {
   id: string;
   campaignId: string;
   expectedRevision?: number;
+  expectedUpdatedAt?: string;
+  live?: boolean;
+  createInStack?: string;
   headline?: string | null;
   bodyText?: string | null;
   ctaText?: string | null;
@@ -78,6 +81,7 @@ export function ReplaceCreativeModal({
       if (!mediaAssetId) throw new Error("Upload a prepared replacement image before submitting.");
       const payload: ReplaceCreativeInput = {
         expectedRevision: creative.expectedRevision ?? 1,
+        expectedUpdatedAt: creative.expectedUpdatedAt,
         requestId: crypto.randomUUID(),
         headline: headline.trim() || undefined,
         bodyText: bodyText.trim() || undefined,
@@ -88,7 +92,11 @@ export function ReplaceCreativeModal({
         mediaAssetId,
       };
 
-      const updated = await adsApi().replaceCreative(creative.id, payload);
+      const updated = creative.createInStack
+        ? await adsApi().liveCreativeAddition(creative.campaignId,{...payload,adStackId:creative.createInStack,destinationUrl,adType:'image',adFormat:preparedFormat})
+        : creative.live
+          ? await adsApi().liveCreativeReplacement(creative.campaignId,creative.id,payload)
+          : await adsApi().replaceCreative(creative.id,payload);
       if (!updated.id)
         throw new Error("Replacement could not be confirmed.");
       onReplaceSuccess(updated);
@@ -122,7 +130,7 @@ export function ReplaceCreativeModal({
         ref={panel}
         role="dialog"
         aria-modal="true"
-        aria-label="Replace Rejected Creative Asset"
+        aria-label={creative.createInStack ? "Add creative" : "Replace creative"}
         tabIndex={-1}
         style={{
           width: "100%",
@@ -160,7 +168,7 @@ export function ReplaceCreativeModal({
                 margin: 0,
               }}
             >
-              Replace Rejected Creative Asset
+              {creative.createInStack ? "Add creative" : "Replace creative"}
             </h3>
           </div>
           <Button
@@ -231,7 +239,7 @@ export function ReplaceCreativeModal({
                 }}
               >
                 {creative.rejectionReason ||
-                  "Asset failed compliance check. Please provide a compliant replacement creative below to resume ad delivery."}
+                  (creative.live || creative.createInStack ? "This creative needs Review 1 and Review 2 before it can serve. Replacing a creative removes its current version from delivery." : "Provide a compliant replacement creative for review.")}
               </p>
             </div>
           </div>
@@ -430,7 +438,7 @@ export function ReplaceCreativeModal({
             >
               <RefreshCw style={{ width: 14, height: 14 }} />
               <span>
-                {isSubmitting ? "Submitting..." : "Submit Replacement Asset"}
+                {isSubmitting ? "Submitting…" : creative.createInStack ? "Submit new creative for review" : "Submit replacement for review"}
               </span>
             </Button>
           </div>

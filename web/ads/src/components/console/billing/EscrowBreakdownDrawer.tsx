@@ -1,4 +1,5 @@
 'use client';
+import { displayBurnPercent } from '../../../lib/display-burn-percent';
 
 import React from 'react';
 import { X, Lock, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -182,7 +183,7 @@ export function EscrowBreakdownDrawer({
                 <div style={{ width: '100%', height: '6px', borderRadius: '3px', backgroundColor: 'var(--border-subtle)', overflow: 'hidden', marginBottom: '10px' }}>
                   <div
                     style={{
-                      width: `${Math.min(100, e.burnPercent)}%`,
+                      width: `${displayBurnPercent(e.consumedUsd, e.allocatedUsd)}%`,
                       height: '100%',
                       backgroundColor: 'var(--color-crimson)',
                       borderRadius: '3px',
@@ -191,7 +192,7 @@ export function EscrowBreakdownDrawer({
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  <span>Spent: ${e.consumedUsd.toFixed(2)} ({e.burnPercent}%)</span>
+                  <span>Spent: ${e.consumedUsd.toFixed(2)} ({displayBurnPercent(e.consumedUsd, e.allocatedUsd)}%)</span>
                   <span>Remaining: <strong style={{ color: 'var(--text-primary)' }}>${e.remainingUsd.toFixed(2)}</strong></span>
                 </div>
 

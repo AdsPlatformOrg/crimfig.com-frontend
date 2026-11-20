@@ -37,6 +37,32 @@ export default function AdminWebsiteDetailPage({
   const [checkingSlotId, setCheckingSlotId] = useState<string | null>(null);
   const [slotCheckMessage, setSlotCheckMessage] = useState<{ id: string; text: string; ok: boolean } | null>(null);
 
+  const [checkingOwnership, setCheckingOwnership] = useState(false);
+  const [ownershipResult, setOwnershipResult] = useState<{ websiteId: string; text: string } | null>(null);
+
+  async function checkOwnership(method: 'dns_txt' | 'html_meta') {
+    setCheckingOwnership(true);
+    setOwnershipResult(null);
+    try {
+      const response = await sessionFetch(`/api/v1/admin/ads/websites/${websiteId}/ownership-retest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method }),
+      });
+      const result = await response.json();
+      if (!response.ok || result.status !== 'success' || typeof result.data?.isVerified !== 'boolean') {
+        throw new Error(typeof result.message === 'string' ? result.message : 'Ownership check unavailable.');
+      }
+      setOwnershipResult({ websiteId, text: result.data.isVerified ? 'Ownership verified.' :
+        result.data.errorMessage || 'The verification record did not match.' });
+      setRefreshCount(value => value + 1);
+    } catch (err) {
+      setOwnershipResult({ websiteId, text: err instanceof Error ? err.message : 'Ownership check unavailable.' });
+    } finally {
+      setCheckingOwnership(false);
+    }
+  }
+
   async function handleCheckSlot(slotId: string) {
     setCheckingSlotId(slotId);
     setSlotCheckMessage(null);
@@ -117,8 +143,15 @@ export default function AdminWebsiteDetailPage({
 
   const { website, slots, history, readiness } = data;
   const isExpired = website.verificationExpiresAt ? new Date(website.verificationExpiresAt).getTime() <= Date.now() : false;
-  const isOwnershipVerified = website.verificationStatus === 'verified' && !isExpired;
-  const isPolicyApproved = website.policyStatus === 'approved';
+  const isOwnershipVerified = website.verificationStatus === 'verified' && Boolean(website.verificationExpiresAt) && !isExpired;
+  const isPolicyApproved = website.policyStatus === 'approved' && website.isActive && !website.isSuspended;
+  const hasReadySlot = slots.some((slot: { isActive: boolean; lifecycleStatus: string; installationStatus: string }) =>
+    slot.isActive && slot.lifecycleStatus === 'active' && slot.installationStatus === 'verified');
+  const paidBlock = website.isSuspended ? 'Website deactivated'
+    : !isOwnershipVerified ? 'Current domain ownership proof required'
+    : !isPolicyApproved ? 'Staff suitability approval required'
+    : !hasReadySlot ? 'No active slot with verified code'
+    : null;
 
   return (
     <section className="cf-moderation" aria-label="Website review and approval">
@@ -191,7 +224,7 @@ export default function AdminWebsiteDetailPage({
             </span>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            {isExpired ? 'Domain ownership expired.' : isOwnershipVerified ? 'Domain DNS ownership confirmed.' : 'Requires promoter DNS/HTML token.'}
+            {isExpired ? 'Domain ownership expired.' : isOwnershipVerified ? 'Domain ownership confirmed.' : 'Requires promoter DNS/HTML token.'}
           </div>
         </div>
 
@@ -200,7 +233,7 @@ export default function AdminWebsiteDetailPage({
           <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             {isPolicyApproved ? <ShieldCheck size={18} color="var(--color-success, #10B981)" /> : <Clock size={18} color="var(--color-warning, #D97706)" />}
             <span style={{ fontWeight: 700, fontSize: '15px', textTransform: 'capitalize' }}>
-              {website.policyStatus.replaceAll('_', ' ')}
+              {website.isSuspended ? 'Deactivated' : ['testing', 'pending_approval', 'unverified'].includes(website.policyStatus) ? 'Pending' : website.policyStatus.replaceAll('_', ' ')}
             </span>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -210,11 +243,11 @@ export default function AdminWebsiteDetailPage({
 
         <div style={{ padding: '16px', backgroundColor: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-muted, #64748B)', fontWeight: 500 }}>Paid Ad Eligibility</div>
-          <div style={{ marginTop: '6px', fontWeight: 700, fontSize: '15px', color: isOwnershipVerified && isPolicyApproved ? 'var(--color-success)' : 'var(--color-warning)' }}>
-            {isOwnershipVerified && isPolicyApproved ? 'Eligible for Paid Ads' : 'Blocked / Pending'}
+          <div style={{ marginTop: '6px', fontWeight: 700, fontSize: '15px', color: !paidBlock ? 'var(--color-success)' : 'var(--color-warning)' }}>
+            {!paidBlock ? 'Website checks passed' : 'Blocked'}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            {!isOwnershipVerified ? 'Blocked: Domain ownership unverified' : !isPolicyApproved ? 'Blocked: Staff suitability approval required' : 'Meets network supply criteria'}
+            {paidBlock || 'Delivery evaluates the remaining gates per request.'}
           </div>
         </div>
 
@@ -232,10 +265,17 @@ export default function AdminWebsiteDetailPage({
       {/* Section 1: Domain Ownership Proof Details */}
       <div style={{ padding: '20px', backgroundColor: 'var(--bg-surface)', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginBottom: '24px' }}>
         <h2 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 12px 0' }}>Domain Ownership Verification Evidence</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', fontSize: '13px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+          <Button type="button" variant="outline" disabled={checkingOwnership} onClick={() => void checkOwnership('dns_txt')}>Check TXT</Button>
+          <Button type="button" variant="outline" disabled={checkingOwnership} onClick={() => void checkOwnership('html_meta')}>Check HTML meta</Button>
+        </div>
+        <p role="status" className="cf-muted">
+          {checkingOwnership ? 'Checking website ownership…' : ownershipResult?.websiteId === websiteId ? ownershipResult.text : null}
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px', fontSize: '13px' }}>
           <div>
             <span style={{ color: 'var(--text-muted)' }}>Verification Method:</span>
-            <div style={{ fontWeight: 600, marginTop: '2px' }}>{website.verificationMethod === 'dns_txt' ? 'DNS TXT Record' : 'HTML File + Meta Tag'}</div>
+            <div style={{ fontWeight: 600, marginTop: '2px' }}>{website.verificationMethod === 'dns_txt' ? 'DNS TXT Record' : 'HTML Meta Tag'}</div>
           </div>
           <div>
             <span style={{ color: 'var(--text-muted)' }}>Verification Token:</span>
@@ -253,11 +293,6 @@ export default function AdminWebsiteDetailPage({
             </div>
           </div>
         </div>
-        {website.verificationErrorMessage && (
-          <div style={{ marginTop: '12px', padding: '10px 14px', backgroundColor: 'rgba(239, 68, 68, 0.08)', borderRadius: '6px', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--color-crimson)', fontSize: '12px' }}>
-            Last verification attempt error: {website.verificationErrorMessage}
-          </div>
-        )}
       </div>
 
       {/* Section 2: Reused Website Policy Review Form */}
@@ -265,6 +300,7 @@ export default function AdminWebsiteDetailPage({
         <WebsitePolicyReview
           websiteId={website.id}
           currentPolicy={website.policyStatus}
+          policyRevision={website.policyRevision}
           onSaved={() => setRefreshCount(v => v + 1)}
         />
       </div>
@@ -369,7 +405,7 @@ export default function AdminWebsiteDetailPage({
       {readiness && (
         <div style={{ marginBottom: '28px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>Paid Delivery Readiness Assessment</h2>
-          <DeliveryReadinessPanel report={readiness} canAct={false} onReload={() => setRefreshCount(v => v + 1)} />
+          <DeliveryReadinessPanel report={readiness} canAct={false} />
         </div>
       )}
 

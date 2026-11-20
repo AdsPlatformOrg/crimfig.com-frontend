@@ -35,6 +35,8 @@ export type AdminWebsiteRow = {
 export function StaffWebsitesDataTable() {
   const router = useRouter();
   const [data, setData] = useState<AdminWebsiteRow[]>([]);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(25);
@@ -52,6 +54,8 @@ export function StaffWebsitesDataTable() {
     const query = new URLSearchParams({
       page: String(page),
       pageSize: String(pageSize),
+      sortBy,
+      sortDirection,
       ...(search.trim() ? { search: search.trim() } : {}),
       ...(policyStatus !== 'all' ? { policyStatus } : {}),
       ...(verificationStatus !== 'all' ? { verificationStatus } : {}),
@@ -63,6 +67,11 @@ export function StaffWebsitesDataTable() {
         const body = await res.json();
         if (body.status !== 'success' || !body.data) throw new Error('Invalid websites response format.');
         if (active) {
+          const lastPage = Math.max(1, Math.ceil((body.data.total ?? 0) / pageSize));
+          if (page > lastPage) {
+            setPage(lastPage);
+            return;
+          }
           setData(body.data.items || []);
           setTotal(body.data.total ?? 0);
           setLoading(false);
@@ -78,11 +87,12 @@ export function StaffWebsitesDataTable() {
     return () => {
       active = false;
     };
-  }, [page, pageSize, search, policyStatus, verificationStatus]);
+  }, [page, pageSize, search, policyStatus, verificationStatus, sortBy, sortDirection]);
 
   const columns: ColumnDef<AdminWebsiteRow>[] = [
     {
       id: 'domain',
+      sortable: true,
       header: 'Website & Domain',
       cell: row => (
         <div>
@@ -112,6 +122,7 @@ export function StaffWebsitesDataTable() {
     },
     {
       id: 'promoter',
+      sortable: true,
       header: 'Promoter',
       cell: row => (
         <div>
@@ -126,6 +137,7 @@ export function StaffWebsitesDataTable() {
     },
     {
       id: 'verificationStatus',
+      sortable: true,
       header: 'Domain Ownership',
       cell: row => {
         const isVerified = row.verificationStatus === 'verified';
@@ -154,6 +166,7 @@ export function StaffWebsitesDataTable() {
     },
     {
       id: 'policyStatus',
+      sortable: true,
       header: 'Suitability Policy',
       cell: row => {
         const isApproved = row.policyStatus === 'approved';
@@ -189,6 +202,7 @@ export function StaffWebsitesDataTable() {
     },
     {
       id: 'paidEligibility',
+      sortable: true,
       header: 'Paid Eligibility',
       cell: row => {
         const isEligible = row.paidEligibility === 'eligible';
@@ -228,6 +242,7 @@ export function StaffWebsitesDataTable() {
     },
     {
       id: 'slots',
+      sortable: true,
       header: 'Ad Slots',
       cell: row => (
         <div>
@@ -237,6 +252,20 @@ export function StaffWebsitesDataTable() {
           </div>
         </div>
       ),
+    },
+    {
+      id: 'createdAt',
+      header: 'Registered',
+      sortable: true,
+      cell: row => {
+        const date = row.createdAt ? new Date(row.createdAt) : null;
+        if (!date || !Number.isFinite(date.getTime())) return '—';
+        const full = new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeStyle: 'long', timeZone: 'Africa/Lagos' }).format(date);
+        const short = new Intl.DateTimeFormat('en-GB', {
+          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos',
+        }).format(date);
+        return <time dateTime={date.toISOString()} title={full} aria-label={full} style={{ whiteSpace: 'nowrap' }}>{short}</time>;
+      },
     },
     {
       id: 'actions',
@@ -328,6 +357,13 @@ export function StaffWebsitesDataTable() {
         error={error}
         page={page}
         pageSize={pageSize}
+        sortBy={sortBy}
+        sortDirection={sortDirection}
+        onSortChange={(column, direction) => {
+          setSortBy(column);
+          setSortDirection(direction);
+          setPage(1);
+        }}
         onPageChange={setPage}
         onPageSizeChange={size => {
           setPageSize(size);

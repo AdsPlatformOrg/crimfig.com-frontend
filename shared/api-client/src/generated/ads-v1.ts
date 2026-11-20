@@ -367,6 +367,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/ads/slots/{id}/direct-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_adminReviewDirectSlot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/ads/slots/{id}/lifecycle": {
         parameters: {
             query?: never;
@@ -409,6 +425,22 @@ export interface paths {
         get: operations["AdsOperations_adminGetWebsite"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/ads/websites/{websiteId}/ownership-retest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_retestOwnership"];
         delete?: never;
         options?: never;
         head?: never;
@@ -511,6 +543,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/adstation/admin/slots/{id}/direct-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_adminReviewDirectSlot_legacy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/adstation/admin/slots/{id}/lifecycle": {
         parameters: {
             query?: never;
@@ -553,6 +601,22 @@ export interface paths {
         get: operations["AdsOperations_adminGetWebsite_legacy"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/adstation/admin/websites/{websiteId}/ownership-retest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdsOperations_retestOwnership_legacy"];
         delete?: never;
         options?: never;
         head?: never;
@@ -767,6 +831,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/{id}/ad-stacks/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Campaigns_liveCreateStack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/{id}/ad-stacks/{stackId}": {
         parameters: {
             query?: never;
@@ -781,6 +861,38 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["Campaigns_updateStack"];
+        trace?: never;
+    };
+    "/api/v1/campaigns/{id}/ad-stacks/{stackId}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["Campaigns_liveArchiveStack"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{id}/ad-stacks/{stackId}/live-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["Campaigns_liveStackSettings"];
         trace?: never;
     };
     "/api/v1/campaigns/{id}/begin-edit": {
@@ -815,6 +927,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/{id}/creatives/submit-addition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Campaigns_liveCreativeAddition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/{id}/creatives/{creativeId}": {
         parameters: {
             query?: never;
@@ -826,6 +954,38 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["Campaigns_deleteCreative"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{id}/creatives/{creativeId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["Campaigns_liveCreativeStatus"];
+        trace?: never;
+    };
+    "/api/v1/campaigns/{id}/creatives/{creativeId}/submit-replacement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["Campaigns_liveCreativeReplacement"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -845,6 +1005,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{id}/live-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["Campaigns_liveSettings"];
         trace?: never;
     };
     "/api/v1/campaigns/{id}/mutations/{requestId}": {
@@ -1198,6 +1374,7 @@ export interface components {
             ctaText?: string | null;
             destinationUrl: string;
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             headline?: string | null;
             imageUrl?: string | null;
             /** Format: uuid */
@@ -1236,6 +1413,13 @@ export interface components {
             status: "success";
         };
         AdsOperations_adminListWebsitesResponse: {
+            data: {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        AdsOperations_adminReviewDirectSlotResponse: {
             data: {
                 [key: string]: unknown;
             };
@@ -1293,6 +1477,17 @@ export interface components {
             /** @enum {string} */
             status: "success";
         };
+        AdsOperations_retestOwnershipResponse: {
+            data: {
+                errorMessage: string | null;
+                isVerified: boolean;
+                status: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
         AdsOperations_reviewWebsitePolicyResponse: {
             data: {
                 [key: string]: unknown;
@@ -1309,54 +1504,11 @@ export interface components {
         };
         BeginEditDto: {
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             /** Format: uuid */
             requestId: string;
             /** Format: uuid */
             submissionId?: string | null;
-        };
-        Campaigns_addCreativeResponse: {
-            data: {
-                /** @enum {string} */
-                adFormat?: "banner" | "card" | "video" | "interstitial";
-                adStackId?: string | null;
-                /** @enum {string} */
-                adType?: "text" | "image" | "video";
-                bodyText?: string | null;
-                campaignId: string;
-                ctaText?: string | null;
-                destinationUrl: string;
-                headline?: string | null;
-                id: string;
-                imageSpecs?: ({
-                    bytes?: number;
-                    height?: number | null;
-                    mimeType?: string;
-                    preparation?: {
-                        [key: string]: unknown;
-                    } | null;
-                    renditions?: {
-                        [key: string]: unknown;
-                    }[];
-                    sha256?: string | null;
-                    width?: number | null;
-                } & {
-                    [key: string]: unknown;
-                }) | null;
-                imageUrl?: string | null;
-                mediaAssetId?: string | null;
-                /** @enum {string|null} */
-                mediaFormat?: "image" | "gif" | "video" | null;
-                posterUrl?: string | null;
-                rejectionReason?: string | null;
-                /** @enum {string} */
-                reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
-                status?: string;
-                videoUrl?: string | null;
-            } & {
-                [key: string]: unknown;
-            };
-            /** @enum {string} */
-            status: "success";
         };
         Campaigns_beginEditResponse: {
             data: {
@@ -2190,152 +2342,6 @@ export interface components {
                 title: string;
                 touchesCount?: number;
                 updatedAt?: string;
-            } & {
-                [key: string]: unknown;
-            };
-            /** @enum {string} */
-            status: "success";
-        };
-        Campaigns_createStackResponse: {
-            data: {
-                campaignId: string;
-                creatives?: ({
-                    /** @enum {string} */
-                    adFormat?: "banner" | "card" | "video" | "interstitial";
-                    adStackId?: string | null;
-                    /** @enum {string} */
-                    adType?: "text" | "image" | "video";
-                    bodyText?: string | null;
-                    campaignId: string;
-                    ctaText?: string | null;
-                    destinationUrl: string;
-                    headline?: string | null;
-                    id: string;
-                    imageSpecs?: ({
-                        bytes?: number;
-                        height?: number | null;
-                        mimeType?: string;
-                        preparation?: {
-                            [key: string]: unknown;
-                        } | null;
-                        renditions?: {
-                            [key: string]: unknown;
-                        }[];
-                        sha256?: string | null;
-                        width?: number | null;
-                    } & {
-                        [key: string]: unknown;
-                    }) | null;
-                    imageUrl?: string | null;
-                    mediaAssetId?: string | null;
-                    /** @enum {string|null} */
-                    mediaFormat?: "image" | "gif" | "video" | null;
-                    posterUrl?: string | null;
-                    rejectionReason?: string | null;
-                    /** @enum {string} */
-                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
-                    status?: string;
-                    videoUrl?: string | null;
-                } & {
-                    [key: string]: unknown;
-                })[];
-                effectiveSettings?: {
-                    /** @enum {string} */
-                    geoMode?: "inherit" | "global" | "targeted";
-                    locations?: {
-                        [key: string]: unknown;
-                    }[];
-                    schedule?: ({
-                        /** @enum {string} */
-                        mode: "inherit";
-                        /** @enum {integer} */
-                        version: 1;
-                    } & {
-                        [key: string]: unknown;
-                    }) | ({
-                        /** @enum {string} */
-                        mode: "round_the_clock" | "custom";
-                        ranges: ({
-                            endMinute: number;
-                            startMinute: number;
-                        } & {
-                            [key: string]: unknown;
-                        })[];
-                        /** @enum {string} */
-                        timezone: "Africa/Lagos";
-                        /** @enum {integer} */
-                        version: 1;
-                    } & {
-                        [key: string]: unknown;
-                    });
-                    targetDevices?: string[];
-                    targetHours?: number[];
-                } & {
-                    [key: string]: unknown;
-                };
-                geoMode?: string;
-                id: string;
-                name: string;
-                position?: number;
-                schedule?: (({
-                    /** @enum {string} */
-                    mode: "inherit";
-                    /** @enum {integer} */
-                    version: 1;
-                } & {
-                    [key: string]: unknown;
-                }) | ({
-                    /** @enum {string} */
-                    mode: "round_the_clock" | "custom";
-                    ranges: ({
-                        endMinute: number;
-                        startMinute: number;
-                    } & {
-                        [key: string]: unknown;
-                    })[];
-                    /** @enum {string} */
-                    timezone: "Africa/Lagos";
-                    /** @enum {integer} */
-                    version: 1;
-                } & {
-                    [key: string]: unknown;
-                })) | null;
-                settings?: {
-                    /** @enum {string} */
-                    geoMode?: "inherit" | "global" | "targeted";
-                    locations?: {
-                        [key: string]: unknown;
-                    }[];
-                    schedule?: ({
-                        /** @enum {string} */
-                        mode: "inherit";
-                        /** @enum {integer} */
-                        version: 1;
-                    } & {
-                        [key: string]: unknown;
-                    }) | ({
-                        /** @enum {string} */
-                        mode: "round_the_clock" | "custom";
-                        ranges: ({
-                            endMinute: number;
-                            startMinute: number;
-                        } & {
-                            [key: string]: unknown;
-                        })[];
-                        /** @enum {string} */
-                        timezone: "Africa/Lagos";
-                        /** @enum {integer} */
-                        version: 1;
-                    } & {
-                        [key: string]: unknown;
-                    });
-                    targetDevices?: string[];
-                    targetHours?: number[];
-                } & {
-                    [key: string]: unknown;
-                };
-                targetDevices?: string | null;
-                targetHours?: string | null;
             } & {
                 [key: string]: unknown;
             };
@@ -3221,6 +3227,481 @@ export interface components {
             /** @enum {string} */
             status: "success";
         };
+        Campaigns_liveArchiveStackResponse: {
+            data: {
+                deleted: boolean;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Campaigns_liveCreativeAdditionResponse: {
+            data: {
+                /** @enum {string} */
+                adFormat?: "banner" | "card" | "video" | "interstitial";
+                adStackId?: string | null;
+                /** @enum {string} */
+                adType?: "text" | "image" | "video";
+                bodyText?: string | null;
+                campaignId: string;
+                ctaText?: string | null;
+                destinationUrl: string;
+                headline?: string | null;
+                id: string;
+                imageSpecs?: ({
+                    bytes?: number;
+                    height?: number | null;
+                    mimeType?: string;
+                    preparation?: {
+                        [key: string]: unknown;
+                    } | null;
+                    renditions?: {
+                        [key: string]: unknown;
+                    }[];
+                    sha256?: string | null;
+                    width?: number | null;
+                } & {
+                    [key: string]: unknown;
+                }) | null;
+                imageUrl?: string | null;
+                mediaAssetId?: string | null;
+                /** @enum {string|null} */
+                mediaFormat?: "image" | "gif" | "video" | null;
+                posterUrl?: string | null;
+                rejectionReason?: string | null;
+                /** @enum {string} */
+                reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                status?: string;
+                videoUrl?: string | null;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Campaigns_liveSettingsResponse: {
+            data: {
+                adStacks?: ({
+                    campaignId: string;
+                    creatives?: ({
+                        /** @enum {string} */
+                        adFormat?: "banner" | "card" | "video" | "interstitial";
+                        adStackId?: string | null;
+                        /** @enum {string} */
+                        adType?: "text" | "image" | "video";
+                        bodyText?: string | null;
+                        campaignId: string;
+                        ctaText?: string | null;
+                        destinationUrl: string;
+                        headline?: string | null;
+                        id: string;
+                        imageSpecs?: ({
+                            bytes?: number;
+                            height?: number | null;
+                            mimeType?: string;
+                            preparation?: {
+                                [key: string]: unknown;
+                            } | null;
+                            renditions?: {
+                                [key: string]: unknown;
+                            }[];
+                            sha256?: string | null;
+                            width?: number | null;
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                        imageUrl?: string | null;
+                        mediaAssetId?: string | null;
+                        /** @enum {string|null} */
+                        mediaFormat?: "image" | "gif" | "video" | null;
+                        posterUrl?: string | null;
+                        rejectionReason?: string | null;
+                        /** @enum {string} */
+                        reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        status?: string;
+                        videoUrl?: string | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    effectiveSettings?: {
+                        /** @enum {string} */
+                        geoMode?: "inherit" | "global" | "targeted";
+                        locations?: {
+                            [key: string]: unknown;
+                        }[];
+                        schedule?: ({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        });
+                        targetDevices?: string[];
+                        targetHours?: number[];
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    geoMode?: string;
+                    id: string;
+                    name: string;
+                    position?: number;
+                    schedule?: (({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    })) | null;
+                    settings?: {
+                        /** @enum {string} */
+                        geoMode?: "inherit" | "global" | "targeted";
+                        locations?: {
+                            [key: string]: unknown;
+                        }[];
+                        schedule?: ({
+                            /** @enum {string} */
+                            mode: "inherit";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        }) | ({
+                            /** @enum {string} */
+                            mode: "round_the_clock" | "custom";
+                            ranges: ({
+                                endMinute: number;
+                                startMinute: number;
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            /** @enum {string} */
+                            timezone: "Africa/Lagos";
+                            /** @enum {integer} */
+                            version: 1;
+                        } & {
+                            [key: string]: unknown;
+                        });
+                        targetDevices?: string[];
+                        targetHours?: number[];
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    targetDevices?: string | null;
+                    targetHours?: string | null;
+                } & {
+                    [key: string]: unknown;
+                })[];
+                advertiserId?: string;
+                approvedRevision?: number | null;
+                approvedSubmissionId?: string | null;
+                budgetUsd?: number;
+                budgetUsdCents?: number;
+                capabilities?: {
+                    blocker: string | null;
+                    canActivate: boolean;
+                    canBeginEdit: boolean;
+                    canEdit: boolean;
+                    canPause: boolean;
+                    canSubmit: boolean;
+                    canTrash: boolean;
+                } & {
+                    [key: string]: unknown;
+                };
+                category?: string | null;
+                channels?: string | null;
+                clicksCount?: number;
+                contentRevision: number;
+                costPerClickUsdCents?: number;
+                costPerImpressionUsdCents?: number;
+                createdAt?: string;
+                creatives?: ({
+                    /** @enum {string} */
+                    adFormat?: "banner" | "card" | "video" | "interstitial";
+                    adStackId?: string | null;
+                    /** @enum {string} */
+                    adType?: "text" | "image" | "video";
+                    bodyText?: string | null;
+                    campaignId: string;
+                    ctaText?: string | null;
+                    destinationUrl: string;
+                    headline?: string | null;
+                    id: string;
+                    imageSpecs?: ({
+                        bytes?: number;
+                        height?: number | null;
+                        mimeType?: string;
+                        preparation?: {
+                            [key: string]: unknown;
+                        } | null;
+                        renditions?: {
+                            [key: string]: unknown;
+                        }[];
+                        sha256?: string | null;
+                        width?: number | null;
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
+                    imageUrl?: string | null;
+                    mediaAssetId?: string | null;
+                    /** @enum {string|null} */
+                    mediaFormat?: "image" | "gif" | "video" | null;
+                    posterUrl?: string | null;
+                    rejectionReason?: string | null;
+                    /** @enum {string} */
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    status?: string;
+                    videoUrl?: string | null;
+                } & {
+                    [key: string]: unknown;
+                })[];
+                currentSubmissionId?: string | null;
+                dailyBudgetUsd?: number | null;
+                dailyBudgetUsdCents?: number | null;
+                defaultStackId?: string;
+                description?: string | null;
+                endsAt?: string | null;
+                /** @enum {string} */
+                format?: "banner" | "card" | "video" | "interstitial";
+                formats?: ("banner" | "card" | "video" | "interstitial")[];
+                frequencyCapPerDay?: number;
+                geoLocations?: {
+                    [key: string]: unknown;
+                }[];
+                geoMode?: string;
+                hourlyPacingUsdCents?: number | null;
+                hoversCount?: number;
+                id: string;
+                impressionsCount?: number;
+                /** @enum {string} */
+                moderationStatus?: "draft" | "pending_primary_review" | "pending_manager_approval" | "approved" | "rejected";
+                pricingModel?: string;
+                pricingVersion?: number;
+                rejectionReason?: string | null;
+                remainingBudgetUsd?: number;
+                remainingBudgetUsdCents?: number;
+                schedule?: (({
+                    /** @enum {string} */
+                    mode: "inherit";
+                    /** @enum {integer} */
+                    version: 1;
+                } & {
+                    [key: string]: unknown;
+                }) | ({
+                    /** @enum {string} */
+                    mode: "round_the_clock" | "custom";
+                    ranges: ({
+                        endMinute: number;
+                        startMinute: number;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    /** @enum {string} */
+                    timezone: "Africa/Lagos";
+                    /** @enum {integer} */
+                    version: 1;
+                } & {
+                    [key: string]: unknown;
+                })) | null;
+                spentUsd?: number;
+                startsAt?: string | null;
+                /** @enum {string} */
+                status?: "draft" | "active" | "paused" | "completed" | "cancelled" | "under_review" | "pending_manager_approval" | "rejected" | "suspended" | "trash";
+                submissionIntentId?: string | null;
+                submissionRequestId?: string | null;
+                submissionState?: string | null;
+                submittedAt?: string | null;
+                targetCountries?: string | null;
+                targetDevices?: (string | string[]) | null;
+                targetHours?: (string | number[]) | null;
+                targetStates?: string | null;
+                title: string;
+                touchesCount?: number;
+                updatedAt?: string;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
+        Campaigns_liveStackSettingsResponse: {
+            data: {
+                campaignId: string;
+                creatives?: ({
+                    /** @enum {string} */
+                    adFormat?: "banner" | "card" | "video" | "interstitial";
+                    adStackId?: string | null;
+                    /** @enum {string} */
+                    adType?: "text" | "image" | "video";
+                    bodyText?: string | null;
+                    campaignId: string;
+                    ctaText?: string | null;
+                    destinationUrl: string;
+                    headline?: string | null;
+                    id: string;
+                    imageSpecs?: ({
+                        bytes?: number;
+                        height?: number | null;
+                        mimeType?: string;
+                        preparation?: {
+                            [key: string]: unknown;
+                        } | null;
+                        renditions?: {
+                            [key: string]: unknown;
+                        }[];
+                        sha256?: string | null;
+                        width?: number | null;
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
+                    imageUrl?: string | null;
+                    mediaAssetId?: string | null;
+                    /** @enum {string|null} */
+                    mediaFormat?: "image" | "gif" | "video" | null;
+                    posterUrl?: string | null;
+                    rejectionReason?: string | null;
+                    /** @enum {string} */
+                    reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    status?: string;
+                    videoUrl?: string | null;
+                } & {
+                    [key: string]: unknown;
+                })[];
+                effectiveSettings?: {
+                    /** @enum {string} */
+                    geoMode?: "inherit" | "global" | "targeted";
+                    locations?: {
+                        [key: string]: unknown;
+                    }[];
+                    schedule?: ({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    });
+                    targetDevices?: string[];
+                    targetHours?: number[];
+                } & {
+                    [key: string]: unknown;
+                };
+                geoMode?: string;
+                id: string;
+                name: string;
+                position?: number;
+                schedule?: (({
+                    /** @enum {string} */
+                    mode: "inherit";
+                    /** @enum {integer} */
+                    version: 1;
+                } & {
+                    [key: string]: unknown;
+                }) | ({
+                    /** @enum {string} */
+                    mode: "round_the_clock" | "custom";
+                    ranges: ({
+                        endMinute: number;
+                        startMinute: number;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    /** @enum {string} */
+                    timezone: "Africa/Lagos";
+                    /** @enum {integer} */
+                    version: 1;
+                } & {
+                    [key: string]: unknown;
+                })) | null;
+                settings?: {
+                    /** @enum {string} */
+                    geoMode?: "inherit" | "global" | "targeted";
+                    locations?: {
+                        [key: string]: unknown;
+                    }[];
+                    schedule?: ({
+                        /** @enum {string} */
+                        mode: "inherit";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    }) | ({
+                        /** @enum {string} */
+                        mode: "round_the_clock" | "custom";
+                        ranges: ({
+                            endMinute: number;
+                            startMinute: number;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        /** @enum {string} */
+                        timezone: "Africa/Lagos";
+                        /** @enum {integer} */
+                        version: 1;
+                    } & {
+                        [key: string]: unknown;
+                    });
+                    targetDevices?: string[];
+                    targetHours?: number[];
+                } & {
+                    [key: string]: unknown;
+                };
+                targetDevices?: string | null;
+                targetHours?: string | null;
+            } & {
+                [key: string]: unknown;
+            };
+            /** @enum {string} */
+            status: "success";
+        };
         Campaigns_mutationResultResponse: {
             data: {
                 mutation: {
@@ -3645,6 +4126,7 @@ export interface components {
         };
         CreateStackDto: {
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             name?: string | null;
             /** Format: uuid */
             requestId: string;
@@ -3653,16 +4135,28 @@ export interface components {
             /** @enum {string} */
             decision: "approved" | "rejected";
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             overrideReason: string;
             /** Format: uuid */
             requestId: string;
             /** Format: uuid */
             submissionId: string;
         };
+        LiveCreativeStatusDto: {
+            /** Format: uuid */
+            adStackId?: string | null;
+            expectedRevision: number;
+            expectedUpdatedAt?: string | null;
+            /** Format: uuid */
+            requestId: string;
+            /** @enum {string} */
+            status: "active" | "paused" | "archived";
+        };
         ModerationClaimDto: {
             /** Format: uuid */
             claimId?: string | null;
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             reason?: string | null;
             /** Format: uuid */
             requestId: string;
@@ -6408,6 +6902,7 @@ export interface components {
         };
         MutationDto: {
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             /** Format: uuid */
             requestId: string;
         };
@@ -6496,6 +6991,7 @@ export interface components {
             ctaText?: string | null;
             destinationUrl?: string | null;
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             headline?: string | null;
             imageUrl?: string | null;
             /** Format: uuid */
@@ -6511,6 +7007,7 @@ export interface components {
             /** @enum {string} */
             decision: "approved" | "rejected";
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             internalNote?: string | null;
             note?: string | null;
             reasonCode?: string | null;
@@ -6527,7 +7024,9 @@ export interface components {
             costPerImpressionCents?: number | null;
             dailyBudgetUsd?: number | null;
             description?: string | null;
+            endsAt?: string | null;
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             /** @enum {string|null} */
             format?: "banner" | "card" | "video" | "interstitial" | null;
             frequencyCapPerDay?: number | null;
@@ -6620,6 +7119,7 @@ export interface components {
         };
         UpdateStackDto: {
             expectedRevision: number;
+            expectedUpdatedAt?: string | null;
             /** @enum {string|null} */
             geoMode?: "inherit" | "global" | "targeted" | null;
             locations?: string[] | null;
@@ -9478,6 +9978,117 @@ export interface operations {
             };
         };
     };
+    AdsOperations_adminReviewDirectSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminReviewDirectSlotResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     AdsOperations_adminUpdateSlotLifecycle: {
         parameters: {
             query?: never;
@@ -9597,6 +10208,8 @@ export interface operations {
                 search?: string;
                 policyStatus?: string;
                 verificationStatus?: string;
+                sortBy?: "createdAt" | "domain" | "promoter" | "verificationStatus" | "policyStatus" | "paidEligibility" | "slots";
+                sortDirection?: "asc" | "desc";
             };
             header?: never;
             path?: never;
@@ -9721,6 +10334,126 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdsOperations_adminGetWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_retestOwnership: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    method: "dns_txt" | "html_meta";
+                } & {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_retestOwnershipResponse"];
                 };
             };
             /** @description Sanitized API error */
@@ -10487,6 +11220,117 @@ export interface operations {
             };
         };
     };
+    AdsOperations_adminReviewDirectSlot_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_adminReviewDirectSlotResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     AdsOperations_adminUpdateSlotLifecycle_legacy: {
         parameters: {
             query?: never;
@@ -10606,6 +11450,8 @@ export interface operations {
                 search?: string;
                 policyStatus?: string;
                 verificationStatus?: string;
+                sortBy?: "createdAt" | "domain" | "promoter" | "verificationStatus" | "policyStatus" | "paidEligibility" | "slots";
+                sortDirection?: "asc" | "desc";
             };
             header?: never;
             path?: never;
@@ -10730,6 +11576,126 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdsOperations_adminGetWebsiteResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    AdsOperations_retestOwnership_legacy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                websiteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    method: "dns_txt" | "html_meta";
+                } & {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsOperations_retestOwnershipResponse"];
                 };
             };
             /** @description Sanitized API error */
@@ -11956,7 +12922,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Campaigns_addCreativeResponse"];
+                    "application/json": components["schemas"]["Campaigns_liveCreativeAdditionResponse"];
                 };
             };
             /** @description Sanitized API error */
@@ -12412,7 +13378,122 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Campaigns_createStackResponse"];
+                    "application/json": components["schemas"]["Campaigns_liveStackSettingsResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_liveCreateStack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStackDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveStackSettingsResponse"];
                 };
             };
             /** @description Sanitized API error */
@@ -12644,7 +13725,239 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Campaigns_createStackResponse"];
+                    "application/json": components["schemas"]["Campaigns_liveStackSettingsResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_liveArchiveStack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                stackId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MutationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveArchiveStackResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_liveStackSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                stackId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStackDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveStackSettingsResponse"];
                 };
             };
             /** @description Sanitized API error */
@@ -12874,7 +14187,122 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Campaigns_addCreativeResponse"];
+                    "application/json": components["schemas"]["Campaigns_liveCreativeAdditionResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_liveCreativeAddition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddCreativeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveCreativeAdditionResponse"];
                 };
             };
             /** @description Sanitized API error */
@@ -13085,6 +14513,238 @@ export interface operations {
             };
         };
     };
+    Campaigns_liveCreativeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                creativeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveCreativeStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveCreativeAdditionResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_liveCreativeReplacement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                creativeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceCreativeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveCreativeAdditionResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     Campaigns_deliveryReadiness: {
         parameters: {
             query?: never;
@@ -13102,6 +14762,121 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Campaigns_staffDeliveryReadinessResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    Campaigns_liveSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCampaignDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Campaigns_liveSettingsResponse"];
                 };
             };
             /** @description Sanitized API error */

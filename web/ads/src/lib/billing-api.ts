@@ -1,3 +1,4 @@
+import { displayBurnPercent } from './display-burn-percent';
 import { apiData, arrayData } from './api-data';
 import type { WalletBalance, EscrowAllocation, SettlementBatch } from '../types/billing';
 
@@ -22,7 +23,7 @@ export async function fetchBillingOverview(): Promise<{ wallet: WalletBalance; e
       !Number.isFinite(wallet.estimatedNgn)) throw new Error('Invalid wallet response.');
   const escrows = arrayData<any>(data?.campaignEscrows?.items).map(item => ({
     ...item,
-    burnPercent: item.allocatedUsd > 0 ? item.consumedUsd / item.allocatedUsd * 100 : 0,
+    burnPercent: displayBurnPercent(item.consumedUsd, item.allocatedUsd),
   }));
   return { wallet: { ...wallet, availableUsd: wallet.availableUsdCents / 100, lockedUsd: wallet.lockedUsdCents / 100, totalUsd: wallet.totalUsdCents / 100 }, escrows };
 }

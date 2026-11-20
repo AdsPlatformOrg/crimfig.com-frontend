@@ -246,32 +246,18 @@ export function AdminDataTable<T extends { id?: string | number }>({
                     cursor: col.sortable ? 'pointer' : 'default',
                     userSelect: 'none',
                   }}
-                  onClick={() => col.sortable && handleSort(col.id)}
+                  aria-sort={col.sortable && isSorted ? (currentSortDir === 'desc' ? 'descending' : 'ascending') : undefined}
                 >
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      justifyContent: col.align === 'right' ? 'flex-end' : col.align === 'center' ? 'center' : 'flex-start',
-                      width: '100%',
-                    }}
-                  >
-                    <span>{col.header}</span>
-                    {col.sortable && (
-                      <span style={{ display: 'inline-flex', color: isSorted ? 'var(--color-crimson, #D4143A)' : 'var(--text-muted, #94A3B8)' }}>
-                        {isSorted ? (
-                          currentSortDir === 'desc' ? (
-                            <ChevronDown style={{ width: 14, height: 14 }} />
-                          ) : (
-                            <ChevronUp style={{ width: 14, height: 14 }} />
-                          )
-                        ) : (
-                          <ChevronsUpDown style={{ width: 14, height: 14 }} />
-                        )}
-                      </span>
-                    )}
-                  </div>
+                  {col.sortable ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSort(col.id)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, font: 'inherit', color: 'inherit', background: 'none', border: 0, padding: 0, cursor: 'pointer', textAlign: 'inherit' }}
+                    >
+                      {col.header}
+                      {isSorted ? (currentSortDir === 'desc' ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronUp size={14} aria-hidden="true" />) : <ChevronsUpDown size={14} aria-hidden="true" />}
+                    </button>
+                  ) : col.header}
                 </TableHead>
               );
             })}
