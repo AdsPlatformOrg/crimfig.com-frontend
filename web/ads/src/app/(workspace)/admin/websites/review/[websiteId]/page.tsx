@@ -39,8 +39,34 @@ export default function AdminWebsiteDetailPage({
 
   const [checkingOwnership, setCheckingOwnership] = useState(false);
   const [ownershipResult, setOwnershipResult] = useState<{ websiteId: string; text: string } | null>(null);
+  const [cooldownUntilMs, setCooldownUntilMs] = useState<number>(0);
+  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
+
+  useEffect(() => {
+    const lastAttempt = data?.website?.lastVerificationAttemptAt
+      ? new Date(data.website.lastVerificationAttemptAt).getTime()
+      : 0;
+    if (Number.isFinite(lastAttempt) && lastAttempt > 0) {
+      const nextUntil = lastAttempt + 10000;
+      if (nextUntil > Date.now()) {
+        setCooldownUntilMs((prev) => Math.max(prev, nextUntil));
+      }
+    }
+  }, [data?.website?.lastVerificationAttemptAt]);
+
+  useEffect(() => {
+    const sync = () => {
+      const remaining = Math.max(0, Math.ceil((cooldownUntilMs - Date.now()) / 1000));
+      setCooldownSeconds(remaining);
+    };
+    sync();
+    if (cooldownUntilMs <= Date.now()) return;
+    const timer = window.setInterval(sync, 250);
+    return () => window.clearInterval(timer);
+  }, [cooldownUntilMs]);
 
   async function checkOwnership(method: 'dns_txt' | 'html_meta') {
+    if (checkingOwnership || cooldownSeconds > 0) return;
     setCheckingOwnership(true);
     setOwnershipResult(null);
     try {
@@ -51,8 +77,14 @@ export default function AdminWebsiteDetailPage({
       });
       const result = await response.json();
       if (!response.ok || result.status !== 'success' || typeof result.data?.isVerified !== 'boolean') {
+        if (response.status === 429) {
+          const secondsMatch = typeof result.message === 'string' ? /wait (\d+) second/i.exec(result.message) : null;
+          const waitSeconds = secondsMatch ? Math.min(10, Math.max(1, Number(secondsMatch[1]))) : 10;
+          setCooldownUntilMs(Date.now() + waitSeconds * 1000);
+        }
         throw new Error(typeof result.message === 'string' ? result.message : 'Ownership check unavailable.');
       }
+      setCooldownUntilMs(Date.now() + 10000);
       setOwnershipResult({ websiteId, text: result.data.isVerified ? 'Ownership verified.' :
         result.data.errorMessage || 'The verification record did not match.' });
       setRefreshCount(value => value + 1);
@@ -266,11 +298,21 @@ export default function AdminWebsiteDetailPage({
       <div style={{ padding: '20px', backgroundColor: 'var(--bg-surface)', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginBottom: '24px' }}>
         <h2 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 12px 0' }}>Domain Ownership Verification Evidence</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-          <Button type="button" variant="outline" disabled={checkingOwnership} onClick={() => void checkOwnership('dns_txt')}>Check TXT</Button>
-          <Button type="button" variant="outline" disabled={checkingOwnership} onClick={() => void checkOwnership('html_meta')}>Check HTML meta</Button>
+          <Button type="button" variant="outline" disabled={checkingOwnership || cooldownSeconds > 0} onClick={() => void checkOwnership('dns_txt')}>
+            {cooldownSeconds > 0 ? `Check TXT (${cooldownSeconds}s)` : 'Check TXT'}
+          </Button>
+          <Button type="button" variant="outline" disabled={checkingOwnership || cooldownSeconds > 0} onClick={() => void checkOwnership('html_meta')}>
+            {cooldownSeconds > 0 ? `Check HTML meta (${cooldownSeconds}s)` : 'Check HTML meta'}
+          </Button>
         </div>
         <p role="status" className="cf-muted">
-          {checkingOwnership ? 'Checking website ownership…' : ownershipResult?.websiteId === websiteId ? ownershipResult.text : null}
+          {checkingOwnership
+            ? 'Checking website ownership…'
+            : ownershipResult?.websiteId === websiteId
+              ? ownershipResult.text
+              : cooldownSeconds > 0
+                ? `Verification cooldown active. Wait ${cooldownSeconds} second${cooldownSeconds === 1 ? '' : 's'} before checking again.`
+                : null}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px', fontSize: '13px' }}>
           <div>
