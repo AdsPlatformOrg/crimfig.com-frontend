@@ -8,7 +8,7 @@ import {
   Plus,
   ShieldCheck,
   Code2,
-  Copy,
+  XCircle,
   Check,
   ExternalLink,
   Loader2,
@@ -23,9 +23,6 @@ import { apiData } from '../../../lib/api-data';
 import { loadWebsites, registerWebsite, verifyWebsite } from '../../../lib/campaigns-api';
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
-import {
-  generateCrimFigVerifyMetaTag,
-} from '../../CrimFigAdSlot';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Badge } from '../../ui/badge';
@@ -52,7 +49,8 @@ export interface PromoterWebsite {
   policyStatus?: string;
   isVerified: boolean;
   lastPingAt: string;
-  activePlacementCount: number;
+  impressionCount?: string;
+  ownershipChecks?: Partial<Record<'html_meta' | 'dns_txt', { status: 'verified' | 'not_verified' | 'expired' }>>;
 }
 
 export function PromoterWebsitesView() {
@@ -60,7 +58,6 @@ export function PromoterWebsitesView() {
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingWrites, setPendingWrites] = useState<Set<string>>(new Set());
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,12 +128,6 @@ export function PromoterWebsitesView() {
         return next;
       });
     }
-  };
-
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedToken(id);
-    setTimeout(() => setCopiedToken(null), 2500);
   };
 
   const submitReview = async (id: string) => {
@@ -345,8 +336,8 @@ export function PromoterWebsitesView() {
               <TableHead style={{ minWidth: '220px' }}>Website Domain</TableHead>
               <TableHead style={{ minWidth: '150px' }}>Ownership Status</TableHead>
               <TableHead style={{ minWidth: '140px' }}>Policy Status</TableHead>
-              <TableHead style={{ minWidth: '110px' }}>Active Ads</TableHead>
-              <TableHead style={{ minWidth: '160px' }}>Method &amp; Verification</TableHead>
+              <TableHead style={{ minWidth: '110px' }}>Impressions</TableHead>
+              <TableHead style={{ minWidth: '160px' }}>Verification</TableHead>
               <TableHead style={{ minWidth: '180px', textAlign: 'right' }}>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -398,11 +389,6 @@ export function PromoterWebsitesView() {
                       >
                         {site.isVerified ? 'Verified Domain' : 'Verification Required'}
                       </span>
-                      {site.verificationExpiresAt && (
-                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                          Expires: {new Date(site.verificationExpiresAt).toLocaleDateString()}
-                        </span>
-                      )}
                       {!site.isVerified && site.verificationErrorMessage && (
                         <span style={{ fontSize: '11px', color: 'var(--color-error, #DC2626)', maxWidth: '240px', lineHeight: 1.2 }}>
                           {site.verificationErrorMessage}
@@ -413,14 +399,15 @@ export function PromoterWebsitesView() {
                   <TableCell>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <Badge
-                        variant={
-                          site.policyStatus === 'approved'
-                            ? 'default'
-                            : site.policyStatus === 'suspended'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                        style={{ width: 'fit-content', fontSize: '11px' }}
+                        variant={site.policyStatus === 'approved' ? 'secondary' : 'destructive'}
+                        style={{
+                          width: 'fit-content',
+                          fontSize: '11px',
+                          ...(site.policyStatus === 'approved' ? {
+                            color: 'var(--color-success)',
+                            backgroundColor: 'var(--color-success-bg)',
+                          } : {}),
+                        }}
                       >
                         {policyStatusUpper}
                       </Badge>
@@ -448,40 +435,28 @@ export function PromoterWebsitesView() {
                   </TableCell>
                   <TableCell>
                     <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {site.activePlacementCount || 0} active
+                      {typeof site.impressionCount === 'string' && /^\d+$/.test(site.impressionCount) ? BigInt(site.impressionCount).toLocaleString() : '—'}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        {site.verificationMethod === 'html_file_and_meta_tag' ? 'HTML Head Meta' : 'DNS TXT Record'}
-                      </span>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <code style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                          {site.verificationToken ? `${site.verificationToken.slice(0, 16)}...` : 'No token'}
-                        </code>
-                        {site.verificationToken && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleCopy(
-                                site.verificationMethod === 'html_file_and_meta_tag'
-                                  ? generateCrimFigVerifyMetaTag(site.verificationToken)
-                                  : `crimfig-site-verification=${site.verificationToken}`,
-                                site.id
-                              )
-                            }
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: 'var(--text-muted)' }}
-                            title="Copy verification proof snippet"
-                          >
-                            {copiedToken === site.id ? (
-                              <Check style={{ width: 12, height: 12, color: 'var(--color-success)' }} />
-                            ) : (
-                              <Copy style={{ width: 12, height: 12 }} />
-                            )}
-                          </button>
-                        )}
-                      </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 12px' }}>
+                      {([
+                        ['html_meta', 'HTML', 'html_file_and_meta_tag'],
+                        ['dns_txt', 'DNS TXT', 'dns_txt'],
+                      ] as const).map(([method, label, registeredMethod]) => {
+                        const status = site.ownershipChecks?.[method]?.status ??
+                          (site.isVerified && site.verificationMethod === registeredMethod ? 'verified' : 'not_verified');
+                        const verified = status === 'verified';
+                        const description = status === 'expired' ? 'Expired' : verified ? 'Verified' : 'Not verified';
+                        const Icon = verified ? Check : XCircle;
+                        return (
+                          <span key={method} title={description} aria-label={`${label}: ${description}`} role="img"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', fontSize: 12 }}>
+                            {label}
+                            <Icon size={14} aria-hidden="true" style={{ color: verified ? 'var(--color-success)' : 'var(--text-muted)' }} />
+                          </span>
+                        );
+                      })}
                     </div>
                   </TableCell>
                   <TableCell style={{ textAlign: 'right' }}>
@@ -551,7 +526,7 @@ export function PromoterWebsitesView() {
                           textDecoration: 'none',
                         }}
                       >
-                        Inspect
+                        View
                       </Link>
                     </div>
                   </TableCell>

@@ -396,8 +396,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px', margin: 0 }}>
-            {isOwnershipVerified && website.verificationExpiresAt
-              ? `Ownership active until ${new Date(website.verificationExpiresAt).toLocaleDateString()}`
+            {isOwnershipVerified
+              ? 'Website ownership confirmed.'
               : 'Requires promoter DNS TXT or HTML meta verification.'}
           </p>
         </div>
