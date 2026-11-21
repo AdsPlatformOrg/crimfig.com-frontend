@@ -16,7 +16,7 @@ function defaultAdsApiUrl(configured=process.env.NEXT_PUBLIC_ADS_API_URL){
  if(!configured)return app;
  const url=new URL(configured);
  const staging=app==='https://staging-ads.crimfig.com';
- if(url.username||url.password||url.pathname!=='/'||url.search||url.hash||!['https:','http:'].includes(url.protocol)||(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))||(staging&&(/(^|[-.])production([-.]|$)/.test(url.hostname)||url.hostname==='ads.crimfig.com'||url.hostname==='api.ads.crimfig.com'||url.hostname.includes('.staging.'))))throw Error('Ads API origin conflicts with this deployment');
+ if(url.username||url.password||url.pathname!=='/'||url.search||url.hash||!['https:','http:'].includes(url.protocol)||(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))||(staging&&(/(^|[-.])production([-.]|$)/.test(url.hostname)||url.hostname==='ads.crimfig.com'||url.hostname==='api.ads.crimfig.com')))throw Error('Ads API origin conflicts with this deployment');
  return url.origin;
 }
 

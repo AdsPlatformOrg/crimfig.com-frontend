@@ -99,7 +99,7 @@ export function workspaceNavigation(
       items: [
         {
           id: "promoter_dashboard",
-          label: "Dashboard",
+          label: "Overview",
           icon: BarChart3,
           href: "/promoter",
         },
@@ -158,7 +158,7 @@ export function workspaceNavigation(
       items: [
         {
           id: "adstation",
-          label: "Dashboard",
+          label: "Control Center",
           icon: Share2,
           href: "/promoter/adstation",
         },

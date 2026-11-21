@@ -2,6 +2,23 @@
 
 Prior historical entries up to 2026-11-03 are archived in `frontend/SERIAL_LOGS_ARCHIVE_20261103.md`.
 
+## 2026-11-21 - PLAN-0128 Promoter Hub Navigation Nomenclature & Registered Websites Table View with Drill-Down
+- **Objective:** Fix Promoter Hub navigation nomenclature to eliminate duplicate "Dashboard" labels and transform the registered websites grid into a responsive, filterable Table view with dedicated drill-down inspection.
+- **Affected Repos / Files:**
+  - `web/ads/src/lib/workspace-navigation.ts`
+  - `web/ads/test/plan0115-navigation-dashboard.test.cjs`
+  - `web/ads/src/components/console/promoter/PromoterWebsitesView.tsx`
+  - `web/ads/src/app/(workspace)/promoter/websites/[websiteId]/page.tsx`
+- **Changes Implemented:**
+  - Renamed Promoter Hub navigation items: `promoter_dashboard` (`/promoter`) changed to "Overview", CrimFig Ad Network kept as "Dashboard" (`/promoter/ad-network`), and AdStation (`/promoter/adstation`) renamed to "Control Center".
+  - Transformed `/promoter/websites` from card/grid layout into a responsive Shadcn-compatible `Table` view with domain search and status filters (`All`, `Verified`, `Unverified`, `Policy Approved`, `Policy Pending`).
+  - Added dedicated drill-down detail route at `/promoter/websites/[websiteId]` featuring property overview cards, copyable DNS TXT and HTML Meta Tag proof snippets, live re-verification trigger with confirmation dialog, policy review status, and configured ad slots table.
+- **Verification & Tests:**
+  - `.\frontend\node_modules\.bin\tsc -p frontend/web/ads/tsconfig.json --noEmit` -> 0 errors.
+  - `node frontend/web/ads/test/plan0115-navigation-dashboard.test.cjs` -> 9/9 passed.
+  - `pnpm --filter @crimfig/web-ads build` -> Next.js production build succeeded with new dynamic route `ƒ /promoter/websites/[websiteId]`.
+- **Status:** COMPLETED
+
 ## 2026-11-15 - PLAN-0115 Workspace Navigation Alignment, Compact Sidebar & Dashboards
 
 Updated `workspace-navigation.ts`, `DashboardSidebar.tsx`, and `ProtectedWorkspace.tsx` to align **Advertiser Studio** (`Ads Console` -> `Dashboard`, `My Ad Campaigns`; removed `Create Campaign` from sidebar) and **Promoter Hub** (`Dashboard`, `CrimFig Ad Network` -> `Dashboard`, `Get Started` [`Setup Guide`, `On Website`, `On Mobile App`, `Affiliate Link`], `Reports`; `AdStation` -> `Dashboard`, `Setup a Direct Ad Slot`) with compact desktop sizing (`12px` items, `12px`/`2px` gaps, `34px` desktop / `44px` mobile touch targets). Updated `ConsoleDashboard.tsx` to 3 headline KPI cards (`Ad Spend`, valid `Impressions`, finally valid `Clicks`) with supporting metrics under `Additional Details`; replaced `/promoter` landing with 4-card `PromoterDashboard.tsx`; added `/promoter/ad-network`, `/promoter/ad-network/get-started`, and `/promoter/adstation/setup`; updated `AdStationWorkspace.tsx` and `PromoterIndividualsView.tsx` for explicit gating & lifecycle statuses. Verification: `tsc --noEmit` (0 errors), `node --test web/ads/test/*.test.cjs` (41/41 passed).
@@ -77,3 +94,12 @@ Rebuilt Ads navigation with a shadcn Dialog drawer and desktop icon rail. Fund W
   - `web/ads/src/app/(workspace)/admin/websites/review/[websiteId]/page.tsx`
 - **Summary:** Prevented full-page loading replacement on background refreshes (`if (!current) setLoading(true)`) and added an accessible `@radix-ui/react-dialog` confirmation modal on **Check TXT** / **Check HTML meta** that displays the verification status, response message, domain, method checked, expected token, and timestamp before refreshing background inspection data on confirmation.
 - **Verification:** `tsc -p frontend/web/ads/tsconfig.json --noEmit` (0 errors) and `pnpm --filter ./web/ads... build` (exit code 0).
+
+---
+### [ACT-20261121-003] 2026-11-21 10:12 UTC — PLAN-0127 Fix Staging Ads API Origin and Lazy Embed Generation
+- **Plan Reference:** PLAN-0127
+- **Files Modified:**
+  - `web/ads/src/components/CrimFigAdSlot.tsx`
+  - `web/ads/src/components/console/promoter/PromoterWebsitesView.tsx`
+- **Summary:** Fixed client-side crash on `/promoter/websites` by correcting `defaultAdsApiUrl` in `CrimFigAdSlot.tsx` to allow legitimate staging API hostnames (`ads.staging.crimfig.com`) while blocking production origins on staging, and made `generateCrimFigEmbedCode` lazy in `PromoterWebsitesView.tsx` when the modal is open.
+- **Verification:** `tsc -p frontend/web/ads/tsconfig.json --noEmit` (0 errors) and `pnpm --filter @crimfig/web-ads build` (exit code 0).

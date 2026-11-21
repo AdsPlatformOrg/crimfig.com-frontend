@@ -65,7 +65,7 @@ test('Advertiser Studio uses Ads Console nomenclature with Dashboard and My Ad C
   assert.equal(workspaceNavigation('promoter').flatMap((group) => group.items).some((item) => item.id === 'advertiser_rewards'), false);
 });
 
-test('Promoter Hub hierarchy contains Dashboard, CrimFig Ad Network, and AdStation', () => {
+test('Promoter Hub hierarchy contains Overview, CrimFig Ad Network, and AdStation Control Center', () => {
   const { workspaceNavigation, resolveWorkspaceContext } = loadWorkspaceNavigation();
   const promoterGroups = workspaceNavigation('promoter');
   const titles = promoterGroups.map((g) => g.title);
@@ -73,6 +73,12 @@ test('Promoter Hub hierarchy contains Dashboard, CrimFig Ad Network, and AdStati
   assert.ok(titles.includes('Promoter Hub'));
   assert.ok(titles.includes('CrimFig Ad Network'));
   assert.ok(titles.includes('AdStation'));
+
+  const promoterHub = promoterGroups.find((g) => g.title === 'Promoter Hub');
+  assert.deepEqual(
+    Array.from(promoterHub.items, (i) => i.label),
+    ['Overview'],
+  );
 
   const adNetwork = promoterGroups.find((g) => g.title === 'CrimFig Ad Network');
   assert.deepEqual(
@@ -89,7 +95,7 @@ test('Promoter Hub hierarchy contains Dashboard, CrimFig Ad Network, and AdStati
   const adstation = promoterGroups.find((g) => g.title === 'AdStation');
   assert.deepEqual(
     Array.from(adstation.items, (i) => i.label),
-    ['Dashboard', 'Setup a Direct Ad Slot'],
+    ['Control Center', 'Setup a Direct Ad Slot'],
   );
 
   assert.deepEqual(Array.from(resolveWorkspaceContext('/promoter')), ['promoter', 'promoter_dashboard']);
