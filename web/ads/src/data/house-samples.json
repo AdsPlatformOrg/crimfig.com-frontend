@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "presetPolicyVersion": 1,
+  "families": [
+    "sample_04_plaid_man",
+    "sample_03_plaid_woman",
+    "sample_01_red_turtleneck_growth"
+  ],
+  "assets": [
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "medium_rectangle",
+      "width": 300,
+      "height": 250,
+      "url": "/img/house-samples/sample_04_plaid_man/medium_rectangle.webp",
+      "mime": "image/webp",
+      "bytes": 89784,
+      "sha256": "e5ac4cac2bb5876f8f35ff6a83bc1b227808322cf688f77b2f92b18a2ab60b27"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "large_rectangle",
+      "width": 336,
+      "height": 280,
+      "url": "/img/house-samples/sample_04_plaid_man/large_rectangle.webp",
+      "mime": "image/webp",
+      "bytes": 68218,
+      "sha256": "df5244cd158685049796412490c75e89464dc68ce25244e6dc164a6bd0566be5"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "leaderboard",
+      "width": 728,
+      "height": 90,
+      "url": "/img/house-samples/sample_04_plaid_man/leaderboard.webp",
+      "mime": "image/webp",
+      "bytes": 24064,
+      "sha256": "07ef417b3e4b94cbbead6af305f5aa2a3801e36a0c82239ea12b40798403dda9"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "mobile_banner",
+      "width": 320,
+      "height": 50,
+      "url": "/img/house-samples/sample_04_plaid_man/mobile_banner.webp",
+      "mime": "image/webp",
+      "bytes": 8496,
+      "sha256": "92f6f5ee809d5a9af3e7d678ee34c49c616947e7c825f5f7033c4ee3d8159dd3"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "large_mobile_banner",
+      "width": 320,
+      "height": 100,
+      "url": "/img/house-samples/sample_04_plaid_man/large_mobile_banner.webp",
+      "mime": "image/webp",
+      "bytes": 21506,
+      "sha256": "5e633b51f5744780ecce0c7ac3abf7e387ed38689542341d25a3b6a6bf24d6f4"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "half_page",
+      "width": 300,
+      "height": 600,
+      "url": "/img/house-samples/sample_04_plaid_man/half_page.webp",
+      "mime": "image/webp",
+      "bytes": 106402,
+      "sha256": "9173c9d03c13601fce19b08d48222db029d8256caa7edd9747f0d7c4d1ab42bd"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "billboard",
+      "width": 970,
+      "height": 250,
+      "url": "/img/house-samples/sample_04_plaid_man/billboard.webp",
+      "mime": "image/webp",
+      "bytes": 102226,
+      "sha256": "13c0902f6a28f4bd8e697c4a4fbd70e8147ef292c1fd1b4f1d02360dcecd736b"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "square",
+      "width": 250,
+      "height": 250,
+      "url": "/img/house-samples/sample_04_plaid_man/square.webp",
+      "mime": "image/webp",
+      "bytes": 75204,
+      "sha256": "1a859c43da45cc1210977c7f395f2f94e49699fb7781a844dce0e98b8c328c8a"
+    },
+    {
+      "family": "sample_04_plaid_man",
+      "preset": "large_square",
+      "width": 300,
+      "height": 300,
+      "url": "/img/house-samples/sample_04_plaid_man/large_square.webp",
+      "mime": "image/webp",
+      "bytes": 104840,
+      "sha256": "e9ea47348691e8cb369d9a0a51d336b1fd42a1d56cffce587f8916bb9c809829"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "medium_rectangle",
+      "width": 300,
+      "height": 250,
+      "url": "/img/house-samples/sample_03_plaid_woman/medium_rectangle.webp",
+      "mime": "image/webp",
+      "bytes": 80260,
+      "sha256": "740186a3747397b09320ba147acb2b9f2548dde5e7022f314709c0a403744040"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "large_rectangle",
+      "width": 336,
+      "height": 280,
+      "url": "/img/house-samples/sample_03_plaid_woman/large_rectangle.webp",
+      "mime": "image/webp",
+      "bytes": 60994,
+      "sha256": "7094381ae9cac987ab3522f55ba43965ebc89bd9d4d0c0325ad53dfe922a60f5"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "leaderboard",
+      "width": 728,
+      "height": 90,
+      "url": "/img/house-samples/sample_03_plaid_woman/leaderboard.webp",
+      "mime": "image/webp",
+      "bytes": 23224,
+      "sha256": "753ca9f76d79d6606bd3dc5c8799853a6a641f4893d4c0a331a65fafdc47a4e4"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "mobile_banner",
+      "width": 320,
+      "height": 50,
+      "url": "/img/house-samples/sample_03_plaid_woman/mobile_banner.webp",
+      "mime": "image/webp",
+      "bytes": 8212,
+      "sha256": "44ab2f58405983ace43f37c2c550a0fa9c116ce5c8bd19e5da9a54d0d4a7be50"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "large_mobile_banner",
+      "width": 320,
+      "height": 100,
+      "url": "/img/house-samples/sample_03_plaid_woman/large_mobile_banner.webp",
+      "mime": "image/webp",
+      "bytes": 19962,
+      "sha256": "15ddcb7d80dd9fe2e824db3539544299262a5dc4c762101c77946999afc9f660"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "half_page",
+      "width": 300,
+      "height": 600,
+      "url": "/img/house-samples/sample_03_plaid_woman/half_page.webp",
+      "mime": "image/webp",
+      "bytes": 92222,
+      "sha256": "eaad33d8a37ae90ab81d77b211974b9dd88a6a4cf6768670e985b2d86cea7d21"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "billboard",
+      "width": 970,
+      "height": 250,
+      "url": "/img/house-samples/sample_03_plaid_woman/billboard.webp",
+      "mime": "image/webp",
+      "bytes": 103600,
+      "sha256": "62375f1595652b4a27c9dd4dcc21477e60791f657016444814ac8ac02c466328"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "square",
+      "width": 250,
+      "height": 250,
+      "url": "/img/house-samples/sample_03_plaid_woman/square.webp",
+      "mime": "image/webp",
+      "bytes": 68952,
+      "sha256": "05b99475e1a1ed5ed933202049c514245895b5825cc00865c26b80df1eb3e75d"
+    },
+    {
+      "family": "sample_03_plaid_woman",
+      "preset": "large_square",
+      "width": 300,
+      "height": 300,
+      "url": "/img/house-samples/sample_03_plaid_woman/large_square.webp",
+      "mime": "image/webp",
+      "bytes": 99116,
+      "sha256": "3ac541dd21de40dd7fa68aa6d40f42eba6ec02f15e7a75d49ac46c2890f776c5"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "medium_rectangle",
+      "width": 300,
+      "height": 250,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/medium_rectangle.webp",
+      "mime": "image/webp",
+      "bytes": 79912,
+      "sha256": "4dfbf8bf4a87f1d2b767a933ae7201ef6b0c4b94eed0b4733a35e336d7360f0e"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "large_rectangle",
+      "width": 336,
+      "height": 280,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/large_rectangle.webp",
+      "mime": "image/webp",
+      "bytes": 60992,
+      "sha256": "cdd74611214f423c4897d4eb32e6b3ed38b1af586cd9fff0e4c3b1da05f0cc6e"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "leaderboard",
+      "width": 728,
+      "height": 90,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/leaderboard.webp",
+      "mime": "image/webp",
+      "bytes": 25556,
+      "sha256": "8303365a2cc7ab5b03c1eb3fcd6b34035f39e4bccea1b5bbf247812c2a3491a7"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "mobile_banner",
+      "width": 320,
+      "height": 50,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/mobile_banner.webp",
+      "mime": "image/webp",
+      "bytes": 8848,
+      "sha256": "9b4d4da2a0a6b0a931f31f0f8bf2e6518d01a222ffa58db948581309c4031bb8"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "large_mobile_banner",
+      "width": 320,
+      "height": 100,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/large_mobile_banner.webp",
+      "mime": "image/webp",
+      "bytes": 22128,
+      "sha256": "11ea1c6d0fa952546b21cafbf05fa30cbe3764cdae6478b30b746f5380af4d4f"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "half_page",
+      "width": 300,
+      "height": 600,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/half_page.webp",
+      "mime": "image/webp",
+      "bytes": 117886,
+      "sha256": "ede01834435cbe80ddb58e021e0d8135376502bf236e1c48b0a7e073503a9c2b"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "billboard",
+      "width": 970,
+      "height": 250,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/billboard.webp",
+      "mime": "image/webp",
+      "bytes": 120468,
+      "sha256": "b967716405ce8306b35671b9ed61f6254c0b1af3764ce4505fb27cc37c7c3ef7"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "square",
+      "width": 250,
+      "height": 250,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/square.webp",
+      "mime": "image/webp",
+      "bytes": 66080,
+      "sha256": "31be655b8a4fe499ea67d81f8930bdd1be168bf9d00b22e968a795803b8b7bf0"
+    },
+    {
+      "family": "sample_01_red_turtleneck_growth",
+      "preset": "large_square",
+      "width": 300,
+      "height": 300,
+      "url": "/img/house-samples/sample_01_red_turtleneck_growth/large_square.webp",
+      "mime": "image/webp",
+      "bytes": 94302,
+      "sha256": "5dca12479defdd9e2b32a9335d0ff855746b708e2c3ac4c8c53837a7c178b760"
+    }
+  ]
+}

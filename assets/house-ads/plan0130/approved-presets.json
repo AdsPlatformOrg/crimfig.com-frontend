@@ -1,0 +1,101 @@
+[
+  {
+    "id": "medium_rectangle",
+    "name": "Medium Rectangle",
+    "width": 300,
+    "height": 250,
+    "ratioNumerator": 6,
+    "ratioDenominator": 5,
+    "ratioDecimal": 1.2,
+    "priority": "initial",
+    "category": "rectangle"
+  },
+  {
+    "id": "large_rectangle",
+    "name": "Large Rectangle",
+    "width": 336,
+    "height": 280,
+    "ratioNumerator": 6,
+    "ratioDenominator": 5,
+    "ratioDecimal": 1.2,
+    "priority": "required",
+    "category": "rectangle"
+  },
+  {
+    "id": "leaderboard",
+    "name": "Leaderboard",
+    "width": 728,
+    "height": 90,
+    "ratioNumerator": 364,
+    "ratioDenominator": 45,
+    "ratioDecimal": 8.088888888888889,
+    "priority": "initial",
+    "category": "banner"
+  },
+  {
+    "id": "mobile_banner",
+    "name": "Mobile Banner",
+    "width": 320,
+    "height": 50,
+    "ratioNumerator": 32,
+    "ratioDenominator": 5,
+    "ratioDecimal": 6.4,
+    "priority": "initial",
+    "category": "banner"
+  },
+  {
+    "id": "large_mobile_banner",
+    "name": "Large Mobile Banner",
+    "width": 320,
+    "height": 100,
+    "ratioNumerator": 16,
+    "ratioDenominator": 5,
+    "ratioDecimal": 3.2,
+    "priority": "required",
+    "category": "banner"
+  },
+  {
+    "id": "half_page",
+    "name": "Half Page",
+    "width": 300,
+    "height": 600,
+    "ratioNumerator": 1,
+    "ratioDenominator": 2,
+    "ratioDecimal": 0.5,
+    "priority": "required",
+    "category": "vertical"
+  },
+  {
+    "id": "billboard",
+    "name": "Billboard",
+    "width": 970,
+    "height": 250,
+    "ratioNumerator": 97,
+    "ratioDenominator": 25,
+    "ratioDecimal": 3.88,
+    "priority": "required",
+    "category": "large_display"
+  },
+  {
+    "id": "square",
+    "name": "Square",
+    "width": 250,
+    "height": 250,
+    "ratioNumerator": 1,
+    "ratioDenominator": 1,
+    "ratioDecimal": 1,
+    "priority": "high",
+    "category": "square"
+  },
+  {
+    "id": "large_square",
+    "name": "Large Square",
+    "width": 300,
+    "height": 300,
+    "ratioNumerator": 1,
+    "ratioDenominator": 1,
+    "ratioDecimal": 1,
+    "priority": "high",
+    "category": "square"
+  }
+]

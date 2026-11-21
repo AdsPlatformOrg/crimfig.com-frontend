@@ -7,6 +7,8 @@ import type { CampaignRecord, AddCreativeInput, CampaignListSort } from '@crimfi
 export type AdType = "text" | "image" | "video";
 
 export interface CreativeDraftInput {
+  sizePolicy?:'legacy'|'dynamic'|'single'|'selected';
+  allowedPresetIds?:string[];
   id?: string;
   adType: AdType;
   headline?: string;
@@ -215,7 +217,7 @@ export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(St
       pricingModel:input.pricingModel,format:input.format,targetDevices:input.targetDevices,schedule:input.schedule,frequencyCapPerDay:input.frequencyCapPerDay,
       geoMode:input.geoMode,locations:input.locations,
       stacks:stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,schedule:stack.schedule,
-        ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline??'',bodyText:ad.bodyText??'',ctaText:ad.ctaText??'',destinationUrl:ad.destinationUrl,adFormat:ad.adFormat,mediaAssetId:ad.mediaAssetId}))})),
+        ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline??'',bodyText:ad.bodyText??'',ctaText:ad.ctaText??'',destinationUrl:ad.destinationUrl,adFormat:ad.adFormat,mediaAssetId:ad.mediaAssetId,sizePolicy:ad.sizePolicy,allowedPresetIds:ad.allowedPresetIds}))})),
     };
     onOperation?.(campaign.id,control,payload);
     return await adsApi().save(campaign.id,payload);

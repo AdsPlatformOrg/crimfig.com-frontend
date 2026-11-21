@@ -14,6 +14,7 @@ import {
   TableCell,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
+import {HouseSampleImport} from './HouseSampleImport';
 
 type Creative = {
   id: string;
@@ -273,6 +274,7 @@ export function AdminHouseAdsView() {
           Performance on promoter websites
         </Link>
       </nav>
+      <HouseSampleImport onImported={()=>void load()} />
       {error && (
         <div role="alert" className="cf-report-error">
           {error}{" "}

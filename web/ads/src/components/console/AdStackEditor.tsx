@@ -1,6 +1,7 @@
 "use client";
 
 import { ImagePreparation } from "./ImagePreparation";
+import {AdSizePolicy,type AdSizeMode} from './AdSizePolicy';
 import { ScheduleEditor } from "./ScheduleEditor";
 import { inherited, type DailySchedule } from "../../lib/daily-schedule";
 import { useEffect, useRef, useState } from "react";
@@ -24,6 +25,8 @@ import type { CreationCapabilities } from "../../lib/campaigns-api";
 export type AdDraftType = "text" | "image" | "video";
 
 export interface AdDraft {
+  sizePolicy?:AdSizeMode;
+  allowedPresetIds?:string[];
   id?:string;
   key: string;
   adType: AdDraftType;
@@ -64,6 +67,7 @@ export function createAdDraft(): AdDraft {
   return {
     key: draftKey("ad"),
     adType: "image",
+    sizePolicy:'dynamic',allowedPresetIds:[],
     headline: "",
     bodyText: "",
     ctaText: "",
@@ -446,7 +450,10 @@ export function AdStackEditor({
                 ) : (
                   <>
                     {ad.adType === "image" ? (
+                      <>
+                      <AdSizePolicy value={ad.sizePolicy??(ad.id?'legacy':'dynamic')} selected={ad.allowedPresetIds} image={ad.imageInfo} onChange={(sizePolicy,allowedPresetIds)=>updateAd(ad.key,{sizePolicy,allowedPresetIds})} />
                       <ImagePreparation
+                        approvedSizesOnly={ad.sizePolicy!=='legacy'}
                         currentUrl={ad.mediaUrl}
                         currentSpecs={ad.imageInfo}
                         onBusyChange={onBusyChange}
@@ -464,6 +471,7 @@ export function AdStackEditor({
                           })
                         }
                       />
+                      </>
                     ) : (
                       <>
                         {" "}

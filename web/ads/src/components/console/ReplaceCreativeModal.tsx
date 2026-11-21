@@ -1,5 +1,6 @@
 "use client";
 import { ImagePreparation } from "./ImagePreparation";
+import {AdSizePolicy,type AdSizeMode} from './AdSizePolicy';
 import { useDialog } from "../../lib/use-dialog";
 import { MediaPreview } from "../MediaPreview";
 import { adsApi } from '../../lib/ads-api-client';
@@ -18,6 +19,8 @@ import { Input } from "../ui/input";
 import type { AdType } from "../../lib/campaigns-api";
 
 interface CreativeToReplace {
+  sizePolicy?:AdSizeMode;
+  allowedPresetIds?:string|null;
   id: string;
   campaignId: string;
   expectedRevision?: number;
@@ -64,6 +67,9 @@ export function ReplaceCreativeModal({
     creative?.adFormat === "banner" ? "banner" : "card",
   );
   const [uploading, setUploading] = useState(false);
+  const [sizePolicy,setSizePolicy]=useState<AdSizeMode>(creative?.sizePolicy??(creative?.createInStack?'dynamic':'legacy'));
+  const [allowedPresetIds,setAllowedPresetIds]=useState<string[]>(()=>{try{return JSON.parse(creative?.allowedPresetIds??'[]');}catch{return [];}});
+  const [imageInfo,setImageInfo]=useState(creative?.imageSpecs);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,6 +96,7 @@ export function ReplaceCreativeModal({
         adType: "image",
         adFormat: preparedFormat,
         mediaAssetId,
+        sizePolicy,allowedPresetIds,
       };
 
       const updated = creative.createInStack
@@ -247,13 +254,16 @@ export function ReplaceCreativeModal({
           {/* Ad type */}
           <div>
               <p>Prepare replacement image</p>
+              <AdSizePolicy value={sizePolicy} selected={allowedPresetIds} image={imageInfo} onChange={(mode,ids)=>{setSizePolicy(mode);setAllowedPresetIds(ids);}} />
               <ImagePreparation
+                approvedSizesOnly={sizePolicy!=='legacy'}
                 currentUrl={mediaUrl} currentSpecs={isExistingImage ? creative.imageSpecs : undefined}
                 onBusyChange={setUploading}
                 onUploaded={(asset) => {
                   setMediaAssetId(asset.assetId);
                   setMediaUrl(asset.cdnUrl);
                   setPreparedFormat(asset.adFormat);
+                  setImageInfo({width:asset.width,height:asset.height,bytes:asset.bytes,mimeType:asset.mimeType});
                 }}
               />
               {uploading && (

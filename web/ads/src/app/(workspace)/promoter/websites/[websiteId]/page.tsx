@@ -29,9 +29,6 @@ import { sessionFetch } from '@/lib/session';
 import { apiData } from '@/lib/api-data';
 import { houseRewardEligibility } from '@/lib/cfig-format';
 import {
-  CRIMFIG_PLACEMENTS,
-  type CrimFigPlacement,
-  generateCrimFigEmbedCode,
   generateCrimFigVerifyMetaTag,
 } from '@/components/CrimFigAdSlot';
 import { Button } from '@/components/ui/button';
@@ -113,10 +110,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
   const [reviewSuccessMessage, setReviewSuccessMessage] = useState<string | null>(null);
 
   // Embed Code Modal
-  const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
-  const [selectedPlacement, setSelectedPlacement] = useState<CrimFigPlacement>('banner_top');
-  const [adSpaceMode, setAdSpaceMode] = useState<'publisher_network' | 'owned_site_direct'>('publisher_network');
-  const [allowHomeNetworkFill, setAllowHomeNetworkFill] = useState(true);
 
   const loadSlots = async () => {
     const request = ++slotRequest.current;
@@ -229,15 +222,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
     }
   };
 
-  const generatedCode = isEmbedModalOpen && website
-    ? generateCrimFigEmbedCode({
-        placement: selectedPlacement,
-        publisherKey: website.id,
-        domain: website.domain,
-        mode: adSpaceMode,
-        allowHomeNetworkFill: allowHomeNetworkFill,
-      })
-    : '';
 
   if (loading) {
     return (
@@ -275,7 +259,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
-      {!isEmbedModalOpen && copyFallback !== null && (
+      {copyFallback !== null && (
         <label style={{ display: 'grid', gap: 6 }} role="alert">
           Copy manually
           <textarea readOnly value={copyFallback} rows={3} onFocus={(event) => event.currentTarget.select()} />
@@ -317,7 +301,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Button
               type="button"
-              onClick={() => setIsEmbedModalOpen(true)}
+              onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -670,7 +654,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           <Button
             type="button"
             size="sm"
-            onClick={() => setIsEmbedModalOpen(true)}
+            onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
             style={{
               backgroundColor: 'var(--color-crimson)',
               color: '#FFFFFF',
@@ -713,7 +697,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
               type="button"
               size="sm"
               variant="outline"
-              onClick={() => setIsEmbedModalOpen(true)}
+              onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
             >
               <Code2 style={{ width: 14, height: 14, marginRight: 6 }} /> Get Embed Snippet
             </Button>
@@ -755,7 +739,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                       type="button"
                       size="sm"
                       variant="ghost"
-                      onClick={() => setIsEmbedModalOpen(true)}
+                      onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
                       style={{ fontSize: '12px' }}
                     >
                       <Code2 style={{ width: 13, height: 13, marginRight: 4 }} /> Embed Code
@@ -875,140 +859,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
         </Dialog.Portal>
       </Dialog.Root>
 
-      {/* Modal: Ad Spaces Embed Code */}
-      {isEmbedModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(4px)',
-            padding: '16px',
-          }}
-        >
-          <div
-            className="theme-card"
-            style={{
-              width: '100%',
-              maxWidth: '680px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '28px',
-              borderRadius: '16px',
-              boxShadow: 'var(--shadow-xl)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Embed Code: {website.domain}
-                </h3>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                  Generate and copy ad space integration snippets for your website.
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={() => setIsEmbedModalOpen(false)}
-                aria-label="Close embed code modal"
-                style={{ background: 'none', border: 'none', fontSize: '20px', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                ×
-              </Button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  Select Ad Placement
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
-                  {(Object.keys(CRIMFIG_PLACEMENTS) as CrimFigPlacement[]).map((key) => {
-                    const p = CRIMFIG_PLACEMENTS[key];
-                    const active = selectedPlacement === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setSelectedPlacement(key)}
-                        style={{
-                          padding: '10px 8px',
-                          borderRadius: '8px',
-                          border: active ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
-                          backgroundColor: active ? 'var(--badge-bg)' : 'var(--bg-surface)',
-                          textAlign: 'center',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {p.label}
-                        </span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                          {p.width} × {p.height}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Generated HTML Snippet
-                  </label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopy(generatedCode, 'detail-modal-code')}
-                    style={{ fontSize: '11px', height: '28px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    {copiedToken === 'detail-modal-code' ? (
-                      <>
-                        <Check style={{ width: 12, height: 12, color: 'var(--color-success)' }} /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy style={{ width: 12, height: 12 }} /> Copy Code
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {copyFallback !== null && (
-                  <label style={{ display: 'grid', gap: 6 }} role="alert">
-                    Copy manually
-                    <textarea readOnly value={copyFallback} rows={3} onFocus={(event) => event.currentTarget.select()} />
-                  </label>
-                )}
-                <div
-                  style={{
-                    backgroundColor: 'var(--bg-page)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    overflowX: 'auto',
-                  }}
-                >
-                  <code style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                    {generatedCode}
-                  </code>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <Button type="button" onClick={() => setIsEmbedModalOpen(false)}>
-                  Done
-                </Button>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
   );
 }

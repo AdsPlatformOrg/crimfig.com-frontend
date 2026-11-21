@@ -1,0 +1,43 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),ts=require('typescript');
+const React=require('react'),{JSDOM}=require('jsdom'),{createRoot}=require('react-dom/client');
+test('slot pages isolate website data, show failures honestly and create Dynamic slots by default',async()=>{
+  const dom=new JSDOM('<div id="root"></div>',{url:'https://ads.example.test'});
+  const prior={window:global.window,document:global.document,IS_REACT_ACT_ENVIRONMENT:global.IS_REACT_ACT_ENVIRONMENT};
+  Object.assign(global,{window:dom.window,document:dom.window.document,IS_REACT_ACT_ENVIRONMENT:true});
+  const requests=[],pushes=[],input={};
+  const native=tag=>({children,asChild,variant,...props})=>asChild?children:React.createElement(tag,props,children);
+  const table={};for(const [name,tag] of Object.entries({Table:'table',TableBody:'tbody',TableCell:'td',TableHead:'th',TableHeader:'thead',TableRow:'tr'}))table[name]=native(tag);
+  const imports={'next/link':{__esModule:true,default:native('a')},'next/navigation':{useRouter:()=>({push:path=>pushes.push(path)})},'../../lib/session':{dashboardSession:()=>({getProfile:async()=>({userId:'fixture-owner'})}),sessionFetch:(url,init)=>new Promise(resolve=>requests.push({url,init,resolve}))},'../ui/button':{Button:native('button')},'../ui/input':{Input:props=>{if(props.type!=='number')input.current=props;return React.createElement('input',props);}},'../ui/table':table,'./HouseSizeSamples':{HouseSizeSamples:()=>null},'../../lib/house-samples':{houseSampleCatalog:require('../src/data/house-samples.json')},'./WebsiteAdSlots.module.css':{default:{}}};
+  const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/components/console/WebsiteAdSlots.tsx'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{exports,localStorage:dom.window.localStorage,crypto:global.crypto,require:name=>imports[name]??require(name)});
+  const root=createRoot(document.getElementById('root')),Component=exports.WebsiteAdSlots;
+  const first='00000000-0000-4000-8000-000000000001',second='00000000-0000-4000-8000-000000000002';
+  const render=props=>React.act(async()=>root.render(React.createElement(Component,props)));
+  const reply=(index,status,data)=>React.act(async()=>requests[index].resolve({ok:status===200,json:async()=>({data,message:status===200?undefined:'Access denied'})}));
+  try{
+    await render({websiteId:first});await reply(0,200,[{id:first,websiteId:first,name:'Private first site slot',slotTagId:'tag-one',slotType:'network',allowedPresetIds:null,lifecycleStatus:'testing',installationStatus:'unchecked',updatedAt:'2026-11-21T00:00:00.000Z'}]);
+    assert.match(document.body.textContent,/Private first site slot/);
+    await render({websiteId:second});assert.doesNotMatch(document.body.textContent,/Private first site slot/);
+    await reply(1,403,null);assert.match(document.querySelector('[role="alert"]').textContent,/Access denied/);
+    assert.doesNotMatch(document.body.textContent,/No matching/);
+    await render({websiteId:first,mode:'new'});await reply(2,200,[]);
+    const dynamic=Array.from(document.querySelectorAll('button')).find(button=>button.textContent==='Dynamic Ad Slot');assert.equal(dynamic.getAttribute('aria-pressed'),'true');
+    await React.act(async()=>input.current.onChange({target:{value:'Article slot'}}));
+    await React.act(async()=>document.querySelector('form').dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})));
+    const creation=requests[3];assert.equal(creation.url,'/api/v1/publisher/slots/managed');assert.equal(creation.init.method,'POST');
+    const payload=JSON.parse(creation.init.body);assert.equal(payload.slotType,'network');assert.deepEqual(payload.allowedPresetIds,[]);assert.deepEqual(payload.allowedAdTypes,['image']);assert.ok(payload.requestId);
+    await reply(3,200,{id:second});assert.equal(pushes[0],`/promoter/websites/${first}/slots/${second}`);
+    await React.act(async()=>input.current.onChange({target:{value:'Unconfirmed slot'}}));
+    await React.act(async()=>document.querySelector('form').dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})));
+    const uncertain=JSON.parse(requests[4].init.body);
+    await reply(4,500,null);assert.equal(dom.window.localStorage.length,1);
+    await React.act(async()=>Array.from(document.querySelectorAll('button')).find(button=>button.textContent==='Reload slots').click());
+    await reply(5,200,[]);
+    await React.act(async()=>input.current.onChange({target:{value:'Different slot'}}));
+    await React.act(async()=>document.querySelector('form').dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true})));
+    assert.equal(requests.length,6);assert.match(document.body.textContent,/earlier slot creation is unconfirmed/);
+    await React.act(async()=>Array.from(document.querySelectorAll('button')).find(button=>button.textContent==='Reconcile pending creation').click());
+    assert.equal(JSON.parse(requests[6].init.body).requestId,uncertain.requestId);
+    assert.equal(JSON.parse(requests[6].init.body).name,'Unconfirmed slot');
+    await reply(6,200,{id:second});assert.equal(dom.window.localStorage.length,0);
+  }finally{await React.act(async()=>root.unmount());dom.window.close();Object.assign(global,prior);}
+});

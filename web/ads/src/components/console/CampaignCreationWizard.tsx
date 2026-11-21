@@ -640,7 +640,7 @@ export function CampaignCreationWizard({
       persistDraft({submissionUncertain:true});
       const saved=await saveCampaignEditor({title,description,category,budgetUsd,dailyBudgetUsd,costPerImpressionCents:cpmBidCents,costPerClickCents:cpcBidCents,pricingModel,format:campaign?.format??'card',targetDevices:devices,schedule,requestId,frequencyCapPerDay:frequencyCap,geoMode,locations:geoMode==='targeted'?locations:[]},
         stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,targetHours:[],schedule:stack.schedule,
-          ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline,bodyText:ad.bodyText,ctaText:ad.ctaText,destinationUrl:ad.destinationUrl,adFormat:ad.adFormat??'card',mediaAssetId:ad.mediaAssetId}))})),
+          ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline,bodyText:ad.bodyText,ctaText:ad.ctaText,destinationUrl:ad.destinationUrl,adFormat:ad.adFormat??'card',mediaAssetId:ad.mediaAssetId,sizePolicy:ad.sizePolicy,allowedPresetIds:ad.allowedPresetIds}))})),
         savedCampaignId?{id:savedCampaignId,contentRevision:savedRevision}:undefined,
         (id,revision,defaultId)=>{persistDraft({savedCampaignId:id,savedRevision:revision,...(defaultId?{stacks:stacks.map((stack,i)=>i===0?{...stack,id:defaultId}:stack)}:{})});setSavedCampaignId(id);setSavedRevision(revision);if(defaultId)setStacks(current=>current.map((stack,i)=>i===0?{...stack,id:defaultId}:stack));},
         (id,control,payload)=>{const operation={phase:'save' as const,campaignId:id,...control};persistDraft({savedCampaignId:id,pendingOperation:operation,pendingPayload:payload});setPendingOperation(operation);});

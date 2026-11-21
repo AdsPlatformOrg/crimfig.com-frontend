@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {
   Globe,
   Plus,
@@ -23,9 +24,6 @@ import { loadWebsites, registerWebsite, verifyWebsite } from '../../../lib/campa
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
 import {
-  CRIMFIG_PLACEMENTS,
-  type CrimFigPlacement,
-  generateCrimFigEmbedCode,
   generateCrimFigVerifyMetaTag,
 } from '../../CrimFigAdSlot';
 import { Button } from '../../ui/button';
@@ -58,6 +56,7 @@ export interface PromoterWebsite {
 }
 
 export function PromoterWebsitesView() {
+  const router=useRouter();
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingWrites, setPendingWrites] = useState<Set<string>>(new Set());
@@ -77,11 +76,6 @@ export function PromoterWebsitesView() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Ad Spaces Modal
-  const [isAdSpacesModalOpen, setIsAdSpacesModalOpen] = useState(false);
-  const [selectedPlacementSite, setSelectedPlacementSite] = useState<PromoterWebsite | null>(null);
-  const [adSpaceMode, setAdSpaceMode] = useState<'publisher_network' | 'owned_site_direct'>('publisher_network');
-  const [allowHomeNetworkFill, setAllowHomeNetworkFill] = useState(true);
-  const [selectedPlacement, setSelectedPlacement] = useState<CrimFigPlacement>('banner_top');
 
   useEffect(() => {
     fetchWebsites();
@@ -178,17 +172,7 @@ export function PromoterWebsitesView() {
     });
   }, [websites, searchQuery, statusFilter]);
 
-  const generatedCode = isAdSpacesModalOpen && selectedPlacementSite
-    ? generateCrimFigEmbedCode({
-        placement: selectedPlacement,
-        publisherKey: selectedPlacementSite.id,
-        domain: selectedPlacementSite.domain,
-        mode: adSpaceMode,
-        allowHomeNetworkFill: allowHomeNetworkFill,
-      })
-    : '';
 
-  const placementMeta = CRIMFIG_PLACEMENTS[selectedPlacement];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -529,8 +513,8 @@ export function PromoterWebsitesView() {
                           type="button"
                           size="sm"
                           onClick={() => {
-                            setSelectedPlacementSite(site);
-                            setIsAdSpacesModalOpen(true);
+                            router.push('/promoter/websites/'+site.id+'/slots');
+
                           }}
                           style={{
                             display: 'inline-flex',
@@ -707,134 +691,6 @@ export function PromoterWebsitesView() {
         </div>
       )}
 
-      {/* Modal: Ad Spaces & Embed Code */}
-      {isAdSpacesModalOpen && selectedPlacementSite && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            backdropFilter: 'blur(4px)',
-            padding: '16px',
-          }}
-        >
-          <div
-            className="theme-card"
-            style={{
-              width: '100%',
-              maxWidth: '680px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '28px',
-              borderRadius: '16px',
-              boxShadow: 'var(--shadow-xl)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Embed Code: {selectedPlacementSite.domain}
-                </h3>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                  Generate and copy ad space integration snippets for your website.
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={() => setIsAdSpacesModalOpen(false)}
-                aria-label="Close embed code modal"
-                style={{ background: 'none', border: 'none', fontSize: '20px', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                ×
-              </Button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  Select Ad Placement
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
-                  {(Object.keys(CRIMFIG_PLACEMENTS) as CrimFigPlacement[]).map((key) => {
-                    const p = CRIMFIG_PLACEMENTS[key];
-                    const active = selectedPlacement === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setSelectedPlacement(key)}
-                        style={{
-                          padding: '10px 8px',
-                          borderRadius: '8px',
-                          border: active ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
-                          backgroundColor: active ? 'var(--badge-bg)' : 'var(--bg-surface)',
-                          textAlign: 'center',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {p.label}
-                        </span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                          {p.width} × {p.height}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Generated HTML Snippet
-                  </label>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopy(generatedCode, 'modal-code')}
-                    style={{ fontSize: '11px', height: '28px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    {copiedToken === 'modal-code' ? (
-                      <>
-                        <Check style={{ width: 12, height: 12, color: 'var(--color-success)' }} /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy style={{ width: 12, height: 12 }} /> Copy Code
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <div
-                  style={{
-                    backgroundColor: 'var(--bg-page)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    overflowX: 'auto',
-                  }}
-                >
-                  <code style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-primary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                    {generatedCode}
-                  </code>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <Button type="button" onClick={() => setIsAdSpacesModalOpen(false)}>
-                  Done
-                </Button>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
   );
 }

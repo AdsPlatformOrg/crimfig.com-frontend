@@ -8,6 +8,7 @@ import { Button } from "../ui/button";
 import { MediaPreview } from "../MediaPreview";
 import { useDialog } from "../../lib/use-dialog";
 import { adsApi } from '../../lib/ads-api-client';
+import {houseSampleCatalog} from '../../lib/house-samples';
 import { sourceCrop, centeredSelection } from "../../lib/crop-coordinates";
 import {
   encodeWithinBudget,
@@ -57,7 +58,9 @@ export function ImagePreparation({
   onBusyChange,
   currentUrl,
   currentSpecs,
+  approvedSizesOnly=false,
 }: {
+  approvedSizesOnly?:boolean;
   onUploaded: (asset: PreparedImageAsset) => void;
   onBusyChange?: (busy: boolean) => void;
   currentUrl?: string;
@@ -123,6 +126,7 @@ export function ImagePreparation({
         : ratioChoice;
   const validRatio =
     Number.isFinite(ratio) &&
+    (!approvedSizesOnly||houseSampleCatalog.assets.some(preset=>Math.abs(preset.width/preset.height-ratio)<=.01))&&
     ratio > 0 &&
     ratio <= 50 &&
     customW > 0 &&
@@ -506,7 +510,7 @@ export function ImagePreparation({
                           }
                           disabled={working}
                         >
-                          {RATIOS.map(([name, value]) => (
+                          {RATIOS.filter(([,value])=>!approvedSizesOnly||value<=0||houseSampleCatalog.assets.some(preset=>Math.abs(preset.width/preset.height-value)<=.01)).map(([name, value]) => (
                             <option key={name} value={value}>
                               {name}
                             </option>
@@ -583,8 +587,7 @@ export function ImagePreparation({
                     </p>
                     {!validRatio && (
                       <p role="alert">
-                        Enter a positive width and height with a ratio no
-                        greater than 50:1.
+                        {approvedSizesOnly?'Choose a ratio matching an approved display size.':'Enter a positive width and height with a ratio no greater than 50:1.'}
                       </p>
                     )}
                     <div className="cf-crop-workspace">

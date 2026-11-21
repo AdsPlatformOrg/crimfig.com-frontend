@@ -1103,6 +1103,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/publisher/slots/managed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PublisherInventory_managedCreateSlot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/publisher/slots/{slotId}": {
         parameters: {
             query?: never;
@@ -1165,6 +1181,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/publisher/slots/{slotId}/managed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["PublisherInventory_managedRetireSlot"];
+        options?: never;
+        head?: never;
+        patch: operations["PublisherInventory_managedUpdateSlot"];
         trace?: never;
     };
     "/api/v1/publisher/websites/{websiteId}/setup-checks": {
@@ -1370,6 +1402,7 @@ export interface components {
             adStackId?: string | null;
             /** @enum {string|null} */
             adType?: "text" | "image" | "video" | null;
+            allowedPresetIds?: string[] | null;
             bodyText?: string | null;
             ctaText?: string | null;
             destinationUrl: string;
@@ -1383,6 +1416,8 @@ export interface components {
             mediaFormat?: "image" | "gif" | "video" | null;
             /** Format: uuid */
             requestId: string;
+            /** @enum {string|null} */
+            sizePolicy?: "legacy" | "dynamic" | "single" | "selected" | null;
             videoUrl?: string | null;
         };
         AdsApiError: {
@@ -1520,6 +1555,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -1549,6 +1585,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -1683,6 +1721,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -1712,6 +1751,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -1800,6 +1841,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -1829,6 +1871,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -1963,6 +2007,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -1992,6 +2037,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2082,6 +2129,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -2111,6 +2159,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2245,6 +2295,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -2274,6 +2325,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -2379,6 +2432,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -2408,6 +2462,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2542,6 +2598,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -2571,6 +2628,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -2655,6 +2714,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -2684,6 +2744,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -2818,6 +2880,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -2847,6 +2910,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -2931,6 +2996,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -2960,6 +3026,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -3094,6 +3162,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -3123,6 +3192,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -3243,6 +3314,7 @@ export interface components {
                 adStackId?: string | null;
                 /** @enum {string} */
                 adType?: "text" | "image" | "video";
+                allowedPresetIds?: string | null;
                 bodyText?: string | null;
                 campaignId: string;
                 ctaText?: string | null;
@@ -3272,6 +3344,8 @@ export interface components {
                 rejectionReason?: string | null;
                 /** @enum {string} */
                 reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                /** @enum {string} */
+                sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                 status?: string;
                 videoUrl?: string | null;
             } & {
@@ -3290,6 +3364,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -3319,6 +3394,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -3453,6 +3530,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -3482,6 +3560,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -3565,6 +3645,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -3594,6 +3675,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -3730,6 +3813,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -3759,6 +3843,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -3893,6 +3979,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -3922,6 +4009,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -4121,6 +4210,7 @@ export interface components {
             slotDeliveryPreference?: string | null;
             /** @enum {string} */
             slotType: "consideration" | "direct" | "network" | "hybrid";
+            /** Format: uuid */
             websiteId: string;
             width?: number | null;
         };
@@ -4151,6 +4241,38 @@ export interface components {
             requestId: string;
             /** @enum {string} */
             status: "active" | "paused" | "archived";
+        };
+        ManagedCreateSlotDto: {
+            allowedAdTypes?: string[] | null;
+            allowedPresetIds?: string[] | null;
+            format?: string | null;
+            height?: number | null;
+            name: string;
+            /** Format: uuid */
+            requestId: string;
+            responsive?: boolean | null;
+            slotDeliveryPreference?: string | null;
+            /** @enum {string} */
+            slotType: "consideration" | "direct" | "network" | "hybrid";
+            /** Format: uuid */
+            websiteId: string;
+            width?: number | null;
+        };
+        ManagedSlotControlDto: {
+            expectedUpdatedAt: string;
+            /** Format: uuid */
+            requestId: string;
+        };
+        ManagedUpdateSlotDto: {
+            allowedPresetIds?: string[] | null;
+            expectedUpdatedAt: string;
+            height?: number | null;
+            /** @enum {string|null} */
+            lifecycleStatus?: "draft" | "testing" | "active" | "paused" | "disabled" | null;
+            name?: string | null;
+            /** Format: uuid */
+            requestId: string;
+            width?: number | null;
         };
         ModerationClaimDto: {
             /** Format: uuid */
@@ -4291,6 +4413,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     contentRevision: number;
@@ -4327,6 +4450,8 @@ export interface components {
                     }) | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     submissionId: string;
                     videoUrl?: string | null;
@@ -4377,6 +4502,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -4406,6 +4532,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -4540,6 +4668,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -4569,6 +4698,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -4734,6 +4865,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -4763,6 +4895,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -4897,6 +5031,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -4926,6 +5061,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -5028,6 +5165,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -5057,6 +5195,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -5191,6 +5331,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -5220,6 +5361,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -5297,6 +5440,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -5326,6 +5470,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -5363,6 +5509,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -5392,6 +5539,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -5526,6 +5675,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -5555,6 +5705,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -5645,6 +5797,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -5674,6 +5827,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -5797,6 +5952,7 @@ export interface components {
                     adStackId?: string | null;
                     /** @enum {string} */
                     adType?: "text" | "image" | "video";
+                    allowedPresetIds?: string | null;
                     bodyText?: string | null;
                     campaignId: string;
                     ctaText?: string | null;
@@ -5826,6 +5982,8 @@ export interface components {
                     rejectionReason?: string | null;
                     /** @enum {string} */
                     reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                     status?: string;
                     videoUrl?: string | null;
                 } & {
@@ -5860,6 +6018,7 @@ export interface components {
                                 adStackId?: string | null;
                                 /** @enum {string} */
                                 adType?: "text" | "image" | "video";
+                                allowedPresetIds?: string | null;
                                 bodyText?: string | null;
                                 campaignId: string;
                                 ctaText?: string | null;
@@ -5889,6 +6048,8 @@ export interface components {
                                 rejectionReason?: string | null;
                                 /** @enum {string} */
                                 reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                                /** @enum {string} */
+                                sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                                 status?: string;
                                 videoUrl?: string | null;
                             } & {
@@ -6023,6 +6184,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -6052,6 +6214,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -6158,6 +6322,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -6187,6 +6352,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -6321,6 +6488,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -6350,6 +6518,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -6432,6 +6602,7 @@ export interface components {
                                 adStackId?: string | null;
                                 /** @enum {string} */
                                 adType?: "text" | "image" | "video";
+                                allowedPresetIds?: string | null;
                                 bodyText?: string | null;
                                 campaignId: string;
                                 ctaText?: string | null;
@@ -6461,6 +6632,8 @@ export interface components {
                                 rejectionReason?: string | null;
                                 /** @enum {string} */
                                 reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                                /** @enum {string} */
+                                sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                                 status?: string;
                                 videoUrl?: string | null;
                             } & {
@@ -6595,6 +6768,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -6624,6 +6798,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -6701,6 +6877,7 @@ export interface components {
                         adStackId?: string | null;
                         /** @enum {string} */
                         adType?: "text" | "image" | "video";
+                        allowedPresetIds?: string | null;
                         bodyText?: string | null;
                         campaignId: string;
                         ctaText?: string | null;
@@ -6730,6 +6907,8 @@ export interface components {
                         rejectionReason?: string | null;
                         /** @enum {string} */
                         reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                        /** @enum {string} */
+                        sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                         status?: string;
                         videoUrl?: string | null;
                     } & {
@@ -6743,6 +6922,7 @@ export interface components {
                             adStackId?: string | null;
                             /** @enum {string} */
                             adType?: "text" | "image" | "video";
+                            allowedPresetIds?: string | null;
                             bodyText?: string | null;
                             campaignId: string;
                             ctaText?: string | null;
@@ -6772,6 +6952,8 @@ export interface components {
                             rejectionReason?: string | null;
                             /** @enum {string} */
                             reviewStatus?: "pending" | "pending_manager_approval" | "approved" | "rejected";
+                            /** @enum {string} */
+                            sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                             status?: string;
                             videoUrl?: string | null;
                         } & {
@@ -6987,6 +7169,7 @@ export interface components {
             adStackId?: string | null;
             /** @enum {string|null} */
             adType?: "text" | "image" | "video" | null;
+            allowedPresetIds?: string[] | null;
             bodyText?: string | null;
             ctaText?: string | null;
             destinationUrl?: string | null;
@@ -7000,6 +7183,8 @@ export interface components {
             mediaFormat?: "image" | "gif" | "video" | null;
             /** Format: uuid */
             requestId: string;
+            /** @enum {string|null} */
+            sizePolicy?: "legacy" | "dynamic" | "single" | "selected" | null;
             videoUrl?: string | null;
         };
         ReviewDecisionDto: {
@@ -7066,6 +7251,7 @@ export interface components {
                     adFormat?: "banner" | "card" | "video" | "interstitial";
                     /** @enum {string} */
                     adType: "text" | "image" | "video";
+                    allowedPresetIds?: string[];
                     bodyText?: string;
                     ctaText?: string;
                     destinationUrl: string;
@@ -7074,6 +7260,8 @@ export interface components {
                     id?: string;
                     /** Format: uuid */
                     mediaAssetId?: string;
+                    /** @enum {string} */
+                    sizePolicy?: "legacy" | "dynamic" | "single" | "selected";
                 } & {
                     [key: string]: unknown;
                 })[];
@@ -15542,6 +15730,119 @@ export interface operations {
             };
         };
     };
+    PublisherInventory_managedCreateSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManagedCreateSlotDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_createSlotResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
     PublisherInventory_updateSlot: {
         parameters: {
             query?: never;
@@ -15892,6 +16193,236 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublisherInventory_getSlotEmbedResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_managedRetireSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManagedSlotControlDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_createSlotResponse"];
+                };
+            };
+            /** @description Sanitized API error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+            /** @description Sanitized API error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdsApiError"];
+                };
+            };
+        };
+    };
+    PublisherInventory_managedUpdateSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManagedUpdateSlotDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublisherInventory_createSlotResponse"];
                 };
             };
             /** @description Sanitized API error */
