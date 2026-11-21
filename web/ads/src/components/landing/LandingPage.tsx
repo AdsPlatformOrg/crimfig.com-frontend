@@ -6,6 +6,14 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import { LandingNavbar } from './LandingNavbar';
 import { LandingFooter } from './LandingFooter';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import previewMessages from './landing-preview-messages.json';
+
+function usePreviewCopy() {
+  const { locale } = useLanguage();
+  return (source: keyof typeof previewMessages) =>
+    locale === 'fr' || locale === 'es' ? previewMessages[source][locale] : source;
+}
 
 interface LandingPageProps {
   onLaunchConsole: (role?: 'advertiser' | 'promoter', section?: string) => void;
@@ -28,11 +36,12 @@ function DashboardPreview({ title, metrics, trend }: {
   metrics: string[][];
   trend: string;
 }) {
+  const copy = usePreviewCopy();
   return (
     <figure className="cf-ads-dashboard">
       <figcaption>
         <strong>{title}</strong>
-        <span>Illustrative data</span>
+        <span>{copy('Illustrative data')}</span>
       </figcaption>
       <dl>
         {metrics.map(([label, value]) => (
@@ -43,58 +52,58 @@ function DashboardPreview({ title, metrics, trend }: {
         <path d="M0 40H600 M0 80H600 M0 120H600 M0 159H600" stroke="var(--border-subtle)" fill="none" />
         <path d={trend} stroke="var(--color-crimson)" strokeWidth="3" vectorEffect="non-scaling-stroke" fill="none" />
       </svg>
-      <div className="cf-ads-dashboard-dates"><span>Day 1</span><span>Day 7</span></div>
+      <div className="cf-ads-dashboard-dates"><span>{copy('Day 1')}</span><span>{copy('Day 7')}</span></div>
     </figure>
   );
 }
 
 export function LandingPage({ onLaunchConsole }: LandingPageProps) {
-
+  const copy = usePreviewCopy();
   return (
     <div className="cf-marketing cf-ads-landing">
       <LandingNavbar onLaunchConsole={() => onLaunchConsole('advertiser')} />
       <MarketingReveal>
         <section className="cf-ads-hero">
-          <Image src="/img/marketing/creator-hero.webp" alt="Smiling creator filming with a phone and ring light" fill sizes="100vw" priority />
-          <h1>Advertise with precision.</h1>
+          <Image src="/img/marketing/creator-hero.webp" alt={copy('Smiling creator filming with a phone and ring light')} fill sizes="100vw" priority />
+          <h1>{copy('Advertise with precision.')}</h1>
         </section>
 
         <section id="what-we-do" className="cf-marketing-section cf-marketing-section--surface">
           <div className="cf-marketing-frame" data-ads-reveal>
             <div className="cf-marketing-copy">
-              <h2>Performance That Delivers.</h2>
-              <p>See how your ads perform and where your budget goes.</p>
+              <h2>{copy('Performance That Delivers.')}</h2>
+              <p>{copy('See how your ads perform and where your budget goes.')}</p>
               <div className="cf-marketing-actions">
-                <Button onClick={() => onLaunchConsole('advertiser')}>Start advertising</Button>
+                <Button onClick={() => onLaunchConsole('advertiser')}>{copy('Start advertising')}</Button>
               </div>
             </div>
-            <DashboardPreview title="Campaign performance" metrics={campaignMetrics} trend="M0 132 L100 104 L200 115 L300 72 L400 82 L500 48 L600 24" />
+            <DashboardPreview title={copy('Campaign performance')} metrics={campaignMetrics} trend="M0 132 L100 104 L200 115 L300 72 L400 82 L500 48 L600 24" />
           </div>
         </section>
 
         <section id="partners" className="cf-marketing-section">
           <div className="cf-marketing-frame" data-ads-reveal>
             <div className="cf-marketing-copy">
-              <h2>Join the promoter network.</h2>
-              <p>Place ads on your site or share tracked links with your audience.</p>
+              <h2>{copy('Join the promoter network.')}</h2>
+              <p>{copy('Place ads on your site or share tracked links with your audience.')}</p>
               <div className="cf-marketing-actions">
-                <Button variant="outline" onClick={() => onLaunchConsole('promoter')}>Open Promoter Hub</Button>
+                <Button variant="outline" onClick={() => onLaunchConsole('promoter')}>{copy('Open Promoter Hub')}</Button>
               </div>
             </div>
-            <DashboardPreview title="Promoter performance" metrics={promoterMetrics} trend="M0 142 L100 124 L200 92 L300 101 L400 63 L500 71 L600 35" />
+            <DashboardPreview title={copy('Promoter performance')} metrics={promoterMetrics} trend="M0 142 L100 124 L200 92 L300 101 L400 63 L500 71 L600 35" />
           </div>
         </section>
 
         <section id="learn" className="cf-marketing-section cf-marketing-section--surface cf-ads-learn">
           <div className="cf-marketing-frame" data-ads-reveal>
             <div className="cf-marketing-copy">
-              <h2>Learn more.</h2>
+              <h2>{copy('Learn more.')}</h2>
               <div className="cf-marketing-actions">
-                <Button asChild variant="outline"><Link href="/docs">Read the docs</Link></Button>
+                <Button asChild variant="outline"><Link href="/docs">{copy('Read the docs')}</Link></Button>
               </div>
             </div>
             <div className="cf-marketing-visual">
-              <Image src="/img/marketing/learn-ads.webp" alt="Young man smiling while working on a laptop" fill sizes="100vw" />
+              <Image src="/img/marketing/learn-ads.webp" alt={copy('Young man smiling while working on a laptop')} fill sizes="100vw" />
             </div>
           </div>
         </section>

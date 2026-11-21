@@ -6,7 +6,7 @@ import {locales,localeDirection} from './locale';
 
 /** Shares the existing AccountMenu keyboard/outside-dismiss interaction contract. */
 export function LanguagePicker(){
-  const {locale,setLanguage,pending,error}=useLanguage(),messages=commonMessages(locale);
+  const {locale,availableLocales,setLanguage,pending,error}=useLanguage(),messages=commonMessages(locale);
   const [open,setOpen]=useState(false),id=useId(),root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null);
   const menu=useRef<HTMLDivElement>(null);
   const choices=()=>Array.from(menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]')??[]);
@@ -17,6 +17,7 @@ export function LanguagePicker(){
     const outside=(event:PointerEvent)=>{if(!root.current?.contains(event.target as Node))setOpen(false);};
     document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);
   },[open]);
+  if (availableLocales.length < 2) return null;
   return <div ref={root} className="cf-language" onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node|null))setOpen(false);}}>
     <button ref={trigger} type="button" className="cf-language-trigger" disabled={pending} aria-haspopup="menu"
       aria-expanded={open} aria-controls={id} aria-label={`${messages.language}: ${locales.find(([tag])=>tag===locale)?.[1]}`}
@@ -32,7 +33,7 @@ export function LanguagePicker(){
         const next=event.key==='Home'?0:event.key==='End'?list.length-1:(index+(event.key==='ArrowDown'?1:-1)+list.length)%list.length;
         list[next]?.focus();
       }}>
-      {locales.map(([tag,name])=><button key={tag} type="button" role="menuitemradio" aria-checked={locale===tag} tabIndex={-1}
+      {locales.filter(([tag])=>availableLocales.includes(tag)).map(([tag,name])=><button key={tag} type="button" role="menuitemradio" aria-checked={locale===tag} tabIndex={-1}
         lang={tag} dir={localeDirection(tag)} disabled={pending} onClick={()=>{void setLanguage(tag).then(close);}}>{name}<span aria-hidden="true">{locale===tag?'✓':''}</span></button>)}
     </div>
     {error&&<p role="alert">{messages.saveError}</p>}

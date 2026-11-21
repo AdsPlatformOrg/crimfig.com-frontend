@@ -7,6 +7,9 @@ export const locales = [
   ['yo','Yorùbá'],['ig','Igbo'],['pcm','Naijá'],
 ] as const;
 export type Locale = typeof locales[number][0];
+/** Public choices require complete, reviewed catalogs across all three Wave 1 apps. */
+export const publishedLocales: readonly Locale[] = ['en'];
+
 export function supportedLocale(value: unknown): Locale | undefined {
   return typeof value === 'string' ? locales.find(([tag])=>tag.toLowerCase()===value.toLowerCase())?.[0] : undefined;
 }

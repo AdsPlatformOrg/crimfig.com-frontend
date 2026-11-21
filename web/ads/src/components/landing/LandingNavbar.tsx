@@ -3,19 +3,24 @@
 import React, { useRef, useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
 
 interface LandingNavbarProps {
   onLaunchConsole: (defaultRole?: 'advertiser' | 'promoter') => void;
 }
 
 const links = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-];
+  { href: '/', label: 'home' },
+  { href: '/about', label: 'about' },
+] as const;
 
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
+  const t = useTranslations('common');
+  const { locale } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -46,14 +51,15 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         <nav className="cf-site-nav" aria-label="Main navigation">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="cf-site-nav-link">
-              {link.label}
+              {t(link.label)}
             </Link>
           ))}
         </nav>
 
         <div className="cf-site-actions">
+          <LanguagePicker />
           <Button onClick={launchConsole} size="sm">
-            <span>Launch Console</span>
+            <span>{t('launch')}</span>
             <ArrowRight size={16} aria-hidden="true" />
           </Button>
           <Button
@@ -71,6 +77,9 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         </div>
       </div>
 
+      {locale === 'fr' && <p className="cf-site-header-inner">Aperçu en français. Certaines pages sont encore en anglais.</p>}
+      {locale === 'es' && <p className="cf-site-header-inner">Vista previa en español. Algunas páginas siguen en inglés.</p>}
+
       <nav
         id="ads-mobile-navigation"
         className="cf-mobile-nav-panel"
@@ -84,11 +93,11 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
               className="cf-site-nav-link"
               onClick={() => setMobileMenuOpen(false)}
             >
-              {link.label}
+              {t(link.label)}
             </Link>
           ))}
           <Button onClick={launchConsole} className="cf-mobile-nav-cta">
-            Launch Console <ArrowRight size={16} aria-hidden="true" />
+            {t('launch')} <ArrowRight size={16} aria-hidden="true" />
           </Button>
       </nav>
     </header>

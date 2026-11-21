@@ -2,8 +2,33 @@ require('../../../shared/api-client/test/load.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
 require.extensions['.tsx']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,file);
 const React=require('react'),{createRoot}=require('react-dom/client'),{JSDOM}=require('jsdom');
-const {LocalizationProvider}=require('../../../shared/ui/localization/LocalizationProvider.tsx');
+const {LocalizationProvider,useLanguage}=require('../../../shared/ui/localization/LocalizationProvider.tsx');
 const {LanguagePicker}=require('../../../shared/ui/localization/LanguagePicker.tsx');
+const {publishedLocales}=require('../../../shared/ui/localization/locale.ts');
+
+test('the public launch gate hides the picker and blocks unpublished locale changes',async()=>{
+  const dom=new JSDOM('<html lang="en"><body><div id="root"></div></body></html>',{url:'https://ads.crimfig.com/?payment=fixture'});
+  const keys=['window','document','location','history','HTMLElement','IS_REACT_ACT_ENVIRONMENT'],prior=Object.fromEntries(keys.map(key=>[key,global[key]]));
+  Object.assign(global,{window:dom.window,document:dom.window.document,location:dom.window.location,history:dom.window.history,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
+  const root=createRoot(document.getElementById('root'));
+  const saved=[];
+  function Probe(){
+    const {locale,setLanguage}=useLanguage();
+    return React.createElement('button',{onClick:()=>void setLanguage('es')},locale);
+  }
+  try{
+    await React.act(async()=>root.render(React.createElement(LocalizationProvider,{
+      initialLocale:'fr',availableLocales:publishedLocales,savePreference:async locale=>saved.push(locale),
+    },React.createElement(Probe),React.createElement(LanguagePicker))));
+    assert.equal(document.querySelector('[aria-haspopup="menu"]'),null);
+    const probe=document.querySelector('button');
+    assert.equal(probe.textContent,'en');
+    await React.act(async()=>probe.click());
+    assert.deepEqual(saved,[]);
+    assert.equal(document.documentElement.lang,'en');
+    assert.equal(location.search,'?payment=fixture');
+  }finally{await React.act(async()=>root.unmount());dom.window.close();Object.assign(global,prior);}
+});
 test('picker keyboard navigation and locale changes preserve drafts and payment state',async()=>{
   const dom=new JSDOM('<html lang="en"><body><div id="root"></div></body></html>',{url:'https://ads.crimfig.com/campaigns/id?payment=fixture&returnTo=%2Fbilling'});
   const keys=['window','document','location','history','HTMLElement','IS_REACT_ACT_ENVIRONMENT'],prior=Object.fromEntries(keys.map(key=>[key,global[key]]));
