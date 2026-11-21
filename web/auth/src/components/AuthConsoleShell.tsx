@@ -9,6 +9,8 @@ import { ThemeSwitcher } from './ThemeSwitcher';
 import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound } from 'lucide-react';
 import { Button } from './ui/button';
 import { AccountMenu } from '../../../../shared/ui/account-menu';
+import { LanguagePicker } from '../../../../shared/ui/localization/LanguagePicker';
+import { publishedLocales } from '../../../../shared/ui/localization/locale';
 import { consentSession } from '../lib/consent';
 
 interface AuthConsoleShellProps {
@@ -80,6 +82,7 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
             <Button id="auth-mobile-menu-toggle" variant="outline" size="icon" className="auth-mobile-menu-toggle" aria-label={mobileMenuOpen?'Close navigation menu':'Open navigation menu'} aria-expanded={mobileMenuOpen} aria-controls="auth-console-sidebar" onClick={()=>setMobileMenuOpen(value=>!value)}>{mobileMenuOpen?<X size={20} />:<Menu size={20} />}</Button>
             <CrimFigLogo variant="brand" app="Auth" href="/" />
           </div>
+          {publishedLocales.length > 1 && <LanguagePicker publishedOnly />}
           <AccountMenu session={consentSession()} links={[{label:'Profile & Avatar',href:'/profile'},{label:'Account Security',href:'/security'},{label:'Switch Account',href:'/login'}]} />
         </div>
       </header>

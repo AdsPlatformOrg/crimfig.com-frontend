@@ -1,6 +1,7 @@
 'use client';
 
 import {ecosystemOrigin} from '../../../../shared/ui/origins';
+import {supportedLocale} from '../../../../shared/ui/localization/locale';
 import { createSessionClient } from '@crimfig/session';
 
 let client: ReturnType<typeof createSessionClient> | undefined;
@@ -26,5 +27,7 @@ export function loginUrl() {
   back.searchParams.set('view', 'console');
   back.hash = '';
   url.searchParams.set('return_to', back.href);
+  const locale = supportedLocale(back.searchParams.get('lang') ?? window.document?.documentElement.lang);
+  if (locale && locale !== 'en') url.searchParams.set('lang', locale);
   return url.href;
 }

@@ -4,7 +4,15 @@ require.extensions['.tsx']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFi
 const React=require('react'),{createRoot}=require('react-dom/client'),{JSDOM}=require('jsdom');
 const {LocalizationProvider,useLanguage}=require('../../../shared/ui/localization/LocalizationProvider.tsx');
 const {LanguagePicker}=require('../../../shared/ui/localization/LanguagePicker.tsx');
+const {AboutContent}=require('../src/app/about/AboutContent.tsx');
 const {publishedLocales}=require('../../../shared/ui/localization/locale.ts');
+const {adsPreviewHref}=require('../src/components/landing/usePreviewCopy.ts');
+
+test('public Ads links carry the preview locale before section fragments',()=>{
+  assert.equal(adsPreviewHref('/about','fr'),'/about?lang=fr');
+  assert.equal(adsPreviewHref('/#partners','es'),'/?lang=es#partners');
+  assert.equal(adsPreviewHref('/#what-we-do','en'),'/#what-we-do');
+});
 
 test('the public launch gate hides the picker and blocks unpublished locale changes',async()=>{
   const dom=new JSDOM('<html lang="en"><body><div id="root"></div></body></html>',{url:'https://ads.crimfig.com/?payment=fixture'});
@@ -27,6 +35,46 @@ test('the public launch gate hides the picker and blocks unpublished locale chan
     assert.deepEqual(saved,[]);
     assert.equal(document.documentElement.lang,'en');
     assert.equal(location.search,'?payment=fixture');
+  }finally{await React.act(async()=>root.unmount());dom.window.close();Object.assign(global,prior);}
+});
+
+test('session-backed picker restores account language and preserves anonymous and payment state',async()=>{
+  const dom=new JSDOM('<html lang="en"><body><div id="root"></div></body></html>',{
+    url:'https://ads.crimfig.com/?payment=fixture&returnTo=%2Fbilling',
+  });
+  const keys=['window','document','location','history','HTMLElement','IS_REACT_ACT_ENVIRONMENT'];
+  const prior=Object.fromEntries(keys.map(key=>[key,global[key]]));
+  Object.assign(global,{window:dom.window,document:dom.window.document,location:dom.window.location,
+    history:dom.window.history,HTMLElement:dom.window.HTMLElement,IS_REACT_ACT_ENVIRONMENT:true});
+  document.cookie='cf_anonymous_locale=en';
+  const saved=[];
+  const session={
+    getSnapshot:()=>({status:'authenticated',signOut:null,identityVersion:1}),
+    subscribe:()=>()=>{},
+    bootstrap:async()=>{throw new Error('Known sessions should not need bootstrap');},
+    getProfile:async()=>({preferredLocale:'fr'}),
+    updatePreferredLocale:async locale=>saved.push(locale),
+  };
+  const root=createRoot(document.getElementById('root'));
+  try{
+    await React.act(async()=>root.render(React.createElement(LocalizationProvider,{
+      initialLocale:'en',availableLocales:['en','fr','es'],getSession:()=>session,
+    },React.createElement(LanguagePicker),React.createElement(AboutContent))));
+    assert.equal(document.documentElement.lang,'fr');
+    assert.equal(document.querySelector('h1').textContent,'Qui sommes-nous ?');
+    assert.match(document.querySelector('img').alt,/Des collègues/);
+    await React.act(async()=>document.querySelector('[aria-haspopup="menu"]').click());
+    assert.equal(document.querySelectorAll('[role="menuitemradio"]').length,3);
+    await React.act(async()=>document.querySelector('[role="menuitemradio"][lang="es"]').click());
+    assert.deepEqual(saved,['es']);
+    assert.equal(document.documentElement.lang,'es');
+    assert.equal(document.querySelector('h1').textContent,'Quiénes somos');
+    assert.match(document.querySelector('img').alt,/Un grupo de colegas/);
+    assert.match(document.cookie,/cf_anonymous_locale=en/);
+    const url=new URL(location.href);
+    assert.equal(url.searchParams.get('lang'),'es');
+    assert.equal(url.searchParams.get('payment'),'fixture');
+    assert.equal(url.searchParams.get('returnTo'),'/billing');
   }finally{await React.act(async()=>root.unmount());dom.window.close();Object.assign(global,prior);}
 });
 test('picker keyboard navigation and locale changes preserve drafts and payment state',async()=>{

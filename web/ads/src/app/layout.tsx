@@ -4,7 +4,7 @@ import { Poppins } from 'next/font/google';
 import './globals.css';
 import '../../../../shared/ui/styles/marketing.css';
 import '../../../../shared/ui/localization/language.css';
-import { LocalizationProvider } from '../../../../shared/ui/localization/LocalizationProvider';
+import { AppLocalization } from '../components/AppLocalization';
 import type { Locale } from '../../../../shared/ui/localization/locale';
 
 const publicAdsPreviewLocales: readonly Locale[] = ['en', 'fr', 'es'];
@@ -66,7 +66,7 @@ export default function RootLayout({
     <html lang="en" className={`${poppins.className} ${poppins.variable}`} data-theme="light" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
       <body>
-        <LocalizationProvider initialLocale="en" availableLocales={publicAdsPreviewLocales}>{children}</LocalizationProvider>
+        <AppLocalization availableLocales={publicAdsPreviewLocales}>{children}</AppLocalization>
       </body>
     </html>
   );

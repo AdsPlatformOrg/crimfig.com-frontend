@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { Menu, Plus } from 'lucide-react';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { AccountMenu } from '../../../../../shared/ui/account-menu';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+import { publishedLocales } from '../../../../../shared/ui/localization/locale';
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { DashboardSidebar } from '../DashboardSidebar';
@@ -85,6 +87,7 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
             <div className="cf-console-actions">
               {role==='advertiser' && pathname!=='/campaigns/new' && <Button asChild size="sm" className="cf-console-context-action"><Link href="/campaigns/new"><Plus size={16} aria-hidden="true" />New Campaign</Link></Button>}
               {role==='promoter' && <Button asChild variant="secondary" size="sm" className="cf-console-context-action"><Link href="/promoter/websites?action=new"><Plus size={16} aria-hidden="true" />Add Property</Link></Button>}
+              {publishedLocales.length > 1 && <LanguagePicker publishedOnly />}
               {!pendingSession && <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:`/settings?workspace=${role}`},{label:'Account Security',href:`${authBase}/security`}]} />}
             </div>
           </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
 import Link from 'next/link';
@@ -7,12 +9,16 @@ import { ThemeSwitcher } from '../ThemeSwitcher';
 import { ExternalLink, Heart } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import { adsPreviewHref, usePreviewCopy } from './usePreviewCopy';
 
 interface LandingFooterProps {
   onLaunchConsole: (defaultRole?: 'advertiser' | 'promoter') => void;
 }
 
 export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
+  const copy = usePreviewCopy();
+  const { locale } = useLanguage();
   return (
     <footer
       style={{
@@ -39,17 +45,18 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               style={{ marginBottom: '14px' }}
             />
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 16px' }}>
-              Campaign tools for advertisers, publishers and creators.
+              {copy("Campaign tools for advertisers, publishers and creators.")}
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ThemeSwitcher showLabel labelPrefix="Theme:" />
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <LanguagePicker />
+              <ThemeSwitcher showLabel labelPrefix={copy("Theme:")} />
             </div>
           </div>
 
           {/* Advertisers Col */}
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 16px' }}>
-              For Advertisers
+              {copy("For Advertisers")}
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <li>
@@ -60,7 +67,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                   size="sm"
                   style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
-                  Campaign Studio
+                  {copy("Campaign Studio")}
                 </Button>
               </li>
               <li>
@@ -71,17 +78,17 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                   size="sm"
                   style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
-                  Performance Dashboard
+                  {copy("Performance Dashboard")}
                 </Button>
               </li>
               <li>
-                <Link href="/#what-we-do" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
-                  Asset Formats & Specs
+                <Link href={adsPreviewHref('/#what-we-do', locale)} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+                  {copy("Asset Formats & Specs")}
                 </Link>
               </li>
               <li>
                 <a href={ecosystemOrigin('billing', process.env.NEXT_PUBLIC_BILLING_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)} target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Billing & Escrow <ExternalLink style={{ width: 12, height: 12 }} />
+                  {copy("Billing & Escrow")} <ExternalLink style={{ width: 12, height: 12 }} />
                 </a>
               </li>
             </ul>
@@ -90,7 +97,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
           {/* Promoters Col */}
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 16px' }}>
-              For Promoters
+              {copy("For Promoters")}
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <li>
@@ -101,7 +108,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                   size="sm"
                   style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
-                  Website Embed Codes
+                  {copy("Website Embed Codes")}
                 </Button>
               </li>
               <li>
@@ -112,7 +119,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                   size="sm"
                   style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
-                  Mobile App SDK Setup
+                  {copy("Mobile App SDK Setup")}
                 </Button>
               </li>
               <li>
@@ -123,12 +130,12 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
                   size="sm"
                   style={{ padding: 0, color: 'var(--text-secondary)', font: 'inherit', justifyContent: 'flex-start' }}
                 >
-                  Creator Share Links
+                  {copy("Creator Share Links")}
                 </Button>
               </li>
               <li>
-                <Link href="/#partners" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
-                  Publishing Options
+                <Link href={adsPreviewHref('/#partners', locale)} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+                  {copy("Publishing Options")}
                 </Link>
               </li>
             </ul>
@@ -137,10 +144,10 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
           {/* Ecosystem Col */}
           <div>
             <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 16px' }}>
-              CrimFig Ecosystem
+              {copy("CrimFig Ecosystem")}
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-              <li><Link href="/about" style={{ color: 'var(--text-secondary)' }}>About CrimFig</Link></li>
+              <li><Link href={adsPreviewHref('/about', locale)} style={{ color: 'var(--text-secondary)' }}>{copy("About CrimFig")}</Link></li>
               <li>
                 <a href="https://crimfig.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   CrimFig Hub <ExternalLink style={{ width: 12, height: 12 }} />
@@ -158,7 +165,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               </li>
               <li>
                 <a href={ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL)} target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  CrimFig Single Sign-On <ExternalLink style={{ width: 12, height: 12 }} />
+                  {copy("CrimFig Single Sign-On")} <ExternalLink style={{ width: 12, height: 12 }} />
                 </a>
               </li>
             </ul>
@@ -183,7 +190,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             <span>© 2026 CrimFig.com Inc.</span>
             <span>•</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-              <Heart style={{ width: 12, height: 12, fill: 'var(--color-crimson)' }} /> Built on a Foundation of Love
+              <Heart style={{ width: 12, height: 12, fill: 'var(--color-crimson)' }} /> {copy("Built on a Foundation of Love")}
             </span>
           </div>
 

@@ -1,4 +1,11 @@
 {
+  "Campaign spend": {"fr": "Dépenses de campagne", "es": "Gasto de la campaña"},
+  "Sample viewable impressions": {"fr": "Exemple d’impressions visibles", "es": "Ejemplo de impresiones visibles"},
+  "Sample clicks": {"fr": "Exemple de clics", "es": "Ejemplo de clics"},
+  "Sample earnings": {"fr": "Exemple de revenus", "es": "Ejemplo de ingresos"},
+  "Impressions": {"fr": "Impressions", "es": "Impresiones"},
+  "Clicks": {"fr": "Clics", "es": "Clics"},
+  "Acquisitions": {"fr": "Acquisitions", "es": "Adquisiciones"},
   "Illustrative data": {
     "fr": "Données à titre d’exemple",
     "es": "Datos de ejemplo"
@@ -62,5 +69,26 @@
   "Young man smiling while working on a laptop": {
     "fr": "Jeune homme souriant qui travaille sur un ordinateur portable",
     "es": "Joven sonriente que trabaja con un portátil"
-  }
+  },
+  "Campaign tools for advertisers, publishers and creators.": {"fr":"Outils de gestion de campagnes pour les annonceurs, les éditeurs et les créateurs.","es":"Herramientas para anunciantes, editores y creadores."},
+  "Theme:": {"fr":"Thème :","es":"Tema:"},
+  "For Advertisers": {"fr":"Pour les annonceurs","es":"Para anunciantes"},
+  "Campaign Studio": {"fr":"Studio de campagnes","es":"Estudio de campañas"},
+  "Performance Dashboard": {"fr":"Tableau de bord des performances","es":"Panel de rendimiento"},
+  "Asset Formats & Specs": {"fr":"Formats et spécifications des fichiers","es":"Formatos y especificaciones de archivos"},
+  "Billing & Escrow": {"fr":"Facturation et fonds sous séquestre","es":"Facturación y fondos en custodia"},
+  "For Promoters": {"fr":"Pour les promoteurs","es":"Para promotores"},
+  "Website Embed Codes": {"fr":"Codes d’intégration pour sites web","es":"Códigos de inserción para sitios web"},
+  "Mobile App SDK Setup": {"fr":"Configuration du SDK pour applications mobiles","es":"Configuración del SDK para aplicaciones móviles"},
+  "Creator Share Links": {"fr":"Liens de partage pour les créateurs","es":"Enlaces para compartir de creadores"},
+  "Publishing Options": {"fr":"Options de diffusion","es":"Opciones de publicación"},
+  "CrimFig Ecosystem": {"fr":"Écosystème CrimFig","es":"Ecosistema CrimFig"},
+  "About CrimFig": {"fr":"À propos de CrimFig","es":"Acerca de CrimFig"},
+  "CrimFig Single Sign-On": {"fr":"Authentification unique CrimFig","es":"Inicio de sesión único de CrimFig"},
+  "Built on a Foundation of Love": {"fr":"Créé avec amour","es":"Creado con amor"},
+  "Performance Advertising & 3-Tier Publishing": {"fr":"Publicité à la performance et diffusion à trois niveaux","es":"Publicidad por rendimiento y publicación en tres niveles"},
+  "Main navigation": {"fr":"Navigation principale","es":"Navegación principal"},
+  "Mobile navigation": {"fr":"Navigation mobile","es":"Navegación móvil"},
+  "Close navigation menu": {"fr":"Fermer le menu de navigation","es":"Cerrar el menú de navegación"},
+  "Open navigation menu": {"fr":"Ouvrir le menu de navigation","es":"Abrir el menú de navegación"}
 }

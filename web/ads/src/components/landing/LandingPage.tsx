@@ -6,14 +6,8 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import { LandingNavbar } from './LandingNavbar';
 import { LandingFooter } from './LandingFooter';
-import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
-import previewMessages from './landing-preview-messages.json';
-
-function usePreviewCopy() {
-  const { locale } = useLanguage();
-  return (source: keyof typeof previewMessages) =>
-    locale === 'fr' || locale === 'es' ? previewMessages[source][locale] : source;
-}
+import { usePreviewCopy } from './usePreviewCopy';
+import type previewMessages from './landing-preview-messages.json';
 
 interface LandingPageProps {
   onLaunchConsole: (role?: 'advertiser' | 'promoter', section?: string) => void;
@@ -23,17 +17,17 @@ const campaignMetrics = [
   ['Campaign spend', '$840.00'],
   ['Sample viewable impressions', '2,520,000'],
   ['Sample clicks', '12,600'],
-];
+] as const;
 const promoterMetrics = [
   ['Sample earnings', '$284.50'],
   ['Impressions', '64,200'],
   ['Clicks', '1,926'],
   ['Acquisitions', '84'],
-];
+] as const;
 
 function DashboardPreview({ title, metrics, trend }: {
   title: string;
-  metrics: string[][];
+  metrics: ReadonlyArray<readonly [keyof typeof previewMessages, string]>;
   trend: string;
 }) {
   const copy = usePreviewCopy();
@@ -45,7 +39,7 @@ function DashboardPreview({ title, metrics, trend }: {
       </figcaption>
       <dl>
         {metrics.map(([label, value]) => (
-          <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+          <div key={label}><dt>{copy(label)}</dt><dd>{value}</dd></div>
         ))}
       </dl>
       <svg viewBox="0 0 600 160" preserveAspectRatio="none" aria-hidden="true">

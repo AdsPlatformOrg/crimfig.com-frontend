@@ -44,6 +44,8 @@ import {
 } from 'lucide-react';
 import { useDialog } from '../../lib/use-dialog';
 import { AccountMenu } from '../../../../../shared/ui/account-menu';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+import { publishedLocales } from '../../../../../shared/ui/localization/locale';
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { EmptyState } from '../EmptyState';
@@ -570,6 +572,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
           </nav>
           <div className="cf-console-actions">
             <Button asChild variant="outline" size="sm" className="cf-console-context-action"><a href={adsBase}>Ads Studio</a></Button>
+            {publishedLocales.length > 1 && <LanguagePicker publishedOnly />}
             <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Account Security',href:`${authBase}/security`}]} />
           </div>
         </div>

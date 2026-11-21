@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { withBrowserRefreshLock } from '@crimfig/session';
+import { LanguagePicker } from '../../../../shared/ui/localization/LanguagePicker';
+import { publishedLocales } from '../../../../shared/ui/localization/locale';
 import { getApiUrl } from '../lib/config';
 import { loginDestination } from '../lib/login-return';
 import { authEntryLink, authEntryResponse, passwordGuidance, signupPasswordValid } from '../lib/auth-entry';
@@ -35,6 +37,7 @@ export function AuthEntryForm({mode}:{mode:'login'|'signup'}){
  }
  const prefix=signup?'signup':'login';
  return <main className="auth-entry" data-theme="light"><Card className="auth-entry-card">
+  {publishedLocales.length > 1 && <LanguagePicker publishedOnly />}
   <AuthBrandHeader appearance="light" title={signup?'Create account':'Sign in'} subtitle={signup?'One account for the CrimFig ecosystem.':'Welcome back to CrimFig.'}/>
   {error&&<Alert variant="destructive">{error}</Alert>}
   {created?<div><Alert variant="success">Account created. Check your email to verify your address before signing in.</Alert><Button asChild variant="secondary"><Link href={authEntryLink('/login',search)}>Back to sign in</Link></Button></div>:<form onSubmit={submit} aria-busy={loading}>

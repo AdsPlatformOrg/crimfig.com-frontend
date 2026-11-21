@@ -1,0 +1,72 @@
+{
+  "who-we-are": {
+    "fr": {
+      "heading": "Qui sommes-nous ?",
+      "subtitle": "Nous créons des outils qui mettent en relation annonceurs, promoteurs et créateurs.",
+      "alt": "Des collègues discutent d’un projet autour d’une table",
+      "detail": "CrimFig crée des outils pour les annonceurs, les éditeurs de sites web et les créateurs. Nous réunissons la gestion des campagnes et la promotion pour aider les entreprises à toucher leur public sur les sites qu’il consulte et auprès des créateurs qu’il suit."
+    },
+    "es": {
+      "heading": "Quiénes somos",
+      "subtitle": "Creamos herramientas que conectan a anunciantes, promotores y creadores.",
+      "alt": "Un grupo de colegas conversa sobre un proyecto alrededor de una mesa",
+      "detail": "CrimFig crea herramientas para anunciantes, editores de sitios web y creadores. Unimos la gestión de campañas y la promoción para que las empresas lleguen a su público en los sitios que visita y a través de los creadores que sigue."
+    }
+  },
+  "what-we-do": {
+    "fr": {
+      "heading": "Ce que nous faisons",
+      "subtitle": "Nous mettons les campagnes en relation avec les supports qui peuvent les diffuser.",
+      "alt": "Une femme travaille sur les réseaux sociaux depuis son ordinateur portable",
+      "detail": "Les annonceurs créent leurs campagnes en choisissant leurs contenus publicitaires, leur ciblage et leur budget. Les promoteurs peuvent créer des emplacements publicitaires sur des sites vérifiés ou partager des liens de suivi avec leur public. CrimFig Ads réunit la diffusion et les rapports de performance dans le même espace."
+    },
+    "es": {
+      "heading": "Qué hacemos",
+      "subtitle": "Conectamos las campañas con los espacios donde se pueden publicar.",
+      "alt": "Una mujer trabaja con redes sociales en un portátil",
+      "detail": "Los anunciantes crean campañas con sus propios anuncios, segmentación y presupuesto. Los promotores pueden configurar espacios publicitarios en sitios verificados o compartir enlaces de seguimiento con su audiencia. CrimFig Ads reúne la publicación de anuncios y los informes de rendimiento en el mismo espacio."
+    }
+  },
+  "better-connections": {
+    "fr": {
+      "heading": "Des liens plus directs.",
+      "subtitle": "CrimFig Ads permet aux entreprises de créer leurs campagnes et aux éditeurs de gérer leurs emplacements. CrimFig Billing réunit l’ajout de fonds, les fonds sous séquestre et l’historique des transactions.",
+      "alt": "Deux collègues travaillent ensemble sur un ordinateur portable",
+      "detail": null
+    },
+    "es": {
+      "heading": "Conexiones más directas.",
+      "subtitle": "CrimFig Ads permite a las empresas crear campañas y a los editores gestionar sus espacios publicitarios. CrimFig Billing reúne las recargas de saldo, los fondos en custodia y el historial de transacciones.",
+      "alt": "Dos colegas colaboran frente a un portátil",
+      "detail": null
+    }
+  },
+  "advertisers": {
+    "fr": {
+      "heading": "Pour les annonceurs",
+      "subtitle": "Maîtrisez votre budget et suivez les performances de votre campagne.",
+      "alt": "Une femme consulte des données sur un ordinateur portable et prend des notes",
+      "detail": "Dans Advertiser Studio, créez vos campagnes, définissez le ciblage et les budgets, puis soumettez vos contenus publicitaires pour examen. Une fois la campagne lancée, suivez sa diffusion et vos dépenses. CrimFig Billing réunit l’ajout de fonds au portefeuille, les fonds de campagne sous séquestre et l’historique des transactions."
+    },
+    "es": {
+      "heading": "Para anunciantes",
+      "subtitle": "Controla tu presupuesto y consulta el rendimiento de tu campaña.",
+      "alt": "Una mujer revisa datos en un portátil y toma notas",
+      "detail": "Usa Advertiser Studio para crear campañas, definir la segmentación y los presupuestos, y enviar tus anuncios a revisión. Cuando una campaña esté activa, podrás seguir su publicación y el gasto. CrimFig Billing reúne las recargas del monedero, los fondos de campaña en custodia y el historial de transacciones."
+    }
+  },
+  "promoters": {
+    "fr": {
+      "heading": "Pour les promoteurs",
+      "subtitle": "Tirez parti de votre site ou de votre audience.",
+      "alt": "Une personne installe un téléphone sur un trépied avec une lampe annulaire",
+      "detail": "Les éditeurs de sites peuvent vérifier leurs sites et gérer leurs emplacements dans Promoter Hub. Les créateurs et autres promoteurs peuvent partager des liens de suivi et consulter l’activité qui leur est attribuée. Cet espace réunit les performances et les revenus pour voir ce que génèrent vos emplacements ou vos liens."
+    },
+    "es": {
+      "heading": "Para promotores",
+      "subtitle": "Aprovecha el potencial de tu sitio o tu audiencia.",
+      "alt": "Una persona coloca un teléfono en un trípode con aro de luz",
+      "detail": "Los editores pueden verificar sus sitios y gestionar sus espacios publicitarios en Promoter Hub. Los creadores y otros promotores pueden compartir enlaces de seguimiento y consultar la actividad atribuida. El espacio reúne los datos de rendimiento e ingresos para que puedas ver qué generan tus espacios o enlaces."
+    }
+  }
+}

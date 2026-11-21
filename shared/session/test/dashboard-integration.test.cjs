@@ -23,7 +23,7 @@ function load(relative, env = {}, extras = {}) {
     exports,
     require: (name) => {
       if (name === "./campaign-draft") return { clearCampaignDrafts: () => {} };
-      if(name.endsWith('/shared/ui/origins')){const exports={};const source=fs.readFileSync(path.resolve(__dirname,'../../ui/origins.ts'),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports,URL,process:{env},window:extras.window});return exports;}
+      if(name.endsWith('/shared/ui/origins')||name.endsWith('/shared/ui/localization/locale')){const exports={};const source=fs.readFileSync(path.resolve(__dirname,'../../ui',name.split('/shared/ui/')[1]+'.ts'),'utf8');vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports,URL,process:{env},window:extras.window});return exports;}
       assert.equal(name, "@crimfig/session");
       return extras.session || session;
     },
@@ -142,6 +142,19 @@ for (const app of ["ads", "billing"])
       `https://${app}.crimfig.com/?tab=cards&view=console`,
     );
   });
+
+test("Ads and Billing pass locale to Auth and preserve the original return state", () => {
+  const env = { NODE_ENV: "production" };
+  const { loginDestination } = load("auth/src/lib/login-return.ts", env);
+  for (const app of ["ads", "billing"]) {
+    const origin = `https://${app}.crimfig.com`;
+    const href = origin + "/dashboard?lang=fr&payment=fixture&amount=840.00&currency=USD";
+    const { loginUrl } = load(`${app}/src/lib/session.ts`, env, {window:{location:{origin,href}}});
+    const login = new URL(loginUrl());
+    assert.equal(login.searchParams.get("lang"), "fr");
+    assert.equal(loginDestination(login.searchParams), href + "&view=console");
+  }
+});
 
 test("Billing wallet maps integer cents, preserves zero and rejects malformed/foreign shapes", () => {
   const { walletView } = load("billing/src/lib/wallet-view.ts");

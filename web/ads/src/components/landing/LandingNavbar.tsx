@@ -8,6 +8,7 @@ import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
 import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
 import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import { adsPreviewHref, usePreviewCopy } from './usePreviewCopy';
 
 interface LandingNavbarProps {
   onLaunchConsole: (defaultRole?: 'advertiser' | 'promoter') => void;
@@ -21,6 +22,7 @@ const links = [
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
   const t = useTranslations('common');
   const { locale } = useLanguage();
+  const copy = usePreviewCopy();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -41,23 +43,23 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
     >
       <div className="cf-site-header-inner">
         <CrimFigLogo
-          href="/" variant="brand"
+          href={adsPreviewHref('/', locale)} variant="brand"
           size={42}
           app="Ads"
           appBadge="Network"
-          subtext="Performance Advertising & 3-Tier Publishing"
+          subtext={copy('Performance Advertising & 3-Tier Publishing')}
         />
 
-        <nav className="cf-site-nav" aria-label="Main navigation">
+        <nav className="cf-site-nav" aria-label={copy('Main navigation')}>
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="cf-site-nav-link">
+            <Link key={link.href} href={adsPreviewHref(link.href, locale)} className="cf-site-nav-link">
               {t(link.label)}
             </Link>
           ))}
         </nav>
 
         <div className="cf-site-actions">
-          <LanguagePicker />
+          <LanguagePicker desktopOnly />
           <Button onClick={launchConsole} size="sm">
             <span>{t('launch')}</span>
             <ArrowRight size={16} aria-hidden="true" />
@@ -67,7 +69,7 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
             className="cf-mobile-menu-toggle"
             variant="outline"
             size="icon"
-            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-label={copy(mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu')}
             aria-expanded={mobileMenuOpen}
             aria-controls="ads-mobile-navigation"
             onClick={() => setMobileMenuOpen((open) => !open)}
@@ -83,13 +85,14 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
       <nav
         id="ads-mobile-navigation"
         className="cf-mobile-nav-panel"
-        aria-label="Mobile navigation"
+        aria-label={copy('Mobile navigation')}
         hidden={!mobileMenuOpen}
       >
+        <LanguagePicker />
           {links.map((link) => (
             <Link
               key={link.href}
-              href={link.href}
+              href={adsPreviewHref(link.href, locale)}
               className="cf-site-nav-link"
               onClick={() => setMobileMenuOpen(false)}
             >

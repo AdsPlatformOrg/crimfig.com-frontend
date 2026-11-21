@@ -1,5 +1,7 @@
 'use client';
 
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Menu, X } from 'lucide-react';
@@ -46,6 +48,7 @@ export function LandingNavbar() {
         </nav>
 
         <div className="cf-site-actions">
+          <LanguagePicker desktopOnly />
           {actions.map(action => <Button key={action.href} asChild variant={action.primary ? 'default' : 'outline'} size="sm">
             <Link href={action.href}>{action.label}{action.primary && <ArrowRight size={16} aria-hidden="true" />}</Link>
           </Button>)}
@@ -70,6 +73,7 @@ export function LandingNavbar() {
         aria-label="Mobile navigation"
         hidden={!mobileMenuOpen}
       >
+        <LanguagePicker />
           {links.map((link) => (
             <a
               key={`${link.href}-${link.label}`}

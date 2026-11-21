@@ -1,5 +1,7 @@
 'use client';
 
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+
 import React, { useRef, useState } from 'react';
 import { ArrowRight, Menu, Wallet, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
@@ -52,6 +54,7 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         </nav>
 
         <div className="cf-site-actions">
+          <LanguagePicker desktopOnly />
           <Button onClick={launchConsole} size="sm">
             <Wallet size={16} aria-hidden="true" />
             <span>Launch Console</span>
@@ -78,6 +81,7 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
         aria-label="Mobile navigation"
         hidden={!mobileMenuOpen}
       >
+        <LanguagePicker />
           {links.map(({ href, label }) => (
             <a
               key={href}

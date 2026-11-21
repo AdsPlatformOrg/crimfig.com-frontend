@@ -1,5 +1,7 @@
 'use client';
 
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
 import { Button } from '../ui/button';
@@ -124,6 +126,7 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               View Rewards Status &rarr;
             </Button>
 
+            <LanguagePicker />
             <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>
         </div>

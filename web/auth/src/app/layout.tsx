@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 import '../../../../shared/ui/styles/marketing.css';
+import '../../../../shared/ui/localization/language.css';
+import { AppLocalization } from '../components/AppLocalization';
+import { publishedLocales } from '../../../../shared/ui/localization/locale';
 import { PublicSessionDiscovery } from '../components/PublicSessionDiscovery';
 
 const poppins = Poppins({
@@ -60,7 +63,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={poppins.className} data-theme="light" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
-      <body><PublicSessionDiscovery />{children}</body>
+      <body>
+        <AppLocalization availableLocales={publishedLocales}>
+          <PublicSessionDiscovery />
+          {children}
+        </AppLocalization>
+      </body>
     </html>
   );
 }

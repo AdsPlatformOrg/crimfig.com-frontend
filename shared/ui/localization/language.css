@@ -9,3 +9,4 @@
 .cf-language-menu button:hover { background:var(--bg-page); }
 .cf-language p { max-width:20rem; font-size:.875rem; }
 @media(max-width:639px) { .cf-language-menu { position:fixed; inset-inline:1rem; bottom:1rem; max-width:none; min-width:0; } }
+@media(max-width:860px) { .cf-language.cf-language-desktop { display:none; } }
