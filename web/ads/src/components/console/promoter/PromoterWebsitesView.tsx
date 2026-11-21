@@ -79,6 +79,7 @@ export function PromoterWebsitesView() {
 
   useEffect(() => {
     fetchWebsites();
+    if (new URLSearchParams(window.location.search).get('action') === 'new') setIsAddWebsiteOpen(true);
   }, []);
 
   const fetchWebsites = async () => {

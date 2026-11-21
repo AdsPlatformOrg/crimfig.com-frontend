@@ -115,35 +115,28 @@ export function workspaceNavigation(
           href: "/promoter/ad-network",
         },
         {
-          id: "ad_network_get_started",
-          label: "Get Started",
+          id: "websites",
+          label: "Websites & Ad Slots",
+          icon: Globe,
+          href: "/promoter/websites",
+        },
+        {
+          id: "mobile_apps",
+          label: "Mobile Apps",
+          icon: Smartphone,
+          href: "/promoter/mobile-apps",
+        },
+        {
+          id: "individuals",
+          label: "Affiliate Links",
+          icon: Share2,
+          href: "/promoter/individuals",
+        },
+        {
+          id: "ad_network_overview_guide",
+          label: "Setup Guide",
           icon: Sparkles,
-          children: [
-            {
-              id: "ad_network_overview_guide",
-              label: "Setup Guide",
-              icon: Sparkles,
-              href: "/promoter/ad-network/get-started",
-            },
-            {
-              id: "websites",
-              label: "On Website",
-              icon: Globe,
-              href: "/promoter/websites",
-            },
-            {
-              id: "mobile_apps",
-              label: "On Mobile App",
-              icon: Smartphone,
-              href: "/promoter/mobile-apps",
-            },
-            {
-              id: "individuals",
-              label: "Affiliate Link",
-              icon: Share2,
-              href: "/promoter/individuals",
-            },
-          ],
+          href: "/promoter/ad-network/get-started",
         },
         {
           id: "promoter_reports",
