@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -81,8 +81,18 @@ export default function PromoterWebsiteDetailPage({
 }: {
   params: Promise<{ websiteId: string }>;
 }) {
-  const router = useRouter();
   const { websiteId } = use(params);
+  return <WebsiteDetail key={websiteId} websiteId={websiteId} />;
+}
+
+function WebsiteDetail({ websiteId }: { websiteId: string }) {
+  const router = useRouter();
+  const detailRequest = useRef(0);
+  const slotRequest = useRef(0);
+  const copyRequest = useRef(0);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [copyFallback, setCopyFallback] = useState<string | null>(null);
+  const [slotState, setSlotState] = useState<'loading' | 'ready' | 'failed'>('loading');
 
   const [website, setWebsite] = useState<PromoterWebsite | null>(null);
   const [slots, setSlots] = useState<PublisherSlot[]>([]);
@@ -108,48 +118,71 @@ export default function PromoterWebsiteDetailPage({
   const [adSpaceMode, setAdSpaceMode] = useState<'publisher_network' | 'owned_site_direct'>('publisher_network');
   const [allowHomeNetworkFill, setAllowHomeNetworkFill] = useState(true);
 
-  const loadData = async () => {
+  const loadSlots = async () => {
+    const request = ++slotRequest.current;
+    setSlots([]);
+    setSlotState('loading');
     try {
-      setLoading(true);
-      setError(null);
+      const response = await sessionFetch(`/api/v1/publisher/websites/${encodeURIComponent(websiteId)}/slots`);
+      if (!response.ok) throw new Error('Slots unavailable');
+      const { data } = await response.json();
+      if (!Array.isArray(data)) throw new Error('Invalid slots response');
+      if (request !== slotRequest.current) return;
+      setSlots(data);
+      setSlotState('ready');
+    } catch {
+      if (request === slotRequest.current) setSlotState('failed');
+    }
+  };
 
-      // Load websites to find this website
+  const loadData = async () => {
+    const request = ++detailRequest.current;
+    setLoading(true);
+    setError(null);
+    try {
       const sites = await loadWebsites();
-      const currentSite = sites.find((s) => s.id === websiteId);
-
+      if (request !== detailRequest.current) return;
+      const currentSite = sites.find((site) => site.id === websiteId);
       if (!currentSite) {
-        setError(`Website with ID "${websiteId}" was not found.`);
+        setError('Website not found.');
         return;
       }
       setWebsite(currentSite);
-
-      // Load publisher slots for this website
-      try {
-        const slotsRes = await sessionFetch(`/api/v1/publisher/websites/${websiteId}/slots`);
-        if (slotsRes.ok) {
-          const slotsJson = await slotsRes.json();
-          setSlots(Array.isArray(slotsJson.data) ? slotsJson.data : []);
-        }
-      } catch {
-        // Non-blocking if slots endpoint fails or is empty
-        setSlots([]);
-      }
+      void loadSlots();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load website details.');
+      if (request === detailRequest.current) {
+        setError(err instanceof Error ? err.message : 'Failed to load website details.');
+      }
     } finally {
-      setLoading(false);
+      if (request === detailRequest.current) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
+    return () => {
+      detailRequest.current++;
+      slotRequest.current++;
+      copyRequest.current++;
+      clearTimeout(copyTimer.current);
+    };
+    // The keyed detail view remounts when the website changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [websiteId]);
+  }, []);
 
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedToken(id);
-    setTimeout(() => setCopiedToken(null), 2500);
+  const handleCopy = async (text: string, id: string) => {
+    const request = ++copyRequest.current;
+    clearTimeout(copyTimer.current);
+    setCopiedToken(null);
+    setCopyFallback(null);
+    try {
+      await navigator.clipboard.writeText(text);
+      if (request !== copyRequest.current) return;
+      setCopiedToken(id);
+      copyTimer.current = setTimeout(() => setCopiedToken(null), 2500);
+    } catch {
+      if (request === copyRequest.current) setCopyFallback(text);
+    }
   };
 
   const handleTriggerVerification = async () => {
@@ -242,6 +275,12 @@ export default function PromoterWebsiteDetailPage({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+      {!isEmbedModalOpen && copyFallback !== null && (
+        <label style={{ display: 'grid', gap: 6 }} role="alert">
+          Copy manually
+          <textarea readOnly value={copyFallback} rows={3} onFocus={(event) => event.currentTarget.select()} />
+        </label>
+      )}
       {/* Navigation header */}
       <div>
         <Button
@@ -417,10 +456,10 @@ export default function PromoterWebsiteDetailPage({
           </span>
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
             <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>
-              {slots.length}
+              {slotState === 'ready' ? slots.length : slotState === 'failed' ? 'Unavailable' : 'Loading…'}
             </span>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              ({slots.filter((s) => s.isActive !== false).length} active)
+              {slotState === 'ready' && `(${slots.filter((s) => s.isActive !== false).length} active)`}
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', margin: 0 }}>
@@ -622,7 +661,7 @@ export default function PromoterWebsiteDetailPage({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div>
             <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-              Associated Ad Spaces &amp; Slots ({slots.length})
+              Associated Ad Spaces &amp; Slots{slotState === 'ready' && ` (${slots.length})`}
             </h2>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
               Ad spaces configured on this website property.
@@ -646,7 +685,14 @@ export default function PromoterWebsiteDetailPage({
           </Button>
         </div>
 
-        {slots.length === 0 ? (
+        {slotState === 'failed' ? (
+          <div role="alert">
+            <p>Ad slots could not be loaded.</p>
+            <Button type="button" size="sm" variant="outline" onClick={() => void loadSlots()}>Retry loading ad slots</Button>
+          </div>
+        ) : slotState === 'loading' ? (
+          <p role="status">Loading ad slots…</p>
+        ) : slots.length === 0 ? (
           <div
             style={{
               padding: '32px 16px',
@@ -933,6 +979,12 @@ export default function PromoterWebsiteDetailPage({
                     )}
                   </Button>
                 </div>
+                {copyFallback !== null && (
+                  <label style={{ display: 'grid', gap: 6 }} role="alert">
+                    Copy manually
+                    <textarea readOnly value={copyFallback} rows={3} onFocus={(event) => event.currentTarget.select()} />
+                  </label>
+                )}
                 <div
                   style={{
                     backgroundColor: 'var(--bg-page)',
