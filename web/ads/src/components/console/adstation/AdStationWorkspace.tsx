@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Layers,
@@ -309,7 +310,7 @@ export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStat
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Configured Website Slots</h3>
             <div className="flex items-center gap-3">
               <a className="text-sm underline" href="/promoter/adstation/setup">+ Setup a Direct Ad Slot</a>
-              <a className="text-sm underline" href="/promoter/websites">Manage CrimFig Ad Network Slots</a>
+              <Link className="text-sm underline" href="/promoter/websites">Manage CrimFig Ad Network Slots</Link>
             </div>
           </div>
 
