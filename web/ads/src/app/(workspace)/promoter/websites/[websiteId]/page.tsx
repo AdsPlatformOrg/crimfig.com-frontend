@@ -24,7 +24,7 @@ import {
   X,
   FileCode,
 } from 'lucide-react';
-import { loadWebsites, verifyWebsite } from '@/lib/campaigns-api';
+import { loadWebsites, verifyWebsite, type WebsiteProofMethod } from '@/lib/campaigns-api';
 import { sessionFetch } from '@/lib/session';
 import { apiData } from '@/lib/api-data';
 import { houseRewardEligibility } from '@/lib/cfig-format';
@@ -41,6 +41,8 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
+
+const successBadge = { color: 'var(--color-success)', backgroundColor: 'var(--color-success-bg)' };
 
 interface PromoterWebsite {
   id: string;
@@ -97,7 +99,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   // Verification & Copy actions
-  const [verifying, setVerifying] = useState(false);
+  const verificationInFlight = useRef(false);
+  const [verifying, setVerifying] = useState<WebsiteProofMethod | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [verificationResultDialog, setVerificationResultDialog] = useState<{
     open: boolean;
@@ -178,11 +181,13 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
     }
   };
 
-  const handleTriggerVerification = async () => {
-    if (!website || verifying) return;
-    setVerifying(true);
+  const handleTriggerVerification = async (method: WebsiteProofMethod) => {
+    if (!website || verificationInFlight.current) return;
+    verificationInFlight.current = true;
+    setVerifying(method);
+    const methodLabel = method === 'dns_txt' ? 'DNS TXT' : 'HTML Meta Tag';
     try {
-      const outcome = await verifyWebsite(website.id);
+      const outcome = await verifyWebsite(website.id, method);
       const isOk = outcome.isVerified === true;
       const msg = isOk
         ? `Domain ownership for "${website.domain}" was verified successfully!`
@@ -191,19 +196,19 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
       setVerificationResultDialog({
         open: true,
         isVerified: isOk,
-        message: msg,
+        message: `${methodLabel}: ${msg}`,
       });
 
-      // Refresh state
       await loadData();
     } catch (err) {
       setVerificationResultDialog({
         open: true,
         isVerified: false,
-        message: err instanceof Error ? err.message : 'Verification check could not be completed.',
+        message: `${methodLabel}: ${err instanceof Error ? err.message : 'Verification check could not be completed.'}`,
       });
     } finally {
-      setVerifying(false);
+      verificationInFlight.current = false;
+      setVerifying(null);
     }
   };
 
@@ -320,8 +325,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
             </Button>
             <Button
               type="button"
-              disabled={verifying}
-              onClick={handleTriggerVerification}
+              disabled={Boolean(verifying)}
+              onClick={() => void handleTriggerVerification(website.verificationMethod === 'dns_txt' ? 'dns_txt' : 'html_meta')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -381,14 +386,14 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 padding: '3px 10px',
                 borderRadius: '9999px',
                 backgroundColor: isOwnershipVerified ? 'var(--color-success-bg, #ECFDF5)' : 'var(--color-warning-bg, #FFFBEB)',
-                color: isOwnershipVerified ? 'var(--color-success, #059669)' : 'var(--color-warning, #D97706)',
+                color: isOwnershipVerified ? 'var(--color-success)' : !isExpired && website.verificationStatus === 'failed' ? 'var(--color-error)' : 'var(--color-warning)',
               }}
             >
-              {isOwnershipVerified ? 'Verified Domain' : 'Verification Required'}
+              {isOwnershipVerified ? 'Verified Domain' : isExpired ? 'Verification Expired' : website.verificationStatus === 'failed' ? 'Verification Failed' : 'Verification Required'}
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px', margin: 0 }}>
-            {website.verificationExpiresAt
+            {isOwnershipVerified && website.verificationExpiresAt
               ? `Ownership active until ${new Date(website.verificationExpiresAt).toLocaleDateString()}`
               : 'Requires promoter DNS TXT or HTML meta verification.'}
           </p>
@@ -400,13 +405,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           </span>
           <div style={{ marginTop: '8px' }}>
             <Badge
-              variant={
-                website.policyStatus === 'approved'
-                  ? 'default'
-                  : website.policyStatus === 'suspended'
-                  ? 'destructive'
-                  : 'secondary'
-              }
+              variant={website.policyStatus === 'suspended' || website.policyStatus === 'rejected' ? 'destructive' : 'secondary'}
+              style={website.policyStatus === 'approved' ? successBadge : undefined}
             >
               {(website.policyStatus || 'UNVERIFIED').toUpperCase()}
             </Badge>
@@ -490,12 +490,12 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
             style={{
               padding: '16px',
               borderRadius: '8px',
-              border: website.verificationMethod === 'html_file_and_meta_tag' ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
+              border: isOwnershipVerified && website.verificationMethod === 'html_file_and_meta_tag' ? '2px solid var(--color-success)' : '1px solid var(--border-subtle)',
               backgroundColor: 'var(--bg-surface, #F8FAFC)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                 Option 1: HTML Head Meta Tag
               </span>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Place in &lt;head&gt;</span>
@@ -516,7 +516,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 border: '1px solid var(--border-subtle)',
               }}
             >
-              <code style={{ fontFamily: 'monospace', color: 'var(--color-crimson)', wordBreak: 'break-all', fontSize: '11px' }}>
+              <code style={{ fontFamily: 'monospace', color: 'var(--text-primary)', wordBreak: 'break-all', fontSize: '11px' }}>
                 {generateCrimFigVerifyMetaTag(website.verificationToken)}
               </code>
               <Button
@@ -538,6 +538,10 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 )}
               </Button>
             </div>
+            <Button type="button" size="sm" variant="outline" style={{ marginTop: 12 }}
+              disabled={Boolean(verifying)} onClick={() => void handleTriggerVerification('html_meta')}>
+              {verifying === 'html_meta' ? 'Checking HTML Meta Tag…' : 'Check HTML Meta Tag'}
+            </Button>
           </div>
 
           {/* Option B: DNS TXT Record */}
@@ -545,12 +549,12 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
             style={{
               padding: '16px',
               borderRadius: '8px',
-              border: website.verificationMethod === 'dns_txt' ? '2px solid var(--color-crimson)' : '1px solid var(--border-subtle)',
+              border: isOwnershipVerified && website.verificationMethod === 'dns_txt' ? '2px solid var(--color-success)' : '1px solid var(--border-subtle)',
               backgroundColor: 'var(--bg-surface, #F8FAFC)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-crimson)', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                 Option 2: DNS TXT Record
               </span>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Type: TXT</span>
@@ -599,7 +603,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 }}
               >
                 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Value:</span>
-                <code style={{ fontFamily: 'monospace', color: 'var(--color-crimson)', wordBreak: 'break-all', fontSize: '11px' }}>
+                <code style={{ fontFamily: 'monospace', color: 'var(--text-primary)', wordBreak: 'break-all', fontSize: '11px' }}>
                   crimfig-site-verification={website.verificationToken}
                 </code>
                 <Button
@@ -613,6 +617,10 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 </Button>
               </div>
             </div>
+            <Button type="button" size="sm" variant="outline" style={{ marginTop: 12 }}
+              disabled={Boolean(verifying)} onClick={() => void handleTriggerVerification('dns_txt')}>
+              {verifying === 'dns_txt' ? 'Checking DNS TXT…' : 'Check DNS TXT'}
+            </Button>
           </div>
         </div>
 
@@ -620,23 +628,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             Status: {website.lastPingAt || 'Pending verification'} &bull; Verification Token: <code>{website.verificationToken}</code>
           </span>
-          <Button
-            type="button"
-            disabled={verifying}
-            onClick={handleTriggerVerification}
-            style={{
-              backgroundColor: 'var(--color-crimson)',
-              color: '#FFFFFF',
-              fontWeight: 700,
-              fontSize: '12px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            {verifying ? 'Checking Proof...' : 'Check Verification Now'}
-          </Button>
         </div>
       </div>
 
@@ -730,7 +721,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={slot.isActive !== false ? 'default' : 'secondary'}>
+                    <Badge variant={slot.lifecycleStatus === 'suspended' ? 'destructive' : 'secondary'}
+                      style={slot.isActive !== false && slot.lifecycleStatus === 'active' ? successBadge : undefined}>
                       {slot.lifecycleStatus || (slot.isActive !== false ? 'Active' : 'Draft')}
                     </Badge>
                   </TableCell>

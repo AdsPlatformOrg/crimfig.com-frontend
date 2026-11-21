@@ -254,10 +254,11 @@ export async function registerWebsite(
     ),
   );
 }
-export async function verifyWebsite(id: string) {
+export type WebsiteProofMethod = 'dns_txt' | 'html_meta';
+export async function verifyWebsite(id: string, method?: WebsiteProofMethod) {
   const result = await apiData<any>(
     `/api/v1/verification/website/${encodeURIComponent(id)}`,
-    { method: "POST" },
+    { method: "POST", ...(method ? jsonBody({ method }) : {}) },
   );
   if (typeof result?.isVerified !== "boolean" || !result.website)
     throw new Error("Verification could not be confirmed.");
