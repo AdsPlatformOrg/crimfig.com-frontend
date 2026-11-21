@@ -1,6 +1,7 @@
 'use client';
 
 import React, { use, useEffect, useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { sessionFetch } from '@/lib/session';
@@ -20,6 +21,7 @@ import {
   History,
   CheckCircle2,
   XCircle,
+  X,
 } from 'lucide-react';
 
 export default function AdminWebsiteDetailPage({
@@ -38,7 +40,15 @@ export default function AdminWebsiteDetailPage({
   const [slotCheckMessage, setSlotCheckMessage] = useState<{ id: string; text: string; ok: boolean } | null>(null);
 
   const [checkingOwnership, setCheckingOwnership] = useState(false);
-  const [ownershipResult, setOwnershipResult] = useState<{ websiteId: string; text: string } | null>(null);
+  const [ownershipResult, setOwnershipResult] = useState<{
+    websiteId: string;
+    text: string;
+    isVerified?: boolean;
+    method?: 'dns_txt' | 'html_meta';
+    checkedAt?: string;
+  } | null>(null);
+  const [ownershipDialogOpen, setOwnershipDialogOpen] = useState(false);
+  const [pendingRefreshAfterDialog, setPendingRefreshAfterDialog] = useState(false);
   const [cooldownUntilMs, setCooldownUntilMs] = useState<number>(0);
   const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
 
@@ -69,6 +79,7 @@ export default function AdminWebsiteDetailPage({
     if (checkingOwnership || cooldownSeconds > 0) return;
     setCheckingOwnership(true);
     setOwnershipResult(null);
+    const checkedAt = new Date().toLocaleString();
     try {
       const response = await sessionFetch(`/api/v1/admin/ads/websites/${websiteId}/ownership-retest`, {
         method: 'POST',
@@ -85,13 +96,35 @@ export default function AdminWebsiteDetailPage({
         throw new Error(typeof result.message === 'string' ? result.message : 'Ownership check unavailable.');
       }
       setCooldownUntilMs(Date.now() + 10000);
-      setOwnershipResult({ websiteId, text: result.data.isVerified ? 'Ownership verified.' :
-        result.data.errorMessage || 'The verification record did not match.' });
-      setRefreshCount(value => value + 1);
+      const isVerified = result.data.isVerified === true;
+      const text = isVerified
+        ? 'Domain ownership verified and recorded for 30 days.'
+        : result.data.errorMessage || 'The verification record did not match.';
+      if (result.data.website) {
+        setData((prev: any) => (prev ? { ...prev, website: { ...prev.website, ...result.data.website } } : prev));
+      }
+      setOwnershipResult({ websiteId, text, isVerified, method, checkedAt });
+      setPendingRefreshAfterDialog(true);
+      setOwnershipDialogOpen(true);
     } catch (err) {
-      setOwnershipResult({ websiteId, text: err instanceof Error ? err.message : 'Ownership check unavailable.' });
+      setOwnershipResult({
+        websiteId,
+        text: err instanceof Error ? err.message : 'Ownership check unavailable.',
+        isVerified: false,
+        method,
+        checkedAt,
+      });
+      setOwnershipDialogOpen(true);
     } finally {
       setCheckingOwnership(false);
+    }
+  }
+
+  function handleDismissOwnershipDialog() {
+    setOwnershipDialogOpen(false);
+    if (pendingRefreshAfterDialog) {
+      setPendingRefreshAfterDialog(false);
+      setRefreshCount((value) => value + 1);
     }
   }
 
@@ -125,7 +158,10 @@ export default function AdminWebsiteDetailPage({
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    setData((current: any) => {
+      if (!current) setLoading(true);
+      return current;
+    });
     setError(null);
 
     sessionFetch(`/api/v1/admin/ads/websites/${websiteId}`)
@@ -336,6 +372,122 @@ export default function AdminWebsiteDetailPage({
           </div>
         </div>
       </div>
+
+      <Dialog.Root
+        open={ownershipDialogOpen && ownershipResult?.websiteId === websiteId}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) handleDismissOwnershipDialog();
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.55)',
+              backdropFilter: 'blur(2px)',
+              zIndex: 1000,
+            }}
+          />
+          <Dialog.Content
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 'min(92vw, 480px)',
+              backgroundColor: 'var(--bg-surface, #FFFFFF)',
+              color: 'var(--text-primary, #0F172A)',
+              borderRadius: '14px',
+              border: '1px solid var(--border-subtle, #E2E8F0)',
+              boxShadow: 'var(--shadow-lg, 0 20px 25px -5px rgba(0, 0, 0, 0.15))',
+              padding: '24px',
+              zIndex: 1001,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {ownershipResult?.isVerified ? (
+                  <CheckCircle2 size={22} color="var(--color-success, #10B981)" />
+                ) : (
+                  <XCircle size={22} color="var(--color-error, #EF4444)" />
+                )}
+                <Dialog.Title style={{ margin: 0, fontSize: '17px', fontWeight: 700 }}>
+                  {ownershipResult?.isVerified ? 'Domain Ownership Verified' : 'Domain Ownership Check Failed'}
+                </Dialog.Title>
+              </div>
+              <Dialog.Close asChild>
+                <button
+                  type="button"
+                  aria-label="Close check results dialog"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-muted, #64748B)',
+                    padding: '4px',
+                    borderRadius: '6px',
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </Dialog.Close>
+            </div>
+
+            <Dialog.Description
+              style={{
+                margin: '0 0 16px 0',
+                fontSize: '14px',
+                lineHeight: 1.5,
+                color: ownershipResult?.isVerified ? 'var(--color-success, #10B981)' : 'var(--color-error, #EF4444)',
+                fontWeight: 600,
+              }}
+            >
+              {ownershipResult?.text}
+            </Dialog.Description>
+
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: '10px',
+                backgroundColor: 'var(--bg-elevated, #F8FAFC)',
+                border: '1px solid var(--border-subtle, #E2E8F0)',
+                fontSize: '12px',
+                display: 'grid',
+                gap: '8px',
+                marginBottom: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span style={{ color: 'var(--text-muted, #64748B)' }}>Domain:</span>
+                <span style={{ fontWeight: 600 }}>{website.domain}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span style={{ color: 'var(--text-muted, #64748B)' }}>Check Method:</span>
+                <span style={{ fontWeight: 600 }}>
+                  {ownershipResult?.method === 'dns_txt' ? 'DNS TXT Record' : 'HTML Meta Tag'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                <span style={{ color: 'var(--text-muted, #64748B)' }}>Expected Token:</span>
+                <code style={{ fontFamily: 'monospace', fontWeight: 600, wordBreak: 'break-all' }}>{website.verificationToken}</code>
+              </div>
+              {ownershipResult?.checkedAt && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                  <span style={{ color: 'var(--text-muted, #64748B)' }}>Checked At:</span>
+                  <span>{ownershipResult.checkedAt}</span>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button type="button" onClick={handleDismissOwnershipDialog}>
+                Confirm &amp; Close
+              </Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {/* Section 2: Reused Website Policy Review Form */}
       <div style={{ marginBottom: '28px' }}>
