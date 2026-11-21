@@ -50,7 +50,12 @@ export interface PromoterWebsite {
   isVerified: boolean;
   lastPingAt: string;
   impressionCount?: string;
+  clickCount?: string;
   ownershipChecks?: Partial<Record<'html_meta' | 'dns_txt', { status: 'verified' | 'not_verified' | 'expired' }>>;
+}
+
+function formatWebsiteCount(value?: string) {
+  return typeof value === 'string' && /^\d+$/.test(value) ? BigInt(value).toLocaleString() : '—';
 }
 
 export function PromoterWebsitesView() {
@@ -336,7 +341,7 @@ export function PromoterWebsitesView() {
               <TableHead style={{ minWidth: '220px' }}>Website Domain</TableHead>
               <TableHead style={{ minWidth: '150px' }}>Ownership Status</TableHead>
               <TableHead style={{ minWidth: '140px' }}>Policy Status</TableHead>
-              <TableHead style={{ minWidth: '110px' }}>Impressions</TableHead>
+              <TableHead style={{ minWidth: '110px' }}><abbr title="Impressions" style={{ textDecoration: 'none' }}>Impr</abbr> | Clicks</TableHead>
               <TableHead style={{ minWidth: '160px' }}>Verification</TableHead>
               <TableHead style={{ minWidth: '180px', textAlign: 'right' }}>Actions</TableHead>
             </TableRow>
@@ -435,7 +440,7 @@ export function PromoterWebsitesView() {
                   </TableCell>
                   <TableCell>
                     <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {typeof site.impressionCount === 'string' && /^\d+$/.test(site.impressionCount) ? BigInt(site.impressionCount).toLocaleString() : '—'}
+                      {formatWebsiteCount(site.impressionCount)} | {formatWebsiteCount(site.clickCount)}
                     </span>
                   </TableCell>
                   <TableCell>
