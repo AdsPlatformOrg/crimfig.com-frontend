@@ -2,6 +2,11 @@
 
 Prior historical entries up to 2026-11-03 are archived in `frontend/SERIAL_LOGS_ARCHIVE_20261103.md`.
 
+## 2026-11-21 - PLAN-0133 Responsive Ad Slot Sizing, Shared Sample Explorer & Add an Advert
+- Completed `Add an Advert` dedicated route (`web/ads/src/app/(workspace)/campaigns/[id]/stacks/[stackId]/adverts/new/page.tsx`) with `Image Ads — Available`, disabled `Text Ads — Coming Soon` / `Video Ads — Coming Soon` options, ordered upload/size-policy/destination inputs without optional Headline, idempotent `requestId` retries, and `Submit new Advert for review` CTA.
+- Updated `HouseSizeSamples.tsx` / `HouseSizeSamples.module.css` (`Sample Ad #1`..`#3`, default-open explorer, `320 px` / `375 px` / `970 px` container frames with visible padding and incompatible-size notice) and `CrimFigAdSlot.tsx` (`responsiveSizing` `data-ad-format="general"` support).
+- Verified `tsc -p frontend/web/ads/tsconfig.json --noEmit` (0 errors), `node --test` across `plan0133-advert-and-slots.test.cjs`, `plan0130-samples.test.cjs`, `plan0128-website-detail.test.cjs`, and `plan0129-slots.test.cjs` (`5/5` passed), and `@crimfig/api-client` (`51/51` passed). Browser/staging release pending.
+
 ## 2026-11-21 - PLAN-0128 Promoter Hub Navigation Nomenclature & Registered Websites Table View with Drill-Down
 - **Objective:** Fix Promoter Hub navigation nomenclature to eliminate duplicate "Dashboard" labels and transform the registered websites grid into a responsive, filterable Table view with dedicated drill-down inspection.
 - **Affected Repos / Files:**
@@ -106,3 +111,10 @@ Rebuilt Ads navigation with a shadcn Dialog drawer and desktop icon rail. Fund W
 
 ## 2026-11-21 - PLAN-0130 / PLAN-0129 local implementation
 Prepared 27 pixel-identical House sample outputs: 2,599,289 to 1,753,454 bytes (32.54% reduction). Shared non-tracking samples and inactive import/reconciliation UI; advertiser Dynamic/One Size/Selected Sizes policies; dedicated website slot pages and transactional managed lifecycle endpoints with immutable retry receipts and retirement. Verification: 45 backend units, 8 asset/sample/import frontend tests, 2 slot/website React tests, 51 contract tests (92 operations), 4 isolated PostgreSQL/HTTP cases (94 filtered), and 7 moderation integration regressions passed. Scoped Ads frontend/API TypeScript checks passed. Migration 0048 required before deployment. Actual container-measured matching deferred under the no-SDK-change instruction; saved limits are enforced. Live asset registration/activation, browser review, merge/push and deployment not performed. Evidence: ../docs/reviews/plan-0129/implementation-20261121.md and ../docs/reviews/plan-0130/implementation-20261121.md.
+
+## 2026-11-21 - PLAN-0132 independent ownership indicators
+HTML meta and DNS TXT now show independent Verified / Not verified / Expired labels and evidence-based outlines. Method check outcomes persist in existing audit history bound to the current verification-token hash, and owner-scoped website responses expose both statuses. No migration or live recheck. Backend status/proof tests 45/45 and website-detail React regression 1/1 passed; isolated verification integration checks the persisted HTML-verified/DNS-not-verified case. Browser/deployment remain deferred.
+
+
+## 2026-11-21 - Verification footer cleanup
+Removed the redundant delivery-status/verification-token footer from the promoter website proof section. HTML and DNS proof instructions and copy controls remain. Narrow copy-only change; inspected source diff and whitespace, no new tests or behavior changes.

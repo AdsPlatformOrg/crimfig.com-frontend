@@ -165,10 +165,7 @@ export default function AdStackDetailPage() {
             </Badge>
 
             {live && stack?.position !== 1 && <Button variant="outline" disabled={actionPending} onClick={()=>setArchiveTarget('stack')}>Archive stack</Button>}
-            {live && <Button onClick={()=>setReplacementCreative({
-              id:'new',campaignId:id,expectedRevision:campaign.contentRevision??1,expectedUpdatedAt:campaign.updatedAt,
-              createInStack:stackId,destinationUrl:'',adType:'image',
-            })}>Add creative</Button>}
+            {live && stack && <Button onClick={() => router.push(withCampaignReturnTo('/campaigns/' + id + '/stacks/' + stackId + '/adverts/new', returnTo))}>Add an Advert</Button>}
             <Button
               variant="outline"
               size="sm"

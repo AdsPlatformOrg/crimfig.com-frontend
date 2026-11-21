@@ -108,6 +108,7 @@ interface CrimFigAdSlotProps {
   responsive?: boolean;
   /** Resolve from actual visitor choice before mounting; changing it does not retry an initialized SDK slot. */
   measurementConsent?: 'unknown' | 'granted' | 'denied';
+  responsiveSizing?: boolean;
   fallbackHtml?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -119,6 +120,7 @@ export function CrimFigAdSlot({
   publisherKey,
   apiBaseUrl,
   responsive = true,
+  responsiveSizing = false,
   measurementConsent = 'unknown',
   fallbackHtml,
   className,
@@ -156,7 +158,7 @@ export function CrimFigAdSlot({
         style={{
           display: 'block',
           minHeight: 0,
-          maxWidth: slotConfig?.width || undefined,
+          maxWidth: responsiveSizing ? undefined : slotConfig?.width || undefined,
           ...style,
         }}
         data-cf-network="crimfig"
@@ -164,7 +166,8 @@ export function CrimFigAdSlot({
         data-ad-slot={resolvedSlotId}
         data-cf-placement={resolvedSlotId}
         data-cf-api-base={resolvedApiBase}
-        data-cf-height={slotConfig?.height || 90}
+        data-cf-height={responsiveSizing ? undefined : (slotConfig?.height || 90)}
+        data-ad-format={responsiveSizing ? "general" : undefined}
         data-cf-consent={measurementConsent}
         data-cf-handle={placement}
         data-cf-responsive={responsive ? 'true' : 'false'}

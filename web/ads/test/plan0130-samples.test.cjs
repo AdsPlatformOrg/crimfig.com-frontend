@@ -12,15 +12,20 @@ test('sample controls stay local, show fitting sizes, handle image errors and ne
   try{
     await React.act(async()=>root.render(React.createElement('form',{onSubmit:()=>submissions++},React.createElement('input',{defaultValue:'Keep this campaign'}),React.createElement(Component,{context:'publisher'}))));
     const draft=document.querySelector('input');
+    assert.equal(document.querySelector('details').open,true);
+    assert.equal(document.querySelector('[aria-label="Example container: 320 pixels"]').style.width,'320px');
     assert.ok(!document.querySelector('script'));assert.equal(document.querySelectorAll('img').length,1);
     assert.ok(!Array.from(document.querySelectorAll('button')).some(button=>button.textContent==='728 × 90'));
     const button=text=>Array.from(document.querySelectorAll('button')).find(item=>item.textContent===text);
-    await React.act(async()=>button('970 px').click());assert.ok(button('728 × 90'));
+    await React.act(async()=>button('970 px').click());assert.ok(button('728 × 90'));assert.equal(document.querySelector('[aria-label="Example container: 970 pixels"]').style.width,'970px');
     await React.act(async()=>button('728 × 90').click());assert.equal(document.querySelector('img').width,728);
-    await React.act(async()=>button('Plaid woman').click());assert.match(document.querySelector('img').src,/sample_03_plaid_woman/);
+    await React.act(async()=>button('Sample Ad #2').click());assert.match(document.querySelector('img').src,/sample_03_plaid_woman/);
     assert.equal(document.querySelector('input'),draft);assert.equal(draft.value,'Keep this campaign');assert.equal(submissions,0);
     await React.act(async()=>document.querySelector('img').dispatchEvent(new dom.window.Event('error')));
     assert.match(document.querySelector('[role="status"]').textContent,/could not be loaded/);
+    await React.act(async()=>button('320 px').click());
+    assert.match(document.querySelector('[role="status"]').textContent,/728 × 90 px.*does not fit this 320 px container/);
+    assert.equal(document.querySelector('img').width,300);
     await React.act(async()=>root.render(React.createElement(Component,{allowedPresets:['unsupported']})));
     assert.equal(document.querySelector('img'),null);assert.match(document.querySelector('[role="status"]').textContent,/No approved sample/);
   }finally{await React.act(async()=>root.unmount());dom.window.close();Object.assign(global,previous);}

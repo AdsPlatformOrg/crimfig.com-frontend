@@ -18,6 +18,8 @@ test('website detail retries failed slots, ignores the previous website, and rep
   const sites = ['alpha', 'beta'].map(id => ({
     id, domain: id + '.example.test', url: 'https://' + id + '.example.test',
     verificationToken: id + '-token', verificationMethod: 'dns_txt',
+    ownershipChecks:{html_meta:{status:'verified'},dns_txt:{status:'not_verified'}},
+    isVerified:true,verificationExpiresAt:'2099-01-01T00:00:00.000Z',
   }));
   const element = tag => ({ children, ...props }) => React.createElement(tag, props, children);
   const dependencies = {
@@ -52,6 +54,10 @@ test('website detail retries failed slots, ignores the previous website, and rep
   });
   try {
     await render('alpha');
+    const htmlProof=container.querySelector('[aria-label="HTML meta verification"]');
+    const dnsProof=container.querySelector('[aria-label="DNS TXT verification"]');
+    assert.match(htmlProof.textContent,/Verified/);assert.match(dnsProof.textContent,/Not verified/);
+    assert.match(htmlProof.style.border,/2px/);assert.doesNotMatch(dnsProof.style.border,/2px/);
     await reply(0, 403);
     assert.match(container.textContent, /Ad slots could not be loaded/);
     assert.doesNotMatch(container.textContent, /No ad slots configured/);

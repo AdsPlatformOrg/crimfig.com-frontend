@@ -45,6 +45,7 @@ import {
 const successBadge = { color: 'var(--color-success)', backgroundColor: 'var(--color-success-bg)' };
 
 interface PromoterWebsite {
+  ownershipChecks?:Partial<Record<WebsiteProofMethod,{status:'verified'|'not_verified'|'expired';checkedAt?:string|null}>>;
   id: string;
   domain: string;
   url: string;
@@ -261,6 +262,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
 
   const isExpired = website.verificationExpiresAt ? new Date(website.verificationExpiresAt).getTime() <= Date.now() : false;
   const isOwnershipVerified = website.isVerified && !isExpired;
+  const htmlStatus=(website.ownershipChecks?.html_meta?.status??(isOwnershipVerified&&website.verificationMethod==='html_file_and_meta_tag'?'verified':'not_verified'));
+  const dnsStatus=(website.ownershipChecks?.dns_txt?.status??(isOwnershipVerified&&website.verificationMethod==='dns_txt'?'verified':'not_verified'));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
@@ -464,7 +467,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
             </p>
           </div>
           <Badge variant="outline">
-            Preferred Method: {website.verificationMethod === 'html_file_and_meta_tag' ? 'HTML Meta Tag' : 'DNS TXT'}
+            Either method can verify ownership
           </Badge>
         </div>
 
@@ -484,13 +487,13 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
           {/* Option A: HTML Head Meta Tag */}
-          <div
+          <div aria-label="HTML meta verification"
             style={{
               padding: '16px',
               borderRadius: '8px',
-              border: isOwnershipVerified && website.verificationMethod === 'html_file_and_meta_tag' ? '2px solid var(--color-success)' : '1px solid var(--border-subtle)',
+              border: htmlStatus==='verified' ? '2px solid var(--color-success)' : '1px solid var(--border-subtle)',
               backgroundColor: 'var(--bg-surface, #F8FAFC)',
             }}
           >
@@ -498,7 +501,9 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
               <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                 Option 1: HTML Head Meta Tag
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Place in &lt;head&gt;</span>
+              <Badge variant="outline" style={htmlStatus==='verified'?successBadge:undefined}>
+                {htmlStatus==='verified'?'Verified':htmlStatus==='expired'?'Expired':'Not verified'}
+              </Badge>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 10px' }}>
               Add this meta tag anywhere inside the root <code>&lt;head&gt;</code> section of <code>https://{website.domain}/</code>:
@@ -545,11 +550,11 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           </div>
 
           {/* Option B: DNS TXT Record */}
-          <div
+          <div aria-label="DNS TXT verification"
             style={{
               padding: '16px',
               borderRadius: '8px',
-              border: isOwnershipVerified && website.verificationMethod === 'dns_txt' ? '2px solid var(--color-success)' : '1px solid var(--border-subtle)',
+              border: dnsStatus==='verified' ? '2px solid var(--color-success)' : '1px solid var(--border-subtle)',
               backgroundColor: 'var(--bg-surface, #F8FAFC)',
             }}
           >
@@ -557,7 +562,9 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
               <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                 Option 2: DNS TXT Record
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Type: TXT</span>
+              <Badge variant="outline" style={dnsStatus==='verified'?successBadge:undefined}>
+                {dnsStatus==='verified'?'Verified':dnsStatus==='expired'?'Expired':'Not verified'}
+              </Badge>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 10px' }}>
               Add a DNS TXT record at your domain registrar or DNS hosting provider:
@@ -624,11 +631,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           </div>
         </div>
 
-        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            Status: {website.lastPingAt || 'Pending verification'} &bull; Verification Token: <code>{website.verificationToken}</code>
-          </span>
-        </div>
       </div>
 
       {/* Associated Ad Slots */}
