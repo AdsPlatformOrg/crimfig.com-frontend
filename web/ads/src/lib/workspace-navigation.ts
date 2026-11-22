@@ -58,12 +58,6 @@ export function workspaceNavigation(
           href: "/conversions",
         },
         {
-          id: "disputes",
-          label: "Invalid Traffic Audits",
-          icon: ShieldCheck,
-          href: "/disputes",
-        },
-        {
           id: "billing_escrow",
           label: "Billing & Wallet",
           icon: CreditCard,
