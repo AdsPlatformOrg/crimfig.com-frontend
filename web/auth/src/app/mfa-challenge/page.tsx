@@ -5,6 +5,9 @@ import { withBrowserRefreshLock } from '@crimfig/session';
 import { useSearchParams } from 'next/navigation';
 import { loginDestination } from '@/lib/login-return';
 import { getApiUrl } from '@/lib/config';
+import { getMfaChallengeCopy } from '@/lib/auth-copy';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -12,6 +15,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 function MfaChallengeContent() {
+  const { locale } = useLanguage();
+  const copy = getMfaChallengeCopy(locale);
   const searchParams = useSearchParams();
   const mfaChallengeToken = searchParams.get('token') || '';
 
@@ -26,7 +31,7 @@ function MfaChallengeContent() {
 
     try {
       if (!mfaChallengeToken) {
-        throw new Error('MFA challenge session expired or invalid. Please sign in again.');
+        throw new Error(copy.expiredError);
       }
 
       const res = await withBrowserRefreshLock(window.location.origin, () => fetch(getApiUrl('/api/v1/mfa/verify'), {
@@ -39,7 +44,7 @@ function MfaChallengeContent() {
       }));
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Verification failed');
+      if (!res.ok) throw new Error(data.message || copy.verificationFailed);
 
       window.location.assign(loginDestination(new URLSearchParams(searchParams.toString())));
 
@@ -53,9 +58,10 @@ function MfaChallengeContent() {
   return (
     <div className="auth-centered-container">
       <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <LanguagePicker publishedOnly />
       <AuthBrandHeader
-        title="Two-Factor Verification"
-        subtitle="Enter the 6-digit authenticator code or 8-character backup code"
+        title={copy.title}
+        subtitle={copy.subtitle}
       />
 
       {error && (
@@ -67,7 +73,7 @@ function MfaChallengeContent() {
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         <div>
           <label htmlFor="mfa-code" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.5px' }}>
-            AUTHENTICATOR / BACKUP CODE
+            {copy.codeLabel}
           </label>
           <Input
             id="mfa-code"

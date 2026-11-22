@@ -4,6 +4,9 @@ import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
+import { getResetPasswordCopy } from '@/lib/auth-copy';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -11,6 +14,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 function ResetPasswordContent() {
+  const { locale } = useLanguage();
+  const copy = getResetPasswordCopy(locale);
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
 
@@ -26,13 +31,13 @@ function ResetPasswordContent() {
     setError('');
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(copy.mismatchError);
       setLoading(false);
       return;
     }
 
     if (!token) {
-      setError('Missing or invalid reset token. Please request a new link.');
+      setError(copy.missingTokenError);
       setLoading(false);
       return;
     }
@@ -45,7 +50,7 @@ function ResetPasswordContent() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Password reset failed');
+      if (!res.ok) throw new Error(data.message || copy.failedError);
 
       setSuccess(true);
     } catch (err: any) {
@@ -58,9 +63,10 @@ function ResetPasswordContent() {
   return (
     <div className="auth-centered-container">
       <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <LanguagePicker publishedOnly />
       <AuthBrandHeader
-        title="Create New Password"
-        subtitle="Set a secure password for your CrimFig account"
+        title={copy.title}
+        subtitle={copy.subtitle}
       />
 
       {error && (
@@ -72,17 +78,17 @@ function ResetPasswordContent() {
       {success ? (
         <div>
           <Alert variant="success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
-            <span>Your password has been reset successfully. You can now log in with your new credentials.</span>
+            <span>{copy.successMessage}</span>
           </Alert>
           <Button asChild className="cf-auth-full-button">
-            <Link href="/login">Sign In Now</Link>
+            <Link href="/login">{copy.signInNow}</Link>
           </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
             <label htmlFor="new-password" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-              NEW PASSWORD
+              {copy.newPasswordLabel}
             </label>
             <Input
               id="new-password"

@@ -45,7 +45,9 @@ import {
 import { useDialog } from '../../lib/use-dialog';
 import { AccountMenu } from '../../../../../shared/ui/account-menu';
 import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
 import { publishedLocales } from '../../../../../shared/ui/localization/locale';
+import { getBillingNavCopy } from '../../lib/billing-copy';
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { EmptyState } from '../EmptyState';
@@ -125,6 +127,8 @@ interface BillingConsoleProps {
 const API_BASE = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_BILLING_API_URL || 'https://billing-api-production-bb4c.up.railway.app');
 
 export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: BillingConsoleProps) {
+  const { locale } = useLanguage();
+  const navCopy = getBillingNavCopy(locale);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'cards' | 'subscriptions' | 'bank_accounts' | 'transactions' | 'rewards' | 'support'>(initialTab);
   useEffect(() => { setActiveTab(initialTab); setIsMobileNavOpen(false); }, [initialTab]);
@@ -478,67 +482,67 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
 
   const walletNavGroups: NavGroup[] = [
     {
-      title: 'Wallet & Balances',
+      title: navCopy.walletAndBalances,
       items: [
-        { id: 'overview', label: 'Wallet Overview', icon: Wallet },
-        { id: 'fund_action', label: 'Fund Wallet', icon: ArrowDownLeft, action: openDeposit },
-        { id: 'transactions', label: 'Transactions & Receipts', icon: Clock, badge: transactions.length },
+        { id: 'overview', label: navCopy.walletOverview, icon: Wallet },
+        { id: 'fund_action', label: navCopy.fundWallet, icon: ArrowDownLeft, action: openDeposit },
+        { id: 'transactions', label: navCopy.transactionsAndReceipts, icon: Clock, badge: transactions.length },
       ],
     },
     {
-      title: 'Payment Methods',
+      title: navCopy.paymentMethods,
       items: [
-        { id: 'cards', label: 'Saved Cards', icon: CreditCard, badge: cards.length },
-        { id: 'subscriptions', label: 'Subscriptions', icon: Sparkles, badge: subscriptions.length },
+        { id: 'cards', label: navCopy.savedCards, icon: CreditCard, badge: cards.length },
+        { id: 'subscriptions', label: navCopy.subscriptions, icon: Sparkles, badge: subscriptions.length },
       ],
     },
     {
-      title: 'Support',
+      title: navCopy.support,
       items: [
-        { id: 'support', label: 'Help & Inquiries', icon: HelpCircle },
+        { id: 'support', label: navCopy.helpAndInquiries, icon: HelpCircle },
       ],
     },
   ];
 
   const payoutsNavGroups: NavGroup[] = [
     {
-      title: 'Publisher & Payouts',
+      title: navCopy.publisherAndPayouts,
       items: [
-        { id: 'bank_accounts', label: 'Bank Accounts', icon: Building2, badge: bankAccounts.length },
-        { id: 'withdraw_action', label: 'Request Withdrawal', icon: ArrowUpRight, action: () => setIsWithdrawOpen(true) },
+        { id: 'bank_accounts', label: navCopy.bankAccounts, icon: Building2, badge: bankAccounts.length },
+        { id: 'withdraw_action', label: navCopy.requestWithdrawal, icon: ArrowUpRight, action: () => setIsWithdrawOpen(true) },
       ],
     },
     {
-      title: 'Settlement History',
+      title: navCopy.settlementHistory,
       items: [
-        { id: 'transactions', label: 'Payout Statements', icon: Clock, badge: transactions.length },
+        { id: 'transactions', label: navCopy.payoutStatements, icon: Clock, badge: transactions.length },
       ],
     },
     {
-      title: 'Support',
+      title: navCopy.support,
       items: [
-        { id: 'support', label: 'Payout Inquiries', icon: HelpCircle },
+        { id: 'support', label: navCopy.payoutInquiries, icon: HelpCircle },
       ],
     },
   ];
 
   const rewardsNavGroups: NavGroup[] = [
     {
-      title: 'Rewards & Perks',
+      title: navCopy.rewardsAndPerks,
       items: [
-        { id: 'rewards', label: 'Rewards Hub', icon: Gift, badge: `${rewardsPoints.toLocaleString()} pts` },
+        { id: 'rewards', label: navCopy.rewardsHub, icon: Gift, badge: `${rewardsPoints.toLocaleString()} pts` },
       ],
     },
     {
-      title: 'Redemption Statements',
+      title: navCopy.redemptionStatements,
       items: [
-        { id: 'transactions', label: 'Redemption History', icon: Clock },
+        { id: 'transactions', label: navCopy.redemptionHistory, icon: Clock },
       ],
     },
     {
-      title: 'Support',
+      title: navCopy.support,
       items: [
-        { id: 'support', label: 'Rewards Inquiries', icon: HelpCircle },
+        { id: 'support', label: navCopy.rewardsInquiries, icon: HelpCircle },
       ],
     },
   ];
@@ -555,7 +559,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       {operationError && (
         <Alert variant="destructive" style={{ position: 'sticky', top: 0, zIndex: 1200, justifyContent: 'space-between' }}>
           <AlertDescription>{operationError}</AlertDescription>
-          <Button type="button" variant="outline" size="sm" onClick={() => setOperationError(null)}>Dismiss</Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setOperationError(null)}>{navCopy.dismiss}</Button>
         </Alert>
       )}
       
@@ -582,7 +586,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
         <DashboardSidebar
           app="billing"
-          groups={[{title:'Workspaces',items:[{id:'workspace_wallet',label:'Wallet',icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:'Payouts',icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:'Rewards',icon:Gift,href:'/rewards'}]}, ...currentBillingNavGroups, ...(showAdsReturn ? [{
+          groups={[{title:navCopy.workspaces,items:[{id:'workspace_wallet',label:navCopy.wallet,icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:navCopy.payouts,icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:navCopy.rewards,icon:Gift,href:'/rewards'}]}, ...currentBillingNavGroups, ...(showAdsReturn ? [{
             title: '',
             items: [{ id: 'back_to_ads_billing', label: 'Back to Ads Billing & Wallet', icon: ArrowLeft, href: adsBillingUrl }],
           }] : [])]}

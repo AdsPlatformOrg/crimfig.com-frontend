@@ -6,20 +6,24 @@ import { Smartphone, Monitor, ShieldAlert, LogOut, CheckCircle2 } from 'lucide-r
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
+import { getSessionsCopy } from '../../../lib/auth-copy';
+import { useLanguage } from '../../../../../../shared/ui/localization/LocalizationProvider';
 
 export default function SessionsPage() {
+  const { locale } = useLanguage();
+  const copy = getSessionsCopy(locale);
   return (
     <>
       <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
         <div>
           <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-crimson)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Device Security
+            {copy.eyebrow}
           </span>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 8px' }}>
-            Active Browser &amp; Device Sessions
+            {copy.title}
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
-            Review hardware devices, browsers, and IP locations that currently have access to your CrimFig account.
+            {copy.subtitle}
           </p>
         </div>
 
@@ -32,17 +36,17 @@ export default function SessionsPage() {
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>Current Web Browser</h3>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>{copy.currentBrowser}</h3>
                   <Badge variant="secondary">
-                    This Device
+                    {copy.thisDevice}
                   </Badge>
                 </div>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Authenticated • Active Now</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{copy.activeNow}</span>
               </div>
             </div>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-            Protected by rotating cryptographically signed JWT access tokens and secure HTTP-only refresh cookies.
+            {copy.sessionDesc}
           </p>
         </Card>
 
@@ -50,16 +54,16 @@ export default function SessionsPage() {
         <Card variant="outline" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <ShieldAlert size={20} color="var(--color-crimson)" />
-            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Remote Session Invalidation</h2>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.remoteTitle}</h2>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-            Lost a laptop or phone? Sign out of all other active sessions across all devices to protect your campaigns and billing balance.
+            {copy.remoteDesc}
           </p>
           <div>
             <Button asChild variant="destructive" size="sm">
               <Link href="/login">
                 <LogOut size={14} />
-                <span>Sign Out All Other Sessions</span>
+                <span>{copy.signOutAll}</span>
               </Link>
             </Button>
           </div>

@@ -5,12 +5,17 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { consentSession } from '@/lib/consent';
 import { getApiUrl } from '@/lib/config';
+import { getVerifyEmailCopy } from '@/lib/auth-copy';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 function VerifyEmailContent() {
+  const { locale } = useLanguage();
+  const copy = getVerifyEmailCopy(locale);
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -28,12 +33,12 @@ function VerifyEmailContent() {
     setResendMessage('');
     try {
       const response = await consentSession().request(new URL('/api/v1/auth/resend-verification', window.location.origin), { method: 'POST' });
-      setResendMessage(response.ok ? 'Check the email inbox for your signed-in account.'
-        : response.status === 429 ? 'Too many requests. Wait before retrying.'
-        : response.status === 401 ? 'Sign in to resend a verification link.'
-        : 'The resend could not be confirmed. Check your inbox before trying again.');
+      setResendMessage(response.ok ? copy.resendOk
+        : response.status === 429 ? copy.resendRateLimit
+        : response.status === 401 ? copy.resendUnauth
+        : copy.resendError);
     } catch {
-      setResendMessage('The resend could not be confirmed. Check your inbox before trying again.');
+      setResendMessage(copy.resendError);
     } finally {
       resendLock.current = false;
       setResending(false);
@@ -43,7 +48,7 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (!token) {
       setLoading(false);
-      setMessage('Open the verification link from your email, or request a fresh link while signed in.');
+      setMessage(copy.missingToken);
       return;
     }
 
@@ -54,14 +59,14 @@ function VerifyEmailContent() {
 
         if (res.ok) {
           setSuccess(true);
-          setMessage(data.message || 'Email verified successfully! Your account is now active.');
+          setMessage(data.message || copy.verifiedDefault);
         } else {
           setSuccess(false);
-          setMessage(data.message || 'Email verification link is invalid or has expired.');
+          setMessage(data.message || copy.invalidDefault);
         }
       } catch (err: any) {
         setSuccess(false);
-        setMessage(err.message || 'Verification request failed.');
+        setMessage(err.message || copy.failedDefault);
       } finally {
         setLoading(false);
       }
@@ -73,13 +78,14 @@ function VerifyEmailContent() {
   return (
     <div className="auth-centered-container">
       <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px', textAlign: 'center' }}>
+      <LanguagePicker publishedOnly />
       <AuthBrandHeader
-        title="Email Verification"
+        title={copy.title}
       />
 
       {loading ? (
         <p style={{ color: 'var(--color-gray-400)', fontSize: '14px', margin: '24px 0' }}>
-          Verifying your email address...
+          {copy.verifying}
         </p>
       ) : (
         <div style={{ marginTop: '20px' }}>

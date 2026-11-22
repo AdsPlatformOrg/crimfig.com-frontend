@@ -6,6 +6,8 @@ import { Check, ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
+import { getProfileCopy } from '../../../lib/auth-copy';
+import { useLanguage } from '../../../../../../shared/ui/localization/LocalizationProvider';
 import {
   loadAvatarCatalog,
   loadProfile,
@@ -15,6 +17,8 @@ import {
 } from '../../../lib/profile';
 
 export default function AuthProfilePage() {
+  const { locale } = useLanguage();
+  const copy = getProfileCopy(locale);
   const [profile, setProfile] = useState<AuthProfile | null>(null);
   const [catalog, setCatalog] = useState<AvatarCatalog | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -72,7 +76,7 @@ export default function AuthProfilePage() {
     };
   }, [attributionOpen]);
 
-  const currentPreset = catalog?.presets.find((preset) => preset.id === profile?.avatar.presetId);
+  const selectedPreset = catalog?.presets.find(preset => preset.id === selectedId);
   const dirty = Boolean(profile && selectedId !== profile.avatar.presetId);
 
   async function save() {
@@ -119,8 +123,8 @@ export default function AuthProfilePage() {
             <Card style={{ padding: '24px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ width: '88px', height: '88px', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border-subtle)', flexShrink: 0, background: 'var(--bg-surface)' }}>
                 <Image
-                  src={`/avatars/chibi/${currentPreset?.file || 'chibi-indigo.webp'}`}
-                  alt={currentPreset?.alt || 'Current avatar'}
+                  src={selectedPreset ? `/avatars/chibi/${selectedPreset.file}` : new URL(profile.avatar.url).pathname}
+                  alt={selectedPreset?.alt ?? profile.avatar.alt}
                   width={88}
                   height={88}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -128,8 +132,8 @@ export default function AuthProfilePage() {
               </div>
               <div style={{ flex: 1, minWidth: '220px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <strong style={{ fontSize: '18px', color: 'var(--text-primary)' }}>{currentPreset?.label || 'Default avatar'}</strong>
-                  <Badge variant="secondary">{profile.avatar.kind === 'default' ? 'Default' : 'Selected'}</Badge>
+                  <strong style={{ fontSize: '18px', color: 'var(--text-primary)' }}>{selectedPreset?.label ?? profile.avatar.label}</strong>
+                  <Badge variant="secondary">{dirty ? 'Preview' : profile.avatar.kind === 'default' ? 'Default' : 'Selected'}</Badge>
                 </div>
                 <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>{profile.email}</p>
               </div>
@@ -142,12 +146,16 @@ export default function AuthProfilePage() {
               <div>
                 <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>Choose your avatar</h2>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Twelve chibi ninja avatars. Select one, then save. The default avatar is always available if you remove your choice.
+                  Choose an avatar from Ninjas, Portraits, or Geometric Characters, then save.
                 </p>
               </div>
 
-              <div role="radiogroup" aria-label="Avatar presets" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
-                {catalog.presets.map((preset) => {
+              <div role="radiogroup" aria-label="Avatar presets">
+              {(['ninja', 'portrait', 'geometric'] as const).map(collection => (
+                <section key={collection}>
+                  <h3>{collection === 'ninja' ? 'Ninjas' : collection === 'portrait' ? 'Portraits' : 'Geometric Characters'}</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
+                {catalog.presets.filter(preset => (preset.collection ?? 'ninja') === collection).map((preset) => {
                   const active = selectedId === preset.id;
                   return (
                     <button
@@ -178,10 +186,13 @@ export default function AuthProfilePage() {
                   );
                 })}
               </div>
+                </section>
+              ))}
+              </div>
 
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <Button type="button" variant="outline" size="sm" onClick={() => { setSelectedId(catalog.defaultId); setSaved(''); }}>
-                  <Sparkles size={14} aria-hidden="true" /> Use default avatar
+                  <Sparkles size={14} aria-hidden="true" /> {copy.useDefaultAvatar}
                 </Button>
               </div>
 
@@ -190,17 +201,17 @@ export default function AuthProfilePage() {
             </Card>
 
             <Card style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Artwork attribution</h2>
+              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{copy.artworkAttribution}</h2>
               <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>{catalog.attribution.summary}</p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <Button ref={attributionTrigger} type="button" variant="outline" size="sm" onClick={() => setAttributionOpen(true)}>
-                  View full attribution
+                  {copy.viewFullAttribution}
                 </Button>
                 <a href={catalog.attribution.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-                  Original asset pack <ExternalLink size={12} aria-hidden="true" style={{ display: 'inline' }} />
+                  {copy.originalAssetPack} <ExternalLink size={12} aria-hidden="true" style={{ display: 'inline' }} />
                 </a>
                 <a href={catalog.attribution.licenseUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-                  CC0 1.0 license <ExternalLink size={12} aria-hidden="true" style={{ display: 'inline' }} />
+                  {copy.cc0License} <ExternalLink size={12} aria-hidden="true" style={{ display: 'inline' }} />
                 </a>
               </div>
             </Card>
@@ -219,16 +230,16 @@ export default function AuthProfilePage() {
             style={{ width: '100%', maxWidth: '560px', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', borderRadius: '16px', border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', padding: '24px', boxSizing: 'border-box', outline: 'none' }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-              <h2 id="avatar-attribution-title" style={{ margin: 0, fontSize: '19px', fontWeight: 800, color: 'var(--text-primary)' }}>Avatar artwork attribution</h2>
-              <Button type="button" variant="ghost" size="icon" aria-label="Close attribution" onClick={() => setAttributionOpen(false)}>
+              <h2 id="avatar-attribution-title" style={{ margin: 0, fontSize: '19px', fontWeight: 800, color: 'var(--text-primary)' }}>{copy.avatarAttributionTitle}</h2>
+              <Button type="button" variant="ghost" size="icon" aria-label={copy.closeAttribution} onClick={() => setAttributionOpen(false)}>
                 <X size={18} aria-hidden="true" />
               </Button>
             </div>
             <dl style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '10px 16px', margin: '18px 0', fontSize: '13px', lineHeight: 1.5 }}>
-              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Source</dt><dd style={{ margin: 0 }}>{catalog.attribution.title}</dd>
-              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Artist</dt><dd style={{ margin: 0 }}>{catalog.attribution.artist}</dd>
-              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>License</dt><dd style={{ margin: 0 }}>{catalog.attribution.license}</dd>
-              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Modifications</dt><dd style={{ margin: 0 }}>{catalog.attribution.modifications}</dd>
+              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{copy.source}</dt><dd style={{ margin: 0 }}>{catalog.attribution.title}</dd>
+              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{copy.artist}</dt><dd style={{ margin: 0 }}>{catalog.attribution.artist}</dd>
+              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{copy.license}</dt><dd style={{ margin: 0 }}>{catalog.attribution.license}</dd>
+              <dt style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{copy.modifications}</dt><dd style={{ margin: 0 }}>{catalog.attribution.modifications}</dd>
             </dl>
             <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
               CC0 does not imply endorsement by the artist. CrimFig does not include franchise characters, logos, or other third-party marks in this collection.

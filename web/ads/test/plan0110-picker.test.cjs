@@ -26,7 +26,7 @@ test('the public launch gate hides the picker and blocks unpublished locale chan
   }
   try{
     await React.act(async()=>root.render(React.createElement(LocalizationProvider,{
-      initialLocale:'fr',availableLocales:publishedLocales,savePreference:async locale=>saved.push(locale),
+      initialLocale:'fr',availableLocales:['en'],savePreference:async locale=>saved.push(locale),
     },React.createElement(Probe),React.createElement(LanguagePicker))));
     assert.equal(document.querySelector('[aria-haspopup="menu"]'),null);
     const probe=document.querySelector('button');

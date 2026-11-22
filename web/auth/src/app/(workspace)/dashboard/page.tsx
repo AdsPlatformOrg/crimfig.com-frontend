@@ -5,20 +5,24 @@ import Link from 'next/link';
 import { ShieldCheck, UserCheck, Key, Lock, ExternalLink, Smartphone, Clock } from 'lucide-react';
 import { Badge } from '../../../components/ui/badge';
 import { Card } from '../../../components/ui/card';
+import { getAuthDashboardCopy } from '../../../lib/auth-copy';
+import { useLanguage } from '../../../../../../shared/ui/localization/LocalizationProvider';
 
 export default function AuthDashboardPage() {
+  const { locale } = useLanguage();
+  const copy = getAuthDashboardCopy(locale);
   return (
     <>
       <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
         <div>
           <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-crimson)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Account Management &amp; Security
+            {copy.eyebrow}
           </span>
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 8px' }}>
-            Security Dashboard
+            {copy.title}
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
-            Manage your single sign-on identity, active sessions, multi-factor authentication, and connected CrimFig portals.
+            {copy.subtitle}
           </p>
         </div>
 
@@ -31,16 +35,16 @@ export default function AuthDashboardPage() {
                 <ShieldCheck size={22} />
               </div>
               <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Zero-Trust SSO</h3>
-                <Badge variant="secondary">Active &amp; Guarded</Badge>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.ssoTitle}</h3>
+                <Badge variant="secondary">{copy.ssoBadge}</Badge>
               </div>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-              Your session is verified with high-entropy cryptographic token rotation and client fingerprint checks.
+              {copy.ssoDesc}
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
               <Link href="/sessions" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-crimson)', textDecoration: 'none' }}>
-                Review Active Devices →
+                {copy.ssoLink}
               </Link>
             </div>
           </Card>
@@ -52,16 +56,16 @@ export default function AuthDashboardPage() {
                 <Lock size={22} />
               </div>
               <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Two-Factor (2FA)</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Authenticator &amp; SMS</span>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.mfaTitle}</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{copy.mfaSub}</span>
               </div>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-              Add a second layer of security to prevent unauthorized access even if your password is compromised.
+              {copy.mfaDesc}
             </p>
             <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
               <Link href="/security" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-crimson)', textDecoration: 'none' }}>
-                Configure 2FA &amp; Passkeys →
+                {copy.mfaLink}
               </Link>
             </div>
           </Card>
@@ -73,8 +77,8 @@ export default function AuthDashboardPage() {
                 <Key size={22} />
               </div>
               <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Connected Apps</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Single Identity</span>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.appsTitle}</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{copy.appsSub}</span>
               </div>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>

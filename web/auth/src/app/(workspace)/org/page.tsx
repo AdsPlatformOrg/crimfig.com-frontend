@@ -5,20 +5,24 @@ import Link from 'next/link';
 import { Users, UserPlus, ShieldCheck, Mail } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
+import { getOrganizationCopy } from '../../../lib/auth-copy';
+import { useLanguage } from '../../../../../../shared/ui/localization/LocalizationProvider';
 
 export default function OrganizationPage() {
+  const { locale } = useLanguage();
+  const copy = getOrganizationCopy(locale);
   return (
     <>
       <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
         <div>
           <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-crimson)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Team &amp; Governance
+            {copy.eyebrow}
           </span>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 8px' }}>
-            Organization &amp; Team Members
+            {copy.title}
           </h1>
           <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
-            Invite team members, assign fine-grained RBAC roles, and manage shared advertiser workspaces.
+            {copy.subtitle}
           </p>
         </div>
 
@@ -30,19 +34,19 @@ export default function OrganizationPage() {
                 <Users size={22} />
               </div>
               <div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Primary Workspace</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>1 Active Seat</span>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.workspaceTitle}</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{copy.activeSeat}</span>
               </div>
             </div>
             <Button asChild size="sm">
               <Link href="/org/accept-invite">
                 <UserPlus size={14} />
-                <span>Invite Teammate</span>
+                <span>{copy.inviteTeammate}</span>
               </Link>
             </Button>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-            Collaborate on advertiser campaigns, creative reviews, and publisher properties with role-based permissions.
+            {copy.workspaceDesc}
           </p>
         </Card>
       </div>

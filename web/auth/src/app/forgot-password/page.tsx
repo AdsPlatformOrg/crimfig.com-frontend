@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { getApiUrl } from '@/lib/config';
+import { getForgotPasswordCopy } from '@/lib/auth-copy';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
+import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
 import { AuthBrandHeader } from '@/components/AuthBrandHeader';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +13,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function ForgotPasswordPage() {
+  const { locale } = useLanguage();
+  const copy = getForgotPasswordCopy(locale);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -41,9 +46,10 @@ export default function ForgotPasswordPage() {
   return (
     <div className="auth-centered-container">
       <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px' }}>
+      <LanguagePicker publishedOnly />
       <AuthBrandHeader
-        title="Reset Password"
-        subtitle="Enter your email to receive a password reset link"
+        title={copy.title}
+        subtitle={copy.subtitle}
       />
 
       {error && (
@@ -55,23 +61,23 @@ export default function ForgotPasswordPage() {
       {submitted ? (
         <div>
           <Alert variant="success" style={{ marginBottom: '24px', lineHeight: '1.5' }}>
-            <span>If an account with this email exists, a password reset link has been sent. Please check your inbox.</span>
+            <span>{copy.sentMessage}</span>
           </Alert>
           <Button asChild variant="secondary" className="cf-auth-full-button">
-            <Link href="/login">Back to Sign In</Link>
+            <Link href="/login">{copy.backToSignIn}</Link>
           </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
             <label htmlFor="reset-email" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '6px', letterSpacing: '0.5px' }}>
-              EMAIL ADDRESS
+              {copy.emailLabel}
             </label>
             <Input
               id="reset-email"
               type="email"
               className="input-field"
-              placeholder="name@example.com"
+              placeholder={copy.emailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -80,7 +86,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
-            {loading ? 'Sending Link...' : 'Send Reset Link'}
+            {loading ? copy.sending : copy.sendLink}
           </Button>
         </form>
       )}
