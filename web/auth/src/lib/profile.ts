@@ -17,6 +17,7 @@ export interface AvatarPreset {
   id: string;
   label: string;
   file: string;
+  collection?: 'portrait' | 'geometric';
   alt: string;
 }
 
