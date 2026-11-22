@@ -23,6 +23,8 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import { useLanguage } from '../../../../shared/ui/localization/LocalizationProvider';
+import { getAdsDashboardCopy } from '../../lib/ads-copy';
 
 interface DashboardSummary {
   period: string;
@@ -83,6 +85,8 @@ export function ConsoleDashboard({
   onNavigateToPromoterHub,
   onOpenCreateCampaign,
 }: ConsoleDashboardProps) {
+  const { locale } = useLanguage();
+  const copy = getAdsDashboardCopy(locale);
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | 'custom'>('30d');
   const [customStartDate, setCustomStartDate] = useState<string>('2026-09-10');
   const [customEndDate, setCustomEndDate] = useState<string>('2026-10-10');
@@ -151,7 +155,7 @@ export function ConsoleDashboard({
               margin: '0 0 4px',
             }}
           >
-            Ads Console Dashboard
+            {copy.title}
           </h2>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
             Recorded account activity, including events pending verification. Use Billing for settled charges.
@@ -309,7 +313,7 @@ export function ConsoleDashboard({
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Ad Spend</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>{copy.adSpend}</span>
               <DollarSign style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
@@ -324,7 +328,7 @@ export function ConsoleDashboard({
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Impressions</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>{copy.impressions}</span>
               <Eye style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
@@ -339,7 +343,7 @@ export function ConsoleDashboard({
         <Card>
           <CardHeader style={{ padding: '20px 24px 8px 24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Clicks</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>{copy.clicks}</span>
               <MousePointer style={{ width: 16, height: 16, color: 'var(--color-crimson)' }} />
             </div>
           </CardHeader>
@@ -373,7 +377,7 @@ export function ConsoleDashboard({
         >
           <Card>
             <CardContent style={{ padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Remaining Campaign Budget</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>{copy.remainingBudget}</div>
               <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
                 ${summary.financials.remainingBudgetUsd.toFixed(2)}
               </div>
@@ -402,7 +406,7 @@ export function ConsoleDashboard({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
-                    Engagement Timeseries
+                    {copy.engagementTimeseries}
                   </CardTitle>
                   <CardDescription style={{ fontSize: '12px', margin: 0 }}>
                     Daily recorded impression volume and interaction pacing ({period.toUpperCase()})
@@ -485,7 +489,7 @@ export function ConsoleDashboard({
           <Card style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <CardHeader style={{ padding: '24px 28px 12px 28px' }}>
               <CardTitle style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>
-                Channel Attribution
+                {copy.channelAttribution}
               </CardTitle>
               <CardDescription style={{ fontSize: '12px', margin: 0 }}>
                 Audience acquisition distribution across network surfaces
@@ -511,8 +515,8 @@ export function ConsoleDashboard({
                       />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      <span>{ch.impressions.toLocaleString()} views</span>
-                      <span>{ch.clicks.toLocaleString()} clicks</span>
+                      <span>{ch.impressions.toLocaleString()} {copy.views}</span>
+                      <span>{ch.clicks.toLocaleString()} {copy.clicks.toLowerCase()}</span>
                     </div>
                   </div>
                 ))}
