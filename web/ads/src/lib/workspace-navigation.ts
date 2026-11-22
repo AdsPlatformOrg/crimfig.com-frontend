@@ -190,6 +190,7 @@ export function workspaceNavigation(
 
   // Admin Nav Groups
   const adminNavGroups: NavGroup[] = [
+    { title: 'Reports', items: [{ roles: ['super_admin','ads_admin','ads_finance','ads_support','report_auditor','report_contact_reveal'], id: 'admin_reports', label: 'Reports', icon: BarChart3, href: '/admin/reports' }] },
     {title:"Promotional rewards",items:[{roles:["super_admin","ads_finance"],id:"admin_cfig",label:"House Ad rewards",icon:Sparkles,href:"/admin/rewards/cfig",children:[{id:"cfig_policies",label:"Policies",icon:Settings,href:"/admin/rewards/cfig/policies"},{id:"cfig_reserve",label:"Funding status",icon:ShieldCheck,href:"/admin/rewards/cfig/reserve"}]}]},
     {
       title: "Advertising Operations",
