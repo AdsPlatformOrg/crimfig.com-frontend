@@ -246,7 +246,9 @@ test('Negative-first & Valid: WebsiteAdSlots removes max width/height on new-slo
       },
     },
     '../ui/table': table,
+    '../ui/tabs': {},
     './HouseSizeSamples': { HouseSizeSamples: () => null },
+    './ConsequentialConfirmDialog': { ConsequentialConfirmDialog: ({title,description,onOpenChange}) => React.createElement('div',{role:'dialog'},title,description,React.createElement('button',{onClick:()=>onOpenChange(false)},'Cancel')) },
     '../../lib/house-samples': { houseSampleCatalog: require('../src/data/house-samples.json') },
     './WebsiteAdSlots.module.css': { default: {} },
   };
@@ -257,7 +259,7 @@ test('Negative-first & Valid: WebsiteAdSlots removes max width/height on new-slo
       fs.readFileSync(path.join(__dirname, '../src/components/console/WebsiteAdSlots.tsx'), 'utf8'),
       { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }
     ).outputText,
-    { exports, localStorage: dom.window.localStorage, crypto: global.crypto, require: (name) => mocks[name] ?? require(name) }
+    { exports, AbortController, localStorage: dom.window.localStorage, crypto: global.crypto, require: (name) => mocks[name] ?? require(name) }
   );
 
   const Component = exports.WebsiteAdSlots;
@@ -314,6 +316,65 @@ test('Negative-first & Valid: WebsiteAdSlots removes max width/height on new-slo
     ]);
     assert.match(document.body.textContent, /Placement space limits/);
     assert.equal(document.querySelectorAll('input[type="number"]').length, 2);
+  } finally {
+    await React.act(async () => root.unmount());
+    dom.window.close();
+    Object.assign(global, prior);
+  }
+});
+
+test('PLAN0136 Direct setup accepts one checkbox and creates a managed Direct slot', async () => {
+  const dom = new JSDOM('<main id="root"></main>', { url: 'https://ads.example.test' });
+  const prior = { window: global.window, document: global.document, IS_REACT_ACT_ENVIRONMENT: global.IS_REACT_ACT_ENVIRONMENT };
+  Object.assign(global, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true });
+  const root = createRoot(document.getElementById('root'));
+  const native = tag => ({ asChild, variant, size, children, ...props }) => asChild ? children : React.createElement(tag, props, children);
+  const Button = native('button');
+  const calls = [], routes = [];
+  let changeName;
+  const fixture = { id: 'site-1', domain: 'publisher.example.test', verificationStatus: 'verified', policyStatus: 'approved' };
+  const { AdSizePolicy } = loadTsx('../src/components/console/AdSizePolicy.tsx', {
+    '../ui/button': { Button },
+    './HouseSizeSamples': { HouseSizeSamples: () => React.createElement('p', null, 'Shared House preview') },
+    '../../lib/house-samples': { houseSampleCatalog: { families: ['fixture'], assets: [
+      { family: 'fixture', preset: 'medium_rectangle', width: 300, height: 250 },
+      { family: 'fixture', preset: 'mobile_banner', width: 320, height: 50 },
+    ] } },
+  });
+  const { default: Setup } = loadTsx('../src/app/(workspace)/promoter/adstation/setup/page.tsx', {
+    'next/link': { __esModule: true, default: native('a') },
+    'next/navigation': { useRouter: () => ({ push: route => routes.push(route) }), useSearchParams: () => new URLSearchParams('websiteId=site-1') },
+    '../../../../../components/console/AdSizePolicy': { AdSizePolicy },
+    '../../../../../components/ui/card': Object.fromEntries(['Card', 'CardHeader', 'CardTitle', 'CardDescription', 'CardContent'].map(key => [key, native('div')])),
+    '../../../../../components/ui/button': { Button },
+    '../../../../../components/ui/input': { Input: props => { changeName = props.onChange; return React.createElement('input', props); } },
+    '../../../../../lib/api-data': { apiData: async () => [{ ...fixture, id: 'site-other' }, fixture, { ...fixture, id: 'unverified', verificationStatus: 'pending' }] },
+    '../../../../../lib/session': { sessionFetch: async (url, init) => {
+      calls.push({ url, body: JSON.parse(init.body) });
+      return { ok: true, json: async () => ({ status: 'success', data: { id: 'slot-1', websiteId: fixture.id, slotType: 'direct' } }) };
+    } },
+  });
+  try {
+    await React.act(async () => root.render(React.createElement(Setup)));
+    const button = label => Array.from(document.querySelectorAll('button')).find(el => el.textContent === label);
+    assert.equal(button('Dynamic Ad Slot').getAttribute('aria-pressed'), 'true');
+    assert.equal(button('One Size'), undefined);
+    assert.equal(document.querySelectorAll('option').length, 2);
+    await React.act(async () => {
+      changeName({ target: { value: 'Homepage sponsor' } });
+      button('Selected Sizes').click();
+    });
+    assert.equal(document.querySelector('button[type="submit"]').disabled, true);
+    await React.act(async () => document.querySelector('input[type="checkbox"]').click());
+    assert.equal(document.querySelector('button[type="submit"]').disabled, false);
+    await React.act(async () => document.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, '/api/v1/publisher/slots/managed');
+    const { requestId, ...body } = calls[0].body;
+    assert.match(requestId, /^[0-9a-f-]{36}$/);
+    assert.deepEqual(body, { websiteId: 'site-1', name: 'Homepage sponsor', slotType: 'direct', format: 'general',
+      allowedAdTypes: ['image'], responsive: true, allowedPresetIds: ['medium_rectangle'], lifecycleStatus: 'testing' });
+    assert.deepEqual(routes, ['/promoter/websites/site-1/slots/slot-1']);
   } finally {
     await React.act(async () => root.unmount());
     dom.window.close();

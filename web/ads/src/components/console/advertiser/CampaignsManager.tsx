@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import styles from './CampaignsManager.module.css';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   BarChart3,
@@ -12,6 +13,9 @@ import {
   Table,
   MoreVertical,
   Layers,
+  Search,
+  X,
+  ArrowDownUp,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -29,7 +33,7 @@ import { ConsequentialConfirmDialog } from '../ConsequentialConfirmDialog';
 import { ActionHelp } from '../../ActionHelp';
 import { withCampaignReturnTo } from '../../../lib/campaign-navigation';
 import { campaignListStatus } from '../../../lib/campaign-list-status';
-import { campaignSortOptions, parseCampaignSort, campaignColumnSort } from '../../../lib/campaign-list-sort';
+import { billedCampaignCtr, campaignSortOptions, parseCampaignSort, campaignColumnSort } from '../../../lib/campaign-list-sort';
 import {
   Card,
   Table as ShadTable,
@@ -39,6 +43,7 @@ import {
   TableHead,
   TableCell,
   Button,
+  Input,
   Badge,
 } from '../../ui';
 
@@ -57,7 +62,9 @@ export function CampaignsManager() {
   const [total,setTotal]=useState(0);
   const [counts,setCounts]=useState<Record<string,number>>({});
   const generation=useRef(0);
+  const searchInput = useRef<HTMLInputElement>(null);
   const pageSize=25;
+  const sortLabel = campaignSortOptions.find(([key]) => key === sort)?.[1];
   const [pendingWrites, setPendingWrites] = useState<Set<string>>(new Set());
   const [actionError, setActionError] = useState<string | null>(null);
   const listParams = new URLSearchParams();
@@ -75,9 +82,9 @@ export function CampaignsManager() {
     { key: 'creatives', label: 'Creative Progress', visible: true, order: 2 },
     { key: 'budget', label: 'Total Budget', visible: true, order: 3 },
     { key: 'spend', label: 'Spend', visible: true, order: 4 },
-    { key: 'views', label: 'Views (Impressions)', visible: true, order: 5 },
-    { key: 'clicks', label: 'Observed clicks', visible: true, order: 6 },
-    { key: 'ctr', label: 'Observed CTR (%)', visible: true, order: 7 },
+    { key: 'views', label: 'Impressions', visible: true, order: 5 },
+    { key: 'clicks', label: 'Clicks', visible: true, order: 6 },
+    { key: 'ctr', label: 'CTR', visible: true, order: 7 },
     { key: 'actions', label: 'Actions', visible: true, order: 8 },
   ]);
 
@@ -149,6 +156,7 @@ export function CampaignsManager() {
     }
   };
 
+  const filtered = Boolean(search.trim()) || statusFilter !== 'all';
   const displayList = campaigns;
 
   const visibleCols = columnsConfig.filter((c) => c.visible);
@@ -200,12 +208,34 @@ export function CampaignsManager() {
         </div>
       </div>
 
+      <div className={styles.toolbar}>
+        <div className={styles.search}>
+          <Search size={16} aria-hidden="true" />
+          <Input ref={searchInput} type="search" aria-label="Search campaigns" placeholder="Search campaigns" maxLength={100}
+            value={search} onChange={event => { setPage(1); setSearch(event.target.value); }} />
+          {search && <Button variant="ghost" size="icon" type="button" aria-label="Clear campaign search"
+            onClick={() => { setPage(1); setSearch(''); searchInput.current?.focus(); }}>
+            <X size={16} aria-hidden="true" />
+          </Button>}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" type="button" aria-label={`Sort campaigns: ${sortLabel}`}>
+              <ArrowDownUp size={16} aria-hidden="true" />
+              {sortLabel}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className={styles.sortMenu}>
+            {campaignSortOptions.map(([value, label]) => (
+              <DropdownMenuItem key={value} onSelect={() => { setPage(1); setSort(value); }}>
+                {label}{sort === value && <span aria-label="Selected"> ✓</span>}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       {/* Status Tabs */}
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-        <label>Search campaigns <input type="search" maxLength={100} value={search} onChange={event => { setPage(1); setSearch(event.target.value); }} /></label>
-        <label>Sort campaigns <select value={sort} onChange={event => { setPage(1); setSort(parseCampaignSort(event.target.value)); }}>
-          {campaignSortOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select></label>
         {[
           { id: 'all', label: 'All Campaigns' },
           { id: 'active', label: 'Active' },
@@ -284,10 +314,15 @@ export function CampaignsManager() {
                   <TableCell colSpan={Math.max(1, visibleCols.length)}>
                     <EmptyState
                       icon={BarChart3}
-                      title="No matching campaigns"
-                      description="Try another search or status filter."
-                      actionLabel="+ Launch New Campaign"
-                      onAction={() => router.push('/campaigns/new')}
+                      title={filtered ? 'No matching campaigns' : 'No campaigns yet'}
+                      description={filtered ? 'Try another search or status filter.' : 'Create a campaign to get started.'}
+                      actionLabel={filtered ? 'Clear filters' : 'Create Campaign'}
+                      onAction={() => {
+                        if (!filtered) { router.push('/campaigns/new'); return; }
+                        setPage(1);
+                        setSearch('');
+                        setStatusFilter('all');
+                      }}
                     />
                   </TableCell>
                 </TableRow>
@@ -421,12 +456,7 @@ export function CampaignsManager() {
                     if (col.key === 'clicks') {
                       return (
                         <TableCell key={col.key} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
-                          {camp.metricsLoaded ? camp.clicks.toLocaleString() : '—'}
-                          {camp.validClicks != null && camp.billedClicks != null && (
-                            <div style={{ color: 'var(--text-secondary)', fontSize: '.75rem' }}>
-                              {camp.validClicks.toLocaleString()} valid · {camp.billedClicks.toLocaleString()} billed
-                            </div>
-                          )}
+                          {camp.metricsLoaded ? (camp.billedClicks?.toLocaleString() ?? '—') : '—'}
                         </TableCell>
                       );
                     }
@@ -445,10 +475,9 @@ export function CampaignsManager() {
                       );
                     }
                     if (col.key === 'ctr') {
-                      const ctr = camp.impressions > 0 ? (camp.clicks / camp.impressions) * 100 : 0;
                       return (
                         <TableCell key={col.key} style={{ fontWeight: 700 }}>
-                          {camp.metricsLoaded ? `${ctr.toFixed(2)}%` : '—'}
+                          {camp.metricsLoaded ? billedCampaignCtr(camp.impressions, camp.billedClicks) : '—'}
                         </TableCell>
                       );
                     }

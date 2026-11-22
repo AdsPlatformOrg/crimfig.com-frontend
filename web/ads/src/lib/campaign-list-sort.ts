@@ -26,3 +26,9 @@ export function campaignColumnSort(column: string, current: CampaignListSort) {
     nextDirection: current === key ? 'descending' : 'ascending',
   };
 }
+
+export function billedCampaignCtr(impressions: number, billedClicks: number | undefined): string {
+  if (billedClicks === undefined) return '—';
+  const ctr = impressions > 0 ? billedClicks / impressions * 100 : 0;
+  return ctr.toFixed(2) + '%';
+}

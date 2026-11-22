@@ -22,7 +22,7 @@ export function HouseSizeSamples({allowedPresets=[],context='advertiser',maxWidt
           <div className={styles.container} style={{width, maxWidth:"100%"}} aria-label={`Example container: ${width} pixels`}>
           {/* A plain image intentionally avoids the delivery SDK and all ad tracking. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {failed===selected.url?<p role="status">This sample could not be loaded.</p>:<img key={selected.url} src={selected.url} width={selected.width} height={selected.height} style={{width:`${selected.width / width * 100}%`}} alt={`${HOUSE_SAMPLE_FAMILIES.find(item=>item.id===family)?.name}, ${selected.width} by ${selected.height} pixel House Ad sample`} loading="lazy" onError={()=>setFailed(selected.url)} />}
+          {failed===selected.url?<p role="status">This sample could not be loaded.</p>:<img key={selected.url} src={selected.url} width={selected.width} height={selected.height} style={{width:`${selected.width / width * 100}%`}} alt={`${HOUSE_SAMPLE_FAMILIES.find(item=>item.id===family)?.name}, ${selected.width} by ${selected.height} pixel ad size preview`} loading="lazy" onError={()=>setFailed(selected.url)} />}
           </div>
         </div>
         <figcaption>{selected.width} × {selected.height} px · {(selected.bytes/1000).toFixed(1)} KB. Scaled down only when needed to fit this preview; original aspect ratio retained.</figcaption>

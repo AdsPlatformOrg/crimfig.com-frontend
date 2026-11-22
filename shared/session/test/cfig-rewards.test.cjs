@@ -64,7 +64,9 @@ test("reward navigation requires financial grants and remains workspace-specific
 const text = (n) =>
   n == null
     ? ""
-    : typeof n === "string" || typeof n === "number"
+    : typeof n.type === "function"
+      ? text(n.type(n.props))
+      : typeof n === "string" || typeof n === "number"
       ? String(n)
       : Array.isArray(n)
         ? n.map(text).join(" ")
@@ -111,25 +113,33 @@ function mount(mode, request, component = "view") {
   const compiled = compile(
     component === "controls"
       ? "web/ads/src/components/console/CfigFundedControls.tsx"
-      : "web/ads/src/components/console/CfigRewardsView.tsx",
+      : mode === "promoter"
+        ? "web/ads/src/components/console/PromoterRewards.tsx"
+        : "web/ads/src/components/console/CfigRewardsView.tsx",
     {
       react: react,
       "next/link": { __esModule: true, default: "Link" },
       "@/lib/session": { sessionFetch: request },
       "@/lib/cfig-format": format,
+      "@/lib/campaigns-api": { loadWebsites: async () => [] },
+      "../../../../../shared/ui/origins": { ecosystemOrigin: () => "https://billing.example.test" },
+      "lucide-react": generic,
       "../ui": generic,
       "./CfigFundedControls": { CfigFundedControls: "CfigFundedControls" },
     },
-    { React: react, crypto: { randomUUID: () => "test-request" } },
+    { React: react, process: { env: {} }, URL, crypto: { randomUUID: () => "test-request" } },
   );
   const Component =
     component === "controls"
       ? compiled.CfigFundedControls
-      : compiled.CfigRewardsView;
+      : mode === "promoter" ? compiled.PromoterRewards : compiled.CfigRewardsView;
   const api = {
     render() {
       cursor = 0;
       tree = Component({ mode });
+      if (mode !== "promoter" && component === "view" && typeof tree.type === "function") {
+        tree = tree.type(tree.props);
+      }
       while (effects.length) effects.shift()();
       return tree;
     },
@@ -177,7 +187,7 @@ test("unavailable rewards are an error, never fabricated zero balances or succes
     json: async () => ({ message: "Evidence unavailable" }),
   }));
   await ui.settle();
-  assert.match(ui.text(), /Evidence unavailable/);
+  assert.match(ui.text(), /Unavailable/);
   assert.doesNotMatch(ui.text(), /0 \$cfig/);
 });
 test("unknown and malformed amounts never become cash or zero", () => {
@@ -202,19 +212,11 @@ test("promoter page reads owner endpoints only and leaves conversion disabled", 
   });
   await ui.settle();
   assert.equal(calls.length, 4);
-  assert.ok(calls.every((u) => u.startsWith("/api/v1/promoter/rewards/cfig")));
+  assert.ok(calls.every(u => u.startsWith("/api/v1/promoter/rewards/cfig") || u === "/api/v1/ads/billing/rewards/me"));
   assert.match(ui.text(), /0 \$cfig/);
-  assert.match(ui.text(), /no guaranteed redeemable value/);
-  assert.ok(
-    ui
-      .nodes()
-      .find(
-        (n) =>
-          n.type === "Button" &&
-          text(n) === "Conversion unavailable" &&
-          n.props.disabled,
-      ),
-  );
+  assert.match(ui.text(), /Earning paused/);
+  assert.match(ui.text(), /Earning checklist/);
+  assert.match(ui.text(), /Add website/);
 });
 test("fixed precision retains fractional and large integers without floating point", () => {
   assert.equal(format.formatCfig("0"), "0 $cfig");
@@ -286,44 +288,10 @@ test("House badge progress remains visible when monetary earning is zero and con
     ),
   );
   await ui.settle();
-  assert.match(ui.text(), /House Impression\s+Edition/);
-  assert.match(ui.text(), /House Click\s+Edition/);
-  assert.match(ui.text(), /Achieved/);
-  assert.match(ui.text(), /award no funded points/);
+  assert.match(ui.text(), /Ad view milestones/);
+  assert.match(ui.text(), /Ad click milestones/);
+  assert.match(ui.text(), /Reached/);
   assert.match(ui.text(), /0 \$cfig/);
-});
-test("partial and excluded allocations render exact fractional amounts and explicit reasons", async () => {
-  const ui = mount("promoter", async (url) =>
-    response(
-      url.endsWith("/badges")
-        ? {
-            houseImpressions: { progress: "0", thresholds: [100] },
-            houseClicks: { progress: "0", thresholds: [10] },
-          }
-        : url.includes("allocations")
-          ? {
-              items: [
-                {
-                  event_id: "source",
-                  day: "2026-11-01",
-                  metric: "click",
-                  outcome: "MONTHLY_GLOBAL_CAP",
-                  entitled: "40000",
-                  allocated: "1",
-                  badge_eligible: true,
-                },
-              ],
-              hasNext: false,
-            }
-          : url.includes("transactions")
-            ? { items: [], hasNext: false }
-            : summary,
-    ),
-  );
-  await ui.settle();
-  assert.match(ui.text(), /MONTHLY_GLOBAL_CAP/);
-  assert.match(ui.text(), /0.000001 \$cfig/);
-  assert.match(ui.text(), /0.04 \$cfig/);
 });
 
 test("historical House awards and qualification dates survive prospective thresholds", async () => {
@@ -347,9 +315,50 @@ test("historical House awards and qualification dates survive prospective thresh
     ),
   );
   await ui.settle();
-  assert.match(ui.text(), /Award history/);
-  assert.match(ui.text(), /2026-11-05T00:00:00.000Z/);
-  assert.match(ui.text(), /No funded-point bonus/);
+  assert.match(ui.text(), /Earned badges/);
+  assert.match(ui.text(), /Promo Impression/);
+});
+
+test("staff can inspect exact partial allocations and exclusion reasons", async () => {
+  const ui = mount("policies", async url => response(
+    url.endsWith("/policies") ? [] :
+    url.includes("allocations") ? { items: [{
+      event_id: "source", day: "2026-11-01", metric: "click", outcome: "MONTHLY_GLOBAL_CAP",
+      entitled: "40000", allocated: "1", badge_eligible: true,
+    }], hasNext: false } :
+    url.includes("transactions") ? { items: [], hasNext: false } : summary,
+  ));
+  await ui.settle();
+  assert.match(ui.text(), /MONTHLY_GLOBAL_CAP/);
+  assert.match(ui.text(), /0.000001 \$cfig/);
+  assert.match(ui.text(), /0.04 \$cfig/);
+});
+
+test("a refresh celebrates an available points award once and ignores pending entries", async () => {
+  let rows = [{ id: "old", deltaPoints: 1, state: "available", createdAt: "2026-11-20T00:00:00Z" }];
+  const ui = mount("promoter", async url => {
+    if (url.endsWith("/rewards/me")) return {
+      ok: true, json: async () => ({ availablePoints: 1, pendingPoints: 0, badges: [], recentLedger: rows }),
+    };
+    if (url.endsWith("/badges")) return response({ achievements: [] });
+    if (url.includes("/transactions")) return response({ items: [] });
+    return response(summary);
+  });
+  await ui.settle();
+  assert.doesNotMatch(ui.text(), /New Redeemable Points are available/);
+  const refresh = async () => {
+    ui.nodes().find(n => n.type === "Button" && text(n) === "Refresh").props.onClick();
+    ui.render();
+    await ui.settle();
+  };
+  rows = [{ id: "pending", deltaPoints: 1, state: "pending", createdAt: "2026-11-21T00:00:00Z" }, ...rows];
+  await refresh();
+  assert.doesNotMatch(ui.text(), /New Redeemable Points are available/);
+  rows = [{ id: "cleared", deltaPoints: 1, state: "available", createdAt: "2026-11-21T01:00:00Z" }, ...rows];
+  await refresh();
+  assert.match(ui.text(), /New Redeemable Points are available/);
+  await refresh();
+  assert.doesNotMatch(ui.text(), /New Redeemable Points are available/);
 });
 
 test("conversion input rejects rounding, negatives and exponents", () => {

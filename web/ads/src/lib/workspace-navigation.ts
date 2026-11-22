@@ -21,6 +21,13 @@ import {
   Settings,
   History,
   Trophy,
+  LayoutDashboard,
+  PanelsTopLeft,
+  BookOpen,
+  ChartNoAxesCombined,
+  SlidersHorizontal,
+  Store,
+  Headphones,
 } from "lucide-react";
 export type WorkspaceRole = "advertiser" | "promoter" | "admin";
 export function workspaceNavigation(
@@ -56,12 +63,6 @@ export function workspaceNavigation(
           label: "Conversion Tracking",
           icon: Sparkles,
           href: "/conversions",
-        },
-        {
-          id: "disputes",
-          label: "Invalid Traffic Audits",
-          icon: ShieldCheck,
-          href: "/disputes",
         },
         {
           id: "billing_escrow",
@@ -100,7 +101,7 @@ export function workspaceNavigation(
         {
           id: "promoter_dashboard",
           label: "Overview",
-          icon: BarChart3,
+          icon: LayoutDashboard,
           href: "/promoter",
         },
       ],
@@ -111,7 +112,7 @@ export function workspaceNavigation(
         {
           id: "ad_network_dashboard",
           label: "Dashboard",
-          icon: Globe,
+          icon: PanelsTopLeft,
           href: "/promoter/ad-network",
         },
         {
@@ -135,13 +136,13 @@ export function workspaceNavigation(
         {
           id: "ad_network_overview_guide",
           label: "Setup Guide",
-          icon: Sparkles,
+          icon: BookOpen,
           href: "/promoter/ad-network/get-started",
         },
         {
           id: "promoter_reports",
           label: "Reports",
-          icon: BarChart3,
+          icon: ChartNoAxesCombined,
           href: "/reports?workspace=promoter",
         },
       ],
@@ -152,7 +153,7 @@ export function workspaceNavigation(
         {
           id: "adstation",
           label: "Control Center",
-          icon: Share2,
+          icon: SlidersHorizontal,
           href: "/promoter/adstation",
         },
         {
@@ -167,12 +168,6 @@ export function workspaceNavigation(
       title: "Discovery & Quality",
       items: [
         {
-          id: "marketplace",
-          label: "Ad Marketplace",
-          icon: Share2,
-          href: "/promoter/marketplace",
-        },
-        {
           id: "quality",
           label: "Quality & Trust Score",
           icon: ShieldCheck,
@@ -180,16 +175,18 @@ export function workspaceNavigation(
         },
         {
           id: "promoter_cfig",
-          label: "Virtual $cfig",
-          icon: Sparkles,
+          label: "Earn Points & $cfig",
+          icon: DollarSign,
           href: "/promoter/rewards",
         },
+        { id: "support", label: "Help & Support", icon: Headphones, href: "/support?workspace=promoter" },
       ],
     },
   ];
 
   // Admin Nav Groups
   const adminNavGroups: NavGroup[] = [
+    { title: 'Reports', items: [{ roles: ['super_admin','ads_admin','ads_finance','ads_support','report_auditor','report_contact_reveal'], id: 'admin_reports', label: 'Reports', icon: ChartNoAxesCombined, href: '/admin/reports' }] },
     {title:"Promotional rewards",items:[{roles:["super_admin","ads_finance"],id:"admin_cfig",label:"House Ad rewards",icon:Sparkles,href:"/admin/rewards/cfig",children:[{id:"cfig_policies",label:"Policies",icon:Settings,href:"/admin/rewards/cfig/policies"},{id:"cfig_reserve",label:"Funding status",icon:ShieldCheck,href:"/admin/rewards/cfig/reserve"}]}]},
     {
       title: "Advertising Operations",

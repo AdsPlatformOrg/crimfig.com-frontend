@@ -1,0 +1,20 @@
+.page { display: grid; gap: 18px; width: 100%; }
+.page h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); }
+.page h3 { margin: 12px 0 6px; font-size: 1rem; }
+.page p { margin: 6px 0; color: var(--text-secondary); }
+.page h3 svg { vertical-align: middle; margin-inline-end: 4px; }
+.header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.balances { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 12px 0; }
+.balances dd { margin: 3px 0 0; font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.checklist { list-style: none; padding: 0; }
+.checklist li { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 8px 0; border-bottom: 1px solid var(--border-subtle); }
+.checklist li span { flex: 1 0 170px; }
+.details { padding: 12px 16px; border: 1px solid var(--border-subtle); border-radius: 12px; }
+.page summary { cursor: pointer; padding-block: 6px; }
+.page progress { width: 100%; accent-color: var(--color-crimson); }
+.page .celebration { color: var(--color-success); font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) {
+  .celebration { animation: appear 300ms ease-out; }
+  @keyframes appear { from { opacity: .3; } }
+}

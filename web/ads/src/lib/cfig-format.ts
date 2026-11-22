@@ -25,7 +25,7 @@ export function houseRewardEligibility(
     site.isActive === false ||
     site.policyStatus === "suspended"
   )
-    return "Suspended or inactive: no House rewards.";
+    return "Suspended or inactive: no promo ad rewards.";
   const expiry = Date.parse(site.verificationExpiresAt ?? "");
   if (
     site.verificationStatus !== "verified" ||
@@ -34,7 +34,7 @@ export function houseRewardEligibility(
   )
     return "Current ownership verification required; DNS ownership is separate from suitability approval.";
   if (site.policyStatus === "approved")
-    return "Approved supply: may qualify for House rewards after program activation, evidence validation and finalization.";
+    return "Approved supply: may qualify for promo ad rewards after program activation, evidence validation and finalization.";
   if (site.policyStatus === "testing")
     return "TESTING: integration and analytics only; earns zero $cfig. Submit for suitability review.";
   if (site.policyStatus === "pending_approval")

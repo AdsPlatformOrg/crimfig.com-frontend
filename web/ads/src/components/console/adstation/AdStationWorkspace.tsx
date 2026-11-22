@@ -1,636 +1,204 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Layers,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  Plus,
-  Sliders,
-  DollarSign,
-  TrendingUp,
-  Tag,
-  ExternalLink,
-  Loader2,
-  Copy,
-  Check,
-} from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { sessionFetch } from '../../../lib/session';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
+import { Badge } from '../../ui/badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../ui/table';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../ui/tabs';
+import { Dialog, DialogPortal, DialogOverlay, DialogPanel, DialogHeader, DialogTitle, DialogDescription } from '../../ui/dialog';
+import styles from './AdStationWorkspace.module.css';
 
-interface AdstationSlot {
-  id: string;
-  websiteId: string;
-  name: string;
-  slotType: 'consideration' | 'direct' | 'network' | 'hybrid';
-  format: string;
-  lifecycleStatus?: string;
-  isConsiderationSlot: boolean;
-  isConsiderationVerified: boolean;
-  slotTagId: string;
-  slotDeliveryPreference?: string;
-  isActive: boolean;
-  createdAt: string;
+type Preference = 'high' | 'medium' | 'low';
+interface Slot {
+  id: string; name: string; slotType: string; format: string; slotTagId: string;
+  lifecycleStatus?: string; isConsiderationSlot?: boolean; isConsiderationVerified?: boolean;
   adstationReadiness?: {
-    networkActiveOnWebsite: boolean;
-    manualReviewApprovedOnCurrentRevision: boolean;
-    liveEligible: boolean;
-    displayStatus:
-      | 'Draft'
-      | 'Published — Pending Review'
-      | 'Approved — Network Not Active'
-      | 'Ready to Go Live'
-      | 'Live'
-      | 'Paused'
-      | 'Rejected';
-    blockerReasons: string[];
+    networkActiveOnWebsite: boolean; manualReviewApprovedOnCurrentRevision: boolean;
+    liveEligible: boolean; displayStatus: string; blockerReasons: string[];
   };
 }
-
-interface DirectCampaign {
-  id: string;
-  clientName: string;
-  campaignTitle: string;
-  destinationUrl: string;
-  targetImpressions: number;
-  deliveredImpressions: number;
-  deliveredClicks: number;
-  status: string;
+interface Deal {
+  id: string; clientName: string; campaignTitle: string; destinationUrl: string;
+  targetImpressions: number; deliveredImpressions: number; deliveredClicks: number; status: string;
+}
+interface Props {
+  websiteId?: string; websiteDomain?: string; initialPreference?: Preference; onClose?: () => void;
 }
 
-interface AdStationWorkspaceProps {
-  websiteId?: string;
-  websiteDomain?: string;
-  onClose?: () => void;
+async function request(path: string, init?: RequestInit) {
+  const response = await sessionFetch(path, init);
+  if (!response.ok) throw new Error('The request could not be completed. Please try again.');
+  return response.json();
 }
 
-export function AdStationWorkspace({ websiteId, websiteDomain, onClose }: AdStationWorkspaceProps) {
-  const [activeTab, setActiveTab] = useState<'slots' | 'direct_deals' | 'preferences'>('slots');
-  const [slots, setSlots] = useState<AdstationSlot[]>([]);
-  const [directCampaigns, setDirectCampaigns] = useState<DirectCampaign[]>([]);
-  const [deliveryPreference, setDeliveryPreference] = useState<'high' | 'medium' | 'low'>('medium');
-  const [isLoading, setIsLoading] = useState(false);
-  const [copiedTag, setCopiedTag] = useState<string | null>(null);
+export function AdStationWorkspace(props: Props) {
+  return <PropertyWorkspace key={props.websiteId ?? 'none'} {...props} />;
+}
 
-  // Modal / Form states
-  const [showCreateDeal, setShowCreateDeal] = useState(false);
-  const [dealClientName, setDealClientName] = useState('');
-  const [dealTitle, setDealTitle] = useState('');
-  const [dealUrl, setDealUrl] = useState('');
-  const [dealTargetImpressions, setDealTargetImpressions] = useState(10000);
-
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  const loadSlots = useCallback(async () => {
-    if (!websiteId) return;
-    try {
-      setIsLoading(true);
-      const res = await sessionFetch(`/api/v1/publisher/websites/${websiteId}/slots`);
-      const data = await res.json();
-      if (data.status === 'success') {
-        setSlots(data.data || []);
-      }
-    } catch {
-      // Keep UI clean
-    } finally {
-      setIsLoading(false);
-    }
-  }, [websiteId]);
-
-  const loadDirectCampaigns = useCallback(async () => {
-    if (!websiteId) return;
-    try {
-      const res = await sessionFetch(`/api/v1/adstation/websites/${websiteId}/direct-campaigns`);
-      const data = await res.json();
-      if (data.status === 'success') {
-        setDirectCampaigns(data.data || []);
-      }
-    } catch {
-      // Keep UI clean
-    }
-  }, [websiteId]);
+function PropertyWorkspace({ websiteId, websiteDomain, initialPreference, onClose }: Props) {
+  const [slots, setSlots] = useState<Slot[]>();
+  const [deals, setDeals] = useState<Deal[]>();
+  const [revision, setRevision] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [preference, setPreference] = useState<Preference | null>(initialPreference ?? null);
+  const [notification, setNotification] = useState<{ error: boolean; text: string }>();
+  const [pending, setPending] = useState(false);
+  const lock = useRef(false);
+  const alive = useRef(true);
+  const [copied, setCopied] = useState<string>();
+  const [showDeal, setShowDeal] = useState(false);
+  const newDealButton = useRef<HTMLButtonElement>(null);
+  const [clientName, setClientName] = useState('');
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
+  const [target, setTarget] = useState('10000');
+  const setupUrl = '/promoter/adstation/setup?websiteId=' + encodeURIComponent(websiteId ?? '');
 
   useEffect(() => {
-    if (websiteId) {
-      loadSlots();
-      loadDirectCampaigns();
-    }
-  }, [websiteId, loadSlots, loadDirectCampaigns]);
+    alive.current = true;
+    return () => { alive.current = false; };
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    if (!websiteId) { setLoading(false); return () => controller.abort(); }
+    setLoading(true);
+    void Promise.allSettled([
+      request('/api/v1/publisher/websites/' + websiteId + '/slots', { signal: controller.signal }),
+      request('/api/v1/adstation/websites/' + websiteId + '/direct-campaigns', { signal: controller.signal }),
+    ]).then(([slotResult, dealResult]) => {
+      if (controller.signal.aborted) return;
+      setSlots(slotResult.status === 'fulfilled' && Array.isArray(slotResult.value.data) ? slotResult.value.data : undefined);
+      setDeals(dealResult.status === 'fulfilled' && Array.isArray(dealResult.value.data) ? dealResult.value.data : undefined);
+      setLoading(false);
+    });
+    return () => controller.abort();
+  }, [websiteId, revision]);
 
-  const handleVerifyConsideration = async (slotId: string) => {
-    if (!websiteId) return;
+  async function mutate(path: string, body: object | undefined, method: string, text: string, confirmed?: () => void) {
+    if (!websiteId || lock.current) return;
+    lock.current = true;
+    setPending(true);
+    setNotification(undefined);
     try {
-      const res = await sessionFetch(`/api/v1/adstation/websites/${websiteId}/slots/${slotId}/verify-consideration`, {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotification({ type: 'success', message: 'Consideration slot verified!' });
-        loadSlots();
-      } else {
-        setNotification({ type: 'error', message: data.message || 'Verification failed.' });
-      }
+      await request(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+      if (!alive.current) return;
+      confirmed?.();
+      setNotification({ error: false, text });
+      setRevision(value => value + 1);
     } catch {
-      setNotification({ type: 'error', message: 'Network error verifying slot.' });
+      if (alive.current) setNotification({ error: true, text: 'The change could not be confirmed. Check the current status before trying again.' });
+    } finally {
+      lock.current = false;
+      if (alive.current) setPending(false);
     }
-  };
+  }
 
-  const handleSubmitDirectReview = async (slotId: string) => {
+  async function copy(slot: Slot) {
     try {
-      const res = await sessionFetch(`/api/v1/adstation/slots/${slotId}/submit-review`, {
-        method: 'POST',
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotification({ type: 'success', message: 'Direct Ad Slot submitted for manual review.' });
-        loadSlots();
-      } else {
-        setNotification({ type: 'error', message: data.message || 'Failed to submit for review.' });
-      }
+      await navigator.clipboard.writeText(slot.slotTagId);
+      if (alive.current) { setCopied(slot.id); setNotification({ error: false, text: 'Tag ID copied.' }); }
     } catch {
-      setNotification({ type: 'error', message: 'Network error submitting slot for review.' });
+      if (alive.current) setNotification({ error: true, text: 'Copy failed. Open the slot to select its tag ID.' });
     }
-  };
+  }
 
-  const handleGoLiveDirectSlot = async (slotId: string) => {
-    try {
-      const res = await sessionFetch(`/api/v1/publisher/slots/${slotId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lifecycleStatus: 'active' }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotification({ type: 'success', message: 'Direct Ad Slot is now Live!' });
-        loadSlots();
-      } else {
-        setNotification({ type: 'error', message: data.message || 'Slot cannot go live yet.' });
-      }
-    } catch {
-      setNotification({ type: 'error', message: 'Network error activating direct slot.' });
-    }
-  };
+  function createDeal(event: FormEvent) {
+    event.preventDefault();
+    void mutate('/api/v1/adstation/direct-campaigns', {
+      websiteId, clientName: clientName.trim(), campaignTitle: title.trim(),
+      destinationUrl: url.trim(), targetImpressions: Number(target),
+    }, 'POST', 'Direct deal created.', () => {
+      setShowDeal(false); setClientName(''); setTitle(''); setUrl(''); setTarget('10000');
+    });
+  }
 
-  const handleCreateDirectDeal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!websiteId) return;
+  const direct = slots?.filter(slot => slot.slotType === 'direct') ?? [];
+  const knownReadiness = direct.map(slot => slot.adstationReadiness).filter((item): item is NonNullable<Slot['adstationReadiness']> => Boolean(item));
+  const networkActive = knownReadiness.length ? knownReadiness[0].networkActiveOnWebsite : null;
+  const reviewCount = knownReadiness.filter(item => item.manualReviewApprovedOnCurrentRevision).length;
 
-    try {
-      const res = await sessionFetch('/api/v1/adstation/direct-campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          websiteId,
-          clientName: dealClientName,
-          campaignTitle: dealTitle,
-          destinationUrl: dealUrl,
-          targetImpressions: dealTargetImpressions,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotification({ type: 'success', message: 'Direct deal created successfully (0% CrimFig commission)!' });
-        setShowCreateDeal(false);
-        setDealClientName('');
-        setDealTitle('');
-        setDealUrl('');
-        loadDirectCampaigns();
-      } else {
-        setNotification({ type: 'error', message: data.message || 'Failed to create direct deal.' });
-      }
-    } catch {
-      setNotification({ type: 'error', message: 'Network error creating deal.' });
-    }
-  };
-
-  const handleSetPreference = async (pref: 'high' | 'medium' | 'low') => {
-    if (!websiteId) return;
-    setDeliveryPreference(pref);
-    try {
-      await sessionFetch(`/api/v1/adstation/websites/${websiteId}/delivery-preference`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preference: pref }),
-      });
-      setNotification({ type: 'success', message: `Delivery preference set to ${pref.toUpperCase()}` });
-    } catch {
-      // Error handling
-    }
-  };
-
-  const handleCopy = (tag: string) => {
-    navigator.clipboard.writeText(tag);
-    setCopiedTag(tag);
-    setTimeout(() => setCopiedTag(null), 2500);
-  };
-
-  return (
-    <div className="bg-white dark:bg-[#1E2337] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-200 dark:border-gray-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-red-50 dark:bg-red-950/40 text-[#D4143A]">
-              <Layers className="w-5 h-5" />
-            </span>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">AdStation Management Tool</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Direct Deals (0% commission) & Consideration Network Slots for {websiteDomain || 'Your Website'}
-              </p>
-            </div>
-          </div>
+  return <div className={styles.workspace}>
+    <section className={styles.panel} aria-labelledby="direct-readiness">
+      <h2 id="direct-readiness">Direct delivery readiness</h2>
+      <p>{websiteDomain}</p>
+      <div className={styles.gates}>
+        <div><h3>Network integration on this website</h3>
+          <Badge variant="outline" className={networkActive === true ? styles.success : networkActive === false ? styles.warning : undefined}>{loading ? 'Checking' : networkActive === null ? 'Unavailable' : networkActive ? 'Active' : 'Action needed'}</Badge>
+          {networkActive !== true && <Link className={styles.link} href="/promoter/websites">Check website and Network installation</Link>}
         </div>
-
-        {/* Tab Controls */}
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/60 p-1 rounded-lg">
-          <Button
-            onClick={() => setActiveTab('slots')}
-            aria-pressed={activeTab === 'slots'}
-            variant={activeTab === 'slots' ? 'default' : 'ghost'}
-            size="sm"
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'slots'
-                ? 'bg-white dark:bg-[#171B2A] text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-            }`}
-          >
-            Ad Slots
-          </Button>
-          <Button
-            onClick={() => setActiveTab('direct_deals')}
-            aria-pressed={activeTab === 'direct_deals'}
-            variant={activeTab === 'direct_deals' ? 'default' : 'ghost'}
-            size="sm"
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'direct_deals'
-                ? 'bg-white dark:bg-[#171B2A] text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-            }`}
-          >
-            Direct Deals (0% CF Cut)
-          </Button>
-          <Button
-            onClick={() => setActiveTab('preferences')}
-            aria-pressed={activeTab === 'preferences'}
-            variant={activeTab === 'preferences' ? 'default' : 'ghost'}
-            size="sm"
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'preferences'
-                ? 'bg-white dark:bg-[#171B2A] text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-            }`}
-          >
-            Delivery Ratio
-          </Button>
+        <div><h3>Staff approval for each Direct slot</h3>
+          <Badge variant="outline" className={direct.length && reviewCount === direct.length ? styles.success : direct.length ? styles.warning : undefined}>{loading ? 'Checking' : !slots ? 'Unavailable' : !direct.length ? 'Create a Direct slot' : reviewCount + ' of ' + direct.length + ' approved'}</Badge>
+          <p>Approval applies to the current slot revision.</p>
         </div>
       </div>
-
-      {notification && (
-        <div
-          className={`mt-4 p-3 rounded-lg flex items-center justify-between text-xs font-medium ${
-            notification.type === 'success'
-              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-              : 'bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
-          }`}
-        >
-          <span>{notification.message}</span>
-          <Button onClick={() => setNotification(null)} variant="ghost" size="icon" aria-label="Dismiss notification">
-            ×
-          </Button>
-        </div>
-      )}
-
-      {/* Slots Tab */}
-      {activeTab === 'slots' && (
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Configured Website Slots</h3>
-            <div className="flex items-center gap-3">
-              <a className="text-sm underline" href="/promoter/adstation/setup">+ Setup a Direct Ad Slot</a>
-              <Link className="text-sm underline" href="/promoter/websites">Manage CrimFig Ad Network Slots</Link>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/20 text-xs text-amber-900 dark:text-amber-200">
-            <strong>Direct Ad Slot LIVE Requirements:</strong> A Direct Ad Slot can only go <strong>Live</strong> when <strong>both</strong> (1) an active, verified CrimFig Ad Network integration is operational on this same website, and (2) manual review approval is granted on the current revision.
-          </div>
-
-          {slots.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
-              <Layers className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No ad slots created yet</p>
-              <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
-                Create a Consideration Slot to unlock AdStation direct deals, or configure Direct/Network slots.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {slots.map((slot) => (
-                <div
-                  key={slot.id}
-                  className="p-4 border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-sm text-gray-900 dark:text-white">{slot.name}</span>
-                      <span className="ml-2 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                        {slot.format}
-                      </span>
-                    </div>
-                    {slot.isConsiderationSlot ? (
-                      <span
-                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 ${
-                          slot.isConsiderationVerified
-                            ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400'
-                            : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400'
-                        }`}
-                      >
-                        <ShieldCheck className="w-3 h-3" />
-                        {slot.isConsiderationVerified ? 'Consideration Verified' : 'Consideration Pending'}
-                      </span>
-                    ) : slot.slotType === 'direct' && slot.adstationReadiness ? (
-                      <span
-                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${
-                          slot.adstationReadiness.displayStatus === 'Live'
-                            ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400'
-                            : slot.adstationReadiness.displayStatus === 'Rejected'
-                              ? 'bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400'
-                              : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400'
-                        }`}
-                      >
-                        {slot.adstationReadiness.displayStatus}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] px-2 py-0.5 rounded font-medium bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 capitalize">
-                        {slot.slotType} Slot
-                      </span>
-                    )}
-                  </div>
-
-                  {slot.slotType === 'direct' && slot.adstationReadiness && (
-                    <div className="text-[11px] space-y-1 p-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <span>Same-Website Ad Network:</span>
-                        <strong>{slot.adstationReadiness.networkActiveOnWebsite ? 'Active' : 'Not Active'}</strong>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Manual Review (Current Revision):</span>
-                        <strong>{slot.adstationReadiness.manualReviewApprovedOnCurrentRevision ? 'Approved' : 'Pending / Required'}</strong>
-                      </div>
-                      {slot.adstationReadiness.blockerReasons.length > 0 && (
-                        <p className="text-amber-700 dark:text-amber-300 pt-1">
-                          {slot.adstationReadiness.blockerReasons.join(' ')}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 pt-1.5">
-                        {!slot.adstationReadiness.manualReviewApprovedOnCurrentRevision && (
-                          <Button size="sm" variant="outline" onClick={() => void handleSubmitDirectReview(slot.id)}>
-                            Submit for Review
-                          </Button>
-                        )}
-                        {slot.adstationReadiness.displayStatus !== 'Live' && (
-                          <Button
-                            size="sm"
-                            disabled={!slot.adstationReadiness.liveEligible}
-                            onClick={() => void handleGoLiveDirectSlot(slot.id)}
-                          >
-                            Go Live
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <span className="font-mono text-[11px] truncate mr-2">{slot.slotTagId}</span>
-                    <Button
-                      onClick={() => handleCopy(slot.slotTagId)}
-                      aria-label={`Copy tag ID for ${slot.name}`}
-                      variant="ghost"
-                      size="icon"
-                      className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-900"
-                    >
-                      {copiedTag === slot.slotTagId ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </Button>
-                  </div>
-
-                  {slot.isConsiderationSlot && !slot.isConsiderationVerified && (
-                    <Button
-                      onClick={() => handleVerifyConsideration(slot.id)}
-                      className="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center justify-center gap-1"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Verify Consideration Placement
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Direct Deals Tab */}
-      {activeTab === 'direct_deals' && (
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Direct Client Campaigns</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                You retain 100% of revenue directly from your clients. CrimFig takes 0% cut.
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowCreateDeal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#D4143A] text-white hover:bg-[#A80F32] transition"
-            >
-              <Plus className="w-3.5 h-3.5" /> New Direct Deal
-            </Button>
-          </div>
-
-          {directCampaigns.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
-              <DollarSign className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No direct deals registered yet</p>
-              <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
-                Sell your ad space directly to local businesses, sponsors, or partners at whatever rate you choose.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {directCampaigns.map((deal) => (
-                <div
-                  key={deal.id}
-                  className="p-4 border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div>
-                    <h4 className="font-semibold text-sm text-gray-900 dark:text-white">{deal.campaignTitle}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Client: {deal.clientName}</p>
-                    <a
-                      href={deal.destinationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-[#D4143A] hover:underline flex items-center gap-1 mt-1"
-                    >
-                      {deal.destinationUrl} <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs">
-                    <div>
-                      <span className="text-gray-400 block">Delivered Impr.</span>
-                      <span className="font-bold text-gray-900 dark:text-white">
-                        {deal.deliveredImpressions.toLocaleString()} / {deal.targetImpressions.toLocaleString()}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block">Clicks</span>
-                      <span className="font-bold text-gray-900 dark:text-white">{deal.deliveredClicks.toLocaleString()}</span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded font-semibold text-[11px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 uppercase">
-                      {deal.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Delivery Preferences Tab */}
-      {activeTab === 'preferences' && (
-        <div className="mt-6 space-y-6 max-w-xl">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">CrimFig Network Delivery Allocation</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Select how your website balances direct private client campaigns vs. automated CrimFig Network monetized ads.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              {
-                id: 'high',
-                label: 'High Network',
-                desc: 'Maximizes CrimFig network ads on unsold direct inventory.',
-              },
-              {
-                id: 'medium',
-                label: 'Balanced',
-                desc: 'Equal priority between direct deals and network monetization.',
-              },
-              {
-                id: 'low',
-                label: 'Direct Priority',
-                desc: 'Exclusively prioritizes direct client fulfillment before network ads.',
-              },
-            ].map((option) => (
-              <Button
-                key={option.id}
-                onClick={() => handleSetPreference(option.id as any)}
-                aria-pressed={deliveryPreference === option.id}
-                variant={deliveryPreference === option.id ? 'default' : 'outline'}
-                size="sm"
-                className={`p-4 rounded-xl border text-left transition ${
-                  deliveryPreference === option.id
-                    ? 'border-[#D4143A] bg-red-50/30 dark:bg-red-950/20 text-[#D4143A]'
-                    : 'border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300'
-                }`}
-              >
-                <div className="font-bold text-xs uppercase tracking-wider">{option.label}</div>
-                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-snug">{option.desc}</div>
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Create Direct Deal */}
-      {showCreateDeal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1E2337] rounded-xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-800">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Register Direct Deal</h3>
-            <form onSubmit={handleCreateDirectDeal} className="space-y-4">
-              <div>
-                <label htmlFor="adstation-deal-client" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Client / Sponsor Name</label>
-                <Input
-                  id="adstation-deal-client"
-                  type="text"
-                  required
-                  placeholder="e.g. Acme Corporation"
-                  value={dealClientName}
-                  onChange={(e) => setDealClientName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="adstation-deal-title" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Campaign Title</label>
-                <Input
-                  id="adstation-deal-title"
-                  type="text"
-                  required
-                  placeholder="e.g. Summer Q3 Sponsorship"
-                  value={dealTitle}
-                  onChange={(e) => setDealTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="adstation-deal-url" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Destination URL</label>
-                <Input
-                  id="adstation-deal-url"
-                  type="url"
-                  required
-                  placeholder="https://client-landing-page.com"
-                  value={dealUrl}
-                  onChange={(e) => setDealUrl(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="adstation-deal-impressions" className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Target Impressions</label>
-                <Input
-                  id="adstation-deal-impressions"
-                  type="number"
-                  min="100"
-                  step="100"
-                  value={dealTargetImpressions}
-                  onChange={(e) => setDealTargetImpressions(parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowCreateDeal(false)}
-                  variant="outline"
-                  size="sm"
-                  className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="px-4 py-1.5 text-xs rounded-lg bg-[#D4143A] text-white font-semibold hover:bg-[#A80F32]"
-                >
-                  Save Direct Deal
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    </section>
+    {notification && <div role={notification.error ? 'alert' : 'status'} className={styles.notice}>
+      <span>{notification.text}</span><Button variant="ghost" size="sm" onClick={() => setNotification(undefined)}>Dismiss</Button>
+    </div>}
+    <Tabs defaultValue="slots" className={styles.panel}>
+      <TabsList aria-label="AdStation views" className={styles.tabs}>
+        <TabsTrigger value="slots">Ad Slots</TabsTrigger>
+        <TabsTrigger value="deals">Direct Deals</TabsTrigger>
+        <TabsTrigger value="ratio">Delivery Ratio</TabsTrigger>
+      </TabsList>
+      <TabsContent value="slots">
+        <div className={styles.actions}><Link className={styles.link} href={setupUrl}>Setup a Direct Ad Slot</Link><Link className={styles.link} href="/promoter/websites">Websites &amp; Ad Slots</Link></div>
+        {loading ? <p role="status">Loading slots…</p> : !slots ? <div role="alert"><p>Slots could not be loaded.</p><Button onClick={() => setRevision(value => value + 1)}>Try again</Button></div> : slots.length === 0 ? <p>Create a Direct slot to begin setup.</p> :
+          <div className={styles.table}><Table><TableHeader><TableRow>
+            <TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Format</TableHead><TableHead>Status and readiness</TableHead><TableHead>Actions</TableHead>
+          </TableRow></TableHeader><TableBody>{slots.map(slot => <TableRow key={slot.id}>
+            <TableCell>{slot.name}</TableCell><TableCell>{slot.slotType === 'network' ? 'Network' : slot.slotType === 'direct' ? 'Direct' : slot.slotType}</TableCell>
+            <TableCell>{slot.format}</TableCell><TableCell>
+              <Badge variant="outline">{slot.adstationReadiness?.displayStatus ?? slot.lifecycleStatus ?? 'Unavailable'}</Badge>
+              {slot.slotType === 'direct' && <div className={styles.details}>
+                <p>Network integration {slot.adstationReadiness ? slot.adstationReadiness.networkActiveOnWebsite ? 'active' : 'required' : 'unavailable'}</p>
+                <p>Current revision {slot.adstationReadiness ? slot.adstationReadiness.manualReviewApprovedOnCurrentRevision ? 'approved' : 'awaiting approval' : 'unavailable'}</p>
+              </div>}
+            </TableCell><TableCell><div className={styles.actions}>
+              <Button asChild variant="outline" size="sm"><Link href={'/promoter/websites/' + websiteId + '/slots/' + slot.id}>Manage</Link></Button>
+              <Button variant="outline" size="sm" onClick={() => void copy(slot)}>{copied === slot.id ? 'Copied' : 'Copy tag ID'}</Button>
+              {slot.slotType === 'direct' && slot.adstationReadiness && <>
+                {!slot.adstationReadiness.manualReviewApprovedOnCurrentRevision && <Button variant="outline" size="sm" disabled={pending} onClick={() => void mutate('/api/v1/adstation/slots/' + slot.id + '/submit-review', undefined, 'POST', 'Slot submitted for review.')}>Submit for Review</Button>}
+                {slot.adstationReadiness.displayStatus !== 'Live' && <Button size="sm" disabled={pending || !slot.adstationReadiness.liveEligible} onClick={() => void mutate('/api/v1/publisher/slots/' + slot.id, { lifecycleStatus: 'active' }, 'PATCH', 'Direct slot is Live.')}>Go Live</Button>}
+              </>}
+              {slot.isConsiderationSlot && !slot.isConsiderationVerified && <Button variant="outline" size="sm" disabled={pending} onClick={() => void mutate('/api/v1/adstation/websites/' + websiteId + '/slots/' + slot.id + '/verify-consideration', undefined, 'POST', 'Placement verification confirmed.')}>Verify placement</Button>}
+            </div></TableCell>
+          </TableRow>)}</TableBody></Table></div>}
+      </TabsContent>
+      <TabsContent value="deals">
+        <div className={styles.actions}><h2>Direct deals</h2><Button ref={newDealButton} disabled={!websiteId || pending} onClick={() => setShowDeal(true)}>New Direct Deal</Button></div>
+        {loading ? <p role="status">Loading deals…</p> : !deals ? <div role="alert"><p>Direct deals could not be loaded.</p><Button onClick={() => setRevision(value => value + 1)}>Try again</Button></div> : !deals.length ? <p>Your direct client campaigns will appear here.</p> :
+          <div className={styles.table}><Table><TableHeader><TableRow>
+            <TableHead>Campaign</TableHead><TableHead>Client</TableHead><TableHead>Impressions</TableHead><TableHead>Clicks</TableHead><TableHead>Status</TableHead>
+          </TableRow></TableHeader><TableBody>{deals.map(deal => <TableRow key={deal.id}>
+            <TableCell>{deal.campaignTitle}</TableCell><TableCell>{deal.clientName}</TableCell>
+            <TableCell>{deal.deliveredImpressions.toLocaleString()} / {deal.targetImpressions.toLocaleString()}</TableCell>
+            <TableCell>{deal.deliveredClicks.toLocaleString()}</TableCell><TableCell>{deal.status}</TableCell>
+          </TableRow>)}</TableBody></Table></div>}
+      </TabsContent>
+      <TabsContent value="ratio">
+        <h2>Delivery allocation</h2><p>Choose the delivery preference for this website.</p>
+        <p>Current preference {preference ?? 'unavailable'}</p>
+        <div className={styles.actions}>{([['high', 'High Network'], ['medium', 'Balanced'], ['low', 'Direct Priority']] as const).map(([value, label]) =>
+          <Button key={value} aria-pressed={preference === value} variant={preference === value ? 'default' : 'outline'} disabled={!websiteId || pending}
+            onClick={() => void mutate('/api/v1/adstation/websites/' + websiteId + '/delivery-preference', { preference: value }, 'PUT', 'Delivery preference saved.', () => setPreference(value))}>{label}</Button>)}</div>
+      </TabsContent>
+    </Tabs>
+    <Dialog open={showDeal} onOpenChange={open => { if (!pending) setShowDeal(open); }}>
+      <DialogPortal><DialogOverlay className={styles.overlay} /><DialogPanel className={styles.dialog} onCloseAutoFocus={event => { event.preventDefault(); newDealButton.current?.focus(); }}><DialogHeader><DialogTitle>Register Direct Deal</DialogTitle><DialogDescription>Add a client campaign for {websiteDomain}.</DialogDescription></DialogHeader>
+        <form className={styles.form} onSubmit={createDeal}>
+          <label>Client or sponsor<Input required maxLength={255} value={clientName} onChange={event => setClientName(event.target.value)} /></label>
+          <label>Campaign title<Input required maxLength={255} value={title} onChange={event => setTitle(event.target.value)} /></label>
+          <label>Destination URL<Input required type="url" value={url} onChange={event => setUrl(event.target.value)} /></label>
+          <label>Target impressions<Input required type="number" min={100} step={100} value={target} onChange={event => setTarget(event.target.value)} /></label>
+          {notification?.error && <p role="alert">{notification.text}</p>}
+          <div className={styles.actions}><Button type="button" variant="outline" disabled={pending} onClick={() => setShowDeal(false)}>Cancel</Button><Button type="submit" disabled={pending}>{pending ? 'Saving…' : 'Create deal'}</Button></div>
+        </form>
+      </DialogPanel></DialogPortal>
+    </Dialog>
+    {onClose && <Button variant="outline" onClick={onClose}>Close</Button>}
+  </div>;
 }

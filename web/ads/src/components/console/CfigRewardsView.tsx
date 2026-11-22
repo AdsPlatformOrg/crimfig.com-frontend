@@ -1,4 +1,5 @@
 "use client";
+import { PromoterRewards } from "./PromoterRewards";
 import { CfigFundedControls } from "./CfigFundedControls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -26,6 +27,10 @@ async function read(path: string, options?: RequestInit) {
 const label = "grid gap-1 text-sm",
   action = "min-h-11";
 export function CfigRewardsView({ mode }: { mode: Mode }) {
+  return mode === "promoter" ? <PromoterRewards /> : <CfigOperations mode={mode} />;
+}
+
+function CfigOperations({ mode }: { mode: Mode }) {
   const admin = mode !== "promoter",
     base = admin ? "admin/rewards/cfig" : "promoter/rewards/cfig";
   const [data, setData] = useState<Row | null>(null),

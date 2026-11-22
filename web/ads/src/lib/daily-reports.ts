@@ -2,10 +2,12 @@ import { apiData } from './api-data';
 
 const keys = ['spend', 'cpmSpend', 'cpcSpend', 'posted', 'credits', 'confirmed', 'pending', 'adjustments',
   'billableImpressions', 'billableClicks', 'impressions', 'clicks', 'validClicks', 'billedClicks'] as const;
-export type Metrics = Record<(typeof keys)[number], string>;
+export type Metrics = Partial<Record<(typeof keys)[number], string>>;
+const earningsKeys = ['confirmed', 'pending', 'adjustments', 'billableImpressions', 'billableClicks'] as const;
+const spendKeys = keys.filter(key => key !== 'confirmed' && key !== 'pending' && key !== 'adjustments');
 export type ReportRole = 'advertiser' | 'promoter';
 type Breakdown = Metrics & {
-  campaignId: string | null; creativeId: string | null; campaign: string | null; creative: string | null;
+  campaignId: string | null; creativeId: string | null; campaign?: string | null; creative?: string | null;
 };
 export type DailyReport = {
   role: ReportRole; timezone: string; updatedAt: string; from: string; to: string;
@@ -15,20 +17,35 @@ export type DailyReport = {
   comparison: { from: string; to: string; totals: Metrics } | null;
 };
 const day = (value: unknown) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
-const metrics = (value: unknown): value is Metrics => !!value && typeof value === 'object' &&
-  keys.every(key => typeof (value as Metrics)[key] === 'string' && /^-?\d+$/.test((value as Metrics)[key]));
+function metrics(value: unknown, role: ReportRole): value is Metrics {
+  if (!value || typeof value !== 'object') return false;
+  const allowed: readonly (keyof Metrics)[] = role === 'promoter' ? earningsKeys : spendKeys;
+  const row = value as Metrics;
+  return allowed.every(key => typeof row[key] === 'string' && /^-?\d+$/.test(row[key]!)) &&
+    keys.every(key => allowed.includes(key) || !(key in row));
+}
+
+export function metric(row: Metrics, key: keyof Metrics): string {
+  const value = row[key];
+  if (value === undefined) throw new Error('Report metric is unavailable.');
+  return value;
+}
 
 export async function readDailyReport(role: ReportRole, filters: string, signal: AbortSignal) {
   const query = new URLSearchParams(filters);
   query.set('role', role);
   const data = await apiData<DailyReport>('/api/v1/reports/daily?' + query, { signal, cache: 'no-store' });
   if (!data || data.role !== role || data.timezone !== 'Africa/Lagos' ||
-    !Number.isFinite(Date.parse(data.updatedAt)) || !day(data.from) || !day(data.to) || !metrics(data.totals) ||
-    !Array.isArray(data.daily) || !data.daily.every(row => metrics(row) && day(row.date) && typeof row.incomplete === 'boolean') ||
-    !Array.isArray(data.breakdown) || !data.breakdown.every(row => metrics(row) &&
-      [row.campaignId, row.creativeId, row.campaign, row.creative].every(value => value === null || typeof value === 'string')) ||
+    !Number.isFinite(Date.parse(data.updatedAt)) || !day(data.from) || !day(data.to) || !metrics(data.totals, role) ||
+    !Array.isArray(data.daily) || !data.daily.every(row => metrics(row, role) && day(row.date) && typeof row.incomplete === 'boolean') ||
+    !Array.isArray(data.breakdown) || !data.breakdown.every(row => metrics(row, role) &&
+      [row.campaignId, row.creativeId].every(value => value === null || typeof value === 'string') &&
+      (role === 'promoter'
+        ? !('campaign' in row) && !('creative' in row) &&
+          [row.campaignId, row.creativeId].every(value => value === null || /^[0-9a-f]{64}$/.test(value))
+        : [row.campaign, row.creative].every(value => value === null || typeof value === 'string'))) ||
     (data.comparison !== null && (!data.comparison || !day(data.comparison.from) ||
-      !day(data.comparison.to) || !metrics(data.comparison.totals)))) {
+      !day(data.comparison.to) || !metrics(data.comparison.totals, role)))) {
     throw new Error('Report data is unavailable.');
   }
   return data;
@@ -39,7 +56,9 @@ export function aggregateCampaigns(rows: Breakdown[]): Breakdown[] {
   for (const row of rows) {
     const prior = groups.get(row.campaignId);
     if (!prior) groups.set(row.campaignId, { ...row, creativeId: null, creative: null });
-    else for (const key of keys) prior[key] = (BigInt(prior[key]) + BigInt(row[key])).toString();
+    else for (const key of keys) {
+      if (row[key] !== undefined) prior[key] = (BigInt(metric(prior, key)) + BigInt(metric(row, key))).toString();
+    }
   }
   return [...groups.values()];
 }

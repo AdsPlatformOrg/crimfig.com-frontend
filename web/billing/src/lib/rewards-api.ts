@@ -2,6 +2,7 @@ import { sessionFetch } from './session';
 
 export interface RewardsMeData {
   availablePoints: number;
+  paidEarningEnabled?: boolean;
   pendingPoints: number;
   reservedPoints: number;
   usdValueEquivalent: string;

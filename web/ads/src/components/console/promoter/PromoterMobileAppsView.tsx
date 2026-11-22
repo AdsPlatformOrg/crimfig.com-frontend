@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Smartphone, Plus, CheckCircle2, Loader2 } from 'lucide-react';
+import { Smartphone } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
 import { EmptyState } from '../../EmptyState';
 import { CardSkeleton } from '../../LoadingStates';
+import { Badge } from '../../ui/badge';
 
 interface PromoterApp {
   id: string;
@@ -41,22 +42,21 @@ export function PromoterMobileAppsView() {
           Registered Mobile Applications
         </h3>
         <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-          Integrate the CrimFig Ads Native SDK into your Android and iOS applications to monetize app traffic.
+          Mobile app registration and SDK setup are planned. Existing registered applications remain listed here.
         </p>
       </div>
 
+      <div><Badge variant="outline">Coming Soon</Badge><p>New mobile app registration is not available yet.</p></div>
       {isLoading ? (
         <CardSkeleton count={2} />
       ) : apps.length === 0 ? (
         <EmptyState
           icon={Smartphone}
           title="No Mobile Apps Registered"
-          description="Connect your mobile applications with our React Native or Native SDK to earn revenue from in-app ads."
-          actionLabel="+ Register First Mobile App"
-          onAction={() => {}}
+          description="Mobile app registration is planned. Check back for availability."
         />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
           {apps.map((app) => (
             <div key={app.id} className="theme-card" style={{ padding: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -51,23 +51,19 @@ export default function CrimFigAdNetworkGetStartedPage() {
             <CardHeader>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Smartphone size={18} style={{ color: 'var(--color-crimson)' }} />
-                <Badge variant="outline">App Registration</Badge>
+                <Badge variant="outline">Coming Soon</Badge>
               </div>
               <CardTitle style={{ fontSize: '16px', marginTop: '8px' }}>Setup an Ad Slot — On Mobile App</CardTitle>
               <CardDescription style={{ fontSize: '12px' }}>
-                Register your iOS or Android app bundle ID to prepare mobile inventory.
+                Mobile app registration and supported SDK setup are planned.
               </CardDescription>
             </CardHeader>
             <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                <li>Register your app name, platform, and bundle/package identifier.</li>
-                <li>Note: Live mobile SDK ad-serving is not yet enabled in delivery; app registration prepares your profile without fake metrics.</li>
+                <li>Registration is not available yet.</li>
+                <li>Existing registered application information remains available in Mobile Apps.</li>
               </ul>
-              <Button asChild size="sm" variant="outline">
-                <Link href="/promoter/mobile-apps">
-                  Register Mobile App <ArrowRight size={14} />
-                </Link>
-              </Button>
+
             </CardContent>
           </Card>
 
@@ -76,27 +72,15 @@ export default function CrimFigAdNetworkGetStartedPage() {
             <CardHeader>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Share2 size={18} style={{ color: 'var(--color-crimson)' }} />
-                <Badge variant="outline">Governance Gated</Badge>
+                <Badge variant="outline">Coming Soon</Badge>
               </div>
               <CardTitle style={{ fontSize: '16px', marginTop: '8px' }}>Get an Affiliate Link for Affiliate Ads</CardTitle>
               <CardDescription style={{ fontSize: '12px' }}>
-                Understand how affiliate traffic validation, attribution, and payouts work before sharing links.
+                New affiliate link issuance is coming soon. You can still view existing approved links.
               </CardDescription>
             </CardHeader>
             <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                  <ShieldCheck size={14} style={{ color: 'var(--color-crimson)', marginTop: '2px', flexShrink: 0 }} />
-                  <span>Only verified, non-duplicate, human interactions count toward earnings.</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                  <Clock size={14} style={{ color: 'var(--color-crimson)', marginTop: '2px', flexShrink: 0 }} />
-                  <span>Approved promoter earnings undergo a 72-hour clearance hold before becoming withdrawable.</span>
-                </div>
-                <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Affiliate Links V2 link issuance and commission schedules remain gated until explicitly activated by governance approval.
-                </p>
-              </div>
+              <p>Read the link rules on the Affiliate Links page before sharing an approved link.</p>
               <Button asChild size="sm" variant="outline">
                 <Link href="/promoter/individuals">
                   View Affiliate Link Status <ArrowRight size={14} />

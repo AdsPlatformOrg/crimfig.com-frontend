@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { AdSizePolicy, type AdSizeMode } from '../../../../../components/console/AdSizePolicy';
 import { Layers, ShieldCheck, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { apiData } from '../../../../../lib/api-data';
 import { sessionFetch } from '../../../../../lib/session';
@@ -17,10 +19,15 @@ interface PromoterWebsite {
 }
 
 export default function AdStationSetupDirectSlotPage() {
+  const router = useRouter();
+  const requestedWebsite = useSearchParams().get('websiteId');
+  const lock = useRef(false);
+  const attempt = useRef<{ signature: string; requestId: string } | null>(null);
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState('');
   const [name, setName] = useState('');
-  const [format, setFormat] = useState('banner');
+  const [sizePolicy, setSizePolicy] = useState<AdSizeMode>('dynamic');
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [publishMode, setPublishMode] = useState<'draft' | 'testing'>('testing');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -29,46 +36,47 @@ export default function AdStationSetupDirectSlotPage() {
   useEffect(() => {
     apiData<PromoterWebsite[]>('/api/v1/promoters/websites')
       .then((rows) => {
-        const list = Array.isArray(rows) ? rows : [];
+        const list = Array.isArray(rows) ? rows.filter(site => site.verificationStatus === 'verified' && site.policyStatus !== 'suspended') : [];
         setWebsites(list);
-        if (list.length > 0) setSelectedWebsiteId(list[0].id);
+        if (list.length > 0) setSelectedWebsiteId(list.find(site => site.id === requestedWebsite)?.id ?? list[0].id);
       })
-      .catch(() => setWebsites([]))
+      .catch(() => setFeedback({ type: 'error', message: 'Verified websites could not be loaded.' }))
       .finally(() => setLoading(false));
-  }, []);
+  }, [requestedWebsite]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedWebsiteId || !name.trim()) return;
+    if (lock.current || !websites.some(site => site.id === selectedWebsiteId) || !name.trim() ||
+        name.trim().length > 150 || (sizePolicy !== 'dynamic' && !selectedSizes.length)) return;
+    lock.current = true;
+    const body = {
+      websiteId: selectedWebsiteId, name: name.trim(), slotType: 'direct', format: 'general',
+      allowedAdTypes: ['image'], responsive: true, allowedPresetIds: sizePolicy === 'dynamic' ? [] : selectedSizes,
+      lifecycleStatus: publishMode,
+    };
+    const signature = JSON.stringify(body);
+    if (attempt.current?.signature !== signature) attempt.current = { signature, requestId: crypto.randomUUID() };
     try {
       setSubmitting(true);
       setFeedback(null);
-      const res = await sessionFetch('/api/v1/publisher/slots', {
+      const res = await sessionFetch('/api/v1/publisher/slots/managed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          websiteId: selectedWebsiteId,
-          name: name.trim(),
-          slotType: 'direct',
-          format,
-          lifecycleStatus: publishMode,
-        }),
+        body: JSON.stringify({ ...body, requestId: attempt.current.requestId }),
       });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data?.message || 'Failed to create Direct Ad Slot.');
       }
-      setFeedback({
-        type: 'success',
-        message:
-          publishMode === 'draft'
-            ? 'Direct Ad Slot saved as Draft.'
-            : 'Direct Ad Slot published as Pending Review. It can go Live once both same-website CrimFig Ad Network integration is active and manual review approves this revision.',
-      });
-      setName('');
+      const slot = data?.data;
+      if (data?.status !== 'success' || typeof slot?.id !== 'string' || slot.websiteId !== selectedWebsiteId || slot.slotType !== 'direct') {
+        throw new Error('Slot creation could not be confirmed.');
+      }
+      router.push('/promoter/websites/' + encodeURIComponent(selectedWebsiteId) + '/slots/' + encodeURIComponent(slot.id));
     } catch (err: any) {
       setFeedback({ type: 'error', message: err?.message || 'Failed to create Direct Ad Slot.' });
     } finally {
+      lock.current = false;
       setSubmitting(false);
     }
   };
@@ -133,7 +141,7 @@ export default function AdStationSetupDirectSlotPage() {
             <div className="cf-shimmer" style={{ height: '140px', borderRadius: '10px' }} />
           ) : websites.length === 0 ? (
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              No websites registered yet.{' '}
+              No verified websites available.{' '}
               <Link href="/promoter/websites" style={{ color: 'var(--color-crimson)', fontWeight: 600 }}>
                 Register and verify a website first
               </Link>
@@ -166,27 +174,16 @@ export default function AdStationSetupDirectSlotPage() {
                 <Input
                   id="direct-slot-name"
                   required
+                  maxLength={150}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Homepage Header Sponsor Banner"
                 />
               </div>
 
-              <div>
-                <label htmlFor="direct-slot-format" style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
-                  Format
-                </label>
-                <select
-                  id="direct-slot-format"
-                  value={format}
-                  onChange={(e) => setFormat(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', background: 'var(--bg-page)', color: 'var(--text-primary)', fontSize: '13px' }}
-                >
-                  <option value="banner">Banner</option>
-                  <option value="card">Card</option>
-                  <option value="video">Video</option>
-                </select>
-              </div>
+              <AdSizePolicy context="publisher" value={sizePolicy} selected={selectedSizes}
+                onChange={(mode, sizes) => { setSizePolicy(mode); setSelectedSizes(sizes); }} />
+              <p className="cf-muted">Images available. Text ads and video ads are coming soon.</p>
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
@@ -213,7 +210,7 @@ export default function AdStationSetupDirectSlotPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px', paddingTop: '4px' }}>
-                <Button type="submit" disabled={submitting}>
+                <Button type="submit" disabled={submitting || !name.trim() || (sizePolicy !== 'dynamic' && !selectedSizes.length)}>
                   {submitting ? 'Creating...' : publishMode === 'draft' ? 'Save Draft' : 'Create & Submit for Review'}
                 </Button>
               </div>

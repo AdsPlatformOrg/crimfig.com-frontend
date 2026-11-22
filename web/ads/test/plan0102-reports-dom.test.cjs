@@ -29,7 +29,7 @@ test('reports clear private rows and ignore a late response when the account or 
   const requests = [];
   const pushed = [];
   let identityVersion = 1;
-  let params = 'from=2026-11-10&to=2026-11-10&compare=true';
+  let params = 'view=breakdown&from=2026-11-10&to=2026-11-10&compare=true';
   const element = tag => props => React.createElement(tag, props);
   const api = load('lib/daily-reports.ts', {
     './api-data': { apiData: (url, init) => new Promise(resolve => requests.push({ url, signal: init.signal, resolve })) },
@@ -38,23 +38,32 @@ test('reports clear private rows and ignore a late response when the account or 
     Table: 'table', TableBody: 'tbody', TableCell: 'td', TableHead: 'th', TableHeader: 'thead', TableRow: 'tr',
   }).map(([key, tag]) => [key, element(tag)]));
   const Page = load('app/(workspace)/reports/page.tsx', {
+    'next/link': { default: element('a') },
     'next/navigation': { useRouter: () => ({ push: url => pushed.push(url) }), useSearchParams: () => new URLSearchParams(params) },
     '@/components/SessionGate': { useSessionSnapshot: () => ({ identityVersion }) },
     '@/components/ui/button': { Button: element('button') },
     '@/components/ui/input': { Input: element('input') },
     '@/components/ui/table': table,
     '@/lib/daily-reports': api,
+    '../../../../../../shared/ui/origins': { ecosystemOrigin: () => 'https://billing.example.test' },
     './reports.module.css': { default: {} },
   }).default;
   const zero = Object.fromEntries(['spend','cpmSpend','cpcSpend','posted','credits','confirmed','pending','adjustments',
     'billableImpressions','billableClicks','impressions','clicks','validClicks','billedClicks'].map(key => [key,'0']));
   function response(role, campaign) {
-    const amounts = { ...zero, spend: '500000', billableImpressions: '1' };
+    const earnings = ['confirmed', 'pending', 'adjustments', 'billableImpressions', 'billableClicks'];
+    const allowed = Object.fromEntries(Object.entries(zero).filter(([key]) => role === 'promoter'
+      ? earnings.includes(key) : !earnings.slice(0, 3).includes(key)));
+    const amounts = { ...allowed, billableImpressions: '1',
+      ...(role === 'advertiser' ? { spend: '500000' } : { confirmed: '1000000' }) };
+    const reference = role === 'advertiser'
+      ? { campaignId: 'campaign-id', creativeId: 'ad-id', campaign, creative: 'Example ad' }
+      : { campaignId: 'a'.repeat(64), creativeId: 'b'.repeat(64) };
     return {
       role, timezone: 'Africa/Lagos', updatedAt: '2026-11-11T08:00:00Z', from: '2026-11-10', to: '2026-11-10',
       daily: [{ date: '2026-11-10', incomplete: false, ...amounts }], totals: amounts,
-      breakdown: [{ campaignId: 'campaign-id', creativeId: 'ad-id', campaign, creative: 'Example ad', ...amounts }],
-      comparison: { from: '2026-11-09', to: '2026-11-09', totals: zero },
+      breakdown: [{ ...reference, ...amounts }],
+      comparison: { from: '2026-11-09', to: '2026-11-09', totals: allowed },
     };
   }
   const container = document.getElementById('root');
@@ -67,8 +76,7 @@ test('reports clear private rows and ignore a late response when the account or 
     await reply(0, 'advertiser', 'Private campaign A');
     assert.match(container.textContent, /Private campaign A/);
     assert.match(container.textContent, /\$0\.0005/);
-    assert.match(container.textContent, /Previous period/);
-    assert.match(container.textContent, /Unavailable/);
+    assert.equal(container.querySelector('[aria-current=page]').textContent, 'Campaign & Ad Breakdown');
     identityVersion++;
     await render();
     assert.doesNotMatch(container.textContent, /Private campaign A/);
@@ -80,11 +88,12 @@ test('reports clear private rows and ignore a late response when the account or 
     await reply(1, 'advertiser', 'Late private campaign');
     assert.doesNotMatch(container.textContent, /Late private campaign/);
     await reply(2, 'promoter', 'Promoted campaign B');
-    assert.match(container.textContent, /Confirmed earnings/);
-    assert.match(container.textContent, /Promoted campaign B/);
+    assert.match(container.textContent, /Campaign aaaaaaaaaaaa/);
+    assert.doesNotMatch(container.textContent, /Promoted campaign B|Example ad/);
     await React.act(async () => container.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
     assert.equal(new URL(pushed[0], 'https://example.test').searchParams.get('workspace'), 'promoter');
     assert.equal(new URL(pushed[0], 'https://example.test').searchParams.get('compare'), 'true');
+    assert.equal(new URL(pushed[0], 'https://example.test').searchParams.get('view'), 'breakdown');
   } finally {
     await React.act(async () => root.unmount());
     dom.window.close();

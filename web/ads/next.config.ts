@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
       ...(billingUrl ? [{
         source: '/api/v1/ads/billing/recent-transactions',
         destination: billingUrl + '/api/v1/transactions?limit=5',
+      }, {
+        source: '/api/v1/ads/billing/rewards/me',
+        destination: billingUrl + '/api/v1/rewards/me',
       }] : []),
       {
         source: '/api/v1/auth/:path*',

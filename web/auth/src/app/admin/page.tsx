@@ -61,6 +61,12 @@ export default function AuthAdminPage() {
             </div>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+            {staff.roles.some(role => role === 'super_admin' || role === 'support_agent') && <Button asChild><Link href="/admin/support">Support Center</Link></Button>}
+            {isSuperAdmin && (
+              <Button asChild variant="outline">
+                <Link href="/admin/email-templates">Email Templates</Link>
+              </Button>
+            )}
             {isSuperAdmin && (
               <Button asChild>
                 <Link href="/admin/error-monitor">

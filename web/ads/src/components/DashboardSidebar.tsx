@@ -44,7 +44,7 @@ export function DashboardSidebar({
     const active = activeId === item.id;
     const content = (
       <>
-        <item.icon className={styles.icon} />
+        <item.icon className={styles.icon} aria-hidden="true" />
         {!isCollapsed && <span>{item.label}</span>}
         {!isCollapsed && item.badge !== undefined && <span className={styles.badge}>{item.badge}</span>}
       </>
@@ -92,7 +92,7 @@ export function DashboardSidebar({
                       setExpanded((previous) => ({ ...previous, [item.id]: !open }));
                     }}
                   >
-                    <item.icon className={styles.icon} />
+                    <item.icon className={styles.icon} aria-hidden="true" />
                     {!isCollapsed && <span>{item.label}</span>}
                   </Button>
                   <div id={childrenId} hidden={!open} className={styles.children}>

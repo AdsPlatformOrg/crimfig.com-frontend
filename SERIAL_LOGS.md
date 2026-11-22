@@ -118,3 +118,14 @@ HTML meta and DNS TXT now show independent Verified / Not verified / Expired lab
 
 ## 2026-11-21 - Verification footer cleanup
 Removed the redundant delivery-status/verification-token footer from the promoter website proof section. HTML and DNS proof instructions and copy controls remain. Narrow copy-only change; inspected source diff and whitespace, no new tests or behavior changes.
+2026-11-21 | PLAN-0133 / PLAN-0136 | Removed separate One Size UI; one checkbox is valid and existing saved single-size policy is retained until edited. Direct setup uses managed creation and canonical slot navigation. Live Direct slots return no fill at the shared endpoint rather than entering the Network auction while assigned-deal serving is unavailable there. Frontend 4/4, backend gating and SDK 26/26, Ads typecheck passed. Browser and deployment not verified.
+2026-11-21 | PLAN-0138 | Icon-labeled actions, inline on-demand installation disclosure and slot confirmations implemented. Five focused simulated DOM checks passed, including focus, stale embed isolation, copying and cancellation. Browser and deployment verification pending.
+2026-11-21 | PLAN-0131 follow-up | Display the verification cooldown in the existing dialog. Website detail test and three API response checks passed.
+
+## 2026-11-22 — PLAN-0149 and PLAN-0145
+
+Updated Advertiser Rewards to consume server-owned definitions and honest verification/history states. Removed hardcoded promised credits. Rebuilt the AdStation Control Center with property isolation, independent gates, table/tabs, confirmed preference saves and accessible deal dialog. Four AdStation/setup regressions and one rewards regression passed. Twelve combined frontend checks passed across reports, navigation, support, AdStation and advertiser rewards. Ads typecheck and production build passed with existing warnings. Browser fixture checks covered desktop, light/dark mobile, 320/375 widths and Escape focus return. Authenticated staging, 200% zoom, full Poppins rendering and deployment remain open. Corrected invalid UTF-8 source encoding and the support test's DOM initialization. PLAN-0149 verified badge qualification still depends on financial provenance and compliance evidence.
+
+## 2026-11-22 — PLAN-0149 earned recognition
+
+Advertiser Rewards now distinguishes earned badges, verified qualification and pending progress using server evidence; earned history is separate from unavailable monetary claims and legacy grants under review. One focused simulated-DOM regression passed including earned badge and legacy-contract rejection/retry. Ads frontend typecheck and production build passed with existing warnings elsewhere. Backend recognition: 9 units and 11 PostgreSQL/HTTP cases passed. Visual checks are explicitly deferred. See ../docs/reviews/plan-0149/recognition-release.md. No production deployment or monetary activation.

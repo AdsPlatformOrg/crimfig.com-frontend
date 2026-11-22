@@ -83,13 +83,7 @@ test('Promoter Hub hierarchy contains Overview, CrimFig Ad Network, and AdStatio
   const adNetwork = promoterGroups.find((g) => g.title === 'CrimFig Ad Network');
   assert.deepEqual(
     Array.from(adNetwork.items, (i) => i.label),
-    ['Dashboard', 'Get Started', 'Reports'],
-  );
-  const getStarted = adNetwork.items.find((i) => i.label === 'Get Started');
-  assert.ok(Array.isArray(getStarted.children));
-  assert.deepEqual(
-    Array.from(getStarted.children, (c) => c.label),
-    ['Setup Guide', 'On Website', 'On Mobile App', 'Affiliate Link'],
+    ['Dashboard', 'Websites & Ad Slots', 'Mobile Apps', 'Affiliate Links', 'Setup Guide', 'Reports'],
   );
 
   const adstation = promoterGroups.find((g) => g.title === 'AdStation');
@@ -170,14 +164,14 @@ test('PromoterDashboard, Affiliate gating, and AdStation gating UI enforce hones
     path.resolve(__dirname, '../src/components/console/promoter/PromoterIndividualsView.tsx'),
     'utf8',
   );
-  assert.match(individuals, /72-hour clearance hold/);
-  assert.match(individuals, /Affiliate Links V2/);
+  assert.doesNotMatch(individuals, /72-hour clearance hold/);
+  assert.match(individuals, /Coming Soon/);
 
   const adstation = fs.readFileSync(
     path.resolve(__dirname, '../src/components/console/adstation/AdStationWorkspace.tsx'),
     'utf8',
   );
-  assert.match(adstation, /Direct Ad Slot LIVE Requirements/);
+  assert.match(adstation, /Direct delivery readiness/);
   assert.match(adstation, /Submit for Review/);
   assert.match(adstation, /Go Live/);
 });

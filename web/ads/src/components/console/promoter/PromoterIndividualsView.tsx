@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Share2, Video, Copy, Check, Loader2 } from 'lucide-react';
+import { Share2, Copy, Check } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
 import { EmptyState } from '../../EmptyState';
 import { CardSkeleton } from '../../LoadingStates';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
+import { Badge } from '../../ui/badge';
 
 interface Placement {
   id: string;
@@ -22,49 +23,23 @@ interface Placement {
 export function PromoterIndividualsView() {
   const [placements, setPlacements] = useState<Placement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [reelsConsent, setReelsConsent] = useState(false);
-  const [pendingConsent, setPendingConsent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPlacementsAndConsent();
+    loadPlacements();
   }, []);
 
-  const loadPlacementsAndConsent = async () => {
+  const loadPlacements = async () => {
     try {
-      setIsLoading(true);
-      const [consentRes, placementsRes] = await Promise.allSettled([
-        apiData<{ consentGiven: boolean }>('/api/v1/promoters/reels-consent'),
-        apiData<Placement[]>('/api/v1/placements'),
-      ]);
-
-      if (consentRes.status === 'fulfilled' && consentRes.value) {
-        setReelsConsent(Boolean(consentRes.value.consentGiven));
-      }
-      if (placementsRes.status === 'fulfilled' && Array.isArray(placementsRes.value)) {
-        setPlacements(placementsRes.value);
-      }
+      setIsLoading(true); setError(null);
+      const result = await apiData<Placement[]>('/api/v1/placements');
+      if (!Array.isArray(result)) throw new Error('Invalid links response');
+      setPlacements(result);
     } catch {
-      // Keep UI clean
+      setError('Your approved links could not be loaded. Please retry.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const toggleReelsConsent = async () => {
-    try {
-      setPendingConsent(true);
-      const newConsent = !reelsConsent;
-      await apiData('/api/v1/promoters/reels-consent', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ consent: newConsent }),
-      });
-      setReelsConsent(newConsent);
-    } catch {
-      // Error handling
-    } finally {
-      setPendingConsent(false);
     }
   };
 
@@ -76,58 +51,7 @@ export function PromoterIndividualsView() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Plain-Language Affiliate Terms & Governance Gate */}
-      <div className="theme-card" style={{ padding: '20px 24px', background: 'var(--bg-surface)', borderLeft: '4px solid var(--color-crimson)' }}>
-        <h2 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
-          Affiliate &amp; Creator Link Rules
-        </h2>
-        <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-          Only verified, non-duplicate, human interactions count toward earnings. Approved promoter earnings undergo a standard <strong>72-hour clearance hold</strong> before becoming withdrawable.
-        </p>
-        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
-          Affiliate Links V2 new link issuance and unapproved CPC/CPA/commission rates are currently gated and disabled until governance approval is activated. Existing approved placements remain listed below.
-        </p>
-      </div>
-
-      {/* Reels Sync Card */}
-      <div className="theme-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                backgroundColor: 'var(--badge-bg)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--color-crimson)',
-              }}
-            >
-              <Video style={{ width: 24, height: 24 }} />
-            </div>
-            <div>
-              <h4 style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>CrimFig Reels Social Sync</h4>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                Auto-publish sponsored promotional cards directly to your verified CrimFig Reels profile.
-              </p>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            onClick={toggleReelsConsent}
-            disabled={pendingConsent}
-            aria-pressed={reelsConsent}
-            variant={reelsConsent ? 'secondary' : 'outline'}
-            size="sm"
-          >
-            {pendingConsent ? 'Saving...' : reelsConsent ? '✓ Reels Sync Enabled' : 'Reels Sync Off'}
-          </Button>
-        </div>
-      </div>
-
+      <header><h1 className="cf-page-title">Affiliate Links</h1><Badge variant="outline">Coming Soon</Badge><p>New affiliate link issuance is not available yet. Existing approved links remain available below.</p></header>
       {/* Share Links List */}
       <div>
         <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '14px' }}>
@@ -136,14 +60,14 @@ export function PromoterIndividualsView() {
 
         {isLoading ? (
           <CardSkeleton count={2} />
-        ) : placements.length === 0 ? (
+        ) : error ? (<div role="alert"><p>{error}</p><Button onClick={loadPlacements}>Retry</Button></div>) : placements.length === 0 ? (
           <EmptyState
             icon={Share2}
             title="No Active Share Campaigns"
-            description="There are currently no active ad campaigns accepting individual promoters. Check back soon or browse the marketplace."
+            description="You have no approved share links to display. New link issuance is coming soon."
           />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
             {placements.map((placement) => (
               <div
                 key={placement.id}
@@ -151,12 +75,12 @@ export function PromoterIndividualsView() {
                 style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-crimson)' }}>
                     {placement.campaign?.category || 'General'}
                   </span>
                   <span
                     style={{
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
                       padding: '2px 8px',
                       borderRadius: '9999px',
@@ -164,7 +88,7 @@ export function PromoterIndividualsView() {
                       color: 'var(--text-secondary)',
                     }}
                   >
-                    Verified settlement
+                    Approved link
                   </span>
                 </div>
                 <h4 style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>
@@ -177,10 +101,11 @@ export function PromoterIndividualsView() {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: 'auto' }}>
                   <Input
                     type="text"
+                    aria-label={`Share link for ${placement.campaign?.title || "campaign"}`}
                     readOnly
                     value={placement.shareLink}
                     style={{
-                      flex: 1,
+                      flex: 1, minWidth: 0,
                       padding: '8px 12px',
                       borderRadius: '6px',
                       border: '1px solid var(--border-subtle)',
@@ -204,6 +129,14 @@ export function PromoterIndividualsView() {
           </div>
         )}
       </div>
+      <section className="theme-card" style={{ padding: 20 }} aria-labelledby="affiliate-rules">
+        <h2 id="affiliate-rules" style={{ fontSize: 16 }}>Affiliate &amp; Creator Link Rules</h2>
+        <ul style={{ paddingInlineStart: 20, lineHeight: 1.6 }}>
+          <li>Share only your approved links with people interested in the offer.</li>
+          <li>Fake, automated, repeated or encouraged clicks may be rejected.</li>
+          <li>Follow the approved campaign rules and limits. New links and earning schedules require separate approval.</li>
+        </ul>
+      </section>
     </div>
   );
 }

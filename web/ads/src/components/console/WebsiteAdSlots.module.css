@@ -10,6 +10,10 @@
 .filters { display:grid; gap:1rem; }.sizes { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.75rem; }.sizes label { display:flex; flex-wrap:wrap; align-items:center; min-height:44px; }
 .table { max-width:100%; overflow-x:auto; }.table th { white-space:normal; }.table td { min-width:7rem; }.table th button { font:inherit; color:inherit; border:0; background:none; cursor:pointer; }
 .identifier { overflow-wrap:anywhere; }.code { max-width:100%; overflow:auto; padding:1rem; background:var(--bg-elevated); border:1px solid var(--border-subtle); font-size:.8125rem; }
+.installation { min-width:0; }
+.installationTabs[role="tablist"] { height:auto; max-width:100%; flex-wrap:wrap; justify-content:flex-start; }
+.installationTabs [role="tab"] { min-height:44px; white-space:normal; }
 .confirm { padding:1rem; border:1px solid var(--border-subtle); border-radius:var(--radius-md,8px); }
 @media(min-width:640px){.filters { grid-template-columns:minmax(12rem,1fr) 2fr; }}
 @media(max-width:639px){.table th:nth-child(2),.table td:nth-child(2),.table th:nth-child(4),.table td:nth-child(4){display:none;}.table td{min-width:0;overflow-wrap:anywhere;}}
+.installationTrigger { justify-self:start; max-width:100%; min-height:44px; white-space:normal; }

@@ -419,7 +419,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
               ? 'Approved for paid advertiser supply.'
               : website.policyStatus === 'pending_approval'
               ? 'Pending staff review.'
-              : 'House Ads only until suitability approval.'}
+              : 'Promo ads only until suitability approval.'}
           </p>
         </div>
 

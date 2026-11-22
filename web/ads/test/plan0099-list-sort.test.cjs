@@ -10,7 +10,7 @@ const source = fs.readFileSync(path.resolve(__dirname, '../src/lib/campaign-list
 vm.runInNewContext(ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS },
 }).outputText, { exports: exportsForTest });
-const { parseCampaignSort, campaignColumnSort, campaignSortOptions } = exportsForTest;
+const { billedCampaignCtr, parseCampaignSort, campaignColumnSort, campaignSortOptions } = exportsForTest;
 
 test('invalid URL sorts fall back safely and actions are never sortable', () => {
   for (const value of [null, '', 'title; drop table users', 'budget_desc_desc']) {
@@ -37,4 +37,10 @@ test('all selector options match the generated API sort contract', () => {
   const contract = require('../../../shared/api-client/src/generated/ads-v1.json');
   const values = contract.paths['/api/v1/campaigns/page'].get.parameters.find(parameter => parameter.name === 'sort').schema.enum;
   assert.deepEqual(Array.from(campaignSortOptions, option => option[0]).sort(), values.slice().sort());
+});
+
+test('campaign CTR uses billed clicks against the displayed impressions', () => {
+  assert.equal(billedCampaignCtr(50, 9), '18.00%');
+  assert.equal(billedCampaignCtr(0, 0), '0.00%');
+  assert.equal(billedCampaignCtr(50, undefined), '—');
 });

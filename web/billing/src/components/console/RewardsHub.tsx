@@ -183,7 +183,7 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>100 Points = $1.00 USD</span>
           </div>
           <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-            Rewards Hub &amp; Growth Network
+            Redeemable Points
           </h2>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px', maxWidth: '640px' }}>
             Earn fund-backed points through advertising performance, referrals, and ecosystem milestones. Redeem directly into your cash wallet.
@@ -233,11 +233,11 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
               {rewards.availablePoints.toLocaleString()} <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-muted)' }}>pts</span>
             </div>
             <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
-              ≈ ${availableUsd} USD Cash Backing
+              ≈ ${availableUsd} USD redemption value
             </div>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 'auto' }}>
-            100% solvent. Backed 1:1 by real unallocated cash in the CrimFig Rewards Fund.
+            {rewards.isSuspended ? 'Rewards account suspended.' : rewards.paidEarningEnabled === false ? 'Paid ad earning is paused.' : 'Redeem eligible points through Billing.'}
           </div>
         </Card>
 
@@ -268,7 +268,7 @@ export function RewardsHub({ onReturnToWallet, onRefreshWalletBalance }: Rewards
             </div>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: 'auto' }}>
-            Cash reserved 1:1 in fund. Promoted automatically upon fraud/verification clearance.
+            Pending points become available after the required checks clear.
           </div>
         </Card>
 

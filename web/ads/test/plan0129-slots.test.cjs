@@ -8,6 +8,8 @@ test('slot pages isolate website data, show failures honestly and create Dynamic
   const native=tag=>({children,asChild,variant,...props})=>asChild?children:React.createElement(tag,props,children);
   const table={};for(const [name,tag] of Object.entries({Table:'table',TableBody:'tbody',TableCell:'td',TableHead:'th',TableHeader:'thead',TableRow:'tr'}))table[name]=native(tag);
   const imports={'next/link':{__esModule:true,default:native('a')},'next/navigation':{useRouter:()=>({push:path=>pushes.push(path)})},'../../lib/session':{dashboardSession:()=>({getProfile:async()=>({userId:'fixture-owner'})}),sessionFetch:(url,init)=>new Promise(resolve=>requests.push({url,init,resolve}))},'../ui/button':{Button:native('button')},'../ui/input':{Input:props=>{if(props.type!=='number')input.current=props;return React.createElement('input',props);}},'../ui/table':table,'./HouseSizeSamples':{HouseSizeSamples:()=>null},'../../lib/house-samples':{houseSampleCatalog:require('../src/data/house-samples.json')},'./WebsiteAdSlots.module.css':{default:{}}};
+  imports['../ui/tabs'] = {};
+  imports['./ConsequentialConfirmDialog'] = {};
   const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/components/console/WebsiteAdSlots.tsx'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{exports,localStorage:dom.window.localStorage,crypto:global.crypto,require:name=>imports[name]??require(name)});
   const root=createRoot(document.getElementById('root')),Component=exports.WebsiteAdSlots;
   const first='00000000-0000-4000-8000-000000000001',second='00000000-0000-4000-8000-000000000002';
