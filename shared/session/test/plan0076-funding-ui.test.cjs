@@ -19,7 +19,7 @@ function mount(file, dependencies, props = {}) {
     useCallback(fn, deps) { const i = cursor++; if (changed(slots[i]?.deps, deps)) slots[i] = {deps, fn}; return slots[i].fn; },
   };
   const exports = {};
-  const adsFunding = {};
+  const adsFunding = {}; const billingCopy = {}; vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../../../web/billing/src/lib/billing-copy.ts'), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: billingCopy });
   const storage = props.storage || new Map();
   const helper = ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../../../web/billing/src/lib/ads-funding-return.ts'), 'utf8'), {
     compilerOptions: {module: ts.ModuleKind.CommonJS},
@@ -28,7 +28,7 @@ function mount(file, dependencies, props = {}) {
   const code = ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../../../web', file), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS, jsx:ts.JsxEmit.React, esModuleInterop:true}}).outputText;
   vm.runInNewContext(code, {exports,process:{env:{NODE_ENV:'production'}},setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout:id=>{timers[id-1]=null;}, React: react, URL, URLSearchParams, HTMLElement:class HTMLElement{}, AbortController, crypto: require('node:crypto').webcrypto, document: {addEventListener(){}, removeEventListener(){}}, window:{crypto:require('node:crypto').webcrypto,location:{origin:'https://staging-billing.crimfig.com',href:'https://staging-billing.crimfig.com/?view=console',search:props.search||'',assign:target=>{history.push(target);},replace:target=>{history.push(target);}},sessionStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)},history:{pushState(_state,_title,url){history.push(String(url));},replaceState(_state,_title,url){history.push(String(url));}},addEventListener(){},removeEventListener(){}}, require: name => {
     if (name === 'react' || name === 'react/jsx-runtime') return react;
-    if (name === '../../lib/ads-funding-return') return adsFunding;
+    if (name === '../../lib/ads-funding-return') return adsFunding; if (name === '../../lib/billing-copy') return billingCopy; if (name === '../../../../../shared/ui/localization/locale') return { publishedLocales: ['en', 'fr', 'es'] };
     if (name in dependencies) return dependencies[name];
     if (name === 'next/navigation') return {useRouter: () => ({push(){}})};
     return new Proxy({}, {get: (_target, key) => String(key)});
@@ -44,7 +44,7 @@ const id='12345678-1234-4234-8234-123456789099';
 const button=(app,label)=>app.nodes().find(n=>typeof n.props.onClick==='function'&&text(n).trim()===label);
 function billing(overrides={},search='',bankDirectory,initialTab,storage){
  const sends=[],checks=[];const funding={fundingReturn:()=>({kind:'none'}),fundingRequest:value=>new URLSearchParams(value).has('funding_request')?{kind:'valid',requestId:id}:{kind:'none'},validFundingRequestId:value=>typeof value==='string'&&value.length===36,validFundingReference:value=>typeof value==='string'&&/^[a-z0-9-]+$/i.test(value),recoverFundingRequest:async()=>{throw Error('lookup unavailable');},verifyFundingReference:async reference=>{checks.push(reference);return {status:'pending',reference};},startFunding:async(amount,save,requestId)=>{sends.push({amount,save,requestId});return {kind:'checkout',requestId,reference:'crimfig-fund-new',amountUsd:amount,url:'https://checkout.paystack.com/unit-test'};},FundingStartError,loadTransactions:async()=>[],...overrides};
- const app=mount('billing/src/components/console/BillingConsole.tsx',{'../../lib/session':{dashboardSession:()=>({}),sessionFetch:async()=>Response.json({data:[]})},'../../../../../shared/ui/origins':{ecosystemOrigin:app=>`https://staging-${app}.crimfig.com`},'../../lib/use-dialog':{useDialog:()=>({current:null})},'../../lib/wallet-view':{walletView:()=>({availableUsd:0,lockedUsd:0,totalUsd:0,rate:1500,rateSource:'unit fixture',lastUpdated:'12:00'})},'../../lib/billing-api':{billingData:async path=>path==='/api/v1/bank-accounts/banks'&&bankDirectory?bankDirectory():path==='/api/v1/subscriptions/catalog'?{}:path==='/api/v1/wallet'?{}:[],resolveBank:async()=>{},saveBank:async()=>{}},'../../lib/funding-api':funding},{search,initialTab,storage});
+ const app=mount('billing/src/components/console/BillingConsole.tsx',{'../../../../../shared/ui/localization/LocalizationProvider':{useLanguage:()=>({locale:'en',t:k=>k})},'../../lib/session':{dashboardSession:()=>({}),sessionFetch:async()=>Response.json({data:[]})},'../../../../../shared/ui/origins':{ecosystemOrigin:app=>`https://staging-${app}.crimfig.com`},'../../lib/use-dialog':{useDialog:()=>({current:null})},'../../lib/wallet-view':{walletView:()=>({availableUsd:0,lockedUsd:0,totalUsd:0,rate:1500,rateSource:'unit fixture',lastUpdated:'12:00'})},'../../lib/billing-api':{billingData:async path=>path==='/api/v1/bank-accounts/banks'&&bankDirectory?bankDirectory():path==='/api/v1/subscriptions/catalog'?{}:path==='/api/v1/wallet'?{}:[],resolveBank:async()=>{},saveBank:async()=>{}},'../../lib/funding-api':funding},{search,initialTab,storage});
  return {app,sends,checks,funding};
 }
 async function ready(app){app.render();await app.settle();await app.settle();}
