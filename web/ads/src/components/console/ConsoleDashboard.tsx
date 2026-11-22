@@ -23,7 +23,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { useLanguage } from '../../../../shared/ui/localization/LocalizationProvider';
+import { useLanguage } from '../../../../../shared/ui/localization/LocalizationProvider';
 import { getAdsDashboardCopy } from '../../lib/ads-copy';
 
 interface DashboardSummary {
