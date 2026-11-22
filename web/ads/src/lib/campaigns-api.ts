@@ -50,6 +50,7 @@ export interface CampaignDefaultsInput {
   frequencyCapPerDay?: number;
   geoMode: "global" | "targeted";
   locations?: string[];
+  useBonusCredit?: boolean;
 }
 
 export interface CreationCapabilities {
@@ -215,7 +216,7 @@ export async function saveCampaignEditor(input:CampaignDefaultsInput, stacks:(St
       title:input.title.trim()||'Untitled campaign',description:input.description??'',category:input.category??'',channels:input.channels,
       budgetUsd:input.budgetUsd,dailyBudgetUsd:input.dailyBudgetUsd,costPerImpressionCents:input.costPerImpressionCents,costPerClickCents:input.costPerClickCents,
       pricingModel:input.pricingModel,format:input.format,targetDevices:input.targetDevices,schedule:input.schedule,frequencyCapPerDay:input.frequencyCapPerDay,
-      geoMode:input.geoMode,locations:input.locations,
+      geoMode:input.geoMode,locations:input.locations,useBonusCredit:input.useBonusCredit,
       stacks:stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,schedule:stack.schedule,
         ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline??'',bodyText:ad.bodyText??'',ctaText:ad.ctaText??'',destinationUrl:ad.destinationUrl,adFormat:ad.adFormat,mediaAssetId:ad.mediaAssetId,sizePolicy:ad.sizePolicy,allowedPresetIds:ad.allowedPresetIds}))})),
     };

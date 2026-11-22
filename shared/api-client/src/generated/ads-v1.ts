@@ -4194,6 +4194,7 @@ export interface components {
             targetHours?: number[] | null;
             targetStates?: string[] | null;
             title: string;
+            useBonusCredit?: boolean | null;
         };
         CreateSetupCheckDto: {
             pagePath?: string | null;
@@ -7300,6 +7301,7 @@ export interface components {
             })[] | null;
             targetDevices?: string[] | null;
             title?: string | null;
+            useBonusCredit?: boolean | null;
         };
         SuspendPromoterDto: {
             reason?: string | null;

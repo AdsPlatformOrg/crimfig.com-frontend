@@ -151,6 +151,8 @@ export function CampaignCreationWizard({
   const [pricingModel, setPricingModel] = useState<"cpm" | "cpc">(initial?.pricingModel??"cpm");
 
   const [budgetUsd, setBudgetUsd] = useState(initial?.budgetUsd??25);
+  const [useBonusCredit, setUseBonusCredit] = useState(false);
+  const [availableBonusCreditCents, setAvailableBonusCreditCents] = useState<number>(0);
 
   const [dailyBudgetUsd, setDailyBudgetUsd] = useState<number|null>(initial?initial.dailyBudgetUsd:5);
 
@@ -161,6 +163,18 @@ export function CampaignCreationWizard({
   const [locationNames, setLocationNames] = useState<Record<string, string>>(
     {},
   );
+
+  useEffect(() => {
+    let active = true;
+    void fetch('/api/v1/advertiser/milestones', { credentials: 'include' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(body => {
+        const cents = Number(body?.data?.bonusWallet?.availableBonusCreditCents ?? 0);
+        if (active && Number.isFinite(cents)) setAvailableBonusCreditCents(cents);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -638,7 +652,7 @@ export function CampaignCreationWizard({
       const profile=await dashboardSession().getProfile();
       if(editorRecoveryScope(profile.userId,campaign?.id,campaign?.contentRevision)!==draftOwner)throw new Error('Your account changed. Open the campaign again before saving.');
       persistDraft({submissionUncertain:true});
-      const saved=await saveCampaignEditor({title,description,category,budgetUsd,dailyBudgetUsd,costPerImpressionCents:cpmBidCents,costPerClickCents:cpcBidCents,pricingModel,format:campaign?.format??'card',targetDevices:devices,schedule,requestId,frequencyCapPerDay:frequencyCap,geoMode,locations:geoMode==='targeted'?locations:[]},
+      const saved=await saveCampaignEditor({title,description,category,budgetUsd,dailyBudgetUsd,costPerImpressionCents:useBonusCredit?50:cpmBidCents,costPerClickCents:cpcBidCents,pricingModel:useBonusCredit?"cpm":pricingModel,format:campaign?.format??'card',targetDevices:devices,schedule,requestId,frequencyCapPerDay:frequencyCap,geoMode,locations:geoMode==='targeted'?locations:[],...(useBonusCredit?{useBonusCredit:true}:{})},
         stacks.map(stack=>({id:stack.id,name:stack.name,geoMode:stack.geoMode,locations:stack.locations,targetDevices:stack.targetDevices,targetHours:[],schedule:stack.schedule,
           ads:stack.ads.map(ad=>({id:ad.id,adType:ad.adType,headline:ad.headline,bodyText:ad.bodyText,ctaText:ad.ctaText,destinationUrl:ad.destinationUrl,adFormat:ad.adFormat??'card',mediaAssetId:ad.mediaAssetId,sizePolicy:ad.sizePolicy,allowedPresetIds:ad.allowedPresetIds}))})),
         savedCampaignId?{id:savedCampaignId,contentRevision:savedRevision}:undefined,
@@ -1425,6 +1439,38 @@ export function CampaignCreationWizard({
               ? `${bidEstimate(budgetUsd, cpmBidCents, "cpm")?.toLocaleString() ?? "—"} impressions`
               : `${bidEstimate(budgetUsd, cpcBidCents, "cpc")?.toLocaleString() ?? "—"} clicks`}
           </div>
+          {availableBonusCreditCents >= 500 && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-subtle)",
+                fontSize: "12px",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={useBonusCredit}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setUseBonusCredit(checked);
+                  if (checked) {
+                    setPricingModel("cpm");
+                    setCpmBidCents(50);
+                  }
+                }}
+              />
+              <span>
+                Fund <strong>100% with Bonus Ad Credit</strong> ($
+                {(availableBonusCreditCents / 100).toFixed(2)} available — serves
+                eligible unsold inventory at $0.50 base CPM, never touching your
+                cash wallet)
+              </span>
+            </label>
+          )}
         </section>
       )}
 
