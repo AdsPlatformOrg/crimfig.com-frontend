@@ -179,27 +179,106 @@ export function workspaceNavigation(
           icon: DollarSign,
           href: "/promoter/rewards",
         },
-        { id: "support", label: "Help & Support", icon: Headphones, href: "/support?workspace=promoter" },
+        {
+          id: "support",
+          label: "Help & Support",
+          icon: Headphones,
+          href: "/support?workspace=promoter",
+        },
       ],
     },
   ];
 
   // Admin Nav Groups
   const adminNavGroups: NavGroup[] = [
-    { title: 'Reports', items: [{ roles: ['super_admin','ads_admin','ads_finance','ads_support','report_auditor','report_contact_reveal'], id: 'admin_reports', label: 'Reports', icon: ChartNoAxesCombined, href: '/admin/reports' }] },
-    {title:"Promotional rewards",items:[{roles:["super_admin","ads_finance"],id:"admin_rewards_controls",label:"Program Switches & Reserves",icon:Settings,href:"/admin/rewards/controls"},{roles:["super_admin","ads_finance"],id:"admin_cfig",label:"House Ad rewards",icon:Sparkles,href:"/admin/rewards/cfig",children:[{id:"cfig_policies",label:"Policies",icon:Settings,href:"/admin/rewards/cfig/policies"},{id:"cfig_reserve",label:"Funding status",icon:ShieldCheck,href:"/admin/rewards/cfig/reserve"}]}]},
+    {
+      title: "Administration",
+      items: [
+        {
+          roles: ["super_admin"],
+          id: "platform_access",
+          label: "Platform access",
+          icon: ShieldCheck,
+          href: "/admin/access",
+        },
+      ],
+    },
+    {
+      title: "Reports",
+      items: [
+        {
+          roles: [
+            "super_admin",
+            "ads_admin",
+            "ads_finance",
+            "ads_support",
+            "report_auditor",
+            "report_contact_reveal",
+          ],
+          id: "admin_reports",
+          label: "Reports",
+          icon: ChartNoAxesCombined,
+          href: "/admin/reports",
+        },
+      ],
+    },
+    {
+      title: "Promotional rewards",
+      items: [
+        {
+          roles: ["super_admin", "ads_finance"],
+          id: "admin_rewards_controls",
+          label: "Program Switches & Reserves",
+          icon: Settings,
+          href: "/admin/rewards/controls",
+        },
+        {
+          roles: ["super_admin", "ads_finance"],
+          id: "admin_cfig",
+          label: "House Ad rewards",
+          icon: Sparkles,
+          href: "/admin/rewards/cfig",
+          children: [
+            {
+              id: "cfig_policies",
+              label: "Policies",
+              icon: Settings,
+              href: "/admin/rewards/cfig/policies",
+            },
+            {
+              id: "cfig_reserve",
+              label: "Funding status",
+              icon: ShieldCheck,
+              href: "/admin/rewards/cfig/reserve",
+            },
+          ],
+        },
+      ],
+    },
     {
       title: "Advertising Operations",
       items: [
         {
-          roles: ["super_admin", "ads_admin", "ads_reviewer", "ads_manager", "ads_support"],
+          roles: [
+            "super_admin",
+            "ads_admin",
+            "ads_reviewer",
+            "ads_manager",
+            "ads_support",
+          ],
           id: "moderation",
           label: "Ad Review Queue",
           icon: ShieldCheck,
           href: "/admin/moderation",
         },
         {
-          roles: ["super_admin", "ads_admin", "ads_reviewer", "ads_manager", "ads_support"],
+          roles: [
+            "super_admin",
+            "ads_admin",
+            "ads_reviewer",
+            "ads_manager",
+            "ads_support",
+          ],
           id: "admin_campaign_readiness",
           label: "Campaign Readiness",
           icon: ShieldCheck,
@@ -245,7 +324,12 @@ export function workspaceNavigation(
           label: "Delivery Performance",
           icon: BarChart3,
           children: [
-            { id: "click_audit", label: "Click Audit", icon: History, href: "/admin/click-audit" },
+            {
+              id: "click_audit",
+              label: "Click Audit",
+              icon: History,
+              href: "/admin/click-audit",
+            },
             {
               id: "admin_websites",
               label: "Websites & Promoters",
@@ -334,7 +418,10 @@ export function resolveWorkspaceContext(
       return href && (path === href || path.startsWith(href + "/"));
     })
     .sort((a, b) => (b.href?.length || 0) - (a.href?.length || 0))[0];
-  if (role === "promoter" && path === "/promoter/slots")
+  if (
+    role === "promoter" &&
+    (path === "/promoter/slots" || path.startsWith("/promoter/slots/"))
+  )
     return [role, "websites"];
   return [
     role,

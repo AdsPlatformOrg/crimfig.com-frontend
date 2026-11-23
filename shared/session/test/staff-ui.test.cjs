@@ -23,7 +23,8 @@ function mount(file, dependencies, props = {}) {
   vm.runInNewContext(code, {exports,setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout:id=>{timers[id-1]=null;}, React: react, URL, URLSearchParams, HTMLElement:class HTMLElement{}, AbortController, crypto: require('node:crypto').webcrypto, document: {addEventListener(){}, removeEventListener(){}}, window:{location:{origin:'https://staging-auth.crimfig.com',href:'https://staging-auth.crimfig.com/admin/moderation',search:''},history:{pushState(_state,_title,url){history.push(String(url));},replaceState(_state,_title,url){history.push(String(url));}},addEventListener(){},removeEventListener(){}}, require: name => {
     if (name === 'react' || name === 'react/jsx-runtime') return react;
     if (name in dependencies) return dependencies[name];
-    if (name === 'next/navigation') return {useRouter: () => ({push(){}})};
+    if(['../../../lib/campaign-list-sort','../../../lib/campaign-navigation','../../../lib/campaign-list-status'].includes(name)){const e={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'../../../web/ads/src/lib',path.basename(name)+'.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:e,URL,URLSearchParams});return e;}
+    if (name === 'next/navigation') return {useRouter: () => ({push(){},replace(){}}),useSearchParams:()=>new URLSearchParams()};
     return new Proxy({}, {get: (_target, key) => String(key)});
   }, fetch: () => {throw Error('Raw cookie-only fetch is forbidden');}});
   component = Object.values(exports).find(value => typeof value === 'function');
@@ -196,7 +197,8 @@ test('ActionHelp opens on hover/focus/click and CampaignsManager disables unappr
   assert.equal(manager.nodes().some(n=>text(n)==='Resume Campaign'&&typeof n.props?.onSelect==='function'),false);
   assert.equal(toggled,0);
   const helps = manager.nodes().filter(n => typeof n.props?.action === 'string' && n.props.action.startsWith('Resume'));
-  assert.equal(helps.length, 2);
+  assert.equal(helps.length, 1);
+  assert.match(helps[0].props.reason,/restart review/);
   const underReviewTab = manager.nodes().find(n => typeof n.props?.onClick === 'function' && text(n).includes('Under Review'));
   assert.ok(underReviewTab);
   assert.equal(text(underReviewTab).includes('1'), true);

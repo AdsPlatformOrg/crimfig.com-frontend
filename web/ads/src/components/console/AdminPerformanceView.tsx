@@ -202,6 +202,8 @@ export function AdminPerformanceView({
       const v = qs.get(key);
       if (v) p.set(key, v);
     }
+    const creativeId = kind === "creative" ? id : qs.get("creativeId");
+    if (creativeId) p.set("creativeId", creativeId);
     const q = p.toString();
     return q ? `${path}?${q}` : path;
   }

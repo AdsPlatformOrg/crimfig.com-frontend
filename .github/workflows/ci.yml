@@ -11,9 +11,22 @@ jobs:
     name: Lint, Typecheck, Test & Build
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: frontend
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: frontend
+
+      - name: Checkout backend contract source
+        uses: actions/checkout@v4
+        with:
+          repository: AdsPlatformOrg/crimfig.com-backend
+          ref: 4f77ad908a850ba0e7a4ac41a33c4866a5f60484
+          path: backend
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -42,6 +55,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install backend contract dependencies
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
       - name: Lint
         run: pnpm run lint
 
@@ -50,6 +67,9 @@ jobs:
 
       - name: Run tests
         run: pnpm run test
+
+      - name: Platform access behavior
+        run: node --test web/ads/test/plan0156-platform-access.test.cjs
 
       - name: Build (affected packages)
         run: pnpm run build

@@ -238,10 +238,12 @@ test("performance is a separate report and propagates creative filters to websit
     items: [
       {
         id: "site",
+        websiteId: "site",
         label: "jed.com.ng",
         serves: 4,
         renders: 3,
         impressions: 2,
+        viewable: 1,
         clicks: 1,
         ctr: 50,
         promoterId: "promoter",
@@ -319,7 +321,7 @@ test("Admin and Promoter detail routes remain in their own workspace", () => {
   );
   assert.deepEqual(
     Array.from(m.exports.resolveWorkspaceContext("/promoter/slots/abc")),
-    ["promoter", "slots"],
+    ["promoter", "websites"],
   );
   assert.equal(
     m.exports.resolveWorkspaceContext("/administrator")[0],
