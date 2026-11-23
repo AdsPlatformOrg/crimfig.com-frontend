@@ -364,7 +364,7 @@ export function SupportCenter({
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="#0000001"
+                  placeholder="#01"
                   maxLength={40}
                 />
               </label>
