@@ -28,7 +28,7 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
   useEffect(() => { setIsMobileNavOpen(false); }, [pathname]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [staffRoles,setStaffRoles]=useState<string[]>([]);
+  const [staffRoles, setStaffRoles] = useState<string[]>([]);
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
   const authBase = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
   useEffect(() => {
@@ -49,10 +49,10 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
     let active = true;
     async function checkStaff() {
       try {
-        const res = await apiData<{ isStaff: boolean; roles:string[] }>('/api/v1/ecosystem/staff-status').catch(() => null);
+        const res = await apiData<{ isStaff: boolean; roles: string[] }>('/api/v1/ecosystem/staff-status').catch(() => null);
         if (active && res) {
           setIsStaffUser(Boolean(res.isStaff));
-          setStaffRoles(Array.isArray(res.roles)?res.roles:[]);
+          setStaffRoles(Array.isArray(res.roles) ? res.roles : []);
         }
       } catch {
         // Safe default: non-staff
@@ -64,12 +64,12 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
     };
   }, [pendingSession]);
 
-  const currentNavGroups=workspaceNavigation(role,staffRoles);
+  const currentNavGroups = workspaceNavigation(role, staffRoles);
 
   return (
     <Dialog open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-page)' }}>
-        <header style={{borderBottom:'1px solid var(--border-subtle)',background:'var(--bg-page)',position:'sticky',top:0,zIndex:40}}>
+        <header style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-page)', position: 'sticky', top: 0, zIndex: 40 }}>
           <div className="cf-console-row">
             <div className="cf-console-brand">
               <DialogTrigger asChild>
@@ -80,15 +80,15 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
               <CrimFigLogo variant="brand" app="Ads" href="/" />
             </div>
             <nav className="cf-workspace-nav" aria-label="Ads workspaces">
-              <Link href="/dashboard" aria-current={role==='advertiser'?'page':undefined}>Advertiser Studio</Link>
-              <Link href="/promoter" aria-current={role==='promoter'?'page':undefined}>Promoter Hub</Link>
-              {(isStaffUser||role==='admin')&&<Link href="/admin/moderation" aria-current={role==='admin'?'page':undefined}>Admin Console</Link>}
+              <Link href="/dashboard" aria-current={role === 'advertiser' ? 'page' : undefined}>Advertiser Studio</Link>
+              <Link href="/promoter" aria-current={role === 'promoter' ? 'page' : undefined}>Promoter Hub</Link>
+              {(isStaffUser || role === 'admin') && <Link href="/admin/overview" aria-current={role === 'admin' ? 'page' : undefined}>Admin Console</Link>}
             </nav>
             <div className="cf-console-actions">
-              {role==='advertiser' && pathname!=='/campaigns/new' && <Button asChild size="sm" className="cf-console-context-action"><Link href="/campaigns/new"><Plus size={16} aria-hidden="true" />New Campaign</Link></Button>}
-              {role==='promoter' && <Button asChild variant="secondary" size="sm" className="cf-console-context-action"><Link href="/promoter/websites?action=new"><Plus size={16} aria-hidden="true" />Add Property</Link></Button>}
+              {role === 'advertiser' && pathname !== '/campaigns/new' && <Button asChild size="sm" className="cf-console-context-action"><Link href="/campaigns/new"><Plus size={16} aria-hidden="true" />New Campaign</Link></Button>}
+              {role === 'promoter' && <Button asChild variant="secondary" size="sm" className="cf-console-context-action"><Link href="/promoter/websites?action=new"><Plus size={16} aria-hidden="true" />Add Property</Link></Button>}
               {publishedLocales.length > 1 && <LanguagePicker publishedOnly />}
-              {!pendingSession && <AccountMenu session={dashboardSession()} links={[{label:'Profile & Avatar',href:`${authBase}/profile`},{label:'Ads Settings',href:`/settings?workspace=${role}`},{label:'Account Security',href:`${authBase}/security`}]} />}
+              {!pendingSession && <AccountMenu session={dashboardSession()} links={[{ label: 'Profile & Avatar', href: `${authBase}/profile` }, { label: 'Ads Settings', href: `/settings?workspace=${role}` }, { label: 'Account Security', href: `${authBase}/security` }]} />}
             </div>
           </div>
         </header>

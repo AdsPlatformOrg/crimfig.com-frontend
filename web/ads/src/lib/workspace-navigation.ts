@@ -195,6 +195,22 @@ export function workspaceNavigation(
       title: "Administration",
       items: [
         {
+          roles: [
+            "super_admin",
+            "ads_admin",
+            "ads_finance",
+            "ads_support",
+            "report_auditor",
+            "ads_reviewer",
+            "ads_manager",
+            "report_contact_reveal",
+          ],
+          id: "admin_overview",
+          label: "Platform Overview",
+          icon: BarChart3,
+          href: "/admin/overview",
+        },
+        {
           roles: ["super_admin"],
           id: "platform_access",
           label: "Platform access",

@@ -12,3 +12,4 @@ export * from './table';
 export * from './separator';
 export * from './avatar';
 export * from './skeleton';
+export * from './chart';

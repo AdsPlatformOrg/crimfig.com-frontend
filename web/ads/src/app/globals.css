@@ -6,6 +6,7 @@
 @import "../components/console/admin-workspace.css" layer(pages);
 @import "../../../../shared/ui/header.css";
 @source "../components/console";
+@source "../components/ui";
 /* ─────────────────────────────────────────────────────────────────────────────
  * CrimFig Design System — globals.css (White / Light Theme by Default)
  * Single source of truth for colors, typography, layout, shimmer & transitions
