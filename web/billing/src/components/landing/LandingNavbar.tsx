@@ -6,20 +6,26 @@ import React, { useRef, useState } from 'react';
 import { ArrowRight, Menu, Wallet, X } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
+import { useSessionSnapshot } from '../SessionGate';
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 
 interface LandingNavbarProps {
   onLaunchConsole: (tab?: 'overview' | 'rewards') => void;
 }
 
-const links = [
-  { href: '#features', label: 'Features' },
-  { href: '#rewards', label: 'Rewards Status' },
-  { href: '#security', label: 'Funding availability' },
-];
-
 export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const snapshot = useSessionSnapshot();
+  const adsBase = ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL);
+  const isSignedIn = snapshot.status === 'authenticated' && !snapshot.signOut;
+  const links = [
+    { href: '#features', label: 'Features' },
+    { href: '#rewards', label: 'Rewards Status' },
+    { href: '#security', label: 'Funding availability' },
+    { href: isSignedIn ? `${adsBase}/dashboard` : `${adsBase}/`, label: 'Ads' },
+    { href: `${adsBase}/faq`, label: 'FAQ' },
+  ];
 
   const launchConsole = () => {
     setMobileMenuOpen(false);

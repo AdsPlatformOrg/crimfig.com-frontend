@@ -9,15 +9,20 @@ import { CrimFigLogo } from '../CrimFigLogo';
 import { Button } from '../ui/button';
 import { useSessionSnapshot } from '../SessionGate';
 import { publicHeaderActions } from '../../lib/public-header';
-
-const links = [
-  { href: '#faq', label: 'FAQ' },
-];
+import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const actions = publicHeaderActions(useSessionSnapshot());
+  const snapshot = useSessionSnapshot();
+  const actions = publicHeaderActions(snapshot);
+  const adsBase = ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL);
+  const isSignedIn = snapshot.status === 'authenticated' && !snapshot.signOut;
+  const links = [
+    { href: '#faq', label: 'FAQ' },
+    { href: isSignedIn ? `${adsBase}/dashboard` : `${adsBase}/`, label: 'Ads' },
+    { href: `${adsBase}/faq`, label: 'Ads FAQ' },
+  ];
 
   return (
     <header

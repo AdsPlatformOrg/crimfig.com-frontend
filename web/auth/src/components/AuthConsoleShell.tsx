@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound, ArrowLeft, HelpCircle } from 'lucide-react';
+import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound, ArrowLeft, HelpCircle, BookOpen } from 'lucide-react';
 import { Button } from './ui/button';
 import { AccountMenu } from '../../../../shared/ui/account-menu';
 import { LanguagePicker } from '../../../../shared/ui/localization/LanguagePicker';
@@ -61,6 +61,7 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
       items: [
         { id: 'org', label: 'Organization & Team', href: '/org', icon: Users },
         { id: 'support', label: 'Help & Support', href: '/support', icon: HelpCircle },
+        { id: 'faq', label: 'FAQ', href: `${adsBase}/faq`, icon: BookOpen },
       ],
     },
     ...(isStaff

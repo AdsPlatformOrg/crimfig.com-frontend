@@ -89,6 +89,12 @@ export function workspaceNavigation(
           icon: HelpCircle,
           href: "/support",
         },
+        {
+          id: "faq",
+          label: "FAQ",
+          icon: HelpCircle,
+          href: "/faq",
+        },
       ],
     },
   ];
@@ -184,6 +190,12 @@ export function workspaceNavigation(
           label: "Help & Support",
           icon: Headphones,
           href: "/support?workspace=promoter",
+        },
+        {
+          id: "faq",
+          label: "FAQ",
+          icon: HelpCircle,
+          href: "/faq",
         },
       ],
     },

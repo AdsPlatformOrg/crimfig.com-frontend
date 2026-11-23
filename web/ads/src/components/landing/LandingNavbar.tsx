@@ -56,6 +56,9 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
               {t(link.label)}
             </Link>
           ))}
+          <Link href={adsPreviewHref('/faq', locale)} className="cf-site-nav-link">
+            FAQ
+          </Link>
         </nav>
 
         <div className="cf-site-actions">
@@ -99,6 +102,13 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
               {t(link.label)}
             </Link>
           ))}
+          <Link
+            href={adsPreviewHref('/faq', locale)}
+            className="cf-site-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            FAQ
+          </Link>
           <Button onClick={launchConsole} className="cf-mobile-nav-cta">
             {t('launch')} <ArrowRight size={16} aria-hidden="true" />
           </Button>

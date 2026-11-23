@@ -56,7 +56,7 @@ test('Advertiser Studio uses Ads Console nomenclature with Dashboard and My Ad C
   assert.deepEqual(
     Array.from(adsConsole.items, (i) => i.label),
     ['Dashboard', 'My Ad Campaigns', 'Advertiser Rewards', 'Reports', 'Conversion Tracking',
-      'Billing & Wallet', 'User Profile', 'Settings', 'Notifications', 'Help & Support'],
+      'Billing & Wallet', 'User Profile', 'Settings', 'Notifications', 'Help & Support', 'FAQ'],
   );
 
   assert.deepEqual(Array.from(resolveWorkspaceContext('/dashboard')), ['advertiser', 'dashboard']);

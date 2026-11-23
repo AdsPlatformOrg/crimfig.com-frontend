@@ -40,7 +40,8 @@ import {
   ArrowLeft,
   Award,
   Coins,
-  HelpCircle
+  HelpCircle,
+  BookOpen
 } from 'lucide-react';
 import { useDialog } from '../../lib/use-dialog';
 import { AccountMenu } from '../../../../../shared/ui/account-menu';
@@ -500,6 +501,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       title: navCopy.support,
       items: [
         { id: 'support', label: navCopy.helpAndInquiries, icon: HelpCircle },
+        { id: 'faq', label: navCopy.faq, icon: BookOpen, href: `${adsBase}/faq` },
       ],
     },
   ];
@@ -522,6 +524,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       title: navCopy.support,
       items: [
         { id: 'support', label: navCopy.payoutInquiries, icon: HelpCircle },
+        { id: 'faq', label: navCopy.faq, icon: BookOpen, href: `${adsBase}/faq` },
       ],
     },
   ];
@@ -543,6 +546,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       title: navCopy.support,
       items: [
         { id: 'support', label: navCopy.rewardsInquiries, icon: HelpCircle },
+        { id: 'faq', label: navCopy.faq, icon: BookOpen, href: `${adsBase}/faq` },
       ],
     },
   ];

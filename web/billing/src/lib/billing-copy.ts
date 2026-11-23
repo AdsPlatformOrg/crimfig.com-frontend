@@ -25,6 +25,7 @@ export type BillingNavCopy = {
   redemptionStatements: string;
   redemptionHistory: string;
   rewardsInquiries: string;
+  faq: string;
   dismiss: string;
 };
 
@@ -53,6 +54,7 @@ const EN: BillingNavCopy = {
   redemptionStatements: 'Redemption Statements',
   redemptionHistory: 'Redemption History',
   rewardsInquiries: 'Rewards Inquiries',
+  faq: 'FAQ',
   dismiss: 'Dismiss',
 };
 
@@ -81,6 +83,7 @@ const FR: BillingNavCopy = {
   redemptionStatements: 'Relevés d’échange',
   redemptionHistory: 'Historique des échanges',
   rewardsInquiries: 'Demandes de récompenses',
+  faq: 'FAQ',
   dismiss: 'Fermer',
 };
 
@@ -109,6 +112,7 @@ const ES: BillingNavCopy = {
   redemptionStatements: 'Estados de canje',
   redemptionHistory: 'Historial de canjes',
   rewardsInquiries: 'Consultas de recompensas',
+  faq: 'FAQ',
   dismiss: 'Cerrar',
 };
 
