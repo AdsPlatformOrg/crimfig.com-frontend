@@ -43,3 +43,26 @@ test('completed-day presets use Lagos midnight and handle month transitions', ()
   assert.deepEqual(Array.from(reportPreset('7', now)), ['2026-10-25','2026-10-31']);
   assert.deepEqual(Array.from(reportPreset('last-month', now)), ['2026-10-01','2026-10-31']);
 });
+
+test('role allowlists reject unexpected fields before report data is rendered', async () => {
+  const date = '2026-11-10';
+  const totals = { confirmed: '0', pending: '0', adjustments: '0', billableImpressions: '0', billableClicks: '0' };
+  const payload = {
+    role: 'promoter', timezone: 'Africa/Lagos', updatedAt: date + 'T12:00:00Z', from: date, to: date,
+    totals, daily: [{ date, incomplete: false, ...totals }],
+    breakdown: [{ campaignId: 'a'.repeat(64), creativeId: null, ...totals }],
+    comparison: { from: date, to: date, totals },
+  };
+  const read = () => readDailyReport('promoter', '', new AbortController().signal);
+  reply = payload;
+  assert.equal(await read(), payload);
+  for (const invalid of [
+    { totals: { ...totals, spend: '0' } },
+    { daily: [{ ...payload.daily[0], internalEventId: 'private' }] },
+    { breakdown: [{ ...payload.breakdown[0], campaign: 'Private title' }] },
+    { comparison: { ...payload.comparison, totals: { ...totals, privateMetric: '0' } } },
+  ]) {
+    reply = { ...payload, ...invalid };
+    await assert.rejects(read(), /unavailable/);
+  }
+});

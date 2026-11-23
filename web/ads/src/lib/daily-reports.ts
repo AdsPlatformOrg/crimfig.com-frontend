@@ -17,12 +17,12 @@ export type DailyReport = {
   comparison: { from: string; to: string; totals: Metrics } | null;
 };
 const day = (value: unknown) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
-function metrics(value: unknown, role: ReportRole): value is Metrics {
+function metrics(value: unknown, role: ReportRole, metadata: readonly string[] = []): value is Metrics {
   if (!value || typeof value !== 'object') return false;
   const allowed: readonly (keyof Metrics)[] = role === 'promoter' ? earningsKeys : spendKeys;
   const row = value as Metrics;
   return allowed.every(key => typeof row[key] === 'string' && /^-?\d+$/.test(row[key]!)) &&
-    keys.every(key => allowed.includes(key) || !(key in row));
+    Object.keys(row).every(key => allowed.some(metric => metric === key) || metadata.includes(key));
 }
 
 export function metric(row: Metrics, key: keyof Metrics): string {
@@ -37,8 +37,9 @@ export async function readDailyReport(role: ReportRole, filters: string, signal:
   const data = await apiData<DailyReport>('/api/v1/reports/daily?' + query, { signal, cache: 'no-store' });
   if (!data || data.role !== role || data.timezone !== 'Africa/Lagos' ||
     !Number.isFinite(Date.parse(data.updatedAt)) || !day(data.from) || !day(data.to) || !metrics(data.totals, role) ||
-    !Array.isArray(data.daily) || !data.daily.every(row => metrics(row, role) && day(row.date) && typeof row.incomplete === 'boolean') ||
-    !Array.isArray(data.breakdown) || !data.breakdown.every(row => metrics(row, role) &&
+    !Array.isArray(data.daily) || !data.daily.every(row => metrics(row, role, ['date', 'incomplete']) && day(row.date) && typeof row.incomplete === 'boolean') ||
+    !Array.isArray(data.breakdown) || !data.breakdown.every(row => metrics(row, role, role === 'promoter'
+      ? ['campaignId', 'creativeId'] : ['campaignId', 'creativeId', 'campaign', 'creative']) &&
       [row.campaignId, row.creativeId].every(value => value === null || typeof value === 'string') &&
       (role === 'promoter'
         ? !('campaign' in row) && !('creative' in row) &&
@@ -68,7 +69,7 @@ export function money(value: string | bigint, exact = true): string {
   const abs = amount < 0n ? -amount : amount;
   const nanos = exact ? abs : (abs + 5_000_000n) / 10_000_000n * 10_000_000n;
   const cents = (nanos % 1_000_000_000n).toString().padStart(9, '0').replace(/0+$/, '').padEnd(2, '0');
-  return (amount < 0n ? '−' : '') + '$' + (nanos / 1_000_000_000n).toLocaleString('en-US') + '.' + cents;
+  return (amount < 0n ? 'âˆ’' : '') + '$' + (nanos / 1_000_000_000n).toLocaleString('en-US') + '.' + cents;
 }
 
 export function ratio(numerator: string, denominator: string, scale = 1) {
