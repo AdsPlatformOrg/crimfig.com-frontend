@@ -57,7 +57,9 @@ export default function AuthDashboardPage() {
               </div>
               <div>
                 <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.mfaTitle}</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{copy.mfaSub}</span>
+                <Badge variant="outline" style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <Clock size={12} aria-hidden="true" /> {copy.comingSoon}
+                </Badge>
               </div>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>

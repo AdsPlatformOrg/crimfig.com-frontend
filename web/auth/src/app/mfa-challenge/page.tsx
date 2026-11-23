@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import Link from 'next/link';
 import { withBrowserRefreshLock } from '@crimfig/session';
 import { useSearchParams } from 'next/navigation';
 import { loginDestination } from '@/lib/login-return';
@@ -70,35 +71,46 @@ function MfaChallengeContent() {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-        <div>
-          <label htmlFor="mfa-code" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.5px' }}>
-            {copy.codeLabel}
-          </label>
-          <Input
-            id="mfa-code"
-            type="text"
-            className="input-field"
-            placeholder="123456"
-            maxLength={8}
-            style={{
-              textAlign: 'center',
-              letterSpacing: '6px',
-              fontSize: '20px',
-              fontWeight: '700',
-              padding: '14px',
-            }}
-            value={code}
-            onChange={(e) => setCode(e.target.value.trim())}
-            required
-            autoFocus
-          />
+      {!mfaChallengeToken ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'center' }}>
+          <Alert>
+            <span>Multi-factor authentication enrollment is not enabled yet and is coming soon. To verify an existing sign-in, use your login challenge link.</span>
+          </Alert>
+          <Button asChild variant="outline" style={{ width: '100%' }}>
+            <Link href="/security">Back to Credentials &amp; Security</Link>
+          </Button>
         </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div>
+            <label htmlFor="mfa-code" style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--color-gray-400)', marginBottom: '8px', textAlign: 'center', letterSpacing: '0.5px' }}>
+              {copy.codeLabel}
+            </label>
+            <Input
+              id="mfa-code"
+              type="text"
+              className="input-field"
+              placeholder="123456"
+              maxLength={8}
+              style={{
+                textAlign: 'center',
+                letterSpacing: '6px',
+                fontSize: '20px',
+                fontWeight: '700',
+                padding: '14px',
+              }}
+              value={code}
+              onChange={(e) => setCode(e.target.value.trim())}
+              required
+              autoFocus
+            />
+          </div>
 
-        <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
-          {loading ? 'Verifying...' : 'Verify & Continue'}
-        </Button>
-      </form>
+          <Button type="submit" loading={loading} style={{ marginTop: '8px', width: '100%' }}>
+            {loading ? 'Verifying...' : 'Verify & Continue'}
+          </Button>
+        </form>
+      )}
       </Card>
   </div>
   );

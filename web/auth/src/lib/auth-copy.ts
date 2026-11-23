@@ -302,6 +302,7 @@ export type AuthDashboardCopy = {
   mfaSub: string;
   mfaDesc: string;
   mfaLink: string;
+  comingSoon: string;
   appsTitle: string;
   appsSub: string;
 };
@@ -310,45 +311,48 @@ const AUTH_DASHBOARD_COPY: Partial<Record<Locale, AuthDashboardCopy>> = {
   en: {
     eyebrow: 'Account Management & Security',
     title: 'Security Dashboard',
-    subtitle: 'Manage your single sign-on identity, active sessions, multi-factor authentication, and connected CrimFig portals.',
+    subtitle: 'Manage your single sign-on identity, active sessions, password controls, and connected CrimFig portals.',
     ssoTitle: 'Zero-Trust SSO',
     ssoBadge: 'Active & Guarded',
     ssoDesc: 'Your session is verified with high-entropy cryptographic token rotation and client fingerprint checks.',
     ssoLink: 'Review Active Devices →',
     mfaTitle: 'Two-Factor (2FA)',
-    mfaSub: 'Authenticator & SMS',
-    mfaDesc: 'Add a second layer of security to prevent unauthorized access even if your password is compromised.',
-    mfaLink: 'Configure 2FA & Passkeys →',
+    mfaSub: 'Authenticator App',
+    mfaDesc: 'Self-service authenticator enrollment is currently disabled while two-factor setup is finalized.',
+    mfaLink: 'Review Security Settings →',
+    comingSoon: 'Coming soon',
     appsTitle: 'Connected Apps',
     appsSub: 'Single Identity',
   },
   fr: {
     eyebrow: 'Gestion du compte et sécurité',
     title: 'Tableau de bord de sécurité',
-    subtitle: 'Gérez votre identité SSO, vos sessions actives, votre authentification multifacteur et vos portails CrimFig connectés.',
+    subtitle: 'Gérez votre identité SSO, vos sessions actives, votre mot de passe et vos portails CrimFig connectés.',
     ssoTitle: 'SSO Zero-Trust',
     ssoBadge: 'Actif et protégé',
     ssoDesc: 'Votre session est vérifiée par rotation cryptographique de jetons et contrôle d’empreinte client.',
     ssoLink: 'Voir les appareils actifs →',
     mfaTitle: 'Double facteur (2FA)',
-    mfaSub: 'Authentificateur et SMS',
-    mfaDesc: 'Ajoutez une seconde couche de sécurité pour empêcher tout accès non autorisé.',
-    mfaLink: 'Configurer 2FA et clés d’accès →',
+    mfaSub: 'Application d’authentification',
+    mfaDesc: 'L’inscription autonome à l’application d’authentification est temporairement désactivée pendant sa finalisation.',
+    mfaLink: 'Voir les paramètres de sécurité →',
+    comingSoon: 'Bientôt disponible',
     appsTitle: 'Applications connectées',
     appsSub: 'Identité unique',
   },
   es: {
     eyebrow: 'Gestión de cuenta y seguridad',
     title: 'Panel de seguridad',
-    subtitle: 'Administra tu identidad de inicio de sesión único, sesiones activas, autenticación multifactor y portales CrimFig conectados.',
+    subtitle: 'Administra tu identidad de inicio de sesión único, sesiones activas, contraseña y portales CrimFig conectados.',
     ssoTitle: 'SSO Zero-Trust',
     ssoBadge: 'Activo y protegido',
     ssoDesc: 'Tu sesión se verifica con rotación criptográfica de tokens y comprobaciones de huella del cliente.',
     ssoLink: 'Revisar dispositivos activos →',
     mfaTitle: 'Doble factor (2FA)',
-    mfaSub: 'Autenticador y SMS',
-    mfaDesc: 'Agrega una segunda capa de seguridad para evitar accesos no autorizados.',
-    mfaLink: 'Configurar 2FA y llaves de acceso →',
+    mfaSub: 'Aplicación autenticadora',
+    mfaDesc: 'El registro de autenticación en dos pasos está deshabilitado temporalmente mientras se finaliza su configuración.',
+    mfaLink: 'Revisar ajustes de seguridad →',
+    comingSoon: 'Próximamente',
     appsTitle: 'Aplicaciones conectadas',
     appsSub: 'Identidad única',
   },
@@ -524,41 +528,49 @@ export type SecuritySettingsCopy = {
   mfaTitle: string;
   mfaDesc: string;
   configureMfa: string;
+  comingSoon: string;
+  mfaComingSoonNote: string;
 };
 
 const SECURITY_SETTINGS_COPY: Partial<Record<Locale, SecuritySettingsCopy>> = {
   en: {
     eyebrow: 'Credentials & Access Controls',
     title: 'Security & Two-Factor Authentication',
-    subtitle: 'Protect your CrimFig identity with modern two-factor credentials, biometric passkeys, and robust password policies.',
+    subtitle: 'Manage your CrimFig password policy and upcoming two-factor authentication controls.',
     passwordTitle: 'Account Password',
     passwordDesc: 'Choose a strong, unique password with at least 8 characters, numbers, and symbols.',
     changePassword: 'Change Password',
     mfaTitle: 'Multi-Factor Authentication (MFA)',
-    mfaDesc: 'Require a verification code from Google Authenticator, Authy, or 1Password when signing in from an unrecognized device.',
-    configureMfa: 'Configure Authenticator App',
+    mfaDesc: 'Require a verification code from an authenticator app when signing in from an unrecognized device.',
+    configureMfa: 'Configure Authenticator App — Coming soon',
+    comingSoon: 'Coming soon',
+    mfaComingSoonNote: 'Authenticator app enrollment is currently disabled and coming soon.',
   },
   fr: {
     eyebrow: 'Identifiants et contrôles d’accès',
     title: 'Sécurité et authentification à deux facteurs',
-    subtitle: 'Protégez votre identité CrimFig avec l’authentification à deux facteurs, les clés d’accès et des mots de passe robustes.',
+    subtitle: 'Gérez votre mot de passe CrimFig et les prochains contrôles d’authentification à deux facteurs.',
     passwordTitle: 'Mot de passe du compte',
     passwordDesc: 'Choisissez un mot de passe fort et unique d’au moins 8 caractères, avec chiffres et symboles.',
     changePassword: 'Changer le mot de passe',
     mfaTitle: 'Authentification multifacteur (MFA)',
-    mfaDesc: 'Exigez un code de vérification depuis Google Authenticator, Authy ou 1Password lors de la connexion depuis un nouvel appareil.',
-    configureMfa: 'Configurer l’application d’authentification',
+    mfaDesc: 'Exigez un code de vérification depuis une application d’authentification lors de la connexion depuis un nouvel appareil.',
+    configureMfa: 'Configurer l’application d’authentification — Bientôt disponible',
+    comingSoon: 'Bientôt disponible',
+    mfaComingSoonNote: 'L’inscription à l’application d’authentification est désactivée et sera bientôt disponible.',
   },
   es: {
     eyebrow: 'Credenciales y controles de acceso',
     title: 'Seguridad y autenticación en dos pasos',
-    subtitle: 'Protege tu identidad de CrimFig con credenciales de dos factores, llaves biométricas y contraseñas seguras.',
+    subtitle: 'Administra tu contraseña de CrimFig y los próximos controles de autenticación en dos pasos.',
     passwordTitle: 'Contraseña de la cuenta',
     passwordDesc: 'Elige una contraseña segura y única con al menos 8 caracteres, números y símbolos.',
     changePassword: 'Cambiar contraseña',
     mfaTitle: 'Autenticación multifactor (MFA)',
-    mfaDesc: 'Solicita un código de verificación de Google Authenticator, Authy o 1Password al iniciar sesión desde un dispositivo nuevo.',
-    configureMfa: 'Configurar aplicación autenticadora',
+    mfaDesc: 'Solicita un código de verificación de una aplicación autenticadora al iniciar sesión desde un dispositivo nuevo.',
+    configureMfa: 'Configurar aplicación autenticadora — Próximamente',
+    comingSoon: 'Próximamente',
+    mfaComingSoonNote: 'El registro de la aplicación autenticadora está deshabilitado y llegará próximamente.',
   },
 };
 

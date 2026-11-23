@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Key, Lock, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Key, Lock, Clock } from 'lucide-react';
+import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { getSecuritySettingsCopy } from '../../../lib/auth-copy';
@@ -44,16 +45,24 @@ export default function SecuritySettingsPage() {
 
         {/* 2FA Section */}
         <Card style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Lock size={20} color="var(--color-crimson)" />
-            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.mfaTitle}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Lock size={20} color="var(--text-muted)" />
+              <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.mfaTitle}</h2>
+            </div>
+            <Badge variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <Clock size={12} aria-hidden="true" /> {copy.comingSoon}
+            </Badge>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
             {copy.mfaDesc}
           </p>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+            {copy.mfaComingSoonNote}
+          </p>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <Button asChild size="sm">
-              <Link href="/mfa-challenge">{copy.configureMfa}</Link>
+            <Button type="button" variant="outline" size="sm" disabled aria-disabled="true">
+              {copy.configureMfa}
             </Button>
           </div>
         </Card>
