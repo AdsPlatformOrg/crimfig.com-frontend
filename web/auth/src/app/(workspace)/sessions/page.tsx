@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { Smartphone, Monitor, ShieldAlert, LogOut, CheckCircle2 } from 'lucide-react';
+import { Monitor, ShieldAlert, LogOut, Clock } from 'lucide-react';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -52,19 +51,22 @@ export default function SessionsPage() {
 
         {/* Remote Logout Danger Zone */}
         <Card variant="outline" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <ShieldAlert size={20} color="var(--color-crimson)" />
-            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.remoteTitle}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <ShieldAlert size={20} color="var(--text-muted)" />
+              <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{copy.remoteTitle}</h2>
+            </div>
+            <Badge variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <Clock size={12} aria-hidden="true" /> {copy.comingSoon}
+            </Badge>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
             {copy.remoteDesc}
           </p>
           <div>
-            <Button asChild variant="destructive" size="sm">
-              <Link href="/login">
-                <LogOut size={14} />
-                <span>{copy.signOutAll}</span>
-              </Link>
+            <Button type="button" variant="outline" size="sm" disabled aria-disabled="true">
+              <LogOut size={14} aria-hidden="true" />
+              <span>{copy.signOutAll}</span>
             </Button>
           </div>
         </Card>

@@ -429,44 +429,48 @@ export type SessionsCopy = {
   remoteTitle: string;
   remoteDesc: string;
   signOutAll: string;
+  comingSoon: string;
 };
 
 const SESSIONS_COPY: Partial<Record<Locale, SessionsCopy>> = {
   en: {
     eyebrow: 'Device Security',
-    title: 'Active Browser & Device Sessions',
-    subtitle: 'Review hardware devices, browsers, and IP locations that currently have access to your CrimFig account.',
+    title: 'Active Session Security',
+    subtitle: 'Review the active browser protection currently securing your CrimFig account.',
     currentBrowser: 'Current Web Browser',
     thisDevice: 'This Device',
     activeNow: 'Authenticated • Active Now',
     sessionDesc: 'Protected by rotating cryptographically signed JWT access tokens and secure HTTP-only refresh cookies.',
     remoteTitle: 'Remote Session Invalidation',
-    remoteDesc: 'Lost a laptop or phone? Sign out of all other active sessions across all devices to protect your campaigns and billing balance.',
-    signOutAll: 'Sign Out All Other Sessions',
+    remoteDesc: 'Device-by-device session listing and remote sign-out across other browsers are currently disabled and coming soon.',
+    signOutAll: 'Sign Out All Other Sessions — Coming soon',
+    comingSoon: 'Coming soon',
   },
   fr: {
     eyebrow: 'Sécurité des appareils',
-    title: 'Sessions navigateur et appareils actifs',
-    subtitle: 'Consultez les appareils, navigateurs et localisations IP ayant actuellement accès à votre compte CrimFig.',
+    title: 'Sécurité de session active',
+    subtitle: 'Consultez la protection navigateur qui sécurise actuellement votre compte CrimFig.',
     currentBrowser: 'Navigateur web actuel',
     thisDevice: 'Cet appareil',
     activeNow: 'Authentifié • Actif maintenant',
     sessionDesc: 'Protégé par des jetons d’accès JWT signés à rotation et des cookies de rafraîchissement HTTP-only sécurisés.',
     remoteTitle: 'Invalidation de session à distance',
-    remoteDesc: 'Appareil perdu ? Déconnectez toutes les autres sessions actives pour protéger vos campagnes et votre solde.',
-    signOutAll: 'Déconnecter toutes les autres sessions',
+    remoteDesc: 'La liste par appareil et la déconnexion à distance des autres navigateurs sont désactivées et bientôt disponibles.',
+    signOutAll: 'Déconnecter toutes les autres sessions — Bientôt disponible',
+    comingSoon: 'Bientôt disponible',
   },
   es: {
     eyebrow: 'Seguridad del dispositivo',
-    title: 'Sesiones activas de navegador y dispositivos',
-    subtitle: 'Revisa los dispositivos, navegadores y ubicaciones IP que actualmente tienen acceso a tu cuenta de CrimFig.',
+    title: 'Seguridad de sesión activa',
+    subtitle: 'Revisa la protección de navegador que resguarda actualmente tu cuenta de CrimFig.',
     currentBrowser: 'Navegador web actual',
     thisDevice: 'Este dispositivo',
     activeNow: 'Autenticado • Activo ahora',
     sessionDesc: 'Protegido por tokens de acceso JWT firmados con rotación y cookies de actualización HTTP-only seguras.',
     remoteTitle: 'Invalidación remota de sesiones',
-    remoteDesc: '¿Perdiste un portátil o teléfono? Cierra sesión en todos los demás dispositivos para proteger tus campañas y saldo.',
-    signOutAll: 'Cerrar sesión en los demás dispositivos',
+    remoteDesc: 'El listado por dispositivo y el cierre remoto en otros navegadores están deshabilitados y llegarán próximamente.',
+    signOutAll: 'Cerrar sesión en los demás dispositivos — Próximamente',
+    comingSoon: 'Próximamente',
   },
 };
 
@@ -482,35 +486,43 @@ export type OrganizationCopy = {
   activeSeat: string;
   inviteTeammate: string;
   workspaceDesc: string;
+  comingSoon: string;
+  orgComingSoonNote: string;
 };
 
 const ORGANIZATION_COPY: Partial<Record<Locale, OrganizationCopy>> = {
   en: {
     eyebrow: 'Team & Governance',
     title: 'Organization & Team Members',
-    subtitle: 'Invite team members, assign fine-grained RBAC roles, and manage shared advertiser workspaces.',
-    workspaceTitle: 'Primary Workspace',
-    activeSeat: '1 Active Seat',
-    inviteTeammate: 'Invite Teammate',
-    workspaceDesc: 'Collaborate on advertiser campaigns, creative reviews, and publisher properties with role-based permissions.',
+    subtitle: 'Shared team workspaces and member invitations for CrimFig accounts.',
+    workspaceTitle: 'Personal Workspace',
+    activeSeat: 'Team invitations coming soon',
+    inviteTeammate: 'Invite Teammate — Coming soon',
+    workspaceDesc: 'Role-based teammate management across advertiser campaigns, reviews, and publisher properties is being finalized.',
+    comingSoon: 'Coming soon',
+    orgComingSoonNote: 'Team workspace creation and member invitations are currently disabled and coming soon.',
   },
   fr: {
     eyebrow: 'Équipe et gouvernance',
     title: 'Organisation et membres de l’équipe',
-    subtitle: 'Invitez des membres, attribuez des rôles RBAC précis et gérez les espaces annonceurs partagés.',
-    workspaceTitle: 'Espace principal',
-    activeSeat: '1 siège actif',
-    inviteTeammate: 'Inviter un membre',
-    workspaceDesc: 'Collaborez sur les campagnes, la modération des créations et les sites éditeurs avec des permissions par rôle.',
+    subtitle: 'Espaces d’équipe partagés et invitations pour vos comptes CrimFig.',
+    workspaceTitle: 'Espace personnel',
+    activeSeat: 'Invitations d’équipe bientôt disponibles',
+    inviteTeammate: 'Inviter un membre — Bientôt disponible',
+    workspaceDesc: 'La gestion des collaborateurs par rôle sur les campagnes et sites éditeurs est en cours de finalisation.',
+    comingSoon: 'Bientôt disponible',
+    orgComingSoonNote: 'La création d’espace d’équipe et les invitations sont désactivées et bientôt disponibles.',
   },
   es: {
     eyebrow: 'Equipo y gobernanza',
     title: 'Organización y miembros del equipo',
-    subtitle: 'Invita a miembros del equipo, asigna roles RBAC detallados y administra espacios compartidos de anunciantes.',
-    workspaceTitle: 'Espacio principal',
-    activeSeat: '1 asiento activo',
-    inviteTeammate: 'Invitar compañero',
-    workspaceDesc: 'Colabora en campañas de anunciantes, revisiones creativas y propiedades de editores con permisos por rol.',
+    subtitle: 'Espacios compartidos e invitaciones de equipo para tus cuentas de CrimFig.',
+    workspaceTitle: 'Espacio personal',
+    activeSeat: 'Invitaciones de equipo próximamente',
+    inviteTeammate: 'Invitar compañero — Próximamente',
+    workspaceDesc: 'La administración de colaboradores por rol para campañas y propiedades está en preparación.',
+    comingSoon: 'Próximamente',
+    orgComingSoonNote: 'La creación de espacios de equipo y el envío de invitaciones están deshabilitados y llegarán próximamente.',
   },
 };
 

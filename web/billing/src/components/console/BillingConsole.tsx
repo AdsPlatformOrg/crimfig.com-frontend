@@ -586,7 +586,7 @@ export function BillingConsole({ onReturnToLanding, initialTab = 'overview' }: B
       <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 65px)', position: 'relative' }}>
         <DashboardSidebar
           app="billing"
-          groups={[{title:navCopy.workspaces,items:[{id:'workspace_wallet',label:navCopy.wallet,icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:navCopy.payouts,icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:navCopy.rewards,icon:Gift,href:'/rewards'}]}, ...currentBillingNavGroups, ...(showAdsReturn ? [{
+          groups={[{title:'',items:[{id:'back_to_ads_dashboard',label:'Back to Ads Dashboard',icon:ArrowLeft,href:`${adsBase}/dashboard`}]},{title:navCopy.workspaces,items:[{id:'workspace_wallet',label:navCopy.wallet,icon:Wallet,href:'/dashboard'},{id:'workspace_payouts',label:navCopy.payouts,icon:Building2,href:'/payouts'},{id:'workspace_rewards',label:navCopy.rewards,icon:Gift,href:'/rewards'}]}, ...currentBillingNavGroups, ...(showAdsReturn ? [{
             title: '',
             items: [{ id: 'back_to_ads_billing', label: 'Back to Ads Billing & Wallet', icon: ArrowLeft, href: adsBillingUrl }],
           }] : [])]}

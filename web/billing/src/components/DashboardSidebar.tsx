@@ -209,7 +209,7 @@ export function DashboardSidebar({
                         }
                       }}
                     >
-                      {item.href ? <Link href={item.href}>                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      {item.href ? (/^https?:\/\//.test(item.href) ? <a href={item.href}>                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                         <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
                         {!isCollapsed && (
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -233,7 +233,31 @@ export function DashboardSidebar({
                           {item.badge}
                         </span>
                       )}
-</Link> : <>                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+</a> : <Link href={item.href}>                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                        {!isCollapsed && (
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {item.label}
+                          </span>
+                        )}
+                      </div>
+
+                      {!isCollapsed && item.badge !== undefined && (
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: '999px',
+                            backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : 'var(--badge-bg)',
+                            color: isActive ? '#FFFFFF' : 'var(--color-crimson)',
+                            border: isActive ? 'none' : '1px solid var(--border-subtle)',
+                          }}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+</Link>) : <>                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                         <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
                         {!isCollapsed && (
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

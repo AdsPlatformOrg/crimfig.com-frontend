@@ -13,27 +13,27 @@ export function LandingFeatures() {
     },
     {
       icon: <Smartphone style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Two-Step Verification (2FA)',
+      title: 'Two-Step Verification (Coming soon)',
       description:
-        'Safeguard your wallet and business assets with Google Authenticator, Apple Passwords, Authy, or Microsoft Authenticator.',
+        'Authenticator app setup is coming soon to add a second verification step for your wallet and business assets.',
     },
     {
       icon: <Users style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Team & Agency Workspaces',
+      title: 'Team Workspaces (Coming soon)',
       description:
-        'Collaborate across marketing agencies and businesses. Delegate campaign publishing, wallet funding, and analytics without sharing personal passwords.',
+        'Shared workspaces and role-scoped member invitations for teams and agencies are coming soon.',
     },
     {
       icon: <Cpu style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Instant Cross-Device Sync',
+      title: 'Unified Account Sync',
       description:
-        'Switch effortlessly between your phone, tablet, and office computer. Your profile, balances, and permissions remain synchronized in real time.',
+        'Use the same CrimFig profile, avatar, and language settings across Auth, Ads, and Billing.',
     },
     {
       icon: <RefreshCw style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,
-      title: 'Active Device & Login History',
+      title: 'Protected Active Sessions',
       description:
-        'View all authorized devices and locations connected to your profile. Terminate unrecognized logins with a single click from any smartphone or browser.',
+        'Active sessions are protected by rotating refresh tokens; per-device session management is coming soon.',
     },
     {
       icon: <Database style={{ width: 22, height: 22, color: 'var(--color-crimson)' }} />,

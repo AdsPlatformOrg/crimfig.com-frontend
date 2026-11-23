@@ -19,7 +19,7 @@ const seoLogo = '/img/logo-seo.webp';
 export const metadata: Metadata = {
   metadataBase: new URL('https://auth.crimfig.com'),
   title: 'CrimFig — Central Identity & SSO',
-  description: 'Single Sign-On, passkeys, and account management for all CrimFig Ecosystem Applications.',
+  description: 'Central Single Sign-On and account management for all CrimFig Ecosystem Applications.',
   applicationName: 'CrimFig Auth',
   icons: {
     icon: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'CrimFig — Central Identity & SSO',
-    description: 'Single Sign-On, passkeys, and account management for all CrimFig Ecosystem Applications.',
+    description: 'Central Single Sign-On and account management for all CrimFig Ecosystem Applications.',
     url: 'https://auth.crimfig.com',
     siteName: 'CrimFig Ecosystem',
     images: [
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'CrimFig — Central Identity & SSO',
-    description: 'Single Sign-On, passkeys, and account management for all CrimFig Ecosystem Applications.',
+    description: 'Central Single Sign-On and account management for all CrimFig Ecosystem Applications.',
     site: '@CrimFig',
     creator: '@CrimFig',
     images: [seoLogo],

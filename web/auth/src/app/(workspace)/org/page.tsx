@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { Users, UserPlus, ShieldCheck, Mail } from 'lucide-react';
+import { Users, UserPlus, Clock } from 'lucide-react';
+import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { getOrganizationCopy } from '../../../lib/auth-copy';
@@ -38,16 +38,22 @@ export default function OrganizationPage() {
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{copy.activeSeat}</span>
               </div>
             </div>
-            <Button asChild size="sm">
-              <Link href="/org/accept-invite">
-                <UserPlus size={14} />
-                <span>{copy.inviteTeammate}</span>
-              </Link>
-            </Button>
+            <Badge variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <Clock size={12} aria-hidden="true" /> {copy.comingSoon}
+            </Badge>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
             {copy.workspaceDesc}
           </p>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+            {copy.orgComingSoonNote}
+          </p>
+          <div>
+            <Button type="button" variant="outline" size="sm" disabled aria-disabled="true">
+              <UserPlus size={14} aria-hidden="true" />
+              <span>{copy.inviteTeammate}</span>
+            </Button>
+          </div>
         </Card>
       </div>
     </>

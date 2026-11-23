@@ -72,11 +72,20 @@ function AcceptInviteContent() {
             <Link href="/dashboard">Go to Dashboard</Link>
           </Button>
         </div>
+      ) : !token ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Alert style={{ textAlign: 'left', lineHeight: '1.5' }}>
+            <span>Team invitations are not enabled yet and are coming soon. An invitation link token is required to accept an invite.</span>
+          </Alert>
+          <Button asChild variant="outline" className="cf-auth-full-button">
+            <Link href="/org">Back to Organization &amp; Team</Link>
+          </Button>
+        </div>
       ) : (
         <div>
           <Button
             onClick={handleAccept}
-            disabled={loading || !token}
+            disabled={loading}
             style={{ width: '100%', marginBottom: '16px' }}
           >
             {loading ? 'Joining...' : 'Accept Invitation & Join'}

@@ -17,16 +17,16 @@ export function LandingFAQ() {
       a: 'Never. In accordance with our core commitment to human dignity (LOVE.md), your data is treated as a sacred trust. We never sell your personal information, share tracking profiles with third-party ad brokers, or compromise your privacy for ad targeting.',
     },
     {
-      q: 'How does Two-Step Verification (2FA) and Passkey protection work?',
-      a: 'We combine cryptographic Passkeys (biometrics) with time-based 2FA (Google Authenticator, Apple Passwords, Microsoft Authenticator, 1Password) and 10 emergency recovery codes to ensure your account remains impenetrable yet easily recoverable by you.',
+      q: 'When will Two-Step Verification (2FA) and Passkey protection be available?',
+      a: 'Self-service Two-Step Verification (MFA) and Passkey support are coming soon. Today, CrimFig accounts are protected by verified email checks, rotating HTTP-only refresh tokens, device fingerprint verification, and password reset controls.',
     },
     {
-      q: 'How are organization accounts different from personal accounts?',
-      a: 'Personal accounts belong to you alone. Organization spaces allow teams, marketing studios, and developers to collaborate on campaigns and shared budgets securely, with role-scoped permissions and zero credential sharing.',
+      q: 'How will team workspaces work on CrimFig?',
+      a: 'Role-based team workspaces and member invitations are coming soon, allowing organizations to collaborate cleanly without sharing personal login credentials.',
     },
     {
-      q: 'What happens if I lose my device or access credentials?',
-      a: 'You are supported by humane recovery workflows. In addition to emergency backup codes, our verified identity support team assists real account holders with empathy, ensuring you are never permanently locked out of your earned funds or campaigns.',
+      q: 'What happens if I lose my device or forget my password?',
+      a: 'You can reset your password anytime from the login screen via your verified email address, or contact CrimFig Support if you need help recovering access to your account.',
     },
   ];
 

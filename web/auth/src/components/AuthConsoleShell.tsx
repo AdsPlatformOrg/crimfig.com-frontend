@@ -6,11 +6,12 @@ import { useRouter, usePathname } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound } from 'lucide-react';
+import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { AccountMenu } from '../../../../shared/ui/account-menu';
 import { LanguagePicker } from '../../../../shared/ui/localization/LanguagePicker';
 import { publishedLocales } from '../../../../shared/ui/localization/locale';
+import { ecosystemOrigin } from '../../../../shared/ui/origins';
 import { consentSession } from '../lib/consent';
 
 interface AuthConsoleShellProps {
@@ -36,7 +37,15 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
     return () => document.removeEventListener('keydown', handleEscape);
   }, [mobileMenuOpen]);
 
+  const adsBase = ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL || process.env.NEXT_PUBLIC_ADS_URL);
+
   const authNavGroups: NavGroup[] = [
+    {
+      title: '',
+      items: [
+        { id: 'back_to_ads_dashboard', label: 'Back to Ads Dashboard', href: `${adsBase}/dashboard`, icon: ArrowLeft },
+      ],
+    },
     {
       title: 'Identity & Security',
       items: [
