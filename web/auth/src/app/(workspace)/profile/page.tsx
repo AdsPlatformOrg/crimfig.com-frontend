@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Check, ExternalLink, Loader2, Sparkles, X } from 'lucide-react';
+import { Check, ExternalLink, Loader2, X } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
@@ -146,14 +146,16 @@ export default function AuthProfilePage() {
               <div>
                 <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>Choose your avatar</h2>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Choose an avatar from Ninjas, Portraits, or Geometric Characters, then save.
+                  Choose an avatar from Geometric Characters, Portraits, or Ninjas, then save.
                 </p>
               </div>
 
-              <div role="radiogroup" aria-label="Avatar presets">
-              {(['ninja', 'portrait', 'geometric'] as const).map(collection => (
+              <div role="radiogroup" aria-label="Avatar presets" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {(['geometric', 'portrait', 'ninja'] as const).map(collection => (
                 <section key={collection}>
-                  <h3>{collection === 'ninja' ? 'Ninjas' : collection === 'portrait' ? 'Portraits' : 'Geometric Characters'}</h3>
+                  <h3 style={{ margin: '0 0 10px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {collection === 'geometric' ? 'Geometric Characters' : collection === 'portrait' ? 'Portraits' : 'Ninjas'}
+                  </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
                 {catalog.presets.filter(preset => (preset.collection ?? 'ninja') === collection).map((preset) => {
                   const active = selectedId === preset.id;
@@ -190,31 +192,48 @@ export default function AuthProfilePage() {
               ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <Button type="button" variant="outline" size="sm" onClick={() => { setSelectedId(catalog.defaultId); setSaved(''); }}>
-                  <Sparkles size={14} aria-hidden="true" /> {copy.useDefaultAvatar}
-                </Button>
-              </div>
-
               {error && <p role="alert" style={{ margin: 0, fontSize: '13px', color: 'var(--color-error, #B42318)' }}>{error}</p>}
               {saved && <p role="status" style={{ margin: 0, fontSize: '13px', color: 'var(--color-success)' }}>{saved}</p>}
             </Card>
 
-            <Card style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{copy.artworkAttribution}</h2>
-              <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>{catalog.attribution.summary}</p>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <Button ref={attributionTrigger} type="button" variant="outline" size="sm" onClick={() => setAttributionOpen(true)}>
-                  {copy.viewFullAttribution}
-                </Button>
-                <a href={catalog.attribution.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-                  {copy.originalAssetPack} <ExternalLink size={12} aria-hidden="true" style={{ display: 'inline' }} />
-                </a>
-                <a href={catalog.attribution.licenseUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: 'var(--color-crimson)', fontWeight: 600 }}>
-                  {copy.cc0License} <ExternalLink size={12} aria-hidden="true" style={{ display: 'inline' }} />
-                </a>
-              </div>
-            </Card>
+            <footer
+              aria-label={copy.artworkAttribution}
+              style={{
+                padding: '0 4px',
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '4px 10px',
+                fontSize: '11px',
+                lineHeight: 1.5,
+                color: 'var(--text-muted)',
+              }}
+            >
+              <span>{copy.artworkAttribution}: {catalog.attribution.summary}</span>
+              <button
+                ref={attributionTrigger}
+                type="button"
+                onClick={() => setAttributionOpen(true)}
+                style={{
+                  border: 'none',
+                  background: 'none',
+                  padding: 0,
+                  margin: 0,
+                  font: 'inherit',
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+              >
+                {copy.viewFullAttribution}
+              </button>
+              <a href={catalog.attribution.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>
+                {copy.originalAssetPack} <ExternalLink size={10} aria-hidden="true" style={{ display: 'inline', verticalAlign: 'middle' }} />
+              </a>
+              <a href={catalog.attribution.licenseUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>
+                {copy.cc0License} <ExternalLink size={10} aria-hidden="true" style={{ display: 'inline', verticalAlign: 'middle' }} />
+              </a>
+            </footer>
           </>
         ) : null}
       </div>

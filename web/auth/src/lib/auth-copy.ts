@@ -567,7 +567,6 @@ export function getSecuritySettingsCopy(locale: Locale): SecuritySettingsCopy {
 }
 
 export type ProfileCopy = {
-  useDefaultAvatar: string;
   artworkAttribution: string;
   viewFullAttribution: string;
   originalAssetPack: string;
@@ -582,10 +581,9 @@ export type ProfileCopy = {
 
 const PROFILE_COPY: Partial<Record<Locale, ProfileCopy>> = {
   en: {
-    useDefaultAvatar: 'Use default avatar',
-    artworkAttribution: 'Artwork attribution',
-    viewFullAttribution: 'View full attribution',
-    originalAssetPack: 'Original asset pack',
+    artworkAttribution: 'Attribution',
+    viewFullAttribution: 'Details',
+    originalAssetPack: 'OpenGameArt source',
     cc0License: 'CC0 1.0 license',
     avatarAttributionTitle: 'Avatar artwork attribution',
     closeAttribution: 'Close attribution',
@@ -595,10 +593,9 @@ const PROFILE_COPY: Partial<Record<Locale, ProfileCopy>> = {
     modifications: 'Modifications',
   },
   fr: {
-    useDefaultAvatar: 'Utiliser l’avatar par défaut',
-    artworkAttribution: 'Attribution des illustrations',
-    viewFullAttribution: 'Voir l’attribution complète',
-    originalAssetPack: 'Pack d’assets d’origine',
+    artworkAttribution: 'Attribution',
+    viewFullAttribution: 'Détails',
+    originalAssetPack: 'Source OpenGameArt',
     cc0License: 'Licence CC0 1.0',
     avatarAttributionTitle: 'Attribution de l’illustration d’avatar',
     closeAttribution: 'Fermer l’attribution',
@@ -608,10 +605,9 @@ const PROFILE_COPY: Partial<Record<Locale, ProfileCopy>> = {
     modifications: 'Modifications',
   },
   es: {
-    useDefaultAvatar: 'Usar avatar predeterminado',
-    artworkAttribution: 'Atribución de la ilustración',
-    viewFullAttribution: 'Ver atribución completa',
-    originalAssetPack: 'Paquete de recursos original',
+    artworkAttribution: 'Atribución',
+    viewFullAttribution: 'Detalles',
+    originalAssetPack: 'Fuente OpenGameArt',
     cc0License: 'Licencia CC0 1.0',
     avatarAttributionTitle: 'Atribución de la ilustración del avatar',
     closeAttribution: 'Cerrar atribución',
