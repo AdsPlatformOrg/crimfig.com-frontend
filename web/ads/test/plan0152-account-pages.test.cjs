@@ -41,12 +41,13 @@ function loadTsx(relPath, deps = {}) {
     localStorage: global.localStorage,
     window: global.window,
     URLSearchParams: global.URLSearchParams,
+    process: { env: { NODE_ENV: 'production' } },
     require: (n) => deps[n] ?? baseDeps[n] ?? require(n),
   });
   return exports;
 }
 
-test('PLAN-0152: advertiser nav omits /disputes, /disputes redirects to /support, Conversions & Notifications show Coming soon, Account Settings uses exact heading', async () => {
+test('PLAN-0152 customer navigation, paused pages, account settings and read-only profile', async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://ads.example.test/disputes?workspace=advertiser' });
   const prior = {
     window: global.window,
@@ -67,8 +68,10 @@ test('PLAN-0152: advertiser nav omits /disputes, /disputes redirects to /support
     const { workspaceNavigation } = loadTsx('src/lib/workspace-navigation.ts', {
       '../components/DashboardSidebar': {},
     });
-    const advItems = workspaceNavigation('advertiser').flatMap((g) => g.items);
-    assert.equal(advItems.some((i) => i.href === '/disputes' || i.id === 'disputes'), false);
+    for (const role of ['advertiser', 'promoter']) {
+      const items = workspaceNavigation(role).flatMap((group) => group.items);
+      assert.equal(items.some((item) => item.href === '/disputes' || item.id === 'disputes'), false);
+    }
 
     // 2. /disputes redirects to /support
     const replaced = [];
@@ -104,6 +107,23 @@ test('PLAN-0152: advertiser nav omits /disputes, /disputes redirects to /support
     const signOutBtn = Array.from(document.querySelectorAll('button')).find((b) => /Sign out/.test(b.textContent));
     await React.act(async () => signOutBtn.click());
     assert.equal(loggedOut, 1);
+
+    const requests = [];
+    const avatar = 'https://auth.example.test/avatars/profile.webp';
+    const { UserProfileView } = loadTsx('src/components/console/profile/UserProfileView.tsx', {
+      '../../../../../../shared/ui/origins': { ecosystemOrigin: () => 'https://auth.example.test' },
+      '../../../lib/session': { dashboardSession: () => ({ getProfile: async () => ({ userId: 'owner-1', avatar: { url: avatar } }) }) },
+      '../../../lib/api-data': { apiData: async (url) => {
+        requests.push(url);
+        return url.includes('staff-status') ? { isStaff: false, roles: [] } : null;
+      } },
+    });
+    await React.act(async () => root.render(React.createElement(UserProfileView)));
+    assert.deepEqual(requests, ['/api/v1/promoters/profile/existing', '/api/v1/ecosystem/staff-status']);
+    assert.equal(document.querySelector('img').src, avatar);
+    assert.match(document.body.textContent, /Verified Session/);
+    assert.match(document.body.textContent, /Promoter profile: not registered/);
+    assert.equal(document.querySelector('a[href="/promoter/websites"]'), null);
   } finally {
     await React.act(async () => root.unmount());
     dom.window.close();

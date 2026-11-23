@@ -20,6 +20,8 @@ interface PromoterProfile {
 
 export function UserProfileView() {
   const [profile, setProfile] = useState<PromoterProfile | null>(null);
+  const [profileUnavailable, setProfileUnavailable] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [staffRoles, setStaffRoles] = useState<string[] | null>(null);
   const [userId, setUserId] = useState<string>('');
   const [workspaceRole, setWorkspaceRole] = useState<'advertiser' | 'promoter' | 'admin'>('advertiser');
@@ -37,12 +39,14 @@ export function UserProfileView() {
         setIsLoading(true);
         const [identity, promoterData, staff] = await Promise.all([
           dashboardSession().getProfile(),
-          apiData<PromoterProfile>('/api/v1/promoters/profile').catch(() => null),
+          apiData<PromoterProfile | null>('/api/v1/promoters/profile/existing').catch(() => undefined),
           apiData<{ isStaff: boolean; roles: string[] }>('/api/v1/ecosystem/staff-status').catch(() => null),
         ]);
         if (active) {
           setUserId(identity.userId);
-          setProfile(promoterData);
+          setAvatarUrl(identity.avatar?.url ?? null);
+          setProfile(promoterData ?? null);
+          setProfileUnavailable(promoterData === undefined);
           setStaffRoles(staff ? (staff.isStaff && Array.isArray(staff.roles) ? staff.roles : []) : null);
         }
       } catch (err) {
@@ -84,8 +88,9 @@ export function UserProfileView() {
                 width: '52px',
                 height: '52px',
                 borderRadius: '50%',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-secondary)',
+                overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -94,20 +99,24 @@ export function UserProfileView() {
                 flexShrink: 0,
               }}
             >
-              {profile?.displayName ? profile.displayName.charAt(0).toUpperCase() : 'CF'}
+              {avatarUrl ? (
+                // The account service supplies the same avatar URL used in the account menu.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt="" width={52} height={52} style={{ objectFit: 'cover' }} onError={() => setAvatarUrl(null)} />
+              ) : profile?.displayName ? profile.displayName.charAt(0).toUpperCase() : 'CF'}
             </div>
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
                   {profile?.displayName || 'CrimFig Account'}
                 </span>
-                <Badge variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                {userId && <Badge variant="outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <CheckCircle2 size={12} /> Verified Session
-                </Badge>
+                </Badge>}
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              {userId && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                 <Shield size={12} color="var(--color-crimson)" /> Single Sign-On Active
-              </div>
+              </div>}
             </div>
           </div>
 
@@ -125,7 +134,7 @@ export function UserProfileView() {
             <p role="status" style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>Loading access details…</p>
           ) : (
             <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              <li>Promoter profile: {profile ? 'registered' : 'not registered'}</li>
+              <li>Promoter profile: {profileUnavailable || error ? 'unavailable' : profile ? 'registered' : 'not registered'}</li>
               <li>Ads staff access: {staffRoles === null ? 'unavailable' : staffRoles.length ? staffRoles.join(', ') : 'not assigned'}</li>
               {userId && (
                 <li style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
@@ -142,7 +151,7 @@ export function UserProfileView() {
         <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
           {showPromoterProperties ? 'Registered properties' : 'Advertiser workspace'}
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '14px' }}>
           {showPromoterProperties ? (
             <>
               <Link href="/promoter/websites" className="theme-card" style={{ padding: '18px', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
