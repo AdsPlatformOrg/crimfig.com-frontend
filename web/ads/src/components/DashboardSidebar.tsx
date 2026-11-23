@@ -57,6 +57,9 @@ export function DashboardSidebar({
       onClick: () => { item.action?.(); onNavigate?.(); },
     };
     if (item.href) {
+      if (/^https?:\/\//.test(item.href)) {
+        return <Button key={item.id} asChild variant="ghost" {...props}><a href={item.href}>{content}</a></Button>;
+      }
       return <Button key={item.id} asChild variant="ghost" {...props}><Link href={item.href}>{content}</Link></Button>;
     }
     return <Button key={item.id} type="button" variant="ghost" {...props}>{content}</Button>;

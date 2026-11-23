@@ -357,6 +357,13 @@ export function workspaceNavigation(
       title: "System & Health",
       items: [
         {
+          roles: ["super_admin", "ads_support"],
+          id: "admin_support",
+          label: "Support Center",
+          icon: Headphones,
+          href: "/admin/support",
+        },
+        {
           roles: ["super_admin", "ads_admin"],
           id: "admin_tests",
           label: "API Test Suite",

@@ -11,6 +11,27 @@ test('support validates before writes, retains draft on failure and reuses retry
  fail=false;await React.act(()=>form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true})));assert.equal(writes[0].requestId,writes[1].requestId);assert.match(el.textContent,/#0000001 received/);
 }));
 test('support admin separates public reply and private note controls',async()=>fixture(async(root,el)=>{await React.act(()=>root.render(React.createElement(component(),{admin:true,request:async()=>response([])})));assert.match(el.textContent,/Internal notes stay private/);assert.ok([...el.querySelectorAll('label')].some(x=>x.textContent.startsWith('Category')));assert.doesNotMatch(el.textContent,/New request/);}));
+test('support displays active support@crimfig.com email and honors defaultCategory without fake data',async()=>fixture(async(root,el,win)=>{
+ const writes=[];const request=async(url,init)=>{if(init?.method==='POST'){writes.push(JSON.parse(init.body));return response({id:'ticket-b',ticket_number:'#0000002'});}return url.includes('/ticket-b')?response({id:'ticket-b',ticket_number:'#0000002',subject:'Payout help',category:'billing',status:'open',updated_at:new Date().toISOString(),messages:[]}):response([]);};
+ await React.act(()=>root.render(React.createElement(component(),{request,defaultCategory:'billing'})));
+ const mailLink=el.querySelector('a[href="mailto:support@crimfig.com"]');assert.ok(mailLink);assert.equal(mailLink.textContent,'support@crimfig.com');
+ const select=el.querySelector('select');assert.equal(select.value,'billing');
+ await input(win,el.querySelector('#support-subject'),'Payout help');await input(win,el.querySelector('#support-body'),'Please verify my payout reference.');
+ await React.act(()=>el.querySelector('form').dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true})));
+ assert.equal(writes.length,1);assert.equal(writes[0].category,'billing');
+}));
+test('billing, auth, and ads support wiring removes mock tickets and exposes support@crimfig.com',()=>{
+ const billingHub=fs.readFileSync(path.resolve(__dirname,'../../billing/src/components/console/BillingSupportHub.tsx'),'utf8');
+ assert.doesNotMatch(billingHub,/BIL-202610-001/);assert.match(billingHub,/SupportCenter/);assert.match(billingHub,/defaultCategory="billing"/);
+ const billingNext=fs.readFileSync(path.resolve(__dirname,'../../billing/next.config.ts'),'utf8');
+ assert.match(billingNext,/\/api\/v1\/auth\/:path\*/);
+ const authShell=fs.readFileSync(path.resolve(__dirname,'../../auth/src/components/AuthConsoleShell.tsx'),'utf8');
+ assert.match(authShell,/href:\s*'\/support'/);
+ for (const rel of ['../src/components/landing/LandingFooter.tsx','../../auth/src/components/landing/LandingFooter.tsx','../../billing/src/components/landing/LandingFooter.tsx']){
+  const footer=fs.readFileSync(path.resolve(__dirname,rel),'utf8');
+  assert.match(footer,/mailto:support@crimfig\.com/,rel);
+ }
+});
 test('affiliate links fetch only placements and preserve readable links and copy controls',async()=>fixture(async(root,el)=>{
  const urls=[];const Button=({children,size,variant,...p})=>React.createElement('button',p,children);const Input=p=>React.createElement('input',p);const deps={'../../../lib/api-data':{apiData:async url=>{urls.push(url);return [{id:'p1',shareLink:'https://ads.example.test/share/approved',campaign:{title:'Approved campaign'}}];}},'../../EmptyState':{EmptyState:({title})=>React.createElement('p',{},title)},'../../LoadingStates':{CardSkeleton:()=>React.createElement('p',{},'Loading')},'../../ui/button':{Button},'../../ui/input':{Input},'../../ui/badge':{Badge:({children})=>React.createElement('span',{},children)}};
  const C=load(path.resolve(__dirname,'../src/components/console/promoter/PromoterIndividualsView.tsx'),deps).PromoterIndividualsView;await React.act(()=>root.render(React.createElement(C)));assert.deepEqual(urls,['/api/v1/placements']);assert.equal(el.querySelector('input').value,'https://ads.example.test/share/approved');assert.ok(el.textContent.indexOf('Affiliate & Creator Link Rules')>el.textContent.indexOf('Approved campaign'));assert.doesNotMatch(el.textContent,/Reels/);

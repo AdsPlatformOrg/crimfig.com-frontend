@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { CrimFigLogo } from './CrimFigLogo';
 import { DashboardSidebar, NavGroup } from './DashboardSidebar';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound, ArrowLeft } from 'lucide-react';
+import { Menu, X, ShieldAlert, Key, Smartphone, Users, Lock, LogOut, UserRound, ArrowLeft, HelpCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { AccountMenu } from '../../../../shared/ui/account-menu';
 import { LanguagePicker } from '../../../../shared/ui/localization/LanguagePicker';
@@ -60,6 +60,7 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
       title: 'Workspace',
       items: [
         { id: 'org', label: 'Organization & Team', href: '/org', icon: Users },
+        { id: 'support', label: 'Help & Support', href: '/support', icon: HelpCircle },
       ],
     },
     ...(isStaff
@@ -85,15 +86,15 @@ export function AuthConsoleShell({ children, activePath = '/dashboard', isStaff 
         fontFamily: "'Poppins', Arial, Helvetica, sans-serif",
       }}
     >
-      <header style={{borderBottom:'1px solid var(--border-subtle)',background:'var(--bg-page)',position:'sticky',top:0,zIndex:40}}>
+      <header style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-page)', position: 'sticky', top: 0, zIndex: 40 }}>
         <div className="cf-console-row">
           <div className="cf-console-brand">
-            <Button id="auth-mobile-menu-toggle" variant="outline" size="icon" className="auth-mobile-menu-toggle" aria-label={mobileMenuOpen?'Close navigation menu':'Open navigation menu'} aria-expanded={mobileMenuOpen} aria-controls="auth-console-sidebar" onClick={()=>setMobileMenuOpen(value=>!value)}>{mobileMenuOpen?<X size={20} />:<Menu size={20} />}</Button>
+            <Button id="auth-mobile-menu-toggle" variant="outline" size="icon" className="auth-mobile-menu-toggle" aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={mobileMenuOpen} aria-controls="auth-console-sidebar" onClick={() => setMobileMenuOpen(value => !value)}>{mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}</Button>
             <CrimFigLogo variant="brand" app="Auth" href="/" />
           </div>
           <div className="cf-console-actions">
             {publishedLocales.length > 1 && <LanguagePicker publishedOnly />}
-            <AccountMenu session={consentSession()} links={[{label:'Profile & Avatar',href:'/profile'},{label:'Account Security',href:'/security'},{label:'Switch Account',href:'/login'}]} />
+            <AccountMenu session={consentSession()} links={[{ label: 'Profile & Avatar', href: '/profile' }, { label: 'Account Security', href: '/security' }, { label: 'Switch Account', href: '/login' }]} />
           </div>
         </div>
       </header>

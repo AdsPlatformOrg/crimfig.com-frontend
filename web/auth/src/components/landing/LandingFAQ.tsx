@@ -26,7 +26,7 @@ export function LandingFAQ() {
     },
     {
       q: 'What happens if I lose my device or forget my password?',
-      a: 'You can reset your password anytime from the login screen via your verified email address, or contact CrimFig Support if you need help recovering access to your account.',
+      a: 'You can reset your password anytime from the login screen via your verified email address, or contact CrimFig Support at support@crimfig.com if you need help recovering access to your account.',
     },
   ];
 

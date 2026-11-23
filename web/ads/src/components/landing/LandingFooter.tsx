@@ -148,6 +148,8 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
               <li><Link href={adsPreviewHref('/about', locale)} style={{ color: 'var(--text-secondary)' }}>{copy("About CrimFig")}</Link></li>
+              <li><Link href="/support" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Help &amp; Support</Link></li>
+              <li><a href="mailto:support@crimfig.com" style={{ color: 'var(--color-crimson)', textDecoration: 'none', fontWeight: 600 }}>support@crimfig.com</a></li>
               <li>
                 <a href="https://crimfig.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-secondary)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   CrimFig Hub <ExternalLink style={{ width: 12, height: 12 }} />

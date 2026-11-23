@@ -4,6 +4,7 @@ import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePi
 
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Wallet, ShieldCheck, ArrowRight, ExternalLink } from 'lucide-react';
 import { CrimFigLogo } from '../CrimFigLogo';
@@ -92,6 +93,12 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
             >
               <span>Auth &amp; SSO Identity</span>
               <ExternalLink style={{ width: 12, height: 12 }} />
+            </a>
+            <Link href="/support" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+              Help &amp; Support
+            </Link>
+            <a href="mailto:support@crimfig.com" style={{ color: 'var(--color-crimson)', textDecoration: 'none', fontWeight: 600 }}>
+              support@crimfig.com
             </a>
           </div>
 
