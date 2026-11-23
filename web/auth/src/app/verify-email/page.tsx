@@ -76,15 +76,15 @@ function VerifyEmailContent() {
   }, [token]);
 
   return (
-    <div className="auth-centered-container">
-      <Card className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '36px', textAlign: 'center' }}>
+    <>
       <LanguagePicker publishedOnly />
       <AuthBrandHeader
         title={copy.title}
+        appearance="light"
       />
 
       {loading ? (
-        <p style={{ color: 'var(--color-gray-400)', fontSize: '14px', margin: '24px 0' }}>
+        <p role="status" className="auth-entry-help">
           {copy.verifying}
         </p>
       ) : (
@@ -104,16 +104,19 @@ function VerifyEmailContent() {
           </Button>
         </div>
       )}
-      </Card>
-  </div>
+    </>
   );
 }
 
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div style={{ color: 'var(--color-gray-400)' }}>Verifying email...</div>}>
-      <VerifyEmailContent />
-    </Suspense>
+    <main className="auth-entry auth-verify-email" data-theme="light">
+      <Card className="auth-entry-card">
+        <Suspense fallback={<p role="status" className="auth-entry-help">Verifying email...</p>}>
+          <VerifyEmailContent />
+        </Suspense>
+      </Card>
+    </main>
   );
 }

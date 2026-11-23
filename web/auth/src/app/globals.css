@@ -413,6 +413,8 @@ a:hover {
 .auth-entry .cf-input:focus-visible,.auth-entry button:focus-visible,.auth-entry a:focus-visible { outline:2px solid var(--color-crimson); outline-offset:3px; }
 .auth-entry-label { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
 .auth-entry a { color:var(--color-crimson-dark); font-size:14px; }
+.auth-verify-email { text-align:center; }
+.auth-verify-email a.cf-auth-full-button { color:#fff; }
 .auth-password { position:relative; }
 .auth-password .cf-input { padding-right:52px; }
 .auth-password-toggle { position:absolute; right:1px; top:1px; width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:0; border-radius:var(--radius-md); color:var(--text-secondary); cursor:pointer; }
