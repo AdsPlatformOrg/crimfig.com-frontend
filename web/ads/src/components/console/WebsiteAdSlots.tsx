@@ -104,7 +104,7 @@ export function WebsiteAdSlots({websiteId,slotId,mode='list'}:{websiteId:string;
       {!slot.retiredAt&&<>
         <Button type="button" variant="outline" className={styles.installationTrigger} aria-expanded={installationOpen} aria-controls={installationId}
           onClick={()=>setInstallationOpen(open=>!open)}><Code size={16} aria-hidden="true"/>Installation instructions</Button>
-        <div id={installationId} hidden={!installationOpen}>
+        <div id={installationId} hidden={!installationOpen} className={installationOpen ? styles.installationPanel : undefined}>
           {installationOpen&&<>
             <h2 tabIndex={-1} ref={installationHeading}>Installation instructions</h2>
             <SlotInstallation key={slot.id} slotId={slot.id} />
@@ -216,11 +216,13 @@ function InstallationSnippet({label, code}: {label: string; code: string}) {
     }
   }
 
-  return <div>
-    <h3>{label}</h3>
-    <Button type="button" variant="outline" aria-label={`Copy ${label}`} onClick={() => void copy()}>Copy</Button>
+  return <div className={styles.snippet}>
+    <div className={styles.snippetHeader}>
+      <h3>{label}</h3>
+      <Button type="button" variant="outline" size="sm" aria-label={`Copy ${label}`} onClick={() => void copy()}>Copy</Button>
+    </div>
     <pre className={styles.code}><code>{code}</code></pre>
-    <p role="status">{message}</p>
+    {message && <p role="status">{message}</p>}
   </div>;
 }
 

@@ -106,6 +106,14 @@ test('slot installation shows and copies only the current format and isolates em
     const markup = '<ins data-ad-slot="tag-1">\n</ins>';
     const jsx = '<CrimFigAdSlot\n  slotTagId="tag-1"\n/>\n';
     await reply(4, { sdkSnippet: sdk, slotSnippet: markup, htmlSnippet: markup + sdk, nextJsSnippet: jsx });
+    const tabList = document.querySelector('[role="tablist"]');
+    assert.ok(tabList.className.includes('cf-tabs-list'));
+    assert.ok(tab('HTML').className.includes('cf-tabs-trigger'));
+    assert.doesNotMatch(tabList.className, /\bbg-muted\b|\btext-muted-foreground\b/);
+    assert.doesNotMatch(tab('HTML').className, /\bbg-background\b|\btext-foreground\b/);
+    const globalsCss = fs.readFileSync(path.join(__dirname, '../src/app/globals.css'), 'utf8');
+    assert.match(globalsCss, /\.cf-tabs-list\s*\{/);
+    assert.match(globalsCss, /\.cf-tabs-trigger\[data-state="active"\]\s*\{/);
     assert.equal(tab('HTML').getAttribute('aria-selected'), 'true');
     assert.deepEqual(codes(), [sdk, markup]);
     await React.act(async () => document.querySelector('[aria-label="Copy Slot markup"]').click());
