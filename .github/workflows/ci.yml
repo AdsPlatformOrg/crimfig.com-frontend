@@ -59,6 +59,10 @@ jobs:
         working-directory: backend
         run: pnpm install --frozen-lockfile
 
+      - name: Build backend authorization schema for contract loading
+        working-directory: backend
+        run: pnpm --filter @crimfig/database build
+
       - name: Lint
         run: pnpm run lint
 
