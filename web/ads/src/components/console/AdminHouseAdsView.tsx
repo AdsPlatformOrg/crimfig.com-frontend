@@ -147,6 +147,29 @@ export function AdminHouseAdsView() {
       sequence.current++;
     };
   }, [page]);
+  async function toggleActive(creative: Creative) {
+    if (mutationBusy.current) return;
+    mutationBusy.current = true;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await sessionFetch(
+        `/api/v1/admin/ads/house-creatives/${creative.id}`,
+        {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ isActive: !creative.isActive }),
+        },
+      );
+      if (!res.ok) throw Error(`Status update failed (HTTP ${res.status})`);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Status update failed");
+    } finally {
+      mutationBusy.current = false;
+      setSaving(false);
+    }
+  }
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (mutationBusy.current) return;
@@ -365,6 +388,14 @@ export function AdminHouseAdsView() {
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={saving}
+                        onClick={() => void toggleActive(c)}
+                      >
+                        {c.isActive ? "Pause" : "Activate"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => {
                           setEditing(c.id);
                           setForm({
@@ -378,6 +409,14 @@ export function AdminHouseAdsView() {
                         }}
                       >
                         Edit / Preview
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={saving}
+                        onClick={() => void toggleActive(c)}
+                      >
+                        {c.isActive ? "Pause" : "Activate"}
                       </Button>
                       <Button
                         variant="outline"
@@ -446,8 +485,8 @@ export function AdminHouseAdsView() {
                       destinationUrl: "Destination URL",
                     }[key]
                   }
-                  {key==='bodyText'?<Textarea required rows={4} value={form[key]} onChange={event=>setForm({...form,[key]:event.target.value})}/>:                  <Input
-                    required
+                  {key==='bodyText'?<Textarea required={form.adType === "text"} rows={4} value={form[key]} onChange={event=>setForm({...form,[key]:event.target.value})}/>:                  <Input
+                    required={key === "title" || form.adType === "text"}
                     type="text"
                     value={form[key]}
                     onChange={(e) =>
@@ -466,8 +505,8 @@ export function AdminHouseAdsView() {
                   onChange={(e) => setForm({ ...form, adType: e.target.value })}
                 >
                   <option value="image">Image</option>
-                  <option value="text">Text</option>
-                  <option value="video">Video</option>
+                  <option value="text" disabled>Text (Coming soon)</option>
+                  <option value="video" disabled>Video (Coming soon)</option>
                 </select>
               </label>
               {form.adType !== "text" && (
