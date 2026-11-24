@@ -353,6 +353,12 @@ export function workspaceNavigation(
           icon: BarChart3,
           children: [
             {
+              id: "ad_feedback",
+              label: "Ad Feedback",
+              icon: BarChart3,
+              href: "/admin/ad-feedback",
+            },
+            {
               id: "click_audit",
               label: "Click Audit",
               icon: History,
