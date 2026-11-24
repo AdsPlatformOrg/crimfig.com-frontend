@@ -186,6 +186,7 @@ test('PLAN-0154 AdminRewardsControlsView locks $CFIG->Points conversion OFF, exp
         promotionalAdReserve: { remainingPromoBudgetCents: 2500, reservedLiabilityCents: 500, paidPromoterEarningsCents: 0, issuedBonusCreditsCents: 1500, transferableCents: 2000 },
         rewardsFund: { cashBalanceUsdCents: 20000, availableUsdCents: 15000, allocatedUsdCents: 5000, fundedPendingUsdCents: 0, reserveFloorUsdCents: 10000, transferableCents: 5000 },
         platformOperatingReserve: { availableCents: 40000, transferableCents: 40000 },
+        cfigConversionReserve: { availableCents: 2000, reservedCents: 0, spentCents: 0, transferableCents: 2000 },
       },
       transfers: [],
       alerts: [{ id: '00000000-0000-4000-8000-000000000111', category: 'full_bonus_campaign', severity: 'info', summary: '100% bonus campaign submitted', status: 'open', createdAt: '2026-11-22T18:00:00Z' }],
@@ -204,6 +205,8 @@ test('PLAN-0154 AdminRewardsControlsView locks $CFIG->Points conversion OFF, exp
     const text = dom.window.document.body.textContent;
     assert.match(text, /Program Switches & Reserves/);
     assert.match(text, /Locked OFF/);
+    assert.match(text, /\$cfig Conversion & Backing Pool/);
+    assert.match(text, /Safety Floor Locked: \$100\.00/);
     assert.match(text, /Promotional Ad Reserve/);
     assert.match(text, /Platform Operating Reserve/);
     assert.match(text, /Silent Safety Notices \(1 open\)/);
@@ -213,5 +216,94 @@ test('PLAN-0154 AdminRewardsControlsView locks $CFIG->Points conversion OFF, exp
     await React.act(async () => root.unmount());
     Object.assign(global, old);
     dom.window.close();
+  }
+});
+
+test('PLAN-0168 Manual Pool Commitment enforces super_admin capability, rejects empty reason/amount, and submits idempotent seed', async () => {
+  let seedPostCalls = 0;
+  let lastSeedPayload = null;
+
+  async function mountControls(canSeed) {
+    const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', { url: 'https://ads.crimfig.com/admin/rewards/controls' });
+    const old = { window: global.window, document: global.document, IS_REACT_ACT_ENVIRONMENT: global.IS_REACT_ACT_ENVIRONMENT };
+    Object.assign(global, { window: dom.window, document: dom.window.document, IS_REACT_ACT_ENVIRONMENT: true });
+    const { AdminRewardsControlsView } = loadTsx('src/components/console/AdminRewardsControlsView.tsx', {
+      '@/lib/session': {
+        sessionFetch: async (url, init) => {
+          if (url === '/api/v1/admin/rewards/controls/reserves/manual-commitment' && init?.method === 'POST') {
+            seedPostCalls += 1;
+            lastSeedPayload = JSON.parse(init.body);
+            return {
+              ok: true,
+              status: 201,
+              json: async () => ({ status: 'success', data: { id: 'seed-1' } }),
+            };
+          }
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              status: 'success',
+              data: {
+                actorCapabilities: { canManualSeedCommitment: canSeed },
+                switches: [],
+                switchAudit: [],
+                reserves: { promotionalAdReserve: null, rewardsFund: null, platformOperatingReserve: null, cfigConversionReserve: null },
+                transfers: [],
+                alerts: [],
+              },
+            }),
+          };
+        },
+      },
+    });
+    const root = createRoot(dom.window.document.getElementById('root'));
+    await React.act(async () => root.render(React.createElement(AdminRewardsControlsView)));
+    return {
+      dom,
+      cleanup: async () => {
+        await React.act(async () => root.unmount());
+        Object.assign(global, old);
+        dom.window.close();
+      },
+    };
+  }
+
+  // Negative first: non-super_admin sees notice and cannot submit manual commitment form
+  const restricted = await mountControls(false);
+  try {
+    assert.match(restricted.dom.window.document.body.textContent, /require a single super_admin role/);
+    assert.equal(restricted.dom.window.document.querySelector('input[aria-label="Commitment reference"]'), null);
+  } finally {
+    await restricted.cleanup();
+  }
+
+  // Positive: super_admin can validate and submit $200.00 seed commitment
+  const superCtx = await mountControls(true);
+  try {
+    const doc = superCtx.dom.window.document;
+    const win = superCtx.dom.window;
+    const submitBtn = [...doc.querySelectorAll('button')].find((b) => /Commit Seed Funds/.test(b.textContent));
+    assert.ok(submitBtn);
+    await React.act(async () => submitBtn.closest('form').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true })));
+    assert.equal(seedPostCalls, 0);
+    assert.match(doc.body.textContent, /at least 3 characters/);
+
+    const refInput = doc.querySelector('input[aria-label="Commitment reference"]');
+    const reasonInput = doc.querySelector('input[aria-label="Commitment reason"]');
+    const setReactVal = async (el, val) => {
+      const key = Object.keys(el).find((k) => k.startsWith('__reactProps'));
+      await React.act(async () => el[key].onChange({ target: { value: val } }));
+    };
+    await setReactVal(refInput, 'founder-seed-1');
+    await setReactVal(reasonInput, 'Initial $200 points seed');
+    await React.act(async () => submitBtn.closest('form').dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true })));
+    assert.equal(seedPostCalls, 1, `Expected 1 POST call; body text: ${doc.body.textContent}`);
+    assert.equal(lastSeedPayload.targetPool, 'rewards_fund_available');
+    assert.equal(lastSeedPayload.amountCents, 20000);
+    assert.equal(lastSeedPayload.commitmentRef, 'founder-seed-1');
+    assert.match(doc.body.textContent, /Recorded \$200\.00 Owner Seed Commitment/);
+  } finally {
+    await superCtx.cleanup();
   }
 });

@@ -24,6 +24,9 @@ interface SwitchRow {
 }
 
 interface Overview {
+  actorCapabilities?: {
+    canManualSeedCommitment: boolean;
+  };
   switches: SwitchRow[];
   switchAudit: {
     id: string;
@@ -56,6 +59,12 @@ interface Overview {
       availableCents: number;
       transferableCents: number;
     } | null;
+    cfigConversionReserve: {
+      availableCents: number;
+      reservedCents: number;
+      spentCents: number;
+      transferableCents: number;
+    } | null;
   };
   transfers: {
     id: string;
@@ -79,10 +88,16 @@ const usd = (cents: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((cents || 0) / 100);
 
 const RESERVE_OPTIONS = [
-  { value: 'platform_operating_reserve', label: 'Platform Operating Reserve' },
+  { value: 'rewards_fund_available', label: 'Rewards Fund (Redeemable Points)' },
+  { value: 'cfig_conversion_reserve', label: '$cfig Conversion & Backing Pool' },
   { value: 'promotional_ad_reserve', label: 'Promotional Ad Reserve' },
-  { value: 'rewards_fund_available', label: 'Rewards Fund (Unallocated Cash)' },
+  { value: 'platform_operating_reserve', label: 'Platform Operating Reserve' },
 ] as const;
+
+const reserveLabel = (key: string) =>
+  key === 'owner_seed_commitment'
+    ? 'Owner Seed Commitment (Manual)'
+    : RESERVE_OPTIONS.find(o => o.value === key)?.label ?? key;
 
 export function AdminRewardsControlsView() {
   const [data, setData] = useState<Overview | null>(null);
@@ -97,6 +112,12 @@ export function AdminRewardsControlsView() {
   const [transferAmountUsd, setTransferAmountUsd] = useState<string>('');
   const [transferReason, setTransferReason] = useState<string>('');
   const pendingTransferId = useRef<string | null>(null);
+
+  const [seedPool, setSeedPool] = useState<string>('rewards_fund_available');
+  const [seedAmountUsd, setSeedAmountUsd] = useState<string>('200.00');
+  const [seedRef, setSeedRef] = useState<string>('');
+  const [seedReason, setSeedReason] = useState<string>('');
+  const pendingSeedId = useRef<string | null>(null);
 
   const [proceedsAmountUsd, setProceedsAmountUsd] = useState<string>('');
   const [proceedsSourceRef, setProceedsSourceRef] = useState<string>('');
@@ -199,6 +220,49 @@ export function AdminRewardsControlsView() {
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Transfer failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleManualCommitment(e: React.FormEvent) {
+    e.preventDefault();
+    const amountCents = Math.round(Number(seedAmountUsd) * 100);
+    if (!Number.isSafeInteger(amountCents) || amountCents <= 0) {
+      setError('Enter a positive USD amount to stake into the pool.');
+      return;
+    }
+    if (seedRef.trim().length < 3 || seedReason.trim().length < 3) {
+      setError('Commitment reference and reason require at least 3 characters.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setStatusMsg('');
+    const requestId = pendingSeedId.current ?? (pendingSeedId.current = crypto.randomUUID());
+    try {
+      const res = await sessionFetch('/api/v1/admin/rewards/controls/reserves/manual-commitment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetPool: seedPool,
+          amountCents,
+          commitmentRef: seedRef.trim(),
+          reason: seedReason.trim(),
+          requestId,
+        }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || body?.status !== 'success') {
+        throw new Error(body?.message || `Manual commitment failed (${res.status})`);
+      }
+      pendingSeedId.current = null;
+      setSeedRef('');
+      setSeedReason('');
+      setStatusMsg(`Recorded ${usd(amountCents)} Owner Seed Commitment into ${reserveLabel(seedPool)}.`);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to record manual pool commitment');
     } finally {
       setBusy(false);
     }
@@ -353,7 +417,33 @@ export function AdminRewardsControlsView() {
               </CardDescription>
             </CardHeader>
             <CardContent style={{ display: 'grid', gap: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 12 }}>
+                <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 600 }}>Rewards Fund (Redeemable Points)</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: 6 }}>
+                    {usd(data.reserves.rewardsFund?.cashBalanceUsdCents ?? 0)}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
+                    Unallocated Available: {usd(data.reserves.rewardsFund?.availableUsdCents ?? 0)}<br />
+                    Safety Floor Locked: {usd(data.reserves.rewardsFund?.reserveFloorUsdCents ?? 10000)}<br />
+                    Usable Above Floor: {usd(data.reserves.rewardsFund?.transferableCents ?? 0)}<br />
+                    Backing Allocated Points: {usd(data.reserves.rewardsFund?.allocatedUsdCents ?? 0)}<br />
+                    Pending 72h Hold: {usd(data.reserves.rewardsFund?.fundedPendingUsdCents ?? 0)}
+                  </div>
+                </div>
+
+                <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 600 }}>$cfig Conversion &amp; Backing Pool</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: 6 }}>
+                    {usd(data.reserves.cfigConversionReserve?.availableCents ?? 0)}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
+                    Available USD Backing: {usd(data.reserves.cfigConversionReserve?.availableCents ?? 0)}<br />
+                    Reserved for Cohorts: {usd(data.reserves.cfigConversionReserve?.reservedCents ?? 0)}<br />
+                    Settled Conversions: {usd(data.reserves.cfigConversionReserve?.spentCents ?? 0)}
+                  </div>
+                </div>
+
                 <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontWeight: 600 }}>Promotional Ad Reserve</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: 6 }}>
@@ -368,28 +458,73 @@ export function AdminRewardsControlsView() {
                 </div>
 
                 <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
-                  <div style={{ fontWeight: 600 }}>Rewards Fund (Redeemable Points)</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: 6 }}>
-                    {usd(data.reserves.rewardsFund?.cashBalanceUsdCents ?? 0)}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
-                    Unallocated Available: {usd(data.reserves.rewardsFund?.availableUsdCents ?? 0)}<br />
-                    Transferable (above {usd(data.reserves.rewardsFund?.reserveFloorUsdCents ?? 0)} floor): {usd(data.reserves.rewardsFund?.transferableCents ?? 0)}<br />
-                    Backing Allocated Points: {usd(data.reserves.rewardsFund?.allocatedUsdCents ?? 0)}<br />
-                    Pending 72h Hold: {usd(data.reserves.rewardsFund?.fundedPendingUsdCents ?? 0)}
-                  </div>
-                </div>
-
-                <div style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                   <div style={{ fontWeight: 600 }}>Platform Operating Reserve</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: 6 }}>
                     {usd(data.reserves.platformOperatingReserve?.availableCents ?? 0)}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
-                    Realized platform proceeds available to allocate into Promotional Ad Reserve or Rewards Fund.
+                    Central reserve available to allocate into Promotional Ad Reserve, Rewards Fund, or $cfig Pool.
                   </div>
                 </div>
               </div>
+
+              {data.actorCapabilities?.canManualSeedCommitment !== false ? (
+                <form onSubmit={handleManualCommitment} style={{ display: 'grid', gap: 10, padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 600 }}>Manual Pool Commitment (Super Admin Owner Seed — No Paystack Checkout)</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                    Records an explicit owner seed commitment into the selected pool. Rewards Fund enforces a $100.00 safety floor (commit e.g. $200.00 to leave $100.00 usable above floor); $20.00 fits the remaining pools cleanly.
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <select
+                      aria-label="Target seed pool"
+                      value={seedPool}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setSeedPool(val);
+                        setSeedAmountUsd(val === 'rewards_fund_available' ? '200.00' : '20.00');
+                      }}
+                      style={{ minHeight: 40, padding: '0 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}
+                    >
+                      {RESERVE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      aria-label="Seed commitment amount USD"
+                      placeholder="Amount USD"
+                      value={seedAmountUsd}
+                      onChange={e => setSeedAmountUsd(e.target.value)}
+                      style={{ maxWidth: 130 }}
+                    />
+                    <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setSeedAmountUsd('20.00')}>
+                      $20
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setSeedAmountUsd('200.00')}>
+                      $200
+                    </Button>
+                    <Input
+                      aria-label="Commitment reference"
+                      placeholder="Commitment ref (e.g. founder-seed-2026-11)"
+                      value={seedRef}
+                      onChange={e => setSeedRef(e.target.value)}
+                      style={{ maxWidth: 230 }}
+                    />
+                    <Input
+                      aria-label="Commitment reason"
+                      placeholder="Reason (e.g. Initial pool bootstrap)"
+                      value={seedReason}
+                      onChange={e => setSeedReason(e.target.value)}
+                      style={{ maxWidth: 240 }}
+                    />
+                    <Button type="submit" disabled={busy}>Commit Seed Funds</Button>
+                  </div>
+                </form>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                  Manual owner seed commitments require a single <code>super_admin</code> role.
+                </div>
+              )}
 
               <form onSubmit={handleTransfer} style={{ display: 'grid', gap: 10, padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -455,7 +590,7 @@ export function AdminRewardsControlsView() {
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 }}>
                     {data.transfers.slice(0, 10).map(t => (
                       <li key={t.id} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--border-subtle)', borderRadius: 8 }}>
-                        <strong>{usd(t.amountCents)}</strong> · {t.fromReserve} → {t.toReserve} · {t.reason} ({new Date(t.createdAt).toLocaleString()})
+                        <strong>{usd(t.amountCents)}</strong> · {reserveLabel(t.fromReserve)} → {reserveLabel(t.toReserve)} · {t.reason} ({new Date(t.createdAt).toLocaleString()})
                       </li>
                     ))}
                   </ul>
