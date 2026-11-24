@@ -6,7 +6,6 @@ import {useRouter} from 'next/navigation';
 import {
   Globe,
   Plus,
-  ShieldCheck,
   Code2,
   XCircle,
   Check,
@@ -20,7 +19,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { apiData } from '../../../lib/api-data';
-import { loadWebsites, registerWebsite, verifyWebsite } from '../../../lib/campaigns-api';
+import { loadWebsites, registerWebsite } from '../../../lib/campaigns-api';
 import { EmptyState } from '../../EmptyState';
 import { TableSkeleton } from '../../LoadingStates';
 import { Button } from '../../ui/button';
@@ -62,7 +61,6 @@ export function PromoterWebsitesView() {
   const router=useRouter();
   const [websites, setWebsites] = useState<PromoterWebsite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pendingWrites, setPendingWrites] = useState<Set<string>>(new Set());
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,27 +109,6 @@ export function PromoterWebsitesView() {
       setActionError(err instanceof Error ? err.message : 'Website registration could not be confirmed.');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyWebsite = async (websiteId: string) => {
-    if (pendingWrites.has(websiteId)) return;
-    setPendingWrites((prev) => new Set(prev).add(websiteId));
-    setActionError(null);
-    try {
-      const outcome = await verifyWebsite(websiteId);
-      if (!outcome.isVerified && outcome.error) {
-        setActionError(outcome.error);
-      }
-      fetchWebsites();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Domain verification check could not be completed.');
-    } finally {
-      setPendingWrites((prev) => {
-        const next = new Set(prev);
-        next.delete(websiteId);
-        return next;
-      });
     }
   };
 
@@ -348,7 +325,8 @@ export function PromoterWebsitesView() {
           </TableHeader>
           <TableBody>
             {filteredWebsites.map((site) => {
-              const isPending = pendingWrites.has(site.id);
+              const ownershipCurrent = site.isVerified && (!site.verificationExpiresAt ||
+                new Date(site.verificationExpiresAt).getTime() > Date.now());
               const policyStatusUpper = (site.policyStatus || (site.isVerified ? 'testing' : 'unverified')).toUpperCase();
 
               return (
@@ -356,7 +334,7 @@ export function PromoterWebsitesView() {
                   <TableCell>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <Link
-                        href={`/promoter/websites/${site.id}`}
+                        href={`/promoter/websites/${site.id}${site.isVerified ? "" : "#ownership-verification"}`}
                         style={{
                           fontWeight: 700,
                           fontSize: '14px',
@@ -466,30 +444,7 @@ export function PromoterWebsitesView() {
                   </TableCell>
                   <TableCell style={{ textAlign: 'right' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
-                      {!site.isVerified ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          disabled={isPending}
-                          onClick={() => handleVerifyWebsite(site.id)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            padding: '6px 12px',
-                            backgroundColor: 'var(--color-crimson)',
-                            color: '#FFFFFF',
-                            borderRadius: '6px',
-                            border: 'none',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <ShieldCheck style={{ width: 13, height: 13 }} />
-                          {isPending ? 'Verifying...' : 'Verify Now'}
-                        </Button>
-                      ) : (
+                      {ownershipCurrent && (
                         <Button
                           type="button"
                           size="sm"
@@ -516,7 +471,7 @@ export function PromoterWebsitesView() {
                         </Button>
                       )}
                       <Link
-                        href={`/promoter/websites/${site.id}`}
+                        href={`/promoter/websites/${site.id}${ownershipCurrent ? '' : '#ownership-verification'}`}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -531,7 +486,7 @@ export function PromoterWebsitesView() {
                           textDecoration: 'none',
                         }}
                       >
-                        View
+                        {ownershipCurrent ? 'View' : 'Verification steps'}
                       </Link>
                     </div>
                   </TableCell>

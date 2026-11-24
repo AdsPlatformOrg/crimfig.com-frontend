@@ -7,7 +7,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import {
   Globe,
   ArrowLeft,
-  ShieldCheck,
   ShieldAlert,
   Copy,
   Check,
@@ -306,56 +305,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Button
-              type="button"
-              onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                backgroundColor: 'var(--color-fig-dark)',
-                color: '#FFFFFF',
-                fontSize: '13px',
-                fontWeight: 600,
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <Code2 style={{ width: 16, height: 16 }} /> Get Embed Code
-            </Button>
-            <Button
-              type="button"
-              disabled={Boolean(verifying)}
-              onClick={() => void handleTriggerVerification(website.verificationMethod === 'dns_txt' ? 'dns_txt' : 'html_meta')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                backgroundColor: 'var(--color-crimson)',
-                color: '#FFFFFF',
-                fontSize: '13px',
-                fontWeight: 700,
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-crimson)',
-              }}
-            >
-              {verifying ? (
-                <>
-                  <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> Verifying...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck style={{ width: 16, height: 16 }} /> Verify Ownership
-                </>
-              )}
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -456,7 +405,7 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
       </div>
 
       {/* Domain Ownership Verification Proof Instructions */}
-      <div className="theme-card" style={{ padding: '24px', borderRadius: '12px' }}>
+      <div id="ownership-verification" className="theme-card" style={{ padding: '24px', borderRadius: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div>
             <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
@@ -543,10 +492,6 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 )}
               </Button>
             </div>
-            <Button type="button" size="sm" variant="outline" style={{ marginTop: 12 }}
-              disabled={Boolean(verifying)} onClick={() => void handleTriggerVerification('html_meta')}>
-              {verifying === 'html_meta' ? 'Checking HTML Meta Tag…' : 'Check HTML Meta Tag'}
-            </Button>
           </div>
 
           {/* Option B: DNS TXT Record */}
@@ -624,13 +569,29 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                 </Button>
               </div>
             </div>
-            <Button type="button" size="sm" variant="outline" style={{ marginTop: 12 }}
-              disabled={Boolean(verifying)} onClick={() => void handleTriggerVerification('dns_txt')}>
-              {verifying === 'dns_txt' ? 'Checking DNS TXT…' : 'Check DNS TXT'}
-            </Button>
           </div>
         </div>
 
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
+          <Button type="button" variant="outline" disabled={Boolean(verifying)}
+            onClick={() => void handleTriggerVerification('html_meta')}>
+            {verifying === 'html_meta' ? 'Checking HTML Meta Tag…' : 'Verify Ownership via HTML'}
+          </Button>
+          <Button type="button" variant="outline" disabled={Boolean(verifying)}
+            onClick={() => void handleTriggerVerification('dns_txt')}>
+            {verifying === 'dns_txt' ? 'Checking DNS TXT…' : 'Verify Ownership via DNS TXT'}
+          </Button>
+          <Button type="button" variant="secondary" disabled={!isOwnershipVerified}
+            aria-describedby={!isOwnershipVerified ? 'embed-ownership-required' : undefined}
+            onClick={() => router.push('/promoter/websites/' + websiteId + '/slots')}>
+            <Code2 aria-hidden="true" size={16} /> Get Embed Code
+          </Button>
+        </div>
+        {!isOwnershipVerified && (
+          <p id="embed-ownership-required" style={{ margin: '8px 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>
+            Verify ownership with either method to unlock the embed code.
+          </p>
+        )}
       </div>
 
       {/* Associated Ad Slots */}
@@ -647,6 +608,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
           <Button
             type="button"
             size="sm"
+            disabled={!isOwnershipVerified}
+            aria-describedby={!isOwnershipVerified ? 'slot-ownership-required' : undefined}
             onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
             style={{
               backgroundColor: 'var(--color-crimson)',
@@ -655,12 +618,17 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
               fontSize: '12px',
               borderRadius: '8px',
               border: 'none',
-              cursor: 'pointer',
             }}
           >
             <Plus style={{ width: 14, height: 14, marginRight: 4 }} /> Setup Ad Space
           </Button>
         </div>
+
+        {!isOwnershipVerified && (
+          <p id="slot-ownership-required" style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+            Verify website ownership to set up ad spaces and get embed code.
+          </p>
+        )}
 
         {slotState === 'failed' ? (
           <div role="alert">
@@ -690,6 +658,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
               type="button"
               size="sm"
               variant="outline"
+              disabled={!isOwnershipVerified}
+              aria-describedby={!isOwnershipVerified ? 'slot-ownership-required' : undefined}
               onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
             >
               <Code2 style={{ width: 14, height: 14, marginRight: 6 }} /> Get Embed Snippet
@@ -733,6 +703,8 @@ function WebsiteDetail({ websiteId }: { websiteId: string }) {
                       type="button"
                       size="sm"
                       variant="ghost"
+                      disabled={!isOwnershipVerified}
+                      aria-describedby={!isOwnershipVerified ? 'slot-ownership-required' : undefined}
                       onClick={() => router.push('/promoter/websites/'+websiteId+'/slots')}
                       style={{ fontSize: '12px' }}
                     >
