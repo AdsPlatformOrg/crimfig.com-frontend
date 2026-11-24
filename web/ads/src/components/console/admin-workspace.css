@@ -38,14 +38,26 @@
 .cf-mod-detail .cf-dialog-section {border-bottom:1px solid var(--border-subtle)}
 .cf-mod-skeleton {min-height:240px;display:grid;gap:12px;align-content:start}
 .cf-mod-skeleton>div {height:44px;background:var(--bg-surface);border-radius:var(--radius-md)}
-.cf-house-admin .cf-report-dialog,.cf-house-dialog {width:min(860px,calc(100vw - 32px));font-size:.875rem}
-.cf-house-dialog h2 {font-size:1.125rem;font-weight:600}
+.cf-house-admin .cf-report-dialog,.cf-house-dialog {width:min(820px,calc(100vw - 32px));font-size:.875rem;box-shadow:var(--shadow-xl);padding:28px}
+.cf-house-dialog h2 {font-size:1.25rem;font-weight:700;margin-bottom:4px}
 .cf-house-dialog fieldset {border:0;padding:0;margin:0;min-width:0}
-.cf-house-dialog legend {font-size:1rem;font-weight:600;margin-bottom:12px}
-.cf-house-dialog input[type=file] {padding:12px;border:1px dashed var(--border-subtle);border-radius:var(--radius-md)}
-.cf-house-dialog input[type=file]::file-selector-button {font:inherit;padding:8px 12px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);margin-right:12px}
-.cf-house-preview {object-fit:contain;max-width:100%;max-height:280px;display:block}
-@media(max-width:700px){.cf-mod-desktop{display:none}.cf-mod-mobile{display:block}}
+.cf-house-dialog .cf-house-fieldset {padding:18px;border:1px solid var(--border-subtle);border-radius:var(--radius-lg);background:var(--bg-surface);display:flex;flex-direction:column;gap:14px}
+.cf-house-dialog legend {font-size:.9375rem;font-weight:600;color:var(--text-primary);padding:0 4px;margin-bottom:2px}
+.cf-house-field-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cf-house-field {display:flex;flex-direction:column;gap:6px;min-width:0;font-size:.8125rem;font-weight:600;color:var(--text-primary)}
+.cf-house-field-full {grid-column:1 / -1}
+.cf-house-type-pills {display:flex;flex-wrap:wrap;gap:8px}
+.cf-house-type-pill {display:inline-flex;align-items:center;padding:6px 12px;border-radius:9999px;font-size:.75rem;font-weight:600;border:1px solid var(--border-subtle)}
+.cf-house-type-pill-active {background:rgba(212,20,58,.1);color:var(--color-crimson);border-color:rgba(212,20,58,.3)}
+.cf-house-type-pill-muted {background:var(--bg-elevated);color:var(--text-muted)}
+.cf-house-optional-copy {border:1px dashed var(--border-subtle);border-radius:var(--radius-md);padding:10px 14px;background:var(--bg-elevated)}
+.cf-house-optional-copy summary {cursor:pointer;font-size:.8125rem;font-weight:600;color:var(--text-secondary);user-select:none}
+.cf-house-upload-box input[type=file] {padding:10px 12px;border:1px dashed var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-elevated);cursor:pointer}
+.cf-house-dialog input[type=file]::file-selector-button {font:inherit;font-weight:600;padding:8px 14px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);margin-right:12px;cursor:pointer}
+.cf-house-checkbox {display:inline-flex;align-items:center;gap:10px;font-size:.875rem;font-weight:500;cursor:pointer;padding-top:4px}
+.cf-house-checkbox input[type=checkbox] {width:18px;height:18px;accent-color:var(--color-crimson)}
+.cf-house-preview {object-fit:contain;max-width:100%;max-height:280px;display:block;border-radius:var(--radius-md);margin-top:8px}
+@media(max-width:700px){.cf-mod-desktop{display:none}.cf-mod-mobile{display:block}.cf-house-field-grid{grid-template-columns:1fr}.cf-house-admin .cf-report-dialog,.cf-house-dialog{padding:18px}}
 @media(prefers-reduced-motion:reduce){.cf-admin-ui *, .cf-admin-ui *::before,.cf-admin-ui *::after{animation-duration:0s;transition-duration:0s}}
 
 

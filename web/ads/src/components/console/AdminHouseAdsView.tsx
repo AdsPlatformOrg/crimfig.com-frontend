@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
+import { Pause, Play } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Button, Input } from "../ui";
 import { sessionFetch } from "@/lib/session";
@@ -18,6 +19,8 @@ import {HouseSampleImport} from './HouseSampleImport';
 
 type Creative = {
   id: string;
+  imageAssetId?: string | null;
+  videoAssetId?: string | null;
   title: string;
   headline: string;
   bodyText: string;
@@ -32,6 +35,17 @@ type Creative = {
   priority: number;
   isActive: boolean;
 };
+const HOUSE_IMAGE_PRESETS = [
+  { id: "medium_rectangle", label: "Medium Rectangle (300 × 250)", width: 300, height: 250, format: "card" },
+  { id: "large_rectangle", label: "Large Rectangle (336 × 280)", width: 336, height: 280, format: "card" },
+  { id: "leaderboard", label: "Leaderboard (728 × 90)", width: 728, height: 90, format: "banner" },
+  { id: "mobile_banner", label: "Mobile Banner (320 × 50)", width: 320, height: 50, format: "banner" },
+  { id: "large_mobile_banner", label: "Large Mobile Banner (320 × 100)", width: 320, height: 100, format: "banner" },
+  { id: "half_page", label: "Half Page (300 × 600)", width: 300, height: 600, format: "card" },
+  { id: "billboard", label: "Billboard (970 × 250)", width: 970, height: 250, format: "banner" },
+  { id: "square", label: "Square (250 × 250)", width: 250, height: 250, format: "card" },
+  { id: "large_square", label: "Large Square (300 × 300)", width: 300, height: 300, format: "card" },
+] as const;
 const defaults = {
   imageAssetId: "",
   videoAssetId: "",
@@ -183,7 +197,17 @@ export function AdminHouseAdsView() {
           method: editing ? "PATCH" : "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            ...form,
+            title: form.title,
+            headline: form.headline,
+            bodyText: form.bodyText,
+            ctaText: form.ctaText,
+            destinationUrl: form.destinationUrl,
+            adType: form.adType,
+            format: form.format,
+            width: Number(form.width),
+            height: Number(form.height),
+            priority: Number(form.priority),
+            isActive: Boolean(form.isActive),
             imageUrl: form.adType === "image" ? form.imageUrl : undefined,
             videoUrl: form.adType === "video" ? form.videoUrl : undefined,
             imageAssetId:
@@ -381,17 +405,24 @@ export function AdminHouseAdsView() {
                           borderRadius: '6px',
                           border: '1px solid var(--border-subtle)',
                           backgroundColor: 'var(--bg-surface)',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         Performance
                       </Link>
                       <Button
+                        type="button"
                         variant="outline"
-                        size="sm"
+                        size="icon"
                         disabled={saving}
+                        title={c.isActive ? "Pause house ad delivery" : "Activate house ad delivery"}
+                        aria-label={c.isActive ? `Pause ${c.title}` : `Activate ${c.title}`}
                         onClick={() => void toggleActive(c)}
+                        style={{
+                          color: c.isActive ? 'var(--color-warning, #D97706)' : 'var(--color-success, #10B981)',
+                        }}
                       >
-                        {c.isActive ? "Pause" : "Activate"}
+                        {c.isActive ? <Pause size={15} aria-hidden="true" /> : <Play size={15} aria-hidden="true" />}
                       </Button>
                       <Button
                         variant="outline"
@@ -399,24 +430,27 @@ export function AdminHouseAdsView() {
                         onClick={() => {
                           setEditing(c.id);
                           setForm({
-                            ...defaults,
-                            ...c,
+                            imageAssetId: c.imageAssetId || "",
+                            videoAssetId: c.videoAssetId || "",
+                            title: c.title || "",
+                            headline: c.headline || "",
+                            bodyText: c.bodyText || "",
+                            ctaText: c.ctaText || "",
+                            destinationUrl: c.destinationUrl || "https://ads.crimfig.com",
+                            adType: c.adType || "image",
                             imageUrl: c.imageUrl || "",
                             videoUrl: c.videoUrl || "",
+                            format: c.format || "banner",
+                            width: c.width || 728,
+                            height: c.height || 90,
+                            priority: c.priority ?? 10,
+                            isActive: Boolean(c.isActive),
                           });
                           setFormError("");
                           setOpen(true);
                         }}
                       >
                         Edit / Preview
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={saving}
-                        onClick={() => void toggleActive(c)}
-                      >
-                        {c.isActive ? "Pause" : "Activate"}
                       </Button>
                       <Button
                         variant="outline"
@@ -466,104 +500,169 @@ export function AdminHouseAdsView() {
             </Dialog.Description>
             <form onSubmit={save} className="cf-report-form" aria-busy={saving}>
               {discardRequested&&<aside role="alert" className="cf-surface cf-dialog-section"><p>Discard your unsaved changes?</p><Button type="button" variant="destructive" onClick={()=>{setDiscardRequested(false);setOpen(false);}}>Discard changes</Button><Button type="button" variant="outline" onClick={()=>setDiscardRequested(false)}>Keep editing</Button></aside>}
-              <fieldset disabled={saving} className="cf-section tw:grid tw:gap-4 tw:md:grid-cols-2"><legend>Ad copy</legend>
-              {(
-                [
-                  "title",
-                  "headline",
-                  "bodyText",
-                  "ctaText",
-                ] as const
-              ).map((key) => (
-                <label key={key}>
-                  {
-                    {
-                      title: "Internal title",
-                      headline: "Headline",
-                      bodyText: "Body",
-                      ctaText: "Call to action",
-                      destinationUrl: "Destination URL",
-                    }[key]
-                  }
-                  {key==='bodyText'?<Textarea required={form.adType === "text"} rows={4} value={form[key]} onChange={event=>setForm({...form,[key]:event.target.value})}/>:                  <Input
-                    required={key === "title" || form.adType === "text"}
-                    type="text"
-                    value={form[key]}
-                    onChange={(e) =>
-                      setForm({ ...form, [key]: e.target.value })
-                    }
-                  />}
-                </label>
-              ))}
-              </fieldset>
-              <fieldset disabled={saving} className="cf-section"><legend>Assets &amp; destination</legend>
-              <label>Destination URL<Input required type="url" value={form.destinationUrl} onChange={event=>setForm({...form,destinationUrl:event.target.value})}/></label>
-              <label>
-                Ad type
-                <select className="cf-input"
-                  value={form.adType}
-                  onChange={(e) => setForm({ ...form, adType: e.target.value })}
-                >
-                  <option value="image">Image</option>
-                  <option value="text" disabled>Text (Coming soon)</option>
-                  <option value="video" disabled>Video (Coming soon)</option>
-                </select>
-              </label>
-              {form.adType !== "text" && (
-                <label>
-                  {form.adType === "image" ? "Image URL" : "Video URL"}
+              <fieldset disabled={saving} className="cf-section cf-house-fieldset"><legend>Ad copy &amp; identity</legend>
+              <div className="cf-house-field-grid tw:grid tw:gap-4 tw:md:grid-cols-2">
+                <label className="cf-house-field cf-house-field-full">
+                  <span>Internal title</span>
                   <Input
-                    type="url"
                     required
-                    value={
-                      form.adType === "image" ? form.imageUrl : form.videoUrl
-                    }
+                    type="text"
+                    placeholder="e.g. CrimFig Fall Growth — Large Square"
+                    value={form.title}
                     onChange={(e) =>
-                      setForm({
-                        ...form,
-                        [form.adType === "image" ? "imageUrl" : "videoUrl"]:
-                          e.target.value,
-                      })
+                      setForm({ ...form, title: e.target.value })
                     }
                   />
                 </label>
-              )}
-              {form.adType !== "text" && (
-                <label>
-                  Upload media (existing service size and type restrictions
-                  apply)
-                  <input
-                    type="file"
-                    accept={form.adType === "image" ? "image/*" : "video/*"}
-                    disabled={saving}
-                    onChange={(e) => void upload(e.target.files?.[0])}
-                  />
-                </label>
-              )}
-              {filename&&<p className="cf-muted" role="status">Selected file: {filename}</p>}
-              </fieldset><fieldset disabled={saving} className="cf-section"><legend>Specifications &amp; delivery</legend>
-              <label>
-                Format
-                <select className="cf-input"
-                  value={form.format}
-                  onChange={(e) => setForm({ ...form, format: e.target.value })}
-                >
-                  {[
-                    "banner",
-                    "square",
-                    "interstitial",
-                    "card",
-                    "video",
-                    "any",
-                  ].map((v) => (
-                    <option key={v}>{v}</option>
+              </div>
+              <details className="cf-house-optional-copy" open={form.adType === "text" || Boolean(form.headline || form.bodyText)}>
+                <summary>
+                  {form.adType === "image"
+                    ? "Optional overlay / fallback copy (not required for Image ads)"
+                    : "Headline, body & call to action"}
+                </summary>
+                <div className="cf-house-field-grid" style={{ marginTop: "12px" }}>
+                  {(
+                    [
+                      "headline",
+                      "ctaText",
+                      "bodyText",
+                    ] as const
+                  ).map((key) => (
+                    <label
+                      key={key}
+                      className={key === "bodyText" ? "cf-house-field cf-house-field-full" : "cf-house-field"}
+                    >
+                      <span>
+                        {
+                          {
+                            headline: "Headline (optional for Image ads)",
+                            bodyText: "Body (optional for Image ads)",
+                            ctaText: "Call to action",
+                          }[key]
+                        }
+                      </span>
+                      {key==='bodyText'?<Textarea required={form.adType === "text"} rows={3} value={form[key]} onChange={event=>setForm({...form,[key]:event.target.value})}/>:                  <Input
+                        required={form.adType === "text"}
+                        type="text"
+                        value={form[key]}
+                        onChange={(e) =>
+                          setForm({ ...form, [key]: e.target.value })
+                        }
+                      />}
+                    </label>
                   ))}
-                </select>
-              </label>
+                </div>
+              </details>
+              </fieldset>
+              <fieldset disabled={saving} className="cf-section cf-house-fieldset"><legend>Assets &amp; destination</legend>
+              <div className="cf-house-type-pills" role="group" aria-label="House ad format availability">
+                <span className="cf-house-type-pill cf-house-type-pill-active">Image Ads — Available</span>
+                <span className="cf-house-type-pill cf-house-type-pill-muted">Text Ads — Coming Soon</span>
+                <span className="cf-house-type-pill cf-house-type-pill-muted">Video Ads — Coming Soon</span>
+              </div>
+              <div className="cf-house-field-grid tw:grid tw:gap-4 tw:md:grid-cols-2">
+                <label className="cf-house-field">
+                  <span>Destination URL</span>
+                  <Input required type="url" value={form.destinationUrl} onChange={event=>setForm({...form,destinationUrl:event.target.value})}/>
+                </label>
+                <label className="cf-house-field">
+                  <span>Ad type</span>
+                  <select className="cf-input"
+                    value={form.adType}
+                    onChange={(e) => setForm({ ...form, adType: e.target.value })}
+                  >
+                    <option value="image">Image</option>
+                    <option value="text" disabled>Text (Coming soon)</option>
+                    <option value="video" disabled>Video (Coming soon)</option>
+                  </select>
+                </label>
+                {form.adType !== "text" && (
+                  <label className="cf-house-field cf-house-field-full">
+                    <span>{form.adType === "image" ? "Image URL" : "Video URL"}</span>
+                    <Input
+                      type="url"
+                      required
+                      value={
+                        form.adType === "image" ? form.imageUrl : form.videoUrl
+                      }
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          [form.adType === "image" ? "imageUrl" : "videoUrl"]:
+                            e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                )}
+                {form.adType !== "text" && (
+                  <label className="cf-house-field cf-house-field-full cf-house-upload-box">
+                    <span>Upload media (existing service size and type restrictions apply)</span>
+                    <input
+                      type="file"
+                      accept={form.adType === "image" ? "image/*" : "video/*"}
+                      disabled={saving}
+                      onChange={(e) => void upload(e.target.files?.[0])}
+                    />
+                  </label>
+                )}
+              </div>
+              {filename&&<p className="cf-muted" role="status">Selected file: {filename}</p>}
+              </fieldset><fieldset disabled={saving} className="cf-section cf-house-fieldset"><legend>Specifications &amp; delivery</legend>
+              <div className="cf-house-field-grid tw:grid tw:gap-4 tw:md:grid-cols-2">
+                <label className="cf-house-field">
+                  <span>Approved image preset</span>
+                  <select
+                    className="cf-input"
+                    value={
+                      HOUSE_IMAGE_PRESETS.find(
+                        (p) => p.width === Number(form.width) && p.height === Number(form.height),
+                      )?.id || "custom"
+                    }
+                    onChange={(e) => {
+                      const preset = HOUSE_IMAGE_PRESETS.find((p) => p.id === e.target.value);
+                      if (preset) {
+                        setForm({
+                          ...form,
+                          width: preset.width,
+                          height: preset.height,
+                          format: preset.format,
+                        });
+                      }
+                    }}
+                  >
+                    {HOUSE_IMAGE_PRESETS.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
+                    <option value="custom">Custom dimensions ({form.width} × {form.height} px)</option>
+                  </select>
+                </label>
+                <label className="cf-house-field">
+                  <span>Format</span>
+                  <select className="cf-input"
+                    value={form.format}
+                    onChange={(e) => setForm({ ...form, format: e.target.value })}
+                  >
+                    {[
+                      "banner",
+                      "square",
+                      "interstitial",
+                      "card",
+                      "video",
+                      "any",
+                    ].map((v) => (
+                      <option key={v}>{v}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               <div className="cf-report-grid">
                 {(["width", "height", "priority"] as const).map((key) => (
-                  <label key={key}>
-                    {key==='priority'?'Delivery priority':`${key==='width'?'Width':'Height'} (px)`}
+                  <label key={key} className="cf-house-field">
+                    <span>{key==='priority'?'Delivery priority':`${key==='width'?'Width':'Height'} (px)`}</span>
                     <Input
                       type="number"
                       required
@@ -583,7 +682,7 @@ export function AdminHouseAdsView() {
                   </label>
                 ))}
               </div>
-              <label>
+              <label className="cf-house-checkbox">
                 <input
                   type="checkbox"
                   checked={form.isActive}
@@ -591,7 +690,7 @@ export function AdminHouseAdsView() {
                     setForm({ ...form, isActive: e.target.checked })
                   }
                 />{" "}
-                Active
+                <span>Active (eligible for immediate fallback &amp; dynamic slot delivery)</span>
               </label>
               </fieldset>
               {previewError && <p role="alert">{previewError}</p>}
