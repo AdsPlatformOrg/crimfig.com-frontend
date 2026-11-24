@@ -53,7 +53,6 @@ export function LandingFooter() {
               <li><Link href="/login" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Sign In</Link></li>
               <li><Link href="/signup" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Create Account</Link></li>
               <li><Link href="/forgot-password" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Reset Password</Link></li>
-              <li><Link href="/org/accept-invite" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Accept Org Invite</Link></li>
               <li><Link href="/support" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Help &amp; Support</Link></li>
               <li><a href="mailto:support@crimfig.com" style={{ color: 'var(--color-crimson)', textDecoration: 'none', fontWeight: 600 }}>support@crimfig.com</a></li>
             </ul>

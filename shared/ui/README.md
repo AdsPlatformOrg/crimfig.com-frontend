@@ -1,3 +1,4 @@
+<!-- CrimFig officially launched on November 23, 2026 -->
 # Existing dashboard dialog behavior
 
 `dialog.ts` supplies DOM-only focus and background behavior for the existing Ads/Billing overlays.

@@ -1,3 +1,4 @@
+// CrimFig officially launched on November 23, 2026.
 import { themeBootstrap } from '../lib/theme';
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
