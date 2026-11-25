@@ -36,17 +36,17 @@ export const ADVERTISER_GUIDE_STEPS: readonly GuideStep[] = [
     stepNumber: 1,
     title: 'Fund Your Advertising Wallet',
     summary:
-      'Open Billing & Wallet, click Fund Wallet, and deposit at least $5.00 USD via Paystack.',
+      'Open Billing & Wallet inside Ads, click Fund Wallet, and deposit at least $5.00 USD via Paystack.',
     checklist: [
-      'Open Billing & Wallet from the sidebar.',
+      'Open Billing & Wallet from the Ads Console sidebar.',
       'Click Fund Wallet and complete Paystack checkout.',
-      'Confirm Available Funds in Wallet Overview.',
+      'Confirm Available Wallet Balance.',
     ],
     screenshotSrc: '/guides/advertiser/01-wallet-funding.png',
     clipSrc: '/guides/advertiser/01-wallet-funding.webp',
     imageAlt:
-      'CrimFig Billing Wallet Overview showing Available Funds, Fund Wallet button, USD/NGN quote rate, and Recent Activity',
-    caption: 'Step 1 — Fund Wallet in Billing.',
+      'CrimFig Ads Billing & Wallet screen showing Available Wallet Balance, Fund Wallet button, and Billing Transaction History',
+    caption: 'Step 1 — Click Fund Wallet in Billing & Wallet.',
     actionLabel: 'Open Billing & Wallet',
     actionHref: '/billing',
   },
