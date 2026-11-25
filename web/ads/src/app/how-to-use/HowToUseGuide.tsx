@@ -516,9 +516,9 @@ export function HowToUseGuide() {
           }}
         >
           <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Have questions about pricing, the 55% promoter share, or verification? Check the{' '}
+            Have questions about pricing, the 55% promoter share, or verification? Check our{' '}
             <Link href="/faq" style={{ color: 'var(--color-crimson)', fontWeight: 600, textDecoration: 'none' }}>
-              Ads FAQ
+              FAQs
             </Link>{' '}
             or open{' '}
             <Link href="/support" style={{ color: 'var(--color-crimson)', fontWeight: 600, textDecoration: 'none' }}>
@@ -542,7 +542,7 @@ export function HowToUseGuide() {
                 textDecoration: 'none',
               }}
             >
-              Read Ads FAQ
+              Read FAQs
             </Link>
             <Link
               href="/support"

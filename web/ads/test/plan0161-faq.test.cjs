@@ -88,9 +88,9 @@ test('Negative & Positive: Ads header places FAQ right after Home and About in d
     );
     await React.act(async () => root.render(React.createElement(LandingNavbar, { onLaunchConsole: () => {} })));
     const desktopLinks = [...el.querySelectorAll('nav.cf-site-nav a')].map((a) => [a.textContent, a.getAttribute('href')]);
-    assert.deepEqual(desktopLinks, [['Home', '/'], ['About', '/about'], ['How to Use', '/how-to-use'], ['Ads FAQ', '/faq']]);
+    assert.deepEqual(desktopLinks, [['Home', '/'], ['About', '/about'], ['How to Use', '/how-to-use'], ['FAQs', '/faq']]);
     const mobileLinks = [...el.querySelectorAll('#ads-mobile-navigation a')].map((a) => [a.textContent, a.getAttribute('href')]);
-    assert.deepEqual(mobileLinks, [['Home', '/'], ['About', '/about'], ['How to Use', '/how-to-use'], ['Ads FAQ', '/faq']]);
+    assert.deepEqual(mobileLinks, [['Home', '/'], ['About', '/about'], ['How to Use', '/how-to-use'], ['FAQs', '/faq']]);
   });
 });
 

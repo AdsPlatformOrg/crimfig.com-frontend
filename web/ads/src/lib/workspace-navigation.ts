@@ -97,7 +97,7 @@ export function workspaceNavigation(
         },
         {
           id: "faq",
-          label: "Ads FAQ",
+          label: "FAQs",
           icon: HelpCircle,
           href: "/faq",
         },
@@ -205,7 +205,7 @@ export function workspaceNavigation(
         },
         {
           id: "faq",
-          label: "Ads FAQ",
+          label: "FAQs",
           icon: HelpCircle,
           href: "/faq",
         },
