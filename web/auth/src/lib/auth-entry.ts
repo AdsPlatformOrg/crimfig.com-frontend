@@ -1,4 +1,4 @@
-import { loginDestination } from './login-return';
+import { safeExplicitLoginReturnUrl } from './login-return';
 import { supportedLocale } from '../../../../shared/ui/localization/locale';
 export const passwordGuidance='Use 8–128 characters with uppercase, lowercase, a number and a special character.';
 export function signupPasswordValid(value:string){return value.length>=8&&value.length<=128&&/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/.test(value);}
@@ -6,7 +6,7 @@ export function authEntryLink(path:'/login'|'/signup'|'/forgot-password',search:
  const source=new URLSearchParams(search),target=new URLSearchParams();
  for(const key of ['client_id','redirect_uri','response_type','scope','state','code_challenge','code_challenge_method','prompt']){const value=source.get(key);if(value)target.set(key,value);}
  const locale=supportedLocale(source.get('lang'));if(locale)target.set('lang',locale);
- const returned=source.get('return_to');if(returned){const safe=loginDestination(new URLSearchParams({return_to:returned}));if(safe!=='/')target.set('return_to',safe);}
+ const safe=safeExplicitLoginReturnUrl(source.get('return_to'));if(safe)target.set('return_to',safe);
  return path+(target.size?'?'+target.toString():'');
 }
 export async function authEntryResponse(response:Response){

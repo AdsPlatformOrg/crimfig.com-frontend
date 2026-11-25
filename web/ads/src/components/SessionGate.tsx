@@ -59,7 +59,13 @@ export function SessionGate({ children, loadingShell, recoveryShell }: {
     }
   }, [automaticRetryUsed, connectionError, renewal, retry, signOut, status]);
   useEffect(() => {
-    if (signOut === 'complete' || signOut === 'remote' || (status === 'anonymous' && !signOut)) {
+    if (signOut === 'complete' || signOut === 'remote') {
+      const target = new URL(loginUrl());
+      target.search = '';
+      window.location.replace(target.href);
+      return;
+    }
+    if (status === 'anonymous' && !signOut) {
       window.location.replace(loginUrl());
     }
   }, [status, signOut]);
@@ -82,16 +88,16 @@ export function SessionGate({ children, loadingShell, recoveryShell }: {
   return <>
     {/* Never unmount a live form during renewal. Locked content is hidden and unfocusable. */}
     {(authorized || retainDraft) && <div key={identityVersion ?? 0} ref={retainedContent} hidden={!authorized} onFocusCapture={(event) => { lastFocused.current = event.target as HTMLElement; }}>{children}</div>}
-    {!authorized && !showRecovery && !signOut && (loadingShell ?? <WorkspaceSkeleton />)}
+    {!authorized && !showRecovery && (!signOut || signOut !== 'failed') && (loadingShell ?? <WorkspaceSkeleton />)}
     {recovery && (recoveryShell ? recoveryShell(recovery) : (
       <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
         {recovery}
       </main>
     ))}
-    {signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
-      <section aria-live="polite"><h1>{signOut === 'pending' ? 'Signing out…' : signOut === 'failed' ? 'Sign-out could not be confirmed' : 'You have been signed out'}</h1>
-      <p>{signOut === 'failed' ? 'This workspace is locked, but your server session may still be active. Sign in again to continue safely.' : signOut === 'remote' ? 'Your account was signed out in another tab.' : 'Your private workspace is locked.'}</p>
-      {signOut !== 'pending' && <a href={loginUrl()}>Sign in to continue</a>}</section>
+    {signOut === 'failed' && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
+      <section aria-live="polite"><h1>Sign-out could not be confirmed</h1>
+      <p>Your local session has closed, though your server session may still be active. Sign in again to continue safely.</p>
+      <a href={(() => { const target = new URL(loginUrl()); target.search = ''; return target.href; })()}>Go to Sign In</a></section>
     </main>}
   </>;
 }

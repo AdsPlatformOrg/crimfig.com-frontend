@@ -54,7 +54,7 @@ test("login and MFA return allow only configured dashboard origins and preserve 
   ]) {
     assert.equal(
       loginDestination(new URLSearchParams({ return_to: bad })),
-      "/",
+      "https://ads.crimfig.com/dashboard",
     );
   }
 });
@@ -90,7 +90,7 @@ test("local login returns use actual dashboard ports", () => {
     loginDestination(
       new URLSearchParams({ return_to: "http://localhost:3001" }),
     ),
-    "/",
+    "http://localhost:3005/dashboard",
   );
 });
 

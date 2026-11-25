@@ -88,9 +88,9 @@ test('Negative & Positive: Ads header places FAQ right after Home and About in d
     );
     await React.act(async () => root.render(React.createElement(LandingNavbar, { onLaunchConsole: () => {} })));
     const desktopLinks = [...el.querySelectorAll('nav.cf-site-nav a')].map((a) => [a.textContent, a.getAttribute('href')]);
-    assert.deepEqual(desktopLinks, [['Home', '/'], ['About', '/about'], ['FAQ', '/faq']]);
+    assert.deepEqual(desktopLinks, [['Home', '/'], ['About', '/about'], ['How to Use', '/how-to-use'], ['Ads FAQ', '/faq']]);
     const mobileLinks = [...el.querySelectorAll('#ads-mobile-navigation a')].map((a) => [a.textContent, a.getAttribute('href')]);
-    assert.deepEqual(mobileLinks, [['Home', '/'], ['About', '/about'], ['FAQ', '/faq']]);
+    assert.deepEqual(mobileLinks, [['Home', '/'], ['About', '/about'], ['How to Use', '/how-to-use'], ['Ads FAQ', '/faq']]);
   });
 });
 
@@ -121,7 +121,6 @@ test('Negative & Positive: Auth and Billing landing headers keep existing items 
       await React.act(async () => root.render(React.createElement(LandingNavbar)));
       const links = [...el.querySelectorAll('nav.cf-site-nav a')].map((a) => [a.textContent, a.getAttribute('href')]);
       assert.deepEqual(links, [
-        ['FAQ', '#faq'],
         ['Ads', signedIn ? 'https://ads.crimfig.com/dashboard' : 'https://ads.crimfig.com/'],
         ['Ads FAQ', 'https://ads.crimfig.com/faq'],
       ]);
@@ -147,7 +146,7 @@ test('Negative & Positive: Auth and Billing landing headers keep existing items 
         ['Rewards Status', '#rewards'],
         ['Funding availability', '#security'],
         ['Ads', signedIn ? 'https://ads.crimfig.com/dashboard' : 'https://ads.crimfig.com/'],
-        ['FAQ', 'https://ads.crimfig.com/faq'],
+        ['Ads FAQ', 'https://ads.crimfig.com/faq'],
       ]);
     });
   }

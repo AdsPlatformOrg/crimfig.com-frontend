@@ -44,6 +44,13 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const authorized = status === 'authenticated' && !signOut;
   const retainDraft = hasAuthenticated.current && !signOut && status !== 'anonymous';
   useEffect(() => {
+    if (signOut === 'complete' || signOut === 'remote') {
+      const target = new URL(loginUrl());
+      target.search = '';
+      window.location.replace(target.href);
+    }
+  }, [signOut]);
+  useEffect(() => {
     if (!retainDraft) lastFocused.current = null;
     if (authorized && lastFocused.current?.isConnected && retainedContent.current?.contains(lastFocused.current)) {
       lastFocused.current.focus({ preventScroll: true });
@@ -55,19 +62,19 @@ export function SessionGate({ children }: { children: ReactNode }) {
     {authorized && renewal === 'connection-error' && <div role="status" style={{ position: 'fixed', bottom: 16, left: 16, right: 16, zIndex: 60, padding: 12, border: '1px solid var(--border-subtle)', borderRadius: 8, background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
       Connection interrupted. Your current session is still valid. <Button type="button" variant="outline" onClick={retry}>Retry connection</Button>
     </div>}
-    {!authorized && (status === 'idle' || status === 'loading') && !signOut && <WorkspaceSkeleton />}
+    {!authorized && (status === 'idle' || status === 'loading' || signOut === 'pending' || signOut === 'complete' || signOut === 'remote') && <WorkspaceSkeleton />}
     {!authorized && status !== 'idle' && status !== 'loading' && !signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
       <section style={{ maxWidth: 460, width: '100%' }} aria-live="polite">
         <h1>{status === 'temporary-error' ? 'Connection interrupted' : 'Sign in to continue'}</h1>
-        <p>{status === 'temporary-error' ? 'Your workspace is locked until we can verify your session. Your open form stays in this tab while you reconnect.' : 'Sign in with your CrimFig account to continue to this page.'}</p>
+        <p>{status === 'temporary-error' ? 'Connection temporarily unavailable. Your open form stays in this tab while we reconnect.' : 'Sign in with your CrimFig account to continue to this page.'}</p>
         {status === 'temporary-error' && <Button type="button" onClick={retry}>Retry connection</Button>}
         <p><a href={loginUrl()}>Sign in to continue</a></p>
       </section>
     </main>}
-    {signOut && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
-      <section aria-live="polite"><h1>{signOut === 'pending' ? 'Signing out…' : signOut === 'failed' ? 'Sign-out could not be confirmed' : 'You have been signed out'}</h1>
-      <p>{signOut === 'failed' ? 'This workspace is locked, but your server session may still be active. Sign in again to continue safely.' : signOut === 'remote' ? 'Your account was signed out in another tab.' : 'Your private workspace is locked.'}</p>
-      {signOut !== 'pending' && <a href={loginUrl()}>Sign in to continue</a>}</section>
+    {signOut === 'failed' && <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, color: 'var(--text-primary)', background: 'var(--bg-page)' }}>
+      <section aria-live="polite"><h1>Sign-out could not be confirmed</h1>
+      <p>Your local session has closed, though your server session may still be active. Sign in again to continue safely.</p>
+      <a href={(() => { const target = new URL(loginUrl()); target.search = ''; return target.href; })()}>Go to Sign In</a></section>
     </main>}
   </>;
 }

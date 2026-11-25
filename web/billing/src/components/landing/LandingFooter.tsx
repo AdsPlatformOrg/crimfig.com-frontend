@@ -1,6 +1,7 @@
 'use client';
 
 import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+import { LegalFooterLinks } from '../../../../../shared/ui/legal/LegalPages';
 
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
@@ -94,6 +95,9 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
               <span>Auth &amp; SSO Identity</span>
               <ExternalLink style={{ width: 12, height: 12 }} />
             </a>
+            <Link href="/faq" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
+              Billing FAQ
+            </Link>
             <Link href="/support" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>
               Help &amp; Support
             </Link>
@@ -120,8 +124,10 @@ export function LandingFooter({ onLaunchConsole }: LandingFooterProps) {
           }}
         >
           <div>
-            &copy; 2026 CrimFig Ecosystem Ltd. All rights reserved. Account and feature availability may vary.
+            &copy; 2026 CRIMFIG. All rights reserved. Account and feature availability may vary.
           </div>
+
+          <LegalFooterLinks />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <Button

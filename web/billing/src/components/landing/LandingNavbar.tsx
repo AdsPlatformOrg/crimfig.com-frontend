@@ -24,7 +24,7 @@ export function LandingNavbar({ onLaunchConsole }: LandingNavbarProps) {
     { href: '#rewards', label: 'Rewards Status' },
     { href: '#security', label: 'Funding availability' },
     { href: isSignedIn ? `${adsBase}/dashboard` : `${adsBase}/`, label: 'Ads' },
-    { href: `${adsBase}/faq`, label: 'FAQ' },
+    { href: `${adsBase}/faq`, label: 'Ads FAQ' },
   ];
 
   const launchConsole = () => {

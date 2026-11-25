@@ -90,8 +90,14 @@ export function workspaceNavigation(
           href: "/support",
         },
         {
+          id: "how_to_use",
+          label: "How to Use",
+          icon: BookOpen,
+          href: "/how-to-use",
+        },
+        {
           id: "faq",
-          label: "FAQ",
+          label: "Ads FAQ",
           icon: HelpCircle,
           href: "/faq",
         },
@@ -192,8 +198,14 @@ export function workspaceNavigation(
           href: "/support?workspace=promoter",
         },
         {
+          id: "how_to_use",
+          label: "How to Use",
+          icon: BookOpen,
+          href: "/how-to-use",
+        },
+        {
           id: "faq",
-          label: "FAQ",
+          label: "Ads FAQ",
           icon: HelpCircle,
           href: "/faq",
         },

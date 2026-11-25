@@ -1,6 +1,7 @@
 'use client';
 
 import { LanguagePicker } from '../../../../../shared/ui/localization/LanguagePicker';
+import { LegalFooterLinks } from '../../../../../shared/ui/legal/LegalPages';
 
 import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import React from 'react';
@@ -53,6 +54,7 @@ export function LandingFooter() {
               <li><Link href="/login" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Sign In</Link></li>
               <li><Link href="/signup" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Create Account</Link></li>
               <li><Link href="/forgot-password" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Reset Password</Link></li>
+              <li><Link href="/faq" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Account FAQ</Link></li>
               <li><Link href="/support" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Help &amp; Support</Link></li>
               <li><a href="mailto:support@crimfig.com" style={{ color: 'var(--color-crimson)', textDecoration: 'none', fontWeight: 600 }}>support@crimfig.com</a></li>
             </ul>
@@ -108,10 +110,9 @@ export function LandingFooter() {
             color: 'var(--text-muted)',
           }}
         >
-          <span>© {currentYear} CrimFig Technologies. All rights reserved.</span>
+          <span>© {currentYear} CRIMFIG. All rights reserved.</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <Link href="/privacy" style={{ color: "inherit", textDecoration: "none" }}>Privacy Policy</Link>
-            <Link href="/terms" style={{ color: "inherit", textDecoration: "none" }}>Terms of Service</Link>
+            <LegalFooterLinks />
             <LanguagePicker />
             <ThemeSwitcher showLabel labelPrefix="Theme:" />
           </div>

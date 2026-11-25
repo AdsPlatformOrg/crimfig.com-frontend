@@ -19,7 +19,6 @@ export function LandingNavbar() {
   const adsBase = ecosystemOrigin('ads', process.env.NEXT_PUBLIC_ADS_WEB_URL, process.env.NEXT_PUBLIC_AUTH_WEB_URL);
   const isSignedIn = snapshot.status === 'authenticated' && !snapshot.signOut;
   const links = [
-    { href: '#faq', label: 'FAQ' },
     { href: isSignedIn ? `${adsBase}/dashboard` : `${adsBase}/`, label: 'Ads' },
     { href: `${adsBase}/faq`, label: 'Ads FAQ' },
   ];
