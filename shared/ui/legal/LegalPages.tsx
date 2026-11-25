@@ -1,15 +1,84 @@
 import React from 'react';
-import Link from 'next/link';
-import {
-  ArrowLeft,
-  Cookie,
-  FileText,
-  ReceiptText,
-  Scale,
-  Shield,
-  ShieldCheck,
-  Trash2,
-} from 'lucide-react';
+
+function Glyph({ children, size = 28 }: { children: React.ReactNode; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ width: size, height: size, color: size > 18 ? 'var(--color-crimson)' : 'currentColor', flexShrink: 0 }}
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+
+const DocIcons = {
+  terms: (
+    <Glyph>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </Glyph>
+  ),
+  privacy: (
+    <Glyph>
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+    </Glyph>
+  ),
+  cookies: (
+    <Glyph>
+      <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+      <path d="M8.5 8.5v.01" />
+      <path d="M16 15.5v.01" />
+      <path d="M12 12v.01" />
+    </Glyph>
+  ),
+  adPolicy: (
+    <Glyph>
+      <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+      <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+      <path d="M7 21h10" />
+      <path d="M12 3v18" />
+      <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+    </Glyph>
+  ),
+  refund: (
+    <Glyph>
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" />
+      <path d="M14 8H8" />
+      <path d="M16 12H8" />
+      <path d="M13 16H8" />
+    </Glyph>
+  ),
+  deletion: (
+    <Glyph>
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </Glyph>
+  ),
+  arrowLeft: (
+    <Glyph size={16}>
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </Glyph>
+  ),
+  support: (
+    <Glyph size={15}>
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+      <path d="m9 12 2 2 4-4" />
+    </Glyph>
+  ),
+};
 
 export const CRIMFIG_ENTITY_NAME = 'CRIMFIG';
 export const CRIMFIG_LEGAL_EMAIL = 'support@crimfig.com';
@@ -51,7 +120,7 @@ function getDocMeta(kind: LegalDocKind, appName: string): LegalDocMeta {
       return {
         title: 'Terms of Use',
         subtitle: `Effective Date: ${CRIMFIG_EFFECTIVE_DATE} • Last Updated: ${CRIMFIG_EFFECTIVE_DATE} • Applies across ${appName} & CRIMFIG Ecosystem`,
-        icon: <FileText style={{ width: 28, height: 28, color: 'var(--color-crimson)', flexShrink: 0 }} aria-hidden="true" />,
+        icon: DocIcons.terms,
         sections: [
           {
             heading: '1. Acceptance of Terms',
@@ -103,7 +172,7 @@ function getDocMeta(kind: LegalDocKind, appName: string): LegalDocMeta {
       return {
         title: 'Privacy Policy',
         subtitle: `Last Updated: ${CRIMFIG_EFFECTIVE_DATE} • Alignment: UK GDPR & Global Privacy Standards`,
-        icon: <Shield style={{ width: 28, height: 28, color: 'var(--color-crimson)', flexShrink: 0 }} aria-hidden="true" />,
+        icon: DocIcons.privacy,
         sections: [
           {
             heading: '1. Who We Are & Contact',
@@ -148,7 +217,7 @@ function getDocMeta(kind: LegalDocKind, appName: string): LegalDocMeta {
       return {
         title: 'Cookie & Session Policy',
         subtitle: `Effective Date: ${CRIMFIG_EFFECTIVE_DATE} • Strictly Essential Storage Only`,
-        icon: <Cookie style={{ width: 28, height: 28, color: 'var(--color-crimson)', flexShrink: 0 }} aria-hidden="true" />,
+        icon: DocIcons.cookies,
         sections: [
           {
             heading: '1. Strictly Essential Cookies & Storage Only',
@@ -181,7 +250,7 @@ function getDocMeta(kind: LegalDocKind, appName: string): LegalDocMeta {
       return {
         title: 'Ad Content & Traffic Policy',
         subtitle: `Effective Date: ${CRIMFIG_EFFECTIVE_DATE} • Rules for Advertisers & Promoters`,
-        icon: <Scale style={{ width: 28, height: 28, color: 'var(--color-crimson)', flexShrink: 0 }} aria-hidden="true" />,
+        icon: DocIcons.adPolicy,
         sections: [
           {
             heading: '1. Prohibited Ad Content & Safety Rules',
@@ -224,7 +293,7 @@ function getDocMeta(kind: LegalDocKind, appName: string): LegalDocMeta {
       return {
         title: 'Refund, Escrow & Payout Policy',
         subtitle: `Effective Date: ${CRIMFIG_EFFECTIVE_DATE} • Wallets, Withdrawals & Chargebacks`,
-        icon: <ReceiptText style={{ width: 28, height: 28, color: 'var(--color-crimson)', flexShrink: 0 }} aria-hidden="true" />,
+        icon: DocIcons.refund,
         sections: [
           {
             heading: '1. Refund Requests & 30-Day Processing Window',
@@ -257,7 +326,7 @@ function getDocMeta(kind: LegalDocKind, appName: string): LegalDocMeta {
       return {
         title: 'Data Deletion & Account Closure',
         subtitle: `Last Updated: ${CRIMFIG_EFFECTIVE_DATE} • Fulfilled within 30 Days`,
-        icon: <Trash2 style={{ width: 28, height: 28, color: 'var(--color-crimson)', flexShrink: 0 }} aria-hidden="true" />,
+        icon: DocIcons.deletion,
         sections: [
           {
             heading: '1. How to Request Deletion',
@@ -325,7 +394,7 @@ export function LegalDocumentPage({
             marginBottom: '28px',
           }}
         >
-          <Link
+          <a
             href={homeHref}
             style={{
               display: 'inline-flex',
@@ -338,11 +407,11 @@ export function LegalDocumentPage({
               minHeight: '44px',
             }}
           >
-            <ArrowLeft style={{ width: 16, height: 16 }} aria-hidden="true" />
+            {DocIcons.arrowLeft}
             <span>Back to {appName}</span>
-          </Link>
+          </a>
 
-          <Link
+          <a
             href="/support"
             style={{
               display: 'inline-flex',
@@ -355,9 +424,9 @@ export function LegalDocumentPage({
               minHeight: '44px',
             }}
           >
-            <ShieldCheck style={{ width: 15, height: 15 }} aria-hidden="true" />
+            {DocIcons.support}
             <span>Help &amp; Support</span>
-          </Link>
+          </a>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
@@ -407,7 +476,7 @@ export function LegalDocumentPage({
           }}
         >
           {LEGAL_FOOTER_LINKS.map((item) => (
-            <Link
+            <a
               key={item.href}
               href={item.href}
               style={{
@@ -419,7 +488,7 @@ export function LegalDocumentPage({
               }}
             >
               {item.label}
-            </Link>
+            </a>
           ))}
         </nav>
       </main>
@@ -439,13 +508,13 @@ export function LegalFooterLinks() {
       }}
     >
       {LEGAL_FOOTER_LINKS.map((item) => (
-        <Link
+        <a
           key={item.href}
           href={item.href}
           style={{ color: 'inherit', textDecoration: 'none', whiteSpace: 'nowrap' }}
         >
           {item.label}
-        </Link>
+        </a>
       ))}
     </nav>
   );
