@@ -103,8 +103,8 @@ test('Negative & Positive: HowToUseGuide rejects broken/missing local guide asse
       const webpFile = path.join(publicDir, step.clipSrc.replace(/^\//, ''));
       assert.ok(fs.existsSync(pngFile), `Missing PNG file ${pngFile}`);
       assert.ok(fs.existsSync(webpFile), `Missing WebP clip file ${webpFile}`);
-      assert.ok(fs.statSync(pngFile).size > 5000, `PNG file too small: ${pngFile}`);
-      assert.ok(fs.statSync(webpFile).size > 5000, `WebP file too small: ${webpFile}`);
+      assert.ok(fs.statSync(pngFile).size > 30000, `PNG file too small: ${pngFile}`);
+      assert.ok(fs.statSync(webpFile).size > 30000, `WebP file too small: ${webpFile}`);
     }
 
     await React.act(async () => root.render(React.createElement(HowToUseGuide)));
@@ -112,7 +112,12 @@ test('Negative & Positive: HowToUseGuide rejects broken/missing local guide asse
     assert.match(el.textContent, /How to Use CrimFig Ads/);
     assert.match(el.textContent, /Advertisers pay; Promoters earn/);
     assert.match(el.textContent, /Fund Your Advertising Wallet/);
+    assert.match(el.textContent, /Fund Wallet/);
+    assert.match(el.textContent, /Add an Advert/);
     assert.match(el.textContent, /Register & Verify Your Website/);
+    assert.match(el.textContent, /\+ Add Website/);
+    assert.match(el.textContent, /Create ad slot/);
+    assert.match(el.textContent, /Review fees and net payout/);
     assert.match(el.textContent, /55% of eligible paid ad revenue/);
     assert.match(el.textContent, /72-hour traffic-quality review window/);
     assert.equal(el.querySelectorAll('article').length, 8);
