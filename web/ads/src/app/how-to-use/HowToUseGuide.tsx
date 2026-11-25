@@ -426,14 +426,55 @@ export function HowToUseGuide() {
           <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', lineHeight: 1.2, marginTop: '0.75rem' }}>
             How to Use CrimFig Ads
           </h1>
-          <p style={{ marginInline: 0, maxWidth: '46rem' }}>
-            Follow step-by-step screenshots and animated walkthrough clips for both{' '}
-            <strong>Advertisers</strong> launching paid campaigns and <strong>Promoters</strong> monetizing
-            verified websites.
+          <p style={{ marginInline: 0, maxWidth: '48rem' }}>
+            Use CrimFig Ads as an <strong>Advertiser</strong> to upload and run paid adverts, or as a{' '}
+            <strong>Promoter</strong> to place ad slots on your website or app so approved adverts can appear there.{' '}
+            <strong>Advertisers pay; Promoters earn.</strong>
           </p>
         </div>
 
-        <div style={{ marginTop: '2rem' }}>
+        <section
+          aria-label="How CrimFig Ads works for Advertisers and Promoters"
+          style={{
+            marginTop: '1.25rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))',
+            gap: '0.875rem',
+          }}
+        >
+          <div
+            style={{
+              padding: '1rem 1.125rem',
+              borderRadius: '0.875rem',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface)',
+            }}
+          >
+            <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+              Advertisers pay
+            </div>
+            <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+              Fund your wallet and upload paid adverts to promote your business across verified CrimFig spaces.
+            </p>
+          </div>
+          <div
+            style={{
+              padding: '1rem 1.125rem',
+              borderRadius: '0.875rem',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface)',
+            }}
+          >
+            <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+              Promoters earn
+            </div>
+            <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+              Place ad slots on your website or app so adverts can be displayed on those spaces and earn 55% of eligible revenue.
+            </p>
+          </div>
+        </section>
+
+        <div style={{ marginTop: '1.75rem' }}>
           <Tabs
             value={roleTab}
             onValueChange={(value) => setRoleTab(value === 'promoter' ? 'promoter' : 'advertiser')}

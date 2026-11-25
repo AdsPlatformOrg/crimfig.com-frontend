@@ -110,6 +110,7 @@ test('Negative & Positive: HowToUseGuide rejects broken/missing local guide asse
     await React.act(async () => root.render(React.createElement(HowToUseGuide)));
 
     assert.match(el.textContent, /How to Use CrimFig Ads/);
+    assert.match(el.textContent, /Advertisers pay; Promoters earn/);
     assert.match(el.textContent, /Fund Your Advertising Wallet/);
     assert.match(el.textContent, /Register & Verify Your Website/);
     assert.match(el.textContent, /55% of eligible paid ad revenue/);
