@@ -31,6 +31,8 @@ export interface GuideStep {
   external?: boolean;
 }
 
+const SHOW_GUIDE_MEDIA = false;
+
 export const ADVERTISER_GUIDE_STEPS: readonly GuideStep[] = [
   {
     stepNumber: 1,
@@ -397,11 +399,13 @@ export function HowToUseGuide() {
             </div>
           </div>
 
-          <GuideMediaFrame
-            step={step}
-            reducedMotion={reducedMotion}
-            onExpand={(selected) => setExpandedStep(selected)}
-          />
+          {SHOW_GUIDE_MEDIA && (
+            <GuideMediaFrame
+              step={step}
+              reducedMotion={reducedMotion}
+              onExpand={(selected) => setExpandedStep(selected)}
+            />
+          )}
         </article>
       ))}
     </div>
