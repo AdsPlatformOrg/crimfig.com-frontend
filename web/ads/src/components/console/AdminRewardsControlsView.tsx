@@ -26,6 +26,8 @@ interface SwitchRow {
 interface Overview {
   actorCapabilities?: {
     canManualSeedCommitment: boolean;
+    canTransferReserves?: boolean;
+    canRecordOperatingProceeds?: boolean;
   };
   switches: SwitchRow[];
   switchAudit: {
@@ -526,63 +528,78 @@ export function AdminRewardsControlsView() {
                 </div>
               )}
 
-              <form onSubmit={handleTransfer} style={{ display: 'grid', gap: 10, padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <ArrowRightLeft size={16} aria-hidden="true" /> Move Funds Between Reserves
+              {data.actorCapabilities?.canTransferReserves !== false && data.actorCapabilities?.canManualSeedCommitment !== false ? (
+                <form onSubmit={handleTransfer} style={{ display: 'grid', gap: 10, padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <ArrowRightLeft size={16} aria-hidden="true" /> Move Funds Between Reserves (Super Admin)
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <select value={fromReserve} onChange={e => setFromReserve(e.target.value)} style={{ minHeight: 40, padding: '0 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                      {RESERVE_OPTIONS.map(o => <option key={o.value} value={o.value}>From: {o.label}</option>)}
+                    </select>
+                    <select value={toReserve} onChange={e => setToReserve(e.target.value)} style={{ minHeight: 40, padding: '0 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                      {RESERVE_OPTIONS.map(o => <option key={o.value} value={o.value}>To: {o.label}</option>)}
+                    </select>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      placeholder="Amount USD"
+                      value={transferAmountUsd}
+                      onChange={e => setTransferAmountUsd(e.target.value)}
+                      style={{ maxWidth: 140 }}
+                    />
+                    <Input
+                      placeholder="Transfer reason (e.g. Fund promo reserve)"
+                      value={transferReason}
+                      onChange={e => setTransferReason(e.target.value)}
+                      style={{ maxWidth: 320 }}
+                    />
+                    <Button type="submit" disabled={busy}>Transfer</Button>
+                  </div>
+                </form>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                  Inter-pool reserve transfers require a single <code>super_admin</code> role.
                 </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <select value={fromReserve} onChange={e => setFromReserve(e.target.value)} style={{ minHeight: 40, padding: '0 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
-                    {RESERVE_OPTIONS.map(o => <option key={o.value} value={o.value}>From: {o.label}</option>)}
-                  </select>
-                  <select value={toReserve} onChange={e => setToReserve(e.target.value)} style={{ minHeight: 40, padding: '0 10px', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
-                    {RESERVE_OPTIONS.map(o => <option key={o.value} value={o.value}>To: {o.label}</option>)}
-                  </select>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Amount USD"
-                    value={transferAmountUsd}
-                    onChange={e => setTransferAmountUsd(e.target.value)}
-                    style={{ maxWidth: 140 }}
-                  />
-                  <Input
-                    placeholder="Transfer reason (e.g. Fund promo reserve)"
-                    value={transferReason}
-                    onChange={e => setTransferReason(e.target.value)}
-                    style={{ maxWidth: 320 }}
-                  />
-                  <Button type="submit" disabled={busy}>Transfer</Button>
-                </div>
-              </form>
+              )}
 
-              <form onSubmit={handleOperatingProceeds} style={{ display: 'grid', gap: 10, padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontWeight: 600 }}>Record Realized Platform Proceeds to Operating Reserve</div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Amount USD"
-                    value={proceedsAmountUsd}
-                    onChange={e => setProceedsAmountUsd(e.target.value)}
-                    style={{ maxWidth: 140 }}
-                  />
-                  <Input
-                    placeholder="Source ref (e.g. settled-batch-2026-11)"
-                    value={proceedsSourceRef}
-                    onChange={e => setProceedsSourceRef(e.target.value)}
-                    style={{ maxWidth: 240 }}
-                  />
-                  <Input
-                    placeholder="Reason"
-                    value={proceedsReason}
-                    onChange={e => setProceedsReason(e.target.value)}
-                    style={{ maxWidth: 260 }}
-                  />
-                  <Button type="submit" variant="outline" disabled={busy}>Record Proceeds</Button>
+              {data.actorCapabilities?.canRecordOperatingProceeds !== false && data.actorCapabilities?.canManualSeedCommitment !== false ? (
+                <form onSubmit={handleOperatingProceeds} style={{ display: 'grid', gap: 10, padding: 14, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 600 }}>Record Verified Platform Proceeds to Operating Reserve (Super Admin)</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                    Requires a completed settlement batch UUID or batch number with unallocated retained platform revenue.
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      placeholder="Amount USD"
+                      value={proceedsAmountUsd}
+                      onChange={e => setProceedsAmountUsd(e.target.value)}
+                      style={{ maxWidth: 140 }}
+                    />
+                    <Input
+                      placeholder="Completed batch ID or batch number"
+                      value={proceedsSourceRef}
+                      onChange={e => setProceedsSourceRef(e.target.value)}
+                      style={{ maxWidth: 260 }}
+                    />
+                    <Input
+                      placeholder="Reason"
+                      value={proceedsReason}
+                      onChange={e => setProceedsReason(e.target.value)}
+                      style={{ maxWidth: 260 }}
+                    />
+                    <Button type="submit" variant="outline" disabled={busy}>Record Proceeds</Button>
+                  </div>
+                </form>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', padding: 12, borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                  Recording realized platform proceeds requires a single <code>super_admin</code> role.
                 </div>
-              </form>
+              )}
 
               {data.transfers.length > 0 && (
                 <div>

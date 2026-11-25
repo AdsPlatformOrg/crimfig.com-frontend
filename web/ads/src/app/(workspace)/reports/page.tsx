@@ -139,12 +139,15 @@ function ReportWorkspace({ role, params }: { role: ReportRole; params: string })
 function Summary({ report }: { report: DailyReport }) {
   const t = report.totals;
   const cards = report.role === 'promoter' ? [
-    ['Confirmed earnings', money(metric(t, 'confirmed'))], ['Pending earnings', money(metric(t, 'pending'))],
+    ['Confirmed earnings (cash)', money(metric(t, 'confirmed'))], ['Pending earnings (cash)', money(metric(t, 'pending'))],
+    ['Promotional confirmed earnings', money(metric(t, 'promoConfirmed'))], ['Promotional pending earnings', money(metric(t, 'promoPending'))],
     ['Average confirmed per selected day', money(BigInt(metric(t, 'confirmed')) / BigInt(report.daily.length || 1), false)],
     ['Earnings adjustments', money(metric(t, 'adjustments'))],
   ] : [
-    ['Event spend', money(metric(t, 'spend'))], ['Posted debits', money(metric(t, 'posted'))], ['Posted credits', money(metric(t, 'credits'))],
-    ['Billable impressions', count(metric(t, 'billableImpressions'))], ['Observed clicks', count(metric(t, 'clicks'))], ['Valid clicks', count(metric(t, 'validClicks'))], ['Billed clicks', count(metric(t, 'billedClicks'))], ['Billable clicks', count(metric(t, 'billableClicks'))],
+    ['Event spend (cash)', money(metric(t, 'spend'))], ['Bonus credit spend', money(metric(t, 'bonusSpend'))],
+    ['Posted debits', money(metric(t, 'posted'))], ['Posted credits', money(metric(t, 'credits'))],
+    ['Billable impressions', count(metric(t, 'billableImpressions'))], ['Bonus impressions', count(metric(t, 'bonusImpressions'))],
+    ['Observed clicks', count(metric(t, 'clicks'))], ['Valid clicks', count(metric(t, 'validClicks'))], ['Billed clicks', count(metric(t, 'billedClicks'))], ['Billable clicks', count(metric(t, 'billableClicks'))],
     ['Observed CTR', percent(ratio(metric(t, 'clicks'), metric(t, 'impressions'), 100))],
     ['Cost per billable click', cost(ratio(metric(t, 'cpcSpend'), metric(t, 'billableClicks'), 1e-9))],
     ['Cost per 1,000 billable impressions', cost(ratio(metric(t, 'cpmSpend'), metric(t, 'billableImpressions'), 1e-6))],

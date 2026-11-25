@@ -1,10 +1,24 @@
 import { apiData } from './api-data';
 
-const keys = ['spend', 'cpmSpend', 'cpcSpend', 'posted', 'credits', 'confirmed', 'pending', 'adjustments',
-  'billableImpressions', 'billableClicks', 'impressions', 'clicks', 'validClicks', 'billedClicks'] as const;
+const keys = [
+  'spend', 'cpmSpend', 'cpcSpend', 'bonusSpend', 'posted', 'credits',
+  'confirmed', 'pending', 'promoConfirmed', 'promoPending', 'adjustments',
+  'billableImpressions', 'bonusImpressions', 'promoImpressions', 'billableClicks',
+  'impressions', 'clicks', 'validClicks', 'billedClicks',
+] as const;
 export type Metrics = Partial<Record<(typeof keys)[number], string>>;
-const earningsKeys = ['confirmed', 'pending', 'adjustments', 'billableImpressions', 'billableClicks'] as const;
-const spendKeys = keys.filter(key => key !== 'confirmed' && key !== 'pending' && key !== 'adjustments');
+
+const requiredEarningsKeys = ['confirmed', 'pending', 'adjustments', 'billableImpressions', 'billableClicks'] as const;
+const optionalEarningsKeys = ['promoConfirmed', 'promoPending', 'promoImpressions'] as const;
+const allowedEarningsKeys = [...requiredEarningsKeys, ...optionalEarningsKeys] as const;
+
+const requiredSpendKeys = [
+  'spend', 'cpmSpend', 'cpcSpend', 'posted', 'credits',
+  'billableImpressions', 'billableClicks', 'impressions', 'clicks', 'validClicks', 'billedClicks',
+] as const;
+const optionalSpendKeys = ['bonusSpend', 'bonusImpressions'] as const;
+const allowedSpendKeys = [...requiredSpendKeys, ...optionalSpendKeys] as const;
+
 export type ReportRole = 'advertiser' | 'promoter';
 type Breakdown = Metrics & {
   campaignId: string | null; creativeId: string | null; campaign?: string | null; creative?: string | null;
@@ -19,15 +33,28 @@ export type DailyReport = {
 const day = (value: unknown) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 function metrics(value: unknown, role: ReportRole, metadata: readonly string[] = []): value is Metrics {
   if (!value || typeof value !== 'object') return false;
-  const allowed: readonly (keyof Metrics)[] = role === 'promoter' ? earningsKeys : spendKeys;
+  const required: readonly (keyof Metrics)[] = role === 'promoter' ? requiredEarningsKeys : requiredSpendKeys;
+  const allowed: readonly (keyof Metrics)[] = role === 'promoter' ? allowedEarningsKeys : allowedSpendKeys;
   const row = value as Metrics;
-  return allowed.every(key => typeof row[key] === 'string' && /^-?\d+$/.test(row[key]!)) &&
-    Object.keys(row).every(key => allowed.some(metric => metric === key) || metadata.includes(key));
+  return (
+    required.every(key => typeof row[key] === 'string' && /^-?\d+$/.test(row[key]!)) &&
+    Object.keys(row).every(key => {
+      if (metadata.includes(key)) return true;
+      if (!allowed.some(metric => metric === key)) return false;
+      const v = row[key as keyof Metrics];
+      return typeof v === 'string' && /^-?\d+$/.test(v);
+    })
+  );
 }
+
+const optionalDefaults = new Set<keyof Metrics>([...optionalEarningsKeys, ...optionalSpendKeys]);
 
 export function metric(row: Metrics, key: keyof Metrics): string {
   const value = row[key];
-  if (value === undefined) throw new Error('Report metric is unavailable.');
+  if (value === undefined) {
+    if (optionalDefaults.has(key)) return '0';
+    throw new Error('Report metric is unavailable.');
+  }
   return value;
 }
 
@@ -58,7 +85,9 @@ export function aggregateCampaigns(rows: Breakdown[]): Breakdown[] {
     const prior = groups.get(row.campaignId);
     if (!prior) groups.set(row.campaignId, { ...row, creativeId: null, creative: null });
     else for (const key of keys) {
-      if (row[key] !== undefined) prior[key] = (BigInt(metric(prior, key)) + BigInt(metric(row, key))).toString();
+      if (row[key] !== undefined || prior[key] !== undefined) {
+        prior[key] = (BigInt(metric(prior, key)) + BigInt(metric(row, key))).toString();
+      }
     }
   }
   return [...groups.values()];
@@ -69,7 +98,7 @@ export function money(value: string | bigint, exact = true): string {
   const abs = amount < 0n ? -amount : amount;
   const nanos = exact ? abs : (abs + 5_000_000n) / 10_000_000n * 10_000_000n;
   const cents = (nanos % 1_000_000_000n).toString().padStart(9, '0').replace(/0+$/, '').padEnd(2, '0');
-  return (amount < 0n ? 'âˆ’' : '') + '$' + (nanos / 1_000_000_000n).toLocaleString('en-US') + '.' + cents;
+  return (amount < 0n ? '−' : '') + '$' + (nanos / 1_000_000_000n).toLocaleString('en-US') + '.' + cents;
 }
 
 export function ratio(numerator: string, denominator: string, scale = 1) {

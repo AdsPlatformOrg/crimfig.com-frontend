@@ -2,6 +2,11 @@
 
 Prior historical entries up to 2026-11-03 are archived in `frontend/SERIAL_LOGS_ARCHIVE_20261103.md`.
 
+## 2026-11-25 - PLAN-0155 Daily Reports Bonus/Promo Split & Single Super-Admin Reserve Controls
+- Updated `web/ads/src/lib/daily-reports.ts` & `web/ads/src/app/(workspace)/reports/page.tsx` with strict allowlisted `bonusSpend`/`bonusImpressions` (advertiser) and `promoConfirmed`/`promoPending`/`promoImpressions` (promoter) columns separated from cash spend.
+- Updated `web/ads/src/components/console/AdminRewardsControlsView.tsx` to include `$cfig Conversion Reserve` (`cfig_conversion_reserve`), single `super_admin` gating on inter-pool reserve transfers and realized proceeds, and settled batch `sourceRef` guidance.
+- Verification: `@crimfig/web-ads` `tsc --noEmit` (0 errors) & `next build`, `plan0102-reports` + `plan0154-rewards-controls` (`9/9`), `plan0155-reports-and-controls.test.cjs` (`2/2`). Browser verification remains DEFERRED — OWNER REQUEST.
+
 ## 2026-11-21 - PLAN-0133 Responsive Ad Slot Sizing, Shared Sample Explorer & Add an Advert
 - Completed `Add an Advert` dedicated route (`web/ads/src/app/(workspace)/campaigns/[id]/stacks/[stackId]/adverts/new/page.tsx`) with `Image Ads — Available`, disabled `Text Ads — Coming Soon` / `Video Ads — Coming Soon` options, ordered upload/size-policy/destination inputs without optional Headline, idempotent `requestId` retries, and `Submit new Advert for review` CTA.
 - Updated `HouseSizeSamples.tsx` / `HouseSizeSamples.module.css` (`Sample Ad #1`..`#3`, default-open explorer, `320 px` / `375 px` / `970 px` container frames with visible padding and incompatible-size notice) and `CrimFigAdSlot.tsx` (`responsiveSizing` `data-ad-format="general"` support).
