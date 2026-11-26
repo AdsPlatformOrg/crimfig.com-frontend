@@ -151,20 +151,41 @@ export function SupportCenter({
     };
   }, [load]);
 
+  const openRequest = useRef(0);
+  useEffect(() => () => { openRequest.current++; }, []);
   const open = useCallback(
     async (id: string) => {
+      const current = ++openRequest.current;
       setError('');
       try {
         const ticket = await api(base + '/' + id);
+        if (current !== openRequest.current) return;
         setSelected(ticket);
         setEditStatus(ticket.status);
         setEditPriority(ticket.priority);
         setAssign(ticket.assigned_to_staff_id || '');
+        if (admin && Array.isArray(ticket.messages)) {
+          const messageIds = (ticket.messages as NonNullable<Ticket['messages']>)
+            .filter(message => !message.is_staff_reply && !message.is_internal_note)
+            .map(message => message.id);
+          if (messageIds.length) {
+            void (async () => {
+              for (let start = 0; start < messageIds.length; start += 500) {
+                await api(base + '/' + id + '/read', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ messageIds: messageIds.slice(start, start + 500) }),
+                });
+              }
+              window.dispatchEvent(new window.Event('crimfig:support-read'));
+            })().catch(() => {});
+          }
+        }
       } catch (e) {
-        setError((e as Error).message);
+        if (current === openRequest.current) setError((e as Error).message);
       }
     },
-    [api, base],
+    [admin, api, base],
   );
 
   useEffect(() => {

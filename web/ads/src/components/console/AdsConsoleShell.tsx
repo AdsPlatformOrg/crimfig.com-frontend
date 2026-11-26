@@ -11,7 +11,7 @@ import { ecosystemOrigin } from '../../../../../shared/ui/origins';
 import { CrimFigLogo } from '../CrimFigLogo';
 import { DashboardSidebar } from '../DashboardSidebar';
 import { apiData } from '../../lib/api-data';
-import { dashboardSession } from '../../lib/session';
+import { dashboardSession, sessionFetch } from '../../lib/session';
 import { Button } from '../ui';
 import { Dialog, DialogOverlay, DialogPanel, DialogPortal, DialogTitle, DialogTrigger } from '../ui/dialog';
 import sidebar from '../DashboardSidebar.module.css';
@@ -30,6 +30,7 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [staffRoles, setStaffRoles] = useState<string[]>([]);
   const [isStaffUser, setIsStaffUser] = useState<boolean>(false);
+  const [supportUnread, setSupportUnread] = useState(0);
   const authBase = ecosystemOrigin('auth', process.env.NEXT_PUBLIC_AUTH_WEB_URL);
   useEffect(() => {
     const viewport = window.matchMedia('(max-width: 960px)');
@@ -64,7 +65,46 @@ export function AdsConsoleShell({ children, role, activeNavId, pendingSession = 
     };
   }, [pendingSession]);
 
-  const currentNavGroups = workspaceNavigation(role, staffRoles);
+  const groups = workspaceNavigation(role, staffRoles);
+  const canReadSupport = role === 'admin' && !pendingSession &&
+    groups.some(group => group.items.some(item => item.id === 'admin_support'));
+  useEffect(() => {
+    if (!canReadSupport) return;
+    let request: AbortController | undefined;
+    const refresh = () => {
+      request?.abort();
+      const current = new AbortController();
+      request = current;
+      void sessionFetch('/api/v1/auth/support/admin/unread', {
+        cache: 'no-store', signal: current.signal,
+      }).then(async response => {
+        if (!response.ok) return;
+        const { data } = await response.json();
+        const count = data?.count;
+        if (!current.signal.aborted && Number.isSafeInteger(count) && count >= 0) setSupportUnread(count);
+      }).catch(() => {});
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 60000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('crimfig:support-read', refresh);
+    return () => {
+      request?.abort();
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('crimfig:support-read', refresh);
+    };
+  }, [canReadSupport]);
+
+  const currentNavGroups = canReadSupport && supportUnread > 0
+    ? groups.map(group => ({
+      ...group, items: group.items.map(item => item.id === 'admin_support' ? {
+        ...item,
+        badge: supportUnread > 99 ? '99+' : supportUnread,
+        badgeLabel: `${supportUnread} unread ${supportUnread === 1 ? 'message' : 'messages'}`,
+      } : item),
+    }))
+    : groups;
 
   return (
     <Dialog open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>

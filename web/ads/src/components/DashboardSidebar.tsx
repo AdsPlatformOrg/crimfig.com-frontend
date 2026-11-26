@@ -12,6 +12,7 @@ export interface NavItem {
   label: string;
   icon: ComponentType<{ style?: CSSProperties; className?: string }>;
   badge?: string | number;
+  badgeLabel?: string;
   countKey?: string;
   action?: () => void;
   href?: string;
@@ -46,13 +47,13 @@ export function DashboardSidebar({
       <>
         <item.icon className={styles.icon} aria-hidden="true" />
         {!isCollapsed && <span>{item.label}</span>}
-        {!isCollapsed && item.badge !== undefined && <span className={styles.badge}>{item.badge}</span>}
+        {!isCollapsed && item.badge !== undefined && <span className={styles.badge} aria-label={item.badgeLabel}>{item.badge}</span>}
       </>
     );
     const props = {
       className: styles.item,
       'aria-current': active ? 'page' as const : undefined,
-      'aria-label': isCollapsed ? item.label : undefined,
+      'aria-label': item.badgeLabel ? `${item.label}, ${item.badgeLabel}` : isCollapsed ? item.label : undefined,
       title: isCollapsed ? item.label : undefined,
       onClick: () => { item.action?.(); onNavigate?.(); },
     };

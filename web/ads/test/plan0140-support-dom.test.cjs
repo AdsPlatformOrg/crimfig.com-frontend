@@ -36,3 +36,30 @@ test('affiliate links fetch only placements and preserve readable links and copy
  const urls=[];const Button=({children,size,variant,...p})=>React.createElement('button',p,children);const Input=p=>React.createElement('input',p);const deps={'../../../lib/api-data':{apiData:async url=>{urls.push(url);return [{id:'p1',shareLink:'https://ads.example.test/share/approved',campaign:{title:'Approved campaign'}}];}},'../../EmptyState':{EmptyState:({title})=>React.createElement('p',{},title)},'../../LoadingStates':{CardSkeleton:()=>React.createElement('p',{},'Loading')},'../../ui/button':{Button},'../../ui/input':{Input},'../../ui/badge':{Badge:({children})=>React.createElement('span',{},children)}};
  const C=load(path.resolve(__dirname,'../src/components/console/promoter/PromoterIndividualsView.tsx'),deps).PromoterIndividualsView;await React.act(()=>root.render(React.createElement(C)));assert.deepEqual(urls,['/api/v1/placements']);assert.equal(el.querySelector('input').value,'https://ads.example.test/share/approved');assert.ok(el.textContent.indexOf('Affiliate & Creator Link Rules')>el.textContent.indexOf('Approved campaign'));assert.doesNotMatch(el.textContent,/Reels/);
 }));
+test('opening a support request acknowledges only displayed customer messages', async () => fixture(async (root, el, win) => {
+ const ticket = { id: 'ticket', ticket_number: '#02', subject: 'Need help', category: 'technical', status: 'open', priority: 'normal', updated_at: new Date().toISOString() };
+ const messages = [
+  { id: 'customer', body: 'Need help', created_at: ticket.updated_at },
+  { id: 'staff', body: 'Staff reply', created_at: ticket.updated_at, is_staff_reply: true },
+ ];
+ const receipts = [];
+ let refreshed = 0;
+ win.addEventListener('crimfig:support-read', () => refreshed++);
+ const request = async (url, init) => {
+  if (init?.method === 'POST') {
+   receipts.push({ url, body: JSON.parse(init.body) });
+   return response({ read: true });
+  }
+  return url.endsWith('/ticket') ? response({ ...ticket, messages }) : response([ticket]);
+ };
+ await React.act(() => root.render(React.createElement(component(), { admin: true, request })));
+ assert.equal(receipts.length, 0);
+ const row = el.querySelector('a[href="?ticket=ticket"]');
+ assert.ok(row);
+ await React.act(() => row.click());
+ assert.deepEqual(receipts, [{
+  url: '/api/v1/auth/support/admin/tickets/ticket/read',
+  body: { messageIds: ['customer'] },
+ }]);
+ assert.equal(refreshed, 1);
+}));
