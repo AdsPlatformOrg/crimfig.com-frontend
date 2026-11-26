@@ -441,6 +441,14 @@ body {
   background: var(--color-error-bg);
   color: var(--color-error);
 }
+.cf-badge--success {
+  background: var(--color-success-bg);
+  color: #166534;
+}
+[data-theme="dark"] .cf-badge--success {
+  background: #14532d;
+  color: #bbf7d0;
+}
 .cf-badge--outline {
   background: transparent;
   color: var(--text-primary);

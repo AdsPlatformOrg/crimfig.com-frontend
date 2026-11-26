@@ -120,7 +120,7 @@ const WINDOW_OPTIONS = [7, 14, 30, 90] as const;
 const growthChartConfig = {
   usersSignedUp: {
     label: 'Users Signed Up',
-    color: '#D4143A',
+    color: 'var(--color-success)',
   },
   websitesSetup: {
     label: 'Websites Setup',
@@ -143,14 +143,14 @@ const growthChartConfig = {
 const funnelChartConfig = {
   count: {
     label: 'Accounts / Properties',
-    color: '#D4143A',
+    color: 'var(--color-success)',
   },
 } satisfies ChartConfig;
 
 const dialChartConfig = {
   pct: {
     label: 'Completion',
-    color: '#D4143A',
+    color: 'var(--color-success)',
   },
 } satisfies ChartConfig;
 
@@ -300,8 +300,8 @@ export function AdminPlatformOverview() {
 
   const funnelData = data
     ? [
-        { stage: 'Users Signed Up', count: data.users.totalSignedUp, fill: '#D4143A' },
-        { stage: 'Email Verified', count: data.users.emailVerified, fill: '#E31B45' },
+        { stage: 'Users Signed Up', count: data.users.totalSignedUp, fill: 'var(--color-success)' },
+        { stage: 'Email Verified', count: data.users.emailVerified, fill: 'var(--color-success)' },
         { stage: 'Websites Setup', count: data.websites.setup, fill: '#2563EB' },
         { stage: 'Websites Verified', count: data.websites.verified, fill: '#16A34A' },
         { stage: 'Sites w/ Slots', count: data.websites.withSlotsCreated, fill: '#D97706' },
@@ -428,7 +428,7 @@ export function AdminPlatformOverview() {
             <DialGaugeCard
               title="User Verification Dial"
               valuePct={data.rates.userVerificationPct}
-              color="#D4143A"
+              color="var(--color-success)"
               headline={`${data.users.emailVerified.toLocaleString()} / ${data.users.totalSignedUp.toLocaleString()}`}
               subBadge={`${data.users.activeAccounts.toLocaleString()} active`}
               secondaryBadge={`+${data.users.newInWindow.toLocaleString()} / ${data.windowDays}d`}
@@ -465,17 +465,17 @@ export function AdminPlatformOverview() {
               <CardHeader style={{ paddingBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   <CardDescription style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                    <Users size={15} aria-hidden="true" style={{ color: 'var(--color-crimson)' }} />
+                    <Users size={15} aria-hidden="true" style={{ color: 'var(--color-success)' }} />
                     <span>Users Signed Up</span>
                   </CardDescription>
-                  <Badge variant="secondary">+{data.users.newInWindow.toLocaleString()} ({data.windowDays}d)</Badge>
+                  <Badge variant="success">+{data.users.newInWindow.toLocaleString()} ({data.windowDays}d)</Badge>
                 </div>
                 <CardTitle style={{ fontSize: 28, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                   {data.users.totalSignedUp.toLocaleString()}
                 </CardTitle>
               </CardHeader>
               <CardContent style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                <Badge variant="default">{data.users.emailVerified.toLocaleString()} Email Verified</Badge>
+                <Badge variant="success">{data.users.emailVerified.toLocaleString()} Email Verified</Badge>
                 <Badge variant="outline">{data.users.pendingVerification.toLocaleString()} Pending</Badge>
                 <Badge variant="outline">{data.users.suspended.toLocaleString()} Suspended</Badge>
               </CardContent>
@@ -495,8 +495,8 @@ export function AdminPlatformOverview() {
                 </CardTitle>
               </CardHeader>
               <CardContent style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                <Badge variant="default">{data.websites.verified.toLocaleString()} Verified</Badge>
-                <Badge variant="secondary">{data.websites.policyApproved.toLocaleString()} Policy Approved</Badge>
+                <Badge variant="success">{data.websites.verified.toLocaleString()} Verified</Badge>
+                <Badge variant="success">{data.websites.policyApproved.toLocaleString()} Policy Approved</Badge>
                 <Badge variant="outline">{data.websites.failedVerification.toLocaleString()} Failed Check</Badge>
               </CardContent>
             </Card>
@@ -515,7 +515,7 @@ export function AdminPlatformOverview() {
                 </CardTitle>
               </CardHeader>
               <CardContent style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                <Badge variant="default">{data.websites.withSlotsAdded.toLocaleString()} Script Added</Badge>
+                <Badge variant="success">{data.websites.withSlotsAdded.toLocaleString()} Script Added</Badge>
                 <Badge variant="secondary">{data.websites.pinging7d.toLocaleString()} Pinging 7d</Badge>
                 <Badge variant="outline">{data.rates.websiteEmbedInstallPct}% Coverage</Badge>
               </CardContent>
@@ -555,7 +555,7 @@ export function AdminPlatformOverview() {
                 </CardTitle>
               </CardHeader>
               <CardContent style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                <Badge variant="default">{data.adSlots.liveActive.toLocaleString()} Live Active</Badge>
+                <Badge variant="success">{data.adSlots.liveActive.toLocaleString()} Live Active</Badge>
                 <Badge variant="outline">{data.adSlots.pendingInstall.toLocaleString()} Awaiting Embed</Badge>
                 <Badge variant="outline">{data.adSlots.retired.toLocaleString()} Retired</Badge>
               </CardContent>
@@ -575,7 +575,7 @@ export function AdminPlatformOverview() {
                 </CardTitle>
               </CardHeader>
               <CardContent style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                <Badge variant="default">{data.campaigns.active.toLocaleString()} Active</Badge>
+                <Badge variant={data.campaigns.active > 0 ? 'success' : 'outline'}>{data.campaigns.active.toLocaleString()} Active</Badge>
                 <Badge variant="outline">{data.campaigns.underReview.toLocaleString()} In Review</Badge>
                 <Badge variant="outline">
                   {(data.campaigns.paidServesInWindow + data.campaigns.houseServesInWindow).toLocaleString()} Serves
@@ -622,8 +622,8 @@ export function AdminPlatformOverview() {
                     <Area
                       type="monotone"
                       dataKey="usersSignedUp"
-                      stroke="#D4143A"
-                      fill="#D4143A"
+                      stroke="var(--color-success)"
+                      fill="var(--color-success)"
                       fillOpacity={0.14}
                       strokeWidth={2}
                     />
@@ -638,6 +638,7 @@ export function AdminPlatformOverview() {
                     <Area
                       type="monotone"
                       dataKey="websitesVerified"
+                      strokeDasharray="5 3"
                       stroke="#16A34A"
                       fill="#16A34A"
                       fillOpacity={0.1}
@@ -792,7 +793,7 @@ export function AdminPlatformOverview() {
                       {data.websites.verified.toLocaleString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="default">{data.websites.policyApproved.toLocaleString()} policy approved</Badge>
+                      <Badge variant="success">{data.websites.policyApproved.toLocaleString()} policy approved</Badge>
                     </TableCell>
                     <TableCell style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                       {data.websites.pendingVerification.toLocaleString()} pending
@@ -848,7 +849,7 @@ export function AdminPlatformOverview() {
                       {data.adSlots.addedVerified.toLocaleString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="default">
+                      <Badge variant="success">
                         {data.rates.slotInstallPct}% installed · {data.adSlots.liveActive.toLocaleString()} live
                       </Badge>
                     </TableCell>

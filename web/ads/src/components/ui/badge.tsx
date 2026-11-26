@@ -9,6 +9,7 @@ const badgeVariants = cva(
       variant: {
         default: 'cf-badge--default',
         secondary: 'cf-badge--secondary',
+        success: 'cf-badge--success',
         destructive: 'cf-badge--destructive',
         outline: 'cf-badge--outline',
       },
