@@ -111,7 +111,7 @@ export function PromoterMarketplaceView() {
               author={{
                 name: camp.category + ' Sponsor Network',
                 subtitle: `Verified Brand • ${camp.format.toUpperCase()} Placement`,
-                roleBadge: '55% RevShare',
+                roleBadge: 'Verified Sponsor',
               }}
               title={camp.title}
               content={

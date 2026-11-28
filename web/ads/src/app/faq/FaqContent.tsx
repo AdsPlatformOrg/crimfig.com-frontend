@@ -34,7 +34,7 @@ export const ADS_FAQ_ITEMS: readonly AdsFaqItem[] = [
   {
     question: '6. How much do promoters and website owners earn?',
     answer:
-      'Promoters receive 55% of eligible paid advertising revenue attributed to their placements, subject to applicable policies and adjustments.',
+      'Promoter earnings depend on verified billable impressions and eligible clicks generated on their placements, campaign pricing, and traffic quality, subject to applicable policies and adjustments.',
   },
   {
     question: '7. When can promoters withdraw their earnings?',

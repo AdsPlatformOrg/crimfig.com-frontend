@@ -118,7 +118,8 @@ test('Negative & Positive: HowToUseGuide rejects broken/missing local guide asse
     assert.match(el.textContent, /\+ Add Website/);
     assert.match(el.textContent, /Create ad slot/);
     assert.match(el.textContent, /Review fees and net payout/);
-    assert.match(el.textContent, /55% of eligible paid ad revenue/);
+    assert.match(el.textContent, /Earn from eligible paid ad activity/);
+    assert.doesNotMatch(el.textContent, /55%|30%|15%|55\/30\/15/);
     assert.match(el.textContent, /72-hour traffic-quality review window/);
     assert.equal(el.querySelectorAll('article').length, 8);
   });

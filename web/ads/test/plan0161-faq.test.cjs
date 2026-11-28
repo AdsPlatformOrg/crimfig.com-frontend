@@ -62,7 +62,8 @@ test('Negative & Positive: FaqContent renders only the 9 Ads FAQ items with exac
     assert.equal(ADS_FAQ_ITEMS.length, 9);
     assert.equal(el.querySelectorAll('article').length, 9);
     assert.match(el.textContent, /\$5 USD/);
-    assert.match(el.textContent, /55% of eligible paid advertising revenue/);
+    assert.match(el.textContent, /verified billable impressions and eligible clicks/);
+    assert.doesNotMatch(el.textContent, /55%|30%|15%|55\/30\/15/);
     assert.match(el.textContent, /72-hour clearance period/);
     assert.match(el.textContent, /CrimFig AdStation/);
     assert.match(el.textContent, /invalid activity/);

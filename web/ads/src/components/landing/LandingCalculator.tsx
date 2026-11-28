@@ -66,7 +66,7 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
             Transparent Earnings Simulation
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Zero fabricated ROI. Model your potential earnings using our transparent revenue allocations (55% Publisher, 30% Creator, 15% Sustainability) before deploying a single line of code.
+            Zero fabricated ROI. Model your potential earnings based on verified impressions and audience engagement before deploying a single line of code.
           </p>
         </div>
 
@@ -219,12 +219,12 @@ export function LandingCalculator({ onStartEarning }: LandingCalculatorProps) {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Promoter Performance Share</span>
-                <span style={{ fontWeight: 700 }}>55% Campaign Performance Pool</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Earnings Basis</span>
+                <span style={{ fontWeight: 700 }}>Verified Placement Performance</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Platform &amp; Growth</span>
-                <span style={{ fontWeight: 700 }}>30% CrimFig Base • 15% Dynamic Pool</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Traffic Protection</span>
+                <span style={{ fontWeight: 700 }}>Automated Quality &amp; Fraud Filtering</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Clearance Schedule</span>

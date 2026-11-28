@@ -5,17 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, Activity, ArrowUpRight, Ban } from 'lucide-react';
 import { Button } from '../ui/button';
 
-interface QualityData {
-  promoterId: string;
-  trustScore: number;
-  isSuspended: boolean;
-  suspensionReason: string | null;
-  totalInteractions: number;
-  validInteractions: number;
-  invalidInteractions: number;
-  invalidRatePct: number;
-  status: 'good' | 'warning' | 'suspended';
-}
+import { parsePromoterQuality, type QualityData } from '../../lib/promoter-quality';
 
 interface QualityCardProps {
   apiBase: string;
@@ -32,8 +22,7 @@ export function PromoterQualityCard({ apiBase }: QualityCardProps) {
       const res = await sessionFetch(`${apiBase}/api/v1/promoters/quality`);
       if (!res.ok) throw new Error('Quality telemetry could not be loaded.');
       const json = await res.json();
-      if (!json.data || typeof json.data.trustScore !== 'number') throw new Error('Invalid quality response.');
-      setData(json.data);
+      setData(parsePromoterQuality(json.data));
     } catch (err) { setData(null); setError(err instanceof Error ? err.message : 'Quality telemetry unavailable.'); }
     finally { setIsLoading(false); }
   }, [apiBase]);
@@ -135,11 +124,11 @@ export function PromoterQualityCard({ apiBase }: QualityCardProps) {
               {data.validInteractions.toLocaleString()}
             </span>
             <span style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>
-              ({(100 - data.invalidRatePct).toFixed(1)}%)
+              ({(data.totalInteractions > 0 ? data.validInteractions / data.totalInteractions * 100 : 0).toFixed(1)}%)
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-            Eligible for revenue distribution under the 55/30/15 ecosystem constants.
+            Eligible for promoter earnings settlement after traffic-quality verification.
           </p>
         </div>
 

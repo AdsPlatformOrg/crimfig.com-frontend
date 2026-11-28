@@ -31,8 +31,6 @@ export interface GuideStep {
   external?: boolean;
 }
 
-const SHOW_GUIDE_MEDIA = false;
-
 export const ADVERTISER_GUIDE_STEPS: readonly GuideStep[] = [
   {
     stepNumber: 1,
@@ -165,9 +163,9 @@ export const PROMOTER_GUIDE_STEPS: readonly GuideStep[] = [
   },
   {
     stepNumber: 4,
-    title: 'Track 55% Share Earnings & Withdraw',
+    title: 'Track Earnings & Withdraw',
     summary:
-      'Earn 55% of eligible paid ad revenue. Track 72-hour traffic-quality clearance in Earnings report, then withdraw in Billing.',
+      'Earn from eligible paid ad activity on your verified placements. Track 72-hour traffic-quality clearance in Earnings report, then withdraw in Billing.',
     checklist: [
       'Check Confirmed and Pending (72-hour traffic-quality review window) earnings.',
       'Open Withdraw to Bank Account in Billing.',
@@ -399,13 +397,11 @@ export function HowToUseGuide() {
             </div>
           </div>
 
-          {SHOW_GUIDE_MEDIA && (
-            <GuideMediaFrame
-              step={step}
-              reducedMotion={reducedMotion}
-              onExpand={(selected) => setExpandedStep(selected)}
-            />
-          )}
+          <GuideMediaFrame
+            step={step}
+            reducedMotion={reducedMotion}
+            onExpand={(selected) => setExpandedStep(selected)}
+          />
         </article>
       ))}
     </div>
@@ -462,7 +458,7 @@ export function HowToUseGuide() {
               Promoters earn
             </div>
             <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.55, color: 'var(--text-secondary)' }}>
-              Place ad slots on your website or app so adverts can be displayed on those spaces and earn 55% of eligible revenue.
+              Place ad slots on your website or app so adverts can be displayed on those spaces and earn from eligible advertising activity.
             </p>
           </div>
         </section>
@@ -509,7 +505,7 @@ export function HowToUseGuide() {
           }}
         >
           <p style={{ margin: 0, fontSize: '0.9375rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Have questions about pricing, the 55% promoter share, or verification? Check our{' '}
+            Have questions about pricing, promoter earnings, or verification? Check our{' '}
             <Link href="/faq" style={{ color: 'var(--color-crimson)', fontWeight: 600, textDecoration: 'none' }}>
               FAQs
             </Link>{' '}

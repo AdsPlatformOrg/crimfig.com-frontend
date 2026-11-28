@@ -16,7 +16,7 @@ export function LandingPartners({ onJoinAsPromoter }: LandingPartnersProps) {
       icon: Globe,
       title: 'Websites & Independent Publishers',
       subtitle: 'Website ad placements',
-      badge: '55% Revenue Share',
+      badge: 'Verified Ad Placements',
       description:
         'Verify your website, choose ad categories and manage placements from the promoter console.',
       ctaText: 'Partner Your Website',
